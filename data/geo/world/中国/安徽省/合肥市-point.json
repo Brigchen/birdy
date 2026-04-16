@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3218266083, 31.740519626 ]
+			},
+			"properties" : {
+				"name" : "包河区",
+				"adcode" : "340111",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7183743235, 31.6462261594 ]
+			},
+			"properties" : {
+				"name" : "巢湖市",
+				"adcode" : "340181",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5716512744, 32.0028326933 ]
+			},
+			"properties" : {
+				"name" : "肥东县",
+				"adcode" : "340122",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.05273208, 31.6643106701 ]
+			},
+			"properties" : {
+				"name" : "肥西县",
+				"adcode" : "340123",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.320181198, 31.2692637165 ]
+			},
+			"properties" : {
+				"name" : "庐江县",
+				"adcode" : "340124",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1965066516, 31.9168207786 ]
+			},
+			"properties" : {
+				"name" : "庐阳区",
+				"adcode" : "340103",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0514095329, 31.8708068348 ]
+			},
+			"properties" : {
+				"name" : "蜀山区",
+				"adcode" : "340104",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3544847164, 31.9375273314 ]
+			},
+			"properties" : {
+				"name" : "瑶海区",
+				"adcode" : "340102",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1932999576, 32.2352564278 ]
+			},
+			"properties" : {
+				"name" : "长丰县",
+				"adcode" : "340121",
+				"adcode_s" : "3401",
+				"adcode_si" : "34",
+				"dname" : "合肥市"
+			}
+		}
+	]
+}

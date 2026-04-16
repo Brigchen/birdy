@@ -1,0 +1,230 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.6966313883, 27.3630821599 ]
+			},
+			"properties" : {
+				"name" : "岑巩县",
+				"adcode" : "522626",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.71252649, 25.8203427707 ]
+			},
+			"properties" : {
+				"name" : "从江县",
+				"adcode" : "522633",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.9204454326, 26.2285778446 ]
+			},
+			"properties" : {
+				"name" : "丹寨县",
+				"adcode" : "522636",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.857979081, 26.9498178985 ]
+			},
+			"properties" : {
+				"name" : "黄平县",
+				"adcode" : "522622",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.6669730282, 26.6523515609 ]
+			},
+			"properties" : {
+				"name" : "剑河县",
+				"adcode" : "522629",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1212717102, 26.5639774086 ]
+			},
+			"properties" : {
+				"name" : "锦屏县",
+				"adcode" : "522628",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.9010415453, 26.6113023802 ]
+			},
+			"properties" : {
+				"name" : "凯里市",
+				"adcode" : "522601",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1436216961, 26.3395844023 ]
+			},
+			"properties" : {
+				"name" : "雷山县",
+				"adcode" : "522634",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.06758144, 26.1920539684 ]
+			},
+			"properties" : {
+				"name" : "黎平县",
+				"adcode" : "522631",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.5731964425, 26.446988385 ]
+			},
+			"properties" : {
+				"name" : "麻江县",
+				"adcode" : "522635",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4098394612, 26.033439552 ]
+			},
+			"properties" : {
+				"name" : "榕江县",
+				"adcode" : "522632",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.7495312334, 26.9370321851 ]
+			},
+			"properties" : {
+				"name" : "三穗县",
+				"adcode" : "522624",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1461113071, 27.0650302374 ]
+			},
+			"properties" : {
+				"name" : "施秉县",
+				"adcode" : "522623",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2991583038, 26.6421458877 ]
+			},
+			"properties" : {
+				"name" : "台江县",
+				"adcode" : "522630",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2517072397, 26.9230478726 ]
+			},
+			"properties" : {
+				"name" : "天柱县",
+				"adcode" : "522627",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4649444208, 27.119212552 ]
+			},
+			"properties" : {
+				"name" : "镇远县",
+				"adcode" : "522625",
+				"adcode_s" : "5226",
+				"adcode_si" : "52",
+				"dname" : "黔东南苗族侗族自治州"
+			}
+		}
+	]
+}

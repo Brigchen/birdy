@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.551994923, 36.07522949 ]
+			},
+			"properties" : {
+				"name" : "安阳县",
+				"adcode" : "410522",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.370882871, 36.1393074213 ]
+			},
+			"properties" : {
+				"name" : "北关区",
+				"adcode" : "410503",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6611949468, 35.4659020271 ]
+			},
+			"properties" : {
+				"name" : "滑县",
+				"adcode" : "410526",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8481596216, 36.0100890364 ]
+			},
+			"properties" : {
+				"name" : "林州市",
+				"adcode" : "410581",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2435326766, 36.0421036392 ]
+			},
+			"properties" : {
+				"name" : "龙安区",
+				"adcode" : "410506",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8113597614, 35.9003083241 ]
+			},
+			"properties" : {
+				"name" : "内黄县",
+				"adcode" : "410527",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4507051691, 35.9027294827 ]
+			},
+			"properties" : {
+				"name" : "汤阴县",
+				"adcode" : "410523",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4111864147, 36.0357142439 ]
+			},
+			"properties" : {
+				"name" : "文峰区",
+				"adcode" : "410502",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2829164158, 36.1344940898 ]
+			},
+			"properties" : {
+				"name" : "殷都区",
+				"adcode" : "410505",
+				"adcode_s" : "4105",
+				"adcode_si" : "41",
+				"dname" : "安阳市"
+			}
+		}
+	]
+}

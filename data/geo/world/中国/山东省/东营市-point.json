@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6073422328, 37.4019118006 ]
+			},
+			"properties" : {
+				"name" : "东营区",
+				"adcode" : "370502",
+				"adcode_s" : "3705",
+				"adcode_si" : "37",
+				"dname" : "东营市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.592923806, 37.9685123131 ]
+			},
+			"properties" : {
+				"name" : "河口区",
+				"adcode" : "370503",
+				"adcode_s" : "3705",
+				"adcode_si" : "37",
+				"dname" : "东营市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8328126111, 37.6672535762 ]
+			},
+			"properties" : {
+				"name" : "垦利区",
+				"adcode" : "370505",
+				"adcode_s" : "3705",
+				"adcode_si" : "37",
+				"dname" : "东营市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4049165085, 37.7034796115 ]
+			},
+			"properties" : {
+				"name" : "利津县",
+				"adcode" : "370522",
+				"adcode_s" : "3705",
+				"adcode_si" : "37",
+				"dname" : "东营市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5342000496, 37.1589817117 ]
+			},
+			"properties" : {
+				"name" : "广饶县",
+				"adcode" : "370583",
+				"adcode_s" : "3705",
+				"adcode_si" : "37",
+				"dname" : "东营市"
+			}
+		}
+	]
+}

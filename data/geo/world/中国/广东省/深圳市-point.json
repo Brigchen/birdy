@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8090878265, 22.6970888537 ]
+			},
+			"properties" : {
+				"name" : "宝安区",
+				"adcode" : "440306",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.043872406, 22.5493945169 ]
+			},
+			"properties" : {
+				"name" : "福田区",
+				"adcode" : "440304",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9272127241, 22.7643895754 ]
+			},
+			"properties" : {
+				"name" : "光明区",
+				"adcode" : "440311",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.278493399, 22.7356316241 ]
+			},
+			"properties" : {
+				"name" : "龙岗区",
+				"adcode" : "440307",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1449580113, 22.578571896 ]
+			},
+			"properties" : {
+				"name" : "罗湖区",
+				"adcode" : "440303",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3604833382, 22.6921980931 ]
+			},
+			"properties" : {
+				"name" : "坪山区",
+				"adcode" : "440310",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2668464272, 22.5998145542 ]
+			},
+			"properties" : {
+				"name" : "盐田区",
+				"adcode" : "440308",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9415958708, 22.5581287471 ]
+			},
+			"properties" : {
+				"name" : "南山区",
+				"adcode" : "440305",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0312298004, 22.6863094908 ]
+			},
+			"properties" : {
+				"name" : "龙华区",
+				"adcode" : "440306",
+				"adcode_s" : "4403",
+				"adcode_si" : "44",
+				"dname" : "深圳市"
+			}
+		}
+	]
+}

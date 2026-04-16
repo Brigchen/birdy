@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "文昌市",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7689010561, 19.7467995267 ]
+			},
+			"properties" : {
+				"name" : "文昌市",
+				"adcode" : "469005",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

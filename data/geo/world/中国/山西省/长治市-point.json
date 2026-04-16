@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.256844155, 36.0449355169 ]
+			},
+			"properties" : {
+				"name" : "壶关县",
+				"adcode" : "140427",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3840009031, 36.6130788114 ]
+			},
+			"properties" : {
+				"name" : "黎城县",
+				"adcode" : "140426",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2421475496, 36.3683061987 ]
+			},
+			"properties" : {
+				"name" : "潞城区",
+				"adcode" : "140406",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0891900898, 36.2589408187 ]
+			},
+			"properties" : {
+				"name" : "潞州区",
+				"adcode" : "140403",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5208521328, 36.2154468887 ]
+			},
+			"properties" : {
+				"name" : "平顺县",
+				"adcode" : "140425",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6395233914, 36.7004011768 ]
+			},
+			"properties" : {
+				"name" : "沁县",
+				"adcode" : "140430",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2774487413, 36.6945865459 ]
+			},
+			"properties" : {
+				"name" : "沁源县",
+				"adcode" : "140431",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0728992793, 36.0187832674 ]
+			},
+			"properties" : {
+				"name" : "上党区",
+				"adcode" : "140404",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7369666918, 36.3372212325 ]
+			},
+			"properties" : {
+				"name" : "屯留区",
+				"adcode" : "140405",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.13221472, 36.8217466271 ]
+			},
+			"properties" : {
+				"name" : "武乡县",
+				"adcode" : "140429",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9761140562, 36.5741330085 ]
+			},
+			"properties" : {
+				"name" : "襄垣县",
+				"adcode" : "140423",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7887596312, 36.1048804118 ]
+			},
+			"properties" : {
+				"name" : "长子县",
+				"adcode" : "140428",
+				"adcode_s" : "1404",
+				"adcode_si" : "14",
+				"dname" : "长治市"
+			}
+		}
+	]
+}

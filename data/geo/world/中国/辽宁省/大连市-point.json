@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.5096821477, 38.9811868156 ]
+			},
+			"properties" : {
+				"name" : "甘井子区",
+				"adcode" : "210211",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.8817827801, 39.1955910857 ]
+			},
+			"properties" : {
+				"name" : "金州区",
+				"adcode" : "210213",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.279979657, 38.8661397207 ]
+			},
+			"properties" : {
+				"name" : "旅顺口区",
+				"adcode" : "210212",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.2836030558, 39.6042192019 ]
+			},
+			"properties" : {
+				"name" : "普兰店区",
+				"adcode" : "210214",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.5657218862, 38.9035705707 ]
+			},
+			"properties" : {
+				"name" : "沙河口区",
+				"adcode" : "210204",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.7720616032, 39.6794819074 ]
+			},
+			"properties" : {
+				"name" : "瓦房店市",
+				"adcode" : "210281",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6155244386, 38.9055169706 ]
+			},
+			"properties" : {
+				"name" : "西岗区",
+				"adcode" : "210203",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.3329175, 39.1665264485 ]
+			},
+			"properties" : {
+				"name" : "长海县",
+				"adcode" : "210224",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.669037737, 38.8979153372 ]
+			},
+			"properties" : {
+				"name" : "中山区",
+				"adcode" : "210202",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.9298764255, 39.8442747301 ]
+			},
+			"properties" : {
+				"name" : "庄河市",
+				"adcode" : "210283",
+				"adcode_s" : "2102",
+				"adcode_si" : "21",
+				"dname" : "大连市"
+			}
+		}
+	]
+}

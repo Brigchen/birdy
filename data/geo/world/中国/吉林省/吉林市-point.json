@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.2745637346, 44.0359899184 ]
+			},
+			"properties" : {
+				"name" : "昌邑区",
+				"adcode" : "220202",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.2926343216, 43.8531926349 ]
+			},
+			"properties" : {
+				"name" : "船营区",
+				"adcode" : "220204",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.6937169723, 43.6544891469 ]
+			},
+			"properties" : {
+				"name" : "丰满区",
+				"adcode" : "220211",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.0384556244, 43.0443603473 ]
+			},
+			"properties" : {
+				"name" : "桦甸市",
+				"adcode" : "220282",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.325703253, 43.7059686166 ]
+			},
+			"properties" : {
+				"name" : "蛟河市",
+				"adcode" : "220281",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.6460257761, 44.0482863468 ]
+			},
+			"properties" : {
+				"name" : "龙潭区",
+				"adcode" : "220203",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.1623427554, 43.0480212358 ]
+			},
+			"properties" : {
+				"name" : "磐石市",
+				"adcode" : "220284",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.1040481847, 44.3268307441 ]
+			},
+			"properties" : {
+				"name" : "舒兰市",
+				"adcode" : "220283",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.22563594, 43.5568104382 ]
+			},
+			"properties" : {
+				"name" : "永吉县",
+				"adcode" : "220221",
+				"adcode_s" : "2202",
+				"adcode_si" : "22",
+				"dname" : "吉林市"
+			}
+		}
+	]
+}

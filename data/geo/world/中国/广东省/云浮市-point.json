@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4818007116, 22.6876585078 ]
+			},
+			"properties" : {
+				"name" : "罗定市",
+				"adcode" : "445381",
+				"adcode_s" : "4453",
+				"adcode_si" : "44",
+				"dname" : "云浮市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2047220721, 22.6240549864 ]
+			},
+			"properties" : {
+				"name" : "新兴县",
+				"adcode" : "445321",
+				"adcode_s" : "4453",
+				"adcode_si" : "44",
+				"dname" : "云浮市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.62665539, 23.00364567 ]
+			},
+			"properties" : {
+				"name" : "郁南县",
+				"adcode" : "445322",
+				"adcode_s" : "4453",
+				"adcode_si" : "44",
+				"dname" : "云浮市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.172754195, 23.0347125283 ]
+			},
+			"properties" : {
+				"name" : "云安区",
+				"adcode" : "445303",
+				"adcode_s" : "4453",
+				"adcode_si" : "44",
+				"dname" : "云浮市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1245020185, 22.8891164566 ]
+			},
+			"properties" : {
+				"name" : "云城区",
+				"adcode" : "445302",
+				"adcode_s" : "4453",
+				"adcode_si" : "44",
+				"dname" : "云浮市"
+			}
+		}
+	]
+}

@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4121764495, 23.6871378547 ]
+			},
+			"properties" : {
+				"name" : "东山县",
+				"adcode" : "350626",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5314728874, 24.9154983493 ]
+			},
+			"properties" : {
+				"name" : "华安县",
+				"adcode" : "350629",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7960204004, 24.3926099679 ]
+			},
+			"properties" : {
+				"name" : "龙海区",
+				"adcode" : "350681",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7292346752, 24.5382909603 ]
+			},
+			"properties" : {
+				"name" : "龙文区",
+				"adcode" : "350603",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.2818092145, 24.6656163207 ]
+			},
+			"properties" : {
+				"name" : "南靖县",
+				"adcode" : "350627",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1895616585, 24.3210656122 ]
+			},
+			"properties" : {
+				"name" : "平和县",
+				"adcode" : "350628",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6091559842, 24.6010211647 ]
+			},
+			"properties" : {
+				"name" : "芗城区",
+				"adcode" : "350602",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3262817342, 23.9817868072 ]
+			},
+			"properties" : {
+				"name" : "云霄县",
+				"adcode" : "350622",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6831626644, 24.130764716 ]
+			},
+			"properties" : {
+				"name" : "漳浦县",
+				"adcode" : "350623",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8000316524, 24.7407321228 ]
+			},
+			"properties" : {
+				"name" : "长泰区",
+				"adcode" : "350625",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1219202761, 23.8690873164 ]
+			},
+			"properties" : {
+				"name" : "诏安县",
+				"adcode" : "350624",
+				"adcode_s" : "3506",
+				"adcode_si" : "35",
+				"dname" : "漳州市"
+			}
+		}
+	]
+}

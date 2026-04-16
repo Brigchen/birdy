@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5177524145, 27.9448983512 ]
+			},
+			"properties" : {
+				"name" : "韶山市",
+				"adcode" : "430382",
+				"adcode_s" : "4303",
+				"adcode_si" : "43",
+				"dname" : "湘潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7684735899, 27.6488372811 ]
+			},
+			"properties" : {
+				"name" : "湘潭县",
+				"adcode" : "430321",
+				"adcode_s" : "4303",
+				"adcode_si" : "43",
+				"dname" : "湘潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.483034775, 27.7381576198 ]
+			},
+			"properties" : {
+				"name" : "湘乡市",
+				"adcode" : "430381",
+				"adcode_s" : "4303",
+				"adcode_si" : "43",
+				"dname" : "湘潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9055194903, 27.9231941 ]
+			},
+			"properties" : {
+				"name" : "雨湖区",
+				"adcode" : "430302",
+				"adcode_s" : "4303",
+				"adcode_si" : "43",
+				"dname" : "湘潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.99269694, 27.8913565923 ]
+			},
+			"properties" : {
+				"name" : "岳塘区",
+				"adcode" : "430304",
+				"adcode_s" : "4303",
+				"adcode_si" : "43",
+				"dname" : "湘潭市"
+			}
+		}
+	]
+}

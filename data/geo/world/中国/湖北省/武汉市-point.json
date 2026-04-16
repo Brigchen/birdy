@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9600621125, 30.453598837 ]
+			},
+			"properties" : {
+				"name" : "蔡甸区",
+				"adcode" : "420114",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0687390954, 30.6938677811 ]
+			},
+			"properties" : {
+				"name" : "东西湖区",
+				"adcode" : "420112",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.015985173, 30.306993895 ]
+			},
+			"properties" : {
+				"name" : "汉南区",
+				"adcode" : "420113",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2028754522, 30.5450931215 ]
+			},
+			"properties" : {
+				"name" : "汉阳区",
+				"adcode" : "420105",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4294395736, 30.5448036166 ]
+			},
+			"properties" : {
+				"name" : "洪山区",
+				"adcode" : "420111",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3488842283, 30.9803947149 ]
+			},
+			"properties" : {
+				"name" : "黄陂区",
+				"adcode" : "420116",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.308809527, 30.6459769078 ]
+			},
+			"properties" : {
+				"name" : "江岸区",
+				"adcode" : "420102",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2507062406, 30.6083263076 ]
+			},
+			"properties" : {
+				"name" : "江汉区",
+				"adcode" : "420103",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3537026431, 30.2484618311 ]
+			},
+			"properties" : {
+				"name" : "江夏区",
+				"adcode" : "420115",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2023217109, 30.6030564671 ]
+			},
+			"properties" : {
+				"name" : "硚口区",
+				"adcode" : "420104",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3700186233, 30.5594975876 ]
+			},
+			"properties" : {
+				"name" : "武昌区",
+				"adcode" : "420106",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7457129701, 30.7997658869 ]
+			},
+			"properties" : {
+				"name" : "新洲区",
+				"adcode" : "420117",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.424291663, 30.6359669596 ]
+			},
+			"properties" : {
+				"name" : "青山区",
+				"adcode" : "420107",
+				"adcode_s" : "4201",
+				"adcode_si" : "42",
+				"dname" : "武汉市"
+			}
+		}
+	]
+}

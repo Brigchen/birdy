@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8298859448, 30.8216010896 ]
+			},
+			"properties" : {
+				"name" : "当阳市",
+				"adcode" : "420582",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.17011455, 30.6954579809 ]
+			},
+			"properties" : {
+				"name" : "点军区",
+				"adcode" : "420504",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.52503352, 30.2350621421 ]
+			},
+			"properties" : {
+				"name" : "五峰土家族自治县",
+				"adcode" : "420529",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3670226506, 30.658879796 ]
+			},
+			"properties" : {
+				"name" : "伍家岗区",
+				"adcode" : "420503",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2925934556, 30.7399135977 ]
+			},
+			"properties" : {
+				"name" : "西陵区",
+				"adcode" : "420502",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.437382016, 30.5601211288 ]
+			},
+			"properties" : {
+				"name" : "猇亭区",
+				"adcode" : "420505",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8112141467, 31.3180094388 ]
+			},
+			"properties" : {
+				"name" : "兴山县",
+				"adcode" : "420526",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2439116352, 30.9755998842 ]
+			},
+			"properties" : {
+				"name" : "夷陵区",
+				"adcode" : "420506",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3632860876, 30.2914079977 ]
+			},
+			"properties" : {
+				"name" : "宜都市",
+				"adcode" : "420581",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5733836836, 31.1725143568 ]
+			},
+			"properties" : {
+				"name" : "远安县",
+				"adcode" : "420525",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8415381647, 30.479368307 ]
+			},
+			"properties" : {
+				"name" : "长阳土家族自治县",
+				"adcode" : "420528",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.73965129, 30.4878379688 ]
+			},
+			"properties" : {
+				"name" : "枝江市",
+				"adcode" : "420583",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6734645398, 30.8997064448 ]
+			},
+			"properties" : {
+				"name" : "秭归县",
+				"adcode" : "420527",
+				"adcode_s" : "4205",
+				"adcode_si" : "42",
+				"dname" : "宜昌市"
+			}
+		}
+	]
+}

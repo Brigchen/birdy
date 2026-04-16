@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5035771372, 31.7188214664 ]
+			},
+			"properties" : {
+				"name" : "金坛区",
+				"adcode" : "320413",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3711836855, 31.4210069673 ]
+			},
+			"properties" : {
+				"name" : "溧阳市",
+				"adcode" : "320481",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0575124856, 31.8036489448 ]
+			},
+			"properties" : {
+				"name" : "天宁区",
+				"adcode" : "320402",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9352227106, 31.6401177335 ]
+			},
+			"properties" : {
+				"name" : "武进区",
+				"adcode" : "320412",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8820179489, 31.9263780493 ]
+			},
+			"properties" : {
+				"name" : "新北区",
+				"adcode" : "320411",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8539894902, 31.7898145375 ]
+			},
+			"properties" : {
+				"name" : "钟楼区",
+				"adcode" : "320404",
+				"adcode_s" : "3204",
+				"adcode_si" : "32",
+				"dname" : "常州市"
+			}
+		}
+	]
+}

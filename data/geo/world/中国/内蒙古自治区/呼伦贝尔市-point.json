@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.1595317273, 48.6289439975 ]
+			},
+			"properties" : {
+				"name" : "阿荣旗",
+				"adcode" : "150721",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5058303705, 49.5845302027 ]
+			},
+			"properties" : {
+				"name" : "陈巴尔虎旗",
+				"adcode" : "150725",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6083638156, 51.5965664335 ]
+			},
+			"properties" : {
+				"name" : "额尔古纳市",
+				"adcode" : "150784",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.7973907885, 50.3280503215 ]
+			},
+			"properties" : {
+				"name" : "鄂伦春自治旗",
+				"adcode" : "150723",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0552987007, 48.4866334842 ]
+			},
+			"properties" : {
+				"name" : "鄂温克族自治旗",
+				"adcode" : "150724",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.20640397, 51.6681787382 ]
+			},
+			"properties" : {
+				"name" : "根河市",
+				"adcode" : "150785",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0277060402, 49.26974381 ]
+			},
+			"properties" : {
+				"name" : "海拉尔区",
+				"adcode" : "150702",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.55575702, 49.5481772685 ]
+			},
+			"properties" : {
+				"name" : "满洲里市",
+				"adcode" : "150781",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.458951303, 49.0926322543 ]
+			},
+			"properties" : {
+				"name" : "莫力达瓦达斡尔族自治旗",
+				"adcode" : "150722",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7776640869, 48.6259898084 ]
+			},
+			"properties" : {
+				"name" : "新巴尔虎右旗",
+				"adcode" : "150727",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6000153181, 48.4245082846 ]
+			},
+			"properties" : {
+				"name" : "新巴尔虎左旗",
+				"adcode" : "150726",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4985658766, 49.3033638422 ]
+			},
+			"properties" : {
+				"name" : "牙克石市",
+				"adcode" : "150782",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6269885975, 49.4433772233 ]
+			},
+			"properties" : {
+				"name" : "扎赉诺尔区",
+				"adcode" : "150703",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.9137067048, 47.7322279794 ]
+			},
+			"properties" : {
+				"name" : "扎兰屯市",
+				"adcode" : "150783",
+				"adcode_s" : "1507",
+				"adcode_si" : "15",
+				"dname" : "呼伦贝尔市"
+			}
+		}
+	]
+}

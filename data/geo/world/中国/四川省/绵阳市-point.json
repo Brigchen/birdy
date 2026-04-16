@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.228820495, 31.6165658425 ]
+			},
+			"properties" : {
+				"name" : "安州区",
+				"adcode" : "510705",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2635737373, 31.9377792552 ]
+			},
+			"properties" : {
+				"name" : "北川羌族自治县",
+				"adcode" : "510726",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6811747031, 31.4190806783 ]
+			},
+			"properties" : {
+				"name" : "涪城区",
+				"adcode" : "510703",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9233758262, 31.9478992664 ]
+			},
+			"properties" : {
+				"name" : "江油市",
+				"adcode" : "510781",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3959037093, 32.4425065202 ]
+			},
+			"properties" : {
+				"name" : "平武县",
+				"adcode" : "510727",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.0332176391, 31.1143589976 ]
+			},
+			"properties" : {
+				"name" : "三台县",
+				"adcode" : "510722",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4686206011, 31.2442955592 ]
+			},
+			"properties" : {
+				"name" : "盐亭县",
+				"adcode" : "510723",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9115580836, 31.5328794601 ]
+			},
+			"properties" : {
+				"name" : "游仙区",
+				"adcode" : "510704",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1849108526, 31.6489792978 ]
+			},
+			"properties" : {
+				"name" : "梓潼县",
+				"adcode" : "510725",
+				"adcode_s" : "5107",
+				"adcode_si" : "51",
+				"dname" : "绵阳市"
+			}
+		}
+	]
+}

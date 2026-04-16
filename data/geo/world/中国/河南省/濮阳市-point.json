@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.52490945, 35.8108891936 ]
+			},
+			"properties" : {
+				"name" : "范县",
+				"adcode" : "410926",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0283431692, 35.7766042361 ]
+			},
+			"properties" : {
+				"name" : "华龙区",
+				"adcode" : "410902",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2378544486, 36.092433114 ]
+			},
+			"properties" : {
+				"name" : "南乐县",
+				"adcode" : "410923",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1439683604, 35.5860752821 ]
+			},
+			"properties" : {
+				"name" : "濮阳县",
+				"adcode" : "410928",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1582447208, 35.9226679259 ]
+			},
+			"properties" : {
+				"name" : "清丰县",
+				"adcode" : "410922",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7733785588, 35.914082279 ]
+			},
+			"properties" : {
+				"name" : "台前县",
+				"adcode" : "410927",
+				"adcode_s" : "4109",
+				"adcode_si" : "41",
+				"dname" : "濮阳市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.88038364, 29.713137002 ]
+			},
+			"properties" : {
+				"name" : "赤壁市",
+				"adcode" : "421281",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0557451508, 29.458251246 ]
+			},
+			"properties" : {
+				"name" : "崇阳县",
+				"adcode" : "421223",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9309973, 29.9539102318 ]
+			},
+			"properties" : {
+				"name" : "嘉鱼县",
+				"adcode" : "421221",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8415945618, 29.2263609142 ]
+			},
+			"properties" : {
+				"name" : "通城县",
+				"adcode" : "421222",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6031381958, 29.5542295871 ]
+			},
+			"properties" : {
+				"name" : "通山县",
+				"adcode" : "421224",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3798348975, 29.8512556743 ]
+			},
+			"properties" : {
+				"name" : "咸安区",
+				"adcode" : "421202",
+				"adcode_s" : "4212",
+				"adcode_si" : "42",
+				"dname" : "咸宁市"
+			}
+		}
+	]
+}

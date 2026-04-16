@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7726668911, 24.3352859211 ]
+			},
+			"properties" : {
+				"name" : "八步区",
+				"adcode" : "451102",
+				"adcode_s" : "4511",
+				"adcode_si" : "45",
+				"dname" : "贺州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.301549841, 24.8882441024 ]
+			},
+			"properties" : {
+				"name" : "富川瑶族自治县",
+				"adcode" : "451123",
+				"adcode_s" : "4511",
+				"adcode_si" : "45",
+				"dname" : "贺州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4327207494, 24.2984231966 ]
+			},
+			"properties" : {
+				"name" : "平桂区",
+				"adcode" : "451103",
+				"adcode_s" : "4511",
+				"adcode_si" : "45",
+				"dname" : "贺州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9655579525, 24.1051631082 ]
+			},
+			"properties" : {
+				"name" : "昭平县",
+				"adcode" : "451121",
+				"adcode_s" : "4511",
+				"adcode_si" : "45",
+				"dname" : "贺州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1865093742, 24.5013897987 ]
+			},
+			"properties" : {
+				"name" : "钟山县",
+				"adcode" : "451122",
+				"adcode_s" : "4511",
+				"adcode_si" : "45",
+				"dname" : "贺州市"
+			}
+		}
+	]
+}

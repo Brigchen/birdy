@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.18328459, 25.5564980491 ]
+			},
+			"properties" : {
+				"name" : "富源县",
+				"adcode" : "530325",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4596304872, 26.4588105333 ]
+			},
+			"properties" : {
+				"name" : "会泽县",
+				"adcode" : "530326",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.7001411194, 25.035912567 ]
+			},
+			"properties" : {
+				"name" : "陆良县",
+				"adcode" : "530322",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3402641569, 24.9787889225 ]
+			},
+			"properties" : {
+				"name" : "罗平县",
+				"adcode" : "530324",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.5035623066, 25.3657689512 ]
+			},
+			"properties" : {
+				"name" : "马龙区",
+				"adcode" : "530304",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.9054315472, 25.3572594051 ]
+			},
+			"properties" : {
+				"name" : "麒麟区",
+				"adcode" : "530302",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.134390391, 24.6251504209 ]
+			},
+			"properties" : {
+				"name" : "师宗县",
+				"adcode" : "530323",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1428828906, 26.2738215795 ]
+			},
+			"properties" : {
+				"name" : "宣威市",
+				"adcode" : "530381",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8371867092, 25.7837069574 ]
+			},
+			"properties" : {
+				"name" : "沾益区",
+				"adcode" : "530303",
+				"adcode_s" : "5303",
+				"adcode_si" : "53",
+				"dname" : "曲靖市"
+			}
+		}
+	]
+}

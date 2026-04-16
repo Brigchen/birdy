@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.4826475529, 45.8267088353 ]
+			},
+			"properties" : {
+				"name" : "勃利县",
+				"adcode" : "230921",
+				"adcode_s" : "2309",
+				"adcode_si" : "23",
+				"dname" : "七台河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.698175895, 46.0008638334 ]
+			},
+			"properties" : {
+				"name" : "茄子河区",
+				"adcode" : "230904",
+				"adcode_s" : "2309",
+				"adcode_si" : "23",
+				"dname" : "七台河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.9874178206, 45.7547951813 ]
+			},
+			"properties" : {
+				"name" : "桃山区",
+				"adcode" : "230903",
+				"adcode_s" : "2309",
+				"adcode_si" : "23",
+				"dname" : "七台河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.167935979, 46.0216759341 ]
+			},
+			"properties" : {
+				"name" : "新兴区",
+				"adcode" : "230902",
+				"adcode_s" : "2309",
+				"adcode_si" : "23",
+				"dname" : "七台河市"
+			}
+		}
+	]
+}

@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6538752128, 32.4694867825 ]
+			},
+			"properties" : {
+				"name" : "定远县",
+				"adcode" : "341125",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.59992367, 32.7882166825 ]
+			},
+			"properties" : {
+				"name" : "凤阳县",
+				"adcode" : "341126",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5106518, 32.4597746612 ]
+			},
+			"properties" : {
+				"name" : "来安县",
+				"adcode" : "341122",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.32320664, 32.2727806743 ]
+			},
+			"properties" : {
+				"name" : "琅琊区",
+				"adcode" : "341102",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1282091199, 32.8081045871 ]
+			},
+			"properties" : {
+				"name" : "明光市",
+				"adcode" : "341182",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.16819721, 32.3361976222 ]
+			},
+			"properties" : {
+				"name" : "南谯区",
+				"adcode" : "341103",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0941709758, 32.0660289032 ]
+			},
+			"properties" : {
+				"name" : "全椒县",
+				"adcode" : "341124",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.961255986, 32.7170252715 ]
+			},
+			"properties" : {
+				"name" : "天长市",
+				"adcode" : "341181",
+				"adcode_s" : "3411",
+				"adcode_si" : "34",
+				"dname" : "滁州市"
+			}
+		}
+	]
+}

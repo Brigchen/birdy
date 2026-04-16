@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9948259918, 30.0302825495 ]
+			},
+			"properties" : {
+				"name" : "东至县",
+				"adcode" : "341721",
+				"adcode_s" : "3417",
+				"adcode_si" : "34",
+				"dname" : "池州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4992245582, 30.5110242841 ]
+			},
+			"properties" : {
+				"name" : "贵池区",
+				"adcode" : "341702",
+				"adcode_s" : "3417",
+				"adcode_si" : "34",
+				"dname" : "池州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8959973299, 30.5981416729 ]
+			},
+			"properties" : {
+				"name" : "青阳县",
+				"adcode" : "341723",
+				"adcode_s" : "3417",
+				"adcode_si" : "34",
+				"dname" : "池州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5264483483, 30.1957855157 ]
+			},
+			"properties" : {
+				"name" : "石台县",
+				"adcode" : "341722",
+				"adcode_s" : "3417",
+				"adcode_si" : "34",
+				"dname" : "池州市"
+			}
+		}
+	]
+}

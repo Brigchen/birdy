@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.5792432052, 45.1283223218 ]
+			},
+			"properties" : {
+				"name" : "扶余市",
+				"adcode" : "220781",
+				"adcode_s" : "2207",
+				"adcode_si" : "22",
+				"dname" : "松原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.905916593, 45.3224907028 ]
+			},
+			"properties" : {
+				"name" : "宁江区",
+				"adcode" : "220702",
+				"adcode_s" : "2207",
+				"adcode_si" : "22",
+				"dname" : "松原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.4634502988, 44.8601131184 ]
+			},
+			"properties" : {
+				"name" : "前郭尔罗斯蒙古族自治县",
+				"adcode" : "220721",
+				"adcode_s" : "2207",
+				"adcode_si" : "22",
+				"dname" : "松原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9462933793, 44.9201819114 ]
+			},
+			"properties" : {
+				"name" : "乾安县",
+				"adcode" : "220723",
+				"adcode_s" : "2207",
+				"adcode_si" : "22",
+				"dname" : "松原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.51664053, 44.3907194144 ]
+			},
+			"properties" : {
+				"name" : "长岭县",
+				"adcode" : "220722",
+				"adcode_s" : "2207",
+				"adcode_si" : "22",
+				"dname" : "松原市"
+			}
+		}
+	]
+}

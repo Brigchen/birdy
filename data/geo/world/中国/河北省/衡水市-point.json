@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4771377, 38.236444876 ]
+			},
+			"properties" : {
+				"name" : "安平县",
+				"adcode" : "131125",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.30325141, 37.9187474668 ]
+			},
+			"properties" : {
+				"name" : "阜城县",
+				"adcode" : "131128",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.01354141, 37.4393158635 ]
+			},
+			"properties" : {
+				"name" : "故城县",
+				"adcode" : "131126",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4568502612, 37.5490526058 ]
+			},
+			"properties" : {
+				"name" : "冀州区",
+				"adcode" : "131103",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1873680625, 37.6612954807 ]
+			},
+			"properties" : {
+				"name" : "景县",
+				"adcode" : "131127",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7273520714, 38.2162673898 ]
+			},
+			"properties" : {
+				"name" : "饶阳县",
+				"adcode" : "131124",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5740007304, 37.9508601234 ]
+			},
+			"properties" : {
+				"name" : "深州市",
+				"adcode" : "131182",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6527344316, 37.7168958095 ]
+			},
+			"properties" : {
+				"name" : "桃城区",
+				"adcode" : "131102",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9075955711, 38.0442351374 ]
+			},
+			"properties" : {
+				"name" : "武强县",
+				"adcode" : "131123",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9318951167, 37.8209299967 ]
+			},
+			"properties" : {
+				"name" : "武邑县",
+				"adcode" : "131122",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7452733315, 37.4536843499 ]
+			},
+			"properties" : {
+				"name" : "枣强县",
+				"adcode" : "131121",
+				"adcode_s" : "1311",
+				"adcode_si" : "13",
+				"dname" : "衡水市"
+			}
+		}
+	]
+}

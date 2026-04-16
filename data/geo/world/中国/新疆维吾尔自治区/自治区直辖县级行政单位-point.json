@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.3207025463, 40.5935459033 ]
+			},
+			"properties" : {
+				"name" : "阿拉尔市",
+				"adcode" : "659002",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.9477758834, 47.2363311902 ]
+			},
+			"properties" : {
+				"name" : "北屯市",
+				"adcode" : "659005",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.7249777827, 44.8571209565 ]
+			},
+			"properties" : {
+				"name" : "胡杨河市",
+				"adcode" : "659010",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.6750725283, 44.0072818003 ]
+			},
+			"properties" : {
+				"name" : "可克达拉市",
+				"adcode" : "659008",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 78.4495727877, 37.7065470981 ]
+			},
+			"properties" : {
+				"name" : "昆玉市",
+				"adcode" : "659009",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.0362086173, 44.3025667697 ]
+			},
+			"properties" : {
+				"name" : "石河子市",
+				"adcode" : "659001",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.453770953, 44.8239413538 ]
+			},
+			"properties" : {
+				"name" : "双河市",
+				"adcode" : "659007",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.954314854, 39.2355689674 ]
+			},
+			"properties" : {
+				"name" : "铁门关市",
+				"adcode" : "659006",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.1661469223, 39.8761521368 ]
+			},
+			"properties" : {
+				"name" : "图木舒克市",
+				"adcode" : "659003",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.5549074758, 44.3621797545 ]
+			},
+			"properties" : {
+				"name" : "五家渠市",
+				"adcode" : "659004",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.7455673405, 42.6838072767 ]
+			},
+			"properties" : {
+				"name" : "新星市",
+				"adcode" : "659011",
+				"adcode_s" : "6590",
+				"adcode_si" : "65",
+				"dname" : "自治区直辖县级行政单位"
+			}
+		}
+	]
+}

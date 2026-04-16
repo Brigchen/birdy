@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9685354174, 37.4182010755 ]
+			},
+			"properties" : {
+				"name" : "滨城区",
+				"adcode" : "371602",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2130542323, 37.1838249056 ]
+			},
+			"properties" : {
+				"name" : "博兴县",
+				"adcode" : "371625",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5663813163, 37.369843258 ]
+			},
+			"properties" : {
+				"name" : "惠民县",
+				"adcode" : "371621",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7996700853, 37.9594954119 ]
+			},
+			"properties" : {
+				"name" : "无棣县",
+				"adcode" : "371623",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.55914453, 37.6402478405 ]
+			},
+			"properties" : {
+				"name" : "阳信县",
+				"adcode" : "371622",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0455228, 37.7415662281 ]
+			},
+			"properties" : {
+				"name" : "沾化区",
+				"adcode" : "371603",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6584536207, 36.9503640654 ]
+			},
+			"properties" : {
+				"name" : "邹平市",
+				"adcode" : "371681",
+				"adcode_s" : "3716",
+				"adcode_si" : "37",
+				"dname" : "滨州市"
+			}
+		}
+	]
+}

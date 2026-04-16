@@ -1,0 +1,230 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9566207495, 47.1329080913 ]
+			},
+			"properties" : {
+				"name" : "昂昂溪区",
+				"adcode" : "230205",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.0084007426, 47.5835123526 ]
+			},
+			"properties" : {
+				"name" : "拜泉县",
+				"adcode" : "230231",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.595145308, 47.2089696254 ]
+			},
+			"properties" : {
+				"name" : "富拉尔基区",
+				"adcode" : "230206",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.5591976951, 47.6588911668 ]
+			},
+			"properties" : {
+				"name" : "富裕县",
+				"adcode" : "230227",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.831609857, 48.0033467205 ]
+			},
+			"properties" : {
+				"name" : "甘南县",
+				"adcode" : "230225",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.01218818, 47.4076832359 ]
+			},
+			"properties" : {
+				"name" : "建华区",
+				"adcode" : "230203",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.3389090984, 48.0001462459 ]
+			},
+			"properties" : {
+				"name" : "克东县",
+				"adcode" : "230230",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.692927845, 48.1589627457 ]
+			},
+			"properties" : {
+				"name" : "克山县",
+				"adcode" : "230229",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.0804924657, 47.25001739 ]
+			},
+			"properties" : {
+				"name" : "龙江县",
+				"adcode" : "230221",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9154831388, 47.2676502334 ]
+			},
+			"properties" : {
+				"name" : "龙沙区",
+				"adcode" : "230202",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.8623912193, 47.5614405871 ]
+			},
+			"properties" : {
+				"name" : "梅里斯达斡尔族区",
+				"adcode" : "230208",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.062602616, 48.4720767917 ]
+			},
+			"properties" : {
+				"name" : "讷河市",
+				"adcode" : "230281",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.9202054644, 47.5779630645 ]
+			},
+			"properties" : {
+				"name" : "碾子山区",
+				"adcode" : "230207",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.49890873, 46.4690224177 ]
+			},
+			"properties" : {
+				"name" : "泰来县",
+				"adcode" : "230224",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.2288001557, 47.2824831083 ]
+			},
+			"properties" : {
+				"name" : "铁锋区",
+				"adcode" : "230204",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.2810427907, 47.6979332183 ]
+			},
+			"properties" : {
+				"name" : "依安县",
+				"adcode" : "230223",
+				"adcode_s" : "2302",
+				"adcode_si" : "23",
+				"dname" : "齐齐哈尔市"
+			}
+		}
+	]
+}

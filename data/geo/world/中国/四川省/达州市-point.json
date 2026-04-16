@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.41118481, 31.0538499162 ]
+			},
+			"properties" : {
+				"name" : "达川区",
+				"adcode" : "511703",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.2675537465, 30.6867700351 ]
+			},
+			"properties" : {
+				"name" : "大竹县",
+				"adcode" : "511724",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8808509479, 31.0468079471 ]
+			},
+			"properties" : {
+				"name" : "开江县",
+				"adcode" : "511723",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.9766318418, 30.9451391512 ]
+			},
+			"properties" : {
+				"name" : "渠县",
+				"adcode" : "511725",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4296863257, 31.3638088096 ]
+			},
+			"properties" : {
+				"name" : "通川区",
+				"adcode" : "511702",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.9830207114, 31.9821455977 ]
+			},
+			"properties" : {
+				"name" : "万源市",
+				"adcode" : "511781",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.924709725, 31.5152609767 ]
+			},
+			"properties" : {
+				"name" : "宣汉县",
+				"adcode" : "511722",
+				"adcode_s" : "5117",
+				"adcode_si" : "51",
+				"dname" : "达州市"
+			}
+		}
+	]
+}

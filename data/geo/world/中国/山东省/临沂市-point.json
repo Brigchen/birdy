@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9277359047, 35.2402196677 ]
+			},
+			"properties" : {
+				"name" : "费县",
+				"adcode" : "371325",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8782200827, 35.2073098436 ]
+			},
+			"properties" : {
+				"name" : "莒南县",
+				"adcode" : "371327",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9868905554, 34.8597919824 ]
+			},
+			"properties" : {
+				"name" : "兰陵县",
+				"adcode" : "371324",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.29192795, 35.2054284236 ]
+			},
+			"properties" : {
+				"name" : "兰山区",
+				"adcode" : "371302",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.64736298, 34.8800164042 ]
+			},
+			"properties" : {
+				"name" : "临沭县",
+				"adcode" : "371329",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.280524128, 34.9260338068 ]
+			},
+			"properties" : {
+				"name" : "罗庄区",
+				"adcode" : "371311",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.994217929, 35.7285340431 ]
+			},
+			"properties" : {
+				"name" : "蒙阴县",
+				"adcode" : "371328",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6703574316, 35.4283012359 ]
+			},
+			"properties" : {
+				"name" : "平邑县",
+				"adcode" : "371326",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.316821021, 34.6263661814 ]
+			},
+			"properties" : {
+				"name" : "郯城县",
+				"adcode" : "371322",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4010280737, 35.5367571275 ]
+			},
+			"properties" : {
+				"name" : "沂南县",
+				"adcode" : "371321",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5972342958, 35.9080576348 ]
+			},
+			"properties" : {
+				"name" : "沂水县",
+				"adcode" : "371323",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5070045148, 35.1397295207 ]
+			},
+			"properties" : {
+				"name" : "河东区",
+				"adcode" : "371312",
+				"adcode_s" : "3713",
+				"adcode_si" : "37",
+				"dname" : "临沂市"
+			}
+		}
+	]
+}

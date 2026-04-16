@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0933849542, 31.1719188139 ]
+			},
+			"properties" : {
+				"name" : "东宝区",
+				"adcode" : "420802",
+				"adcode_s" : "4208",
+				"adcode_si" : "42",
+				"dname" : "荆门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2009765394, 30.889037328 ]
+			},
+			"properties" : {
+				"name" : "掇刀区",
+				"adcode" : "420804",
+				"adcode_s" : "4208",
+				"adcode_si" : "42",
+				"dname" : "荆门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0997860327, 31.0812936424 ]
+			},
+			"properties" : {
+				"name" : "京山市",
+				"adcode" : "420882",
+				"adcode_s" : "4208",
+				"adcode_si" : "42",
+				"dname" : "荆门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3852253487, 30.660214636 ]
+			},
+			"properties" : {
+				"name" : "沙洋县",
+				"adcode" : "420822",
+				"adcode_s" : "4208",
+				"adcode_si" : "42",
+				"dname" : "荆门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5731525149, 31.2413517238 ]
+			},
+			"properties" : {
+				"name" : "钟祥市",
+				"adcode" : "420881",
+				"adcode_s" : "4208",
+				"adcode_si" : "42",
+				"dname" : "荆门市"
+			}
+		}
+	]
+}

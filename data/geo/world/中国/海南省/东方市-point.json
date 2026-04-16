@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "东方市",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8403543169, 18.9936391989 ]
+			},
+			"properties" : {
+				"name" : "东方市",
+				"adcode" : "469007",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

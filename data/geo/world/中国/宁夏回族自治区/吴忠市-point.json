@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.461196965, 37.4948495297 ]
+			},
+			"properties" : {
+				"name" : "红寺堡区",
+				"adcode" : "640303",
+				"adcode_s" : "6403",
+				"adcode_si" : "64",
+				"dname" : "吴忠市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.29458406, 37.7170972643 ]
+			},
+			"properties" : {
+				"name" : "利通区",
+				"adcode" : "640302",
+				"adcode_s" : "6403",
+				"adcode_si" : "64",
+				"dname" : "吴忠市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.9519273628, 37.9333876435 ]
+			},
+			"properties" : {
+				"name" : "青铜峡市",
+				"adcode" : "640381",
+				"adcode_s" : "6403",
+				"adcode_si" : "64",
+				"dname" : "吴忠市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.2520196079, 36.9730384198 ]
+			},
+			"properties" : {
+				"name" : "同心县",
+				"adcode" : "640324",
+				"adcode_s" : "6403",
+				"adcode_si" : "64",
+				"dname" : "吴忠市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0528259731, 37.622766524 ]
+			},
+			"properties" : {
+				"name" : "盐池县",
+				"adcode" : "640323",
+				"adcode_s" : "6403",
+				"adcode_si" : "64",
+				"dname" : "吴忠市"
+			}
+		}
+	]
+}

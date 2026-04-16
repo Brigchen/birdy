@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.84838584, 23.9773589818 ]
+			},
+			"properties" : {
+				"name" : "东源县",
+				"adcode" : "441625",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0005687637, 24.4487292405 ]
+			},
+			"properties" : {
+				"name" : "和平县",
+				"adcode" : "441624",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.410651805, 24.3229539548 ]
+			},
+			"properties" : {
+				"name" : "连平县",
+				"adcode" : "441623",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3509852923, 24.3306232635 ]
+			},
+			"properties" : {
+				"name" : "龙川县",
+				"adcode" : "441622",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6429303429, 23.6904923352 ]
+			},
+			"properties" : {
+				"name" : "源城区",
+				"adcode" : "441602",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0529145296, 23.5219123184 ]
+			},
+			"properties" : {
+				"name" : "紫金县",
+				"adcode" : "441621",
+				"adcode_s" : "4416",
+				"adcode_si" : "44",
+				"dname" : "河源市"
+			}
+		}
+	]
+}

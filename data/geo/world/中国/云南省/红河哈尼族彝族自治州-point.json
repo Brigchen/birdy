@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.1280424533, 23.3230232269 ]
+			},
+			"properties" : {
+				"name" : "个旧市",
+				"adcode" : "532501",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8144921666, 22.7852210629 ]
+			},
+			"properties" : {
+				"name" : "河口瑶族自治县",
+				"adcode" : "532532",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.234231338, 23.2466331796 ]
+			},
+			"properties" : {
+				"name" : "红河县",
+				"adcode" : "532529",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.8819853407, 23.6798531132 ]
+			},
+			"properties" : {
+				"name" : "建水县",
+				"adcode" : "532524",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.085023439, 22.679128784 ]
+			},
+			"properties" : {
+				"name" : "金平苗族瑶族傣族自治县",
+				"adcode" : "532530",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.3925333569, 23.7256950506 ]
+			},
+			"properties" : {
+				"name" : "开远市",
+				"adcode" : "532502",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.7748992056, 24.5145708351 ]
+			},
+			"properties" : {
+				"name" : "泸西县",
+				"adcode" : "532527",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.2374604155, 22.8758270047 ]
+			},
+			"properties" : {
+				"name" : "绿春县",
+				"adcode" : "532531",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4851199235, 23.3335653755 ]
+			},
+			"properties" : {
+				"name" : "蒙自市",
+				"adcode" : "532503",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.3816139448, 24.2222067693 ]
+			},
+			"properties" : {
+				"name" : "弥勒市",
+				"adcode" : "532504",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.816321875, 23.1149624816 ]
+			},
+			"properties" : {
+				"name" : "屏边苗族自治县",
+				"adcode" : "532523",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4453726737, 23.7421099634 ]
+			},
+			"properties" : {
+				"name" : "石屏县",
+				"adcode" : "532525",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.83514624, 23.1393334373 ]
+			},
+			"properties" : {
+				"name" : "元阳县",
+				"adcode" : "532528",
+				"adcode_s" : "5325",
+				"adcode_si" : "53",
+				"dname" : "红河哈尼族彝族自治州"
+			}
+		}
+	]
+}

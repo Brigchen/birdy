@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.8615414181, 26.9898915132 ]
+			},
+			"properties" : {
+				"name" : "福贡县",
+				"adcode" : "533323",
+				"adcode_s" : "5333",
+				"adcode_si" : "53",
+				"dname" : "怒江傈僳族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.5019175295, 27.8879947724 ]
+			},
+			"properties" : {
+				"name" : "贡山独龙族怒族自治县",
+				"adcode" : "533324",
+				"adcode_s" : "5333",
+				"adcode_si" : "53",
+				"dname" : "怒江傈僳族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.257485494, 26.6288602608 ]
+			},
+			"properties" : {
+				"name" : "兰坪白族普米族自治县",
+				"adcode" : "533325",
+				"adcode_s" : "5333",
+				"adcode_si" : "53",
+				"dname" : "怒江傈僳族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.8553712848, 26.0602979033 ]
+			},
+			"properties" : {
+				"name" : "泸水市",
+				"adcode" : "533301",
+				"adcode_s" : "5333",
+				"adcode_si" : "53",
+				"dname" : "怒江傈僳族自治州"
+			}
+		}
+	]
+}

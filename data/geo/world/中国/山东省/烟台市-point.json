@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.1913953887, 37.4753667041 ]
+			},
+			"properties" : {
+				"name" : "福山区",
+				"adcode" : "370611",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.0992411537, 36.8475634525 ]
+			},
+			"properties" : {
+				"name" : "海阳市",
+				"adcode" : "370687",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4262745412, 37.3751099911 ]
+			},
+			"properties" : {
+				"name" : "莱山区",
+				"adcode" : "370613",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.7416120735, 36.8952773659 ]
+			},
+			"properties" : {
+				"name" : "莱阳市",
+				"adcode" : "370682",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9812451998, 37.1839344967 ]
+			},
+			"properties" : {
+				"name" : "莱州市",
+				"adcode" : "370683",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4959592653, 37.6036090341 ]
+			},
+			"properties" : {
+				"name" : "龙口市",
+				"adcode" : "370681",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.5685197363, 37.2661968591 ]
+			},
+			"properties" : {
+				"name" : "牟平区",
+				"adcode" : "370612",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8350504332, 37.6535634498 ]
+			},
+			"properties" : {
+				"name" : "蓬莱区",
+				"adcode" : "370614",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8904013472, 37.3046493935 ]
+			},
+			"properties" : {
+				"name" : "栖霞市",
+				"adcode" : "370686",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3889028687, 37.337029437 ]
+			},
+			"properties" : {
+				"name" : "招远市",
+				"adcode" : "370685",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3515567189, 37.5156160876 ]
+			},
+			"properties" : {
+				"name" : "芝罘区",
+				"adcode" : "370602",
+				"adcode_s" : "3706",
+				"adcode_si" : "37",
+				"dname" : "烟台市"
+			}
+		}
+	]
+}

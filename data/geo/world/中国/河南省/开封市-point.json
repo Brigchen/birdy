@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9679990095, 34.8746395942 ]
+			},
+			"properties" : {
+				"name" : "兰考县",
+				"adcode" : "410225",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2641890556, 34.8185501652 ]
+			},
+			"properties" : {
+				"name" : "龙亭区",
+				"adcode" : "410202",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7564892286, 34.5003743332 ]
+			},
+			"properties" : {
+				"name" : "杞县",
+				"adcode" : "410221",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4254666013, 34.8077321689 ]
+			},
+			"properties" : {
+				"name" : "顺河回族区",
+				"adcode" : "410203",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4895407808, 34.437522107 ]
+			},
+			"properties" : {
+				"name" : "通许县",
+				"adcode" : "410222",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1483719995, 34.3832975053 ]
+			},
+			"properties" : {
+				"name" : "尉氏县",
+				"adcode" : "410223",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.43505859, 34.639151685 ]
+			},
+			"properties" : {
+				"name" : "祥符区",
+				"adcode" : "410212",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3786124001, 34.7408785184 ]
+			},
+			"properties" : {
+				"name" : "禹王台区",
+				"adcode" : "410205",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2935856259, 34.7346375392 ]
+			},
+			"properties" : {
+				"name" : "鼓楼区",
+				"adcode" : "410202",
+				"adcode_s" : "4102",
+				"adcode_si" : "41",
+				"dname" : "开封市"
+			}
+		}
+	]
+}

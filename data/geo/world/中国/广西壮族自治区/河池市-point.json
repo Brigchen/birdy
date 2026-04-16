@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1975271027, 24.1540293362 ]
+			},
+			"properties" : {
+				"name" : "巴马瑶族自治县",
+				"adcode" : "451227",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.7017794294, 23.9667830645 ]
+			},
+			"properties" : {
+				"name" : "大化瑶族自治县",
+				"adcode" : "451229",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4033632413, 24.5080984953 ]
+			},
+			"properties" : {
+				"name" : "东兰县",
+				"adcode" : "451224",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1074891807, 24.1661484437 ]
+			},
+			"properties" : {
+				"name" : "都安瑶族自治县",
+				"adcode" : "451228",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0094114012, 24.5570260261 ]
+			},
+			"properties" : {
+				"name" : "凤山县",
+				"adcode" : "451223",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.281645997, 25.101097166 ]
+			},
+			"properties" : {
+				"name" : "环江毛南族自治县",
+				"adcode" : "451226",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8631573088, 24.6575797162 ]
+			},
+			"properties" : {
+				"name" : "金城江区",
+				"adcode" : "451202",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8165303755, 24.9011336704 ]
+			},
+			"properties" : {
+				"name" : "罗城仫佬族自治县",
+				"adcode" : "451225",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4536523585, 25.0222903897 ]
+			},
+			"properties" : {
+				"name" : "南丹县",
+				"adcode" : "451221",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.9862747878, 25.0154383013 ]
+			},
+			"properties" : {
+				"name" : "天峨县",
+				"adcode" : "451222",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5361134849, 24.4776461293 ]
+			},
+			"properties" : {
+				"name" : "宜州区",
+				"adcode" : "451203",
+				"adcode_s" : "4512",
+				"adcode_si" : "45",
+				"dname" : "河池市"
+			}
+		}
+	]
+}

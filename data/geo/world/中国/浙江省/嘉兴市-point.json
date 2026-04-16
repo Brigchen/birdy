@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.7087808738, 30.4415801658 ]
+			},
+			"properties" : {
+				"name" : "海宁市",
+				"adcode" : "330481",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8749840112, 30.518989195 ]
+			},
+			"properties" : {
+				"name" : "海盐县",
+				"adcode" : "330424",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8983548704, 30.9019182807 ]
+			},
+			"properties" : {
+				"name" : "嘉善县",
+				"adcode" : "330421",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8335699077, 30.7127726112 ]
+			},
+			"properties" : {
+				"name" : "南湖区",
+				"adcode" : "330402",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.094374012, 30.7132672182 ]
+			},
+			"properties" : {
+				"name" : "平湖市",
+				"adcode" : "330482",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4787225574, 30.6087474492 ]
+			},
+			"properties" : {
+				"name" : "桐乡市",
+				"adcode" : "330483",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6011809755, 30.7804125204 ]
+			},
+			"properties" : {
+				"name" : "秀洲区",
+				"adcode" : "330411",
+				"adcode_s" : "3304",
+				"adcode_si" : "33",
+				"dname" : "嘉兴市"
+			}
+		}
+	]
+}

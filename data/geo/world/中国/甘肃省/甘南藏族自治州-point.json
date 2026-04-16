@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.5613036858, 34.0048562509 ]
+			},
+			"properties" : {
+				"name" : "迭部县",
+				"adcode" : "623024",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0749845048, 34.98835691 ]
+			},
+			"properties" : {
+				"name" : "合作市",
+				"adcode" : "623001",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.693400325, 34.7570661716 ]
+			},
+			"properties" : {
+				"name" : "临潭县",
+				"adcode" : "623021",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4704456829, 34.3891418014 ]
+			},
+			"properties" : {
+				"name" : "碌曲县",
+				"adcode" : "623026",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.6676957947, 33.8356994301 ]
+			},
+			"properties" : {
+				"name" : "玛曲县",
+				"adcode" : "623025",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4962166803, 35.0182506808 ]
+			},
+			"properties" : {
+				"name" : "夏河县",
+				"adcode" : "623027",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3197435724, 33.6293794443 ]
+			},
+			"properties" : {
+				"name" : "舟曲县",
+				"adcode" : "623023",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.29134607, 34.4207847774 ]
+			},
+			"properties" : {
+				"name" : "卓尼县",
+				"adcode" : "623022",
+				"adcode_s" : "6230",
+				"adcode_si" : "62",
+				"dname" : "甘南藏族自治州"
+			}
+		}
+	]
+}

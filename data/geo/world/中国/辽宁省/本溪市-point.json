@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.17170967, 41.2750222821 ]
+			},
+			"properties" : {
+				"name" : "本溪满族自治县",
+				"adcode" : "210521",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.2778536832, 41.2533982532 ]
+			},
+			"properties" : {
+				"name" : "桓仁满族自治县",
+				"adcode" : "210522",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.87692556, 41.2928345387 ]
+			},
+			"properties" : {
+				"name" : "明山区",
+				"adcode" : "210504",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.8171794984, 41.0956131148 ]
+			},
+			"properties" : {
+				"name" : "南芬区",
+				"adcode" : "210505",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.6952919054, 41.2165201889 ]
+			},
+			"properties" : {
+				"name" : "平山区",
+				"adcode" : "210502",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.7113133726, 41.4227418989 ]
+			},
+			"properties" : {
+				"name" : "溪湖区",
+				"adcode" : "210503",
+				"adcode_s" : "2105",
+				"adcode_si" : "21",
+				"dname" : "本溪市"
+			}
+		}
+	]
+}

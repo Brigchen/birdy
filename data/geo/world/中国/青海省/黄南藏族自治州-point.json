@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5521760974, 34.5053342722 ]
+			},
+			"properties" : {
+				"name" : "河南蒙古族自治县",
+				"adcode" : "632324",
+				"adcode_s" : "6323",
+				"adcode_si" : "63",
+				"dname" : "黄南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.8601872583, 35.9020132816 ]
+			},
+			"properties" : {
+				"name" : "尖扎县",
+				"adcode" : "632322",
+				"adcode_s" : "6323",
+				"adcode_si" : "63",
+				"dname" : "黄南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0749434332, 35.4216772908 ]
+			},
+			"properties" : {
+				"name" : "同仁市",
+				"adcode" : "632301",
+				"adcode_s" : "6323",
+				"adcode_si" : "63",
+				"dname" : "黄南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.4071896055, 35.0312900843 ]
+			},
+			"properties" : {
+				"name" : "泽库县",
+				"adcode" : "632323",
+				"adcode_s" : "6323",
+				"adcode_si" : "63",
+				"dname" : "黄南藏族自治州"
+			}
+		}
+	]
+}

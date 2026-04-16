@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8188101279, 32.653640179 ]
+			},
+			"properties" : {
+				"name" : "八公山区",
+				"adcode" : "340405",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1140733688, 32.6292715139 ]
+			},
+			"properties" : {
+				"name" : "大通区",
+				"adcode" : "340402",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5729045255, 32.7849756049 ]
+			},
+			"properties" : {
+				"name" : "凤台县",
+				"adcode" : "340421",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8485843404, 32.7816230214 ]
+			},
+			"properties" : {
+				"name" : "潘集区",
+				"adcode" : "340406",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7560215051, 32.2595948341 ]
+			},
+			"properties" : {
+				"name" : "寿县",
+				"adcode" : "340422",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9961330908, 32.5599453139 ]
+			},
+			"properties" : {
+				"name" : "田家庵区",
+				"adcode" : "340403",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9151114452, 32.5175433576 ]
+			},
+			"properties" : {
+				"name" : "谢家集区",
+				"adcode" : "340404",
+				"adcode_s" : "3404",
+				"adcode_si" : "34",
+				"dname" : "淮南市"
+			}
+		}
+	]
+}

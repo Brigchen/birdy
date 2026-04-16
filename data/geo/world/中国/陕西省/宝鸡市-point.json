@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.62629778, 34.5133225033 ]
+			},
+			"properties" : {
+				"name" : "陈仓区",
+				"adcode" : "610304",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7541312937, 33.9883138069 ]
+			},
+			"properties" : {
+				"name" : "凤县",
+				"adcode" : "610330",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4275269369, 34.5726579676 ]
+			},
+			"properties" : {
+				"name" : "凤翔区",
+				"adcode" : "610322",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.908933096, 34.415281242 ]
+			},
+			"properties" : {
+				"name" : "扶风县",
+				"adcode" : "610324",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.09785017, 34.421966716 ]
+			},
+			"properties" : {
+				"name" : "金台区",
+				"adcode" : "610303",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.7002444009, 34.7813912933 ]
+			},
+			"properties" : {
+				"name" : "麟游县",
+				"adcode" : "610329",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7631575189, 34.8720812175 ]
+			},
+			"properties" : {
+				"name" : "陇县",
+				"adcode" : "610327",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8225503355, 34.1460318111 ]
+			},
+			"properties" : {
+				"name" : "眉县",
+				"adcode" : "610326",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6784896008, 34.4059388885 ]
+			},
+			"properties" : {
+				"name" : "岐山县",
+				"adcode" : "610323",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.166693087, 34.7622398646 ]
+			},
+			"properties" : {
+				"name" : "千阳县",
+				"adcode" : "610328",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4083550958, 33.9373449232 ]
+			},
+			"properties" : {
+				"name" : "太白县",
+				"adcode" : "610331",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1125941807, 34.2827207705 ]
+			},
+			"properties" : {
+				"name" : "渭滨区",
+				"adcode" : "610302",
+				"adcode_s" : "6103",
+				"adcode_si" : "61",
+				"dname" : "宝鸡市"
+			}
+		}
+	]
+}

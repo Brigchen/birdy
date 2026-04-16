@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1992761217, 31.7134029462 ]
+			},
+			"properties" : {
+				"name" : "保康县",
+				"adcode" : "420626",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9544158617, 32.1178972467 ]
+			},
+			"properties" : {
+				"name" : "樊城区",
+				"adcode" : "420606",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4822886144, 32.1710174032 ]
+			},
+			"properties" : {
+				"name" : "谷城县",
+				"adcode" : "420625",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7536567649, 32.4305427329 ]
+			},
+			"properties" : {
+				"name" : "老河口市",
+				"adcode" : "420682",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.752040752, 31.6391797863 ]
+			},
+			"properties" : {
+				"name" : "南漳县",
+				"adcode" : "420624",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0479347285, 31.9512746071 ]
+			},
+			"properties" : {
+				"name" : "襄城区",
+				"adcode" : "420602",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2309062493, 32.1725166237 ]
+			},
+			"properties" : {
+				"name" : "襄州区",
+				"adcode" : "420607",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3599675762, 31.6692387214 ]
+			},
+			"properties" : {
+				"name" : "宜城市",
+				"adcode" : "420684",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7599308691, 32.0884343593 ]
+			},
+			"properties" : {
+				"name" : "枣阳市",
+				"adcode" : "420683",
+				"adcode_s" : "4206",
+				"adcode_si" : "42",
+				"dname" : "襄阳市"
+			}
+		}
+	]
+}

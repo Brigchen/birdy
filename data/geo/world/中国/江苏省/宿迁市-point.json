@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8457854903, 34.1494215401 ]
+			},
+			"properties" : {
+				"name" : "沭阳县",
+				"adcode" : "321322",
+				"adcode_s" : "3213",
+				"adcode_si" : "32",
+				"dname" : "宿迁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2995465258, 33.4104677422 ]
+			},
+			"properties" : {
+				"name" : "泗洪县",
+				"adcode" : "321324",
+				"adcode_s" : "3213",
+				"adcode_si" : "32",
+				"dname" : "宿迁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6872490928, 33.7035831581 ]
+			},
+			"properties" : {
+				"name" : "泗阳县",
+				"adcode" : "321323",
+				"adcode_s" : "3213",
+				"adcode_si" : "32",
+				"dname" : "宿迁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3493864772, 33.7829288621 ]
+			},
+			"properties" : {
+				"name" : "宿城区",
+				"adcode" : "321302",
+				"adcode_s" : "3213",
+				"adcode_si" : "32",
+				"dname" : "宿迁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.442864295, 33.9657183576 ]
+			},
+			"properties" : {
+				"name" : "宿豫区",
+				"adcode" : "321311",
+				"adcode_s" : "3213",
+				"adcode_si" : "32",
+				"dname" : "宿迁市"
+			}
+		}
+	]
+}

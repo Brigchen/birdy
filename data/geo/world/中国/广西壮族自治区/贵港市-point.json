@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6502769325, 23.2164467048 ]
+			},
+			"properties" : {
+				"name" : "港北区",
+				"adcode" : "450802",
+				"adcode_s" : "4508",
+				"adcode_si" : "45",
+				"dname" : "贵港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6919712914, 22.906148972 ]
+			},
+			"properties" : {
+				"name" : "港南区",
+				"adcode" : "450803",
+				"adcode_s" : "4508",
+				"adcode_si" : "45",
+				"dname" : "贵港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0765140981, 23.3296021435 ]
+			},
+			"properties" : {
+				"name" : "桂平市",
+				"adcode" : "450881",
+				"adcode_s" : "4508",
+				"adcode_si" : "45",
+				"dname" : "贵港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4021168981, 23.5346859179 ]
+			},
+			"properties" : {
+				"name" : "平南县",
+				"adcode" : "450821",
+				"adcode_s" : "4508",
+				"adcode_si" : "45",
+				"dname" : "贵港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.403495618, 23.1442174082 ]
+			},
+			"properties" : {
+				"name" : "覃塘区",
+				"adcode" : "450804",
+				"adcode_s" : "4508",
+				"adcode_si" : "45",
+				"dname" : "贵港市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1540326808, 36.8416080922 ]
+			},
+			"properties" : {
+				"name" : "互助土族自治县",
+				"adcode" : "630223",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.2130666082, 36.0796564398 ]
+			},
+			"properties" : {
+				"name" : "化隆回族自治县",
+				"adcode" : "630224",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.431620175, 36.4846015608 ]
+			},
+			"properties" : {
+				"name" : "乐都区",
+				"adcode" : "630202",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7696122692, 36.136175928 ]
+			},
+			"properties" : {
+				"name" : "民和回族土族自治县",
+				"adcode" : "630222",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0042797576, 36.4036085533 ]
+			},
+			"properties" : {
+				"name" : "平安区",
+				"adcode" : "630203",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4684992185, 35.717627184 ]
+			},
+			"properties" : {
+				"name" : "循化撒拉族自治县",
+				"adcode" : "630225",
+				"adcode_s" : "6302",
+				"adcode_si" : "63",
+				"dname" : "海东市"
+			}
+		}
+	]
+}

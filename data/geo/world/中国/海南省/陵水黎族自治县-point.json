@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "陵水黎族自治县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9482221005, 18.5647445942 ]
+			},
+			"properties" : {
+				"name" : "陵水黎族自治县",
+				"adcode" : "469028",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

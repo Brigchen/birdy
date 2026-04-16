@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1363969827, 22.3121650346 ]
+			},
+			"properties" : {
+				"name" : "灵山县",
+				"adcode" : "450721",
+				"adcode_s" : "4507",
+				"adcode_si" : "45",
+				"dname" : "钦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.389943395, 22.1169306333 ]
+			},
+			"properties" : {
+				"name" : "浦北县",
+				"adcode" : "450722",
+				"adcode_s" : "4507",
+				"adcode_si" : "45",
+				"dname" : "钦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5400429792, 22.1747360655 ]
+			},
+			"properties" : {
+				"name" : "钦北区",
+				"adcode" : "450703",
+				"adcode_s" : "4507",
+				"adcode_si" : "45",
+				"dname" : "钦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.7666896636, 21.9088494263 ]
+			},
+			"properties" : {
+				"name" : "钦南区",
+				"adcode" : "450702",
+				"adcode_s" : "4507",
+				"adcode_si" : "45",
+				"dname" : "钦州市"
+			}
+		}
+	]
+}

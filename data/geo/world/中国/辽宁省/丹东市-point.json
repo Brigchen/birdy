@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.860676013, 39.9667987316 ]
+			},
+			"properties" : {
+				"name" : "东港市",
+				"adcode" : "210681",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.0544583678, 40.5814777268 ]
+			},
+			"properties" : {
+				"name" : "凤城市",
+				"adcode" : "210682",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.9225876484, 40.7593161999 ]
+			},
+			"properties" : {
+				"name" : "宽甸满族自治县",
+				"adcode" : "210624",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.3174242148, 40.1732512442 ]
+			},
+			"properties" : {
+				"name" : "元宝区",
+				"adcode" : "210602",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.1889431438, 40.2468352632 ]
+			},
+			"properties" : {
+				"name" : "振安区",
+				"adcode" : "210604",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.3264197045, 40.0160702337 ]
+			},
+			"properties" : {
+				"name" : "振兴区",
+				"adcode" : "210603",
+				"adcode_s" : "2106",
+				"adcode_si" : "21",
+				"dname" : "丹东市"
+			}
+		}
+	]
+}

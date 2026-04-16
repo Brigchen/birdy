@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1407643057, 29.9527360779 ]
+			},
+			"properties" : {
+				"name" : "公安县",
+				"adcode" : "421022",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.36501763, 29.9464883797 ]
+			},
+			"properties" : {
+				"name" : "洪湖市",
+				"adcode" : "421083",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1350824028, 29.7831312357 ]
+			},
+			"properties" : {
+				"name" : "监利市",
+				"adcode" : "421023",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4617520864, 30.0976029449 ]
+			},
+			"properties" : {
+				"name" : "江陵县",
+				"adcode" : "421024",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0967075476, 30.4111878765 ]
+			},
+			"properties" : {
+				"name" : "荆州区",
+				"adcode" : "421003",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3829211131, 30.320773299 ]
+			},
+			"properties" : {
+				"name" : "沙市区",
+				"adcode" : "421002",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5034894455, 29.7386292599 ]
+			},
+			"properties" : {
+				"name" : "石首市",
+				"adcode" : "421081",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6836704458, 30.1015220483 ]
+			},
+			"properties" : {
+				"name" : "松滋市",
+				"adcode" : "421087",
+				"adcode_s" : "4210",
+				"adcode_si" : "42",
+				"dname" : "荆州市"
+			}
+		}
+	]
+}

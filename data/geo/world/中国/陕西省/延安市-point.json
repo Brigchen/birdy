@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1582466061, 36.919933356 ]
+			},
+			"properties" : {
+				"name" : "安塞区",
+				"adcode" : "610603",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6372909927, 36.5687808437 ]
+			},
+			"properties" : {
+				"name" : "宝塔区",
+				"adcode" : "610602",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.0339764175, 36.015148566 ]
+			},
+			"properties" : {
+				"name" : "富县",
+				"adcode" : "610628",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1731306958, 36.3456267627 ]
+			},
+			"properties" : {
+				"name" : "甘泉县",
+				"adcode" : "610627",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9405204287, 35.6226654102 ]
+			},
+			"properties" : {
+				"name" : "黄陵县",
+				"adcode" : "610632",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9327278505, 35.6956625367 ]
+			},
+			"properties" : {
+				"name" : "黄龙县",
+				"adcode" : "610631",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5493987, 35.7381045437 ]
+			},
+			"properties" : {
+				"name" : "洛川县",
+				"adcode" : "610629",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1168283489, 36.9785863608 ]
+			},
+			"properties" : {
+				"name" : "吴起县",
+				"adcode" : "610626",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0714403544, 36.8731730399 ]
+			},
+			"properties" : {
+				"name" : "延川县",
+				"adcode" : "610622",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1260889034, 36.5354607919 ]
+			},
+			"properties" : {
+				"name" : "延长县",
+				"adcode" : "610621",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1792519714, 36.0633802439 ]
+			},
+			"properties" : {
+				"name" : "宜川县",
+				"adcode" : "610630",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.6506009654, 36.7443174796 ]
+			},
+			"properties" : {
+				"name" : "志丹县",
+				"adcode" : "610625",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6103892294, 37.2242104832 ]
+			},
+			"properties" : {
+				"name" : "子长市",
+				"adcode" : "610681",
+				"adcode_s" : "6106",
+				"adcode_si" : "61",
+				"dname" : "延安市"
+			}
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5378506718, 37.8735376221 ]
+			},
+			"properties" : {
+				"name" : "矿区",
+				"adcode" : "140303",
+				"adcode_s" : "1403",
+				"adcode_si" : "14",
+				"dname" : "阳泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7554242444, 37.842027243 ]
+			},
+			"properties" : {
+				"name" : "平定县",
+				"adcode" : "140321",
+				"adcode_s" : "1403",
+				"adcode_si" : "14",
+				"dname" : "阳泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.347898516, 38.2224137294 ]
+			},
+			"properties" : {
+				"name" : "盂县",
+				"adcode" : "140322",
+				"adcode_s" : "1403",
+				"adcode_si" : "14",
+				"dname" : "阳泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5238760696, 37.9228664472 ]
+			},
+			"properties" : {
+				"name" : "郊区",
+				"adcode" : "140311",
+				"adcode_s" : "1403",
+				"adcode_si" : "14",
+				"dname" : "阳泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.580065489, 37.8542961253 ]
+			},
+			"properties" : {
+				"name" : "城区",
+				"adcode" : "140302",
+				"adcode_s" : "1403",
+				"adcode_si" : "14",
+				"dname" : "阳泉市"
+			}
+		}
+	]
+}

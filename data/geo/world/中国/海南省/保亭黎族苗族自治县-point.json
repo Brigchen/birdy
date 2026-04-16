@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "保亭黎族苗族自治县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6489362019, 18.5956836973 ]
+			},
+			"properties" : {
+				"name" : "保亭黎族苗族自治县",
+				"adcode" : "469029",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.1320262734, 45.528214491 ]
+			},
+			"properties" : {
+				"name" : "阿城区",
+				"adcode" : "230112",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.3135261851, 46.3324426218 ]
+			},
+			"properties" : {
+				"name" : "巴彦县",
+				"adcode" : "230126",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.6494218456, 45.7754569187 ]
+			},
+			"properties" : {
+				"name" : "宾县",
+				"adcode" : "230125",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.3664314378, 45.6670310798 ]
+			},
+			"properties" : {
+				"name" : "道里区",
+				"adcode" : "230102",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.7832166964, 45.8180956467 ]
+			},
+			"properties" : {
+				"name" : "道外区",
+				"adcode" : "230104",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.89370502, 45.7549349338 ]
+			},
+			"properties" : {
+				"name" : "方正县",
+				"adcode" : "230124",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.807028026, 46.1327648835 ]
+			},
+			"properties" : {
+				"name" : "呼兰区",
+				"adcode" : "230111",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.9185009107, 46.2376610011 ]
+			},
+			"properties" : {
+				"name" : "木兰县",
+				"adcode" : "230127",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.5709691459, 45.6449847794 ]
+			},
+			"properties" : {
+				"name" : "南岗区",
+				"adcode" : "230103",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.6656850193, 45.5805943505 ]
+			},
+			"properties" : {
+				"name" : "平房区",
+				"adcode" : "230108",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.28784203, 44.9158330829 ]
+			},
+			"properties" : {
+				"name" : "尚志市",
+				"adcode" : "230183",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.19813914, 45.3534788028 ]
+			},
+			"properties" : {
+				"name" : "双城区",
+				"adcode" : "230113",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.4301501702, 45.9162959945 ]
+			},
+			"properties" : {
+				"name" : "松北区",
+				"adcode" : "230109",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.7486429276, 46.2388843475 ]
+			},
+			"properties" : {
+				"name" : "通河县",
+				"adcode" : "230128",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.408602688, 44.8906944074 ]
+			},
+			"properties" : {
+				"name" : "五常市",
+				"adcode" : "230184",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.7880194614, 45.7000448596 ]
+			},
+			"properties" : {
+				"name" : "香坊区",
+				"adcode" : "230110",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.4517402486, 45.4854340677 ]
+			},
+			"properties" : {
+				"name" : "延寿县",
+				"adcode" : "230129",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.7074406426, 46.2659161556 ]
+			},
+			"properties" : {
+				"name" : "依兰县",
+				"adcode" : "230123",
+				"adcode_s" : "2301",
+				"adcode_si" : "23",
+				"dname" : "哈尔滨市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.00060759, 36.1089355651 ]
+			},
+			"properties" : {
+				"name" : "岱岳区",
+				"adcode" : "370911",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.35270974, 35.9413484135 ]
+			},
+			"properties" : {
+				"name" : "东平县",
+				"adcode" : "370923",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7327128331, 36.1069240347 ]
+			},
+			"properties" : {
+				"name" : "肥城市",
+				"adcode" : "370983",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9202231038, 35.8278467479 ]
+			},
+			"properties" : {
+				"name" : "宁阳县",
+				"adcode" : "370921",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1716658709, 36.2086028125 ]
+			},
+			"properties" : {
+				"name" : "泰山区",
+				"adcode" : "370902",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6005041036, 35.8894344918 ]
+			},
+			"properties" : {
+				"name" : "新泰市",
+				"adcode" : "370982",
+				"adcode_s" : "3709",
+				"adcode_si" : "37",
+				"dname" : "泰安市"
+			}
+		}
+	]
+}

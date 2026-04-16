@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.9972880829, 37.4647460773 ]
+			},
+			"properties" : {
+				"name" : "刚察县",
+				"adcode" : "632224",
+				"adcode_s" : "6322",
+				"adcode_si" : "63",
+				"dname" : "海北藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.7857514334, 37.0704861246 ]
+			},
+			"properties" : {
+				"name" : "海晏县",
+				"adcode" : "632223",
+				"adcode_s" : "6322",
+				"adcode_si" : "63",
+				"dname" : "海北藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7304550687, 37.4526669779 ]
+			},
+			"properties" : {
+				"name" : "门源回族自治县",
+				"adcode" : "632221",
+				"adcode_s" : "6322",
+				"adcode_si" : "63",
+				"dname" : "海北藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.4185672028, 38.0681061052 ]
+			},
+			"properties" : {
+				"name" : "祁连县",
+				"adcode" : "632222",
+				"adcode_s" : "6322",
+				"adcode_si" : "63",
+				"dname" : "海北藏族自治州"
+			}
+		}
+	]
+}

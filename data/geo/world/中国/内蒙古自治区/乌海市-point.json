@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8529557655, 39.6788777457 ]
+			},
+			"properties" : {
+				"name" : "海勃湾区",
+				"adcode" : "150302",
+				"adcode_s" : "1503",
+				"adcode_si" : "15",
+				"dname" : "乌海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.95571317, 39.1825957679 ]
+			},
+			"properties" : {
+				"name" : "海南区",
+				"adcode" : "150303",
+				"adcode_s" : "1503",
+				"adcode_si" : "15",
+				"dname" : "乌海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6940067703, 39.5372166134 ]
+			},
+			"properties" : {
+				"name" : "乌达区",
+				"adcode" : "150304",
+				"adcode_s" : "1503",
+				"adcode_si" : "15",
+				"dname" : "乌海市"
+			}
+		}
+	]
+}

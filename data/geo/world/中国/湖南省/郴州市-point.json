@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3538987589, 26.5776100849 ]
+			},
+			"properties" : {
+				"name" : "安仁县",
+				"adcode" : "431028",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8857074622, 25.6574321045 ]
+			},
+			"properties" : {
+				"name" : "北湖区",
+				"adcode" : "431002",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8948827929, 25.9839108642 ]
+			},
+			"properties" : {
+				"name" : "桂东县",
+				"adcode" : "431027",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5964412426, 25.8903021105 ]
+			},
+			"properties" : {
+				"name" : "桂阳县",
+				"adcode" : "431021",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4026210677, 25.634092902 ]
+			},
+			"properties" : {
+				"name" : "嘉禾县",
+				"adcode" : "431024",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5560806376, 25.3407289975 ]
+			},
+			"properties" : {
+				"name" : "临武县",
+				"adcode" : "431025",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6656000386, 25.5517246523 ]
+			},
+			"properties" : {
+				"name" : "汝城县",
+				"adcode" : "431026",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1756077678, 25.7754445826 ]
+			},
+			"properties" : {
+				"name" : "苏仙区",
+				"adcode" : "431003",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.807388025, 25.1658879094 ]
+			},
+			"properties" : {
+				"name" : "宜章县",
+				"adcode" : "431022",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3781390515, 26.2666347058 ]
+			},
+			"properties" : {
+				"name" : "永兴县",
+				"adcode" : "431023",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4550174789, 25.9320672901 ]
+			},
+			"properties" : {
+				"name" : "资兴市",
+				"adcode" : "431081",
+				"adcode_s" : "4310",
+				"adcode_si" : "43",
+				"dname" : "郴州市"
+			}
+		}
+	]
+}

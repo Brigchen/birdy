@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.458272455, 23.8171607942 ]
+			},
+			"properties" : {
+				"name" : "苍梧县",
+				"adcode" : "450421",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.0170734002, 22.9221298504 ]
+			},
+			"properties" : {
+				"name" : "岑溪市",
+				"adcode" : "450481",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2723318148, 23.2287670292 ]
+			},
+			"properties" : {
+				"name" : "龙圩区",
+				"adcode" : "450406",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5505208404, 24.131720337 ]
+			},
+			"properties" : {
+				"name" : "蒙山县",
+				"adcode" : "450423",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.343328414, 23.4846768092 ]
+			},
+			"properties" : {
+				"name" : "万秀区",
+				"adcode" : "450403",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7675304652, 23.5076992349 ]
+			},
+			"properties" : {
+				"name" : "藤县",
+				"adcode" : "450405",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1679112594, 23.5536381677 ]
+			},
+			"properties" : {
+				"name" : "长洲区",
+				"adcode" : "450405",
+				"adcode_s" : "4504",
+				"adcode_si" : "45",
+				"dname" : "梧州市"
+			}
+		}
+	]
+}

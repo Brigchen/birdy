@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0926513906, 30.2559918699 ]
+			},
+			"properties" : {
+				"name" : "黄山区",
+				"adcode" : "341003",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2539641375, 29.9307039432 ]
+			},
+			"properties" : {
+				"name" : "徽州区",
+				"adcode" : "341004",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5892190304, 29.8700240255 ]
+			},
+			"properties" : {
+				"name" : "祁门县",
+				"adcode" : "341024",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.58079195, 29.8063167657 ]
+			},
+			"properties" : {
+				"name" : "歙县",
+				"adcode" : "341021",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2895529457, 29.7415958784 ]
+			},
+			"properties" : {
+				"name" : "屯溪区",
+				"adcode" : "341002",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0787594306, 29.6639037086 ]
+			},
+			"properties" : {
+				"name" : "休宁县",
+				"adcode" : "341022",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8994075381, 30.0116094378 ]
+			},
+			"properties" : {
+				"name" : "黟县",
+				"adcode" : "341023",
+				"adcode_s" : "3410",
+				"adcode_si" : "34",
+				"dname" : "黄山市"
+			}
+		}
+	]
+}

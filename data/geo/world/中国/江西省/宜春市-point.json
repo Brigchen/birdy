@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8118029796, 28.108531075 ]
+			},
+			"properties" : {
+				"name" : "丰城市",
+				"adcode" : "360981",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.145610462, 28.7455180641 ]
+			},
+			"properties" : {
+				"name" : "奉新县",
+				"adcode" : "360921",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2929126147, 28.3619989189 ]
+			},
+			"properties" : {
+				"name" : "高安市",
+				"adcode" : "360983",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2258868952, 28.9428211663 ]
+			},
+			"properties" : {
+				"name" : "靖安县",
+				"adcode" : "360925",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.849564027, 28.1965892438 ]
+			},
+			"properties" : {
+				"name" : "上高县",
+				"adcode" : "360923",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3586920184, 28.6125378588 ]
+			},
+			"properties" : {
+				"name" : "铜鼓县",
+				"adcode" : "360926",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3242584802, 28.2067266434 ]
+			},
+			"properties" : {
+				"name" : "万载县",
+				"adcode" : "360922",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7622767178, 28.4520435904 ]
+			},
+			"properties" : {
+				"name" : "宜丰县",
+				"adcode" : "360924",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2791245881, 27.8362815671 ]
+			},
+			"properties" : {
+				"name" : "袁州区",
+				"adcode" : "360902",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.40658636, 28.0537165563 ]
+			},
+			"properties" : {
+				"name" : "樟树市",
+				"adcode" : "360982",
+				"adcode_s" : "3609",
+				"adcode_si" : "36",
+				"dname" : "宜春市"
+			}
+		}
+	]
+}

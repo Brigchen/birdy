@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3750895835, 30.2903091572 ]
+			},
+			"properties" : {
+				"name" : "仙桃市",
+				"adcode" : "429004",
+				"adcode_s" : "4290",
+				"adcode_si" : "42",
+				"dname" : "仙桃市"
+			}
+		}
+	]
+}

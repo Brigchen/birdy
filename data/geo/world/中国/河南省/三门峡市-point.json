@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2684812648, 34.7669278335 ]
+			},
+			"properties" : {
+				"name" : "湖滨区",
+				"adcode" : "411202",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7676691416, 34.4319364011 ]
+			},
+			"properties" : {
+				"name" : "灵宝市",
+				"adcode" : "411282",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9825673047, 33.9683193864 ]
+			},
+			"properties" : {
+				"name" : "卢氏县",
+				"adcode" : "411224",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.66551208, 34.8091634593 ]
+			},
+			"properties" : {
+				"name" : "渑池县",
+				"adcode" : "411221",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3786733275, 34.6176002269 ]
+			},
+			"properties" : {
+				"name" : "陕州区",
+				"adcode" : "411203",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8935434329, 34.7446261739 ]
+			},
+			"properties" : {
+				"name" : "义马市",
+				"adcode" : "411281",
+				"adcode_s" : "4112",
+				"adcode_si" : "41",
+				"dname" : "三门峡市"
+			}
+		}
+	]
+}

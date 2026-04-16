@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4110772046, 39.1954342196 ]
+			},
+			"properties" : {
+				"name" : "曹妃甸区",
+				"adcode" : "130209",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1328276824, 39.4357574938 ]
+			},
+			"properties" : {
+				"name" : "丰南区",
+				"adcode" : "130207",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0746512164, 39.8023927113 ]
+			},
+			"properties" : {
+				"name" : "丰润区",
+				"adcode" : "130208",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.378780875, 39.716027039 ]
+			},
+			"properties" : {
+				"name" : "古冶区",
+				"adcode" : "130204",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2699152054, 39.6999347439 ]
+			},
+			"properties" : {
+				"name" : "开平区",
+				"adcode" : "130205",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9342919963, 39.3410705492 ]
+			},
+			"properties" : {
+				"name" : "乐亭县",
+				"adcode" : "130225",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.15536933, 39.659575577 ]
+			},
+			"properties" : {
+				"name" : "路北区",
+				"adcode" : "130203",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1798530555, 39.5946480315 ]
+			},
+			"properties" : {
+				"name" : "路南区",
+				"adcode" : "130202",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6080817724, 39.471845758 ]
+			},
+			"properties" : {
+				"name" : "滦南县",
+				"adcode" : "130224",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.680501624, 39.7497303656 ]
+			},
+			"properties" : {
+				"name" : "滦州市",
+				"adcode" : "130284",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6740902628, 40.0337408924 ]
+			},
+			"properties" : {
+				"name" : "迁安市",
+				"adcode" : "130283",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3586476521, 40.2310327045 ]
+			},
+			"properties" : {
+				"name" : "迁西县",
+				"adcode" : "130227",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7221479265, 39.8119520843 ]
+			},
+			"properties" : {
+				"name" : "玉田县",
+				"adcode" : "130229",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9449714663, 40.1305321601 ]
+			},
+			"properties" : {
+				"name" : "遵化市",
+				"adcode" : "130281",
+				"adcode_s" : "1302",
+				"adcode_si" : "13",
+				"dname" : "唐山市"
+			}
+		}
+	]
+}

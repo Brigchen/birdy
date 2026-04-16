@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4436239397, 33.221118619 ]
+			},
+			"properties" : {
+				"name" : "宝应县",
+				"adcode" : "321023",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4917063743, 32.8315143627 ]
+			},
+			"properties" : {
+				"name" : "高邮市",
+				"adcode" : "321084",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.549390358, 32.3468618499 ]
+			},
+			"properties" : {
+				"name" : "广陵区",
+				"adcode" : "321002",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3903360731, 32.4587631288 ]
+			},
+			"properties" : {
+				"name" : "邗江区",
+				"adcode" : "321003",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.6906373209, 32.5357752395 ]
+			},
+			"properties" : {
+				"name" : "江都区",
+				"adcode" : "321012",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1888258144, 32.3878570106 ]
+			},
+			"properties" : {
+				"name" : "仪征市",
+				"adcode" : "321081",
+				"adcode_s" : "3210",
+				"adcode_si" : "32",
+				"dname" : "扬州市"
+			}
+		}
+	]
+}

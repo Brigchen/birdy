@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1301674968, 38.8801090256 ]
+			},
+			"properties" : {
+				"name" : "保德县",
+				"adcode" : "140931",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0375186214, 39.0856079444 ]
+			},
+			"properties" : {
+				"name" : "代县",
+				"adcode" : "140923",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0229232744, 38.5096623148 ]
+			},
+			"properties" : {
+				"name" : "定襄县",
+				"adcode" : "140921",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5827707279, 39.197629226 ]
+			},
+			"properties" : {
+				"name" : "繁峙县",
+				"adcode" : "140924",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3472956978, 39.1988858154 ]
+			},
+			"properties" : {
+				"name" : "河曲县",
+				"adcode" : "140930",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0520091584, 38.3925700249 ]
+			},
+			"properties" : {
+				"name" : "静乐县",
+				"adcode" : "140926",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5307962105, 38.7312153017 ]
+			},
+			"properties" : {
+				"name" : "岢岚县",
+				"adcode" : "140929",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1804020475, 38.814118998 ]
+			},
+			"properties" : {
+				"name" : "宁武县",
+				"adcode" : "140925",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6589385669, 39.4574121017 ]
+			},
+			"properties" : {
+				"name" : "偏关县",
+				"adcode" : "140932",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9969014433, 39.1656638849 ]
+			},
+			"properties" : {
+				"name" : "神池县",
+				"adcode" : "140927",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4295379782, 38.7709180434 ]
+			},
+			"properties" : {
+				"name" : "五台县",
+				"adcode" : "140922",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7323522979, 39.0018168168 ]
+			},
+			"properties" : {
+				"name" : "五寨县",
+				"adcode" : "140928",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5922150529, 38.4311522524 ]
+			},
+			"properties" : {
+				"name" : "忻府区",
+				"adcode" : "140902",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6694623435, 38.8321300377 ]
+			},
+			"properties" : {
+				"name" : "原平市",
+				"adcode" : "140981",
+				"adcode_s" : "1409",
+				"adcode_si" : "14",
+				"dname" : "忻州市"
+			}
+		}
+	]
+}

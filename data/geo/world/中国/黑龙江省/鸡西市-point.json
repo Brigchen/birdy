@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.0127698141, 45.3742259486 ]
+			},
+			"properties" : {
+				"name" : "城子河区",
+				"adcode" : "230306",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.7305082322, 45.3600559598 ]
+			},
+			"properties" : {
+				"name" : "滴道区",
+				"adcode" : "230304",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.9061412901, 45.1566552821 ]
+			},
+			"properties" : {
+				"name" : "恒山区",
+				"adcode" : "230303",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 133.0445603585, 45.8864567891 ]
+			},
+			"properties" : {
+				"name" : "虎林市",
+				"adcode" : "230381",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.2121804971, 45.26394534 ]
+			},
+			"properties" : {
+				"name" : "鸡东县",
+				"adcode" : "230321",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.941833558, 45.2879862847 ]
+			},
+			"properties" : {
+				"name" : "鸡冠区",
+				"adcode" : "230302",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.7334473237, 45.0786435535 ]
+			},
+			"properties" : {
+				"name" : "梨树区",
+				"adcode" : "230305",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.5328678187, 45.1978220905 ]
+			},
+			"properties" : {
+				"name" : "麻山区",
+				"adcode" : "230307",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 132.1640622671, 45.4604733429 ]
+			},
+			"properties" : {
+				"name" : "密山市",
+				"adcode" : "230382",
+				"adcode_s" : "2303",
+				"adcode_si" : "23",
+				"dname" : "鸡西市"
+			}
+		}
+	]
+}

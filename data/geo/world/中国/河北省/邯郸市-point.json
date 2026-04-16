@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6915440346, 36.4229775074 ]
+			},
+			"properties" : {
+				"name" : "成安县",
+				"adcode" : "130424",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3049597328, 36.3407319814 ]
+			},
+			"properties" : {
+				"name" : "磁县",
+				"adcode" : "130427",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.566999955, 36.6620899474 ]
+			},
+			"properties" : {
+				"name" : "丛台区",
+				"adcode" : "130403",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2360041342, 36.3036569038 ]
+			},
+			"properties" : {
+				"name" : "大名县",
+				"adcode" : "130425",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8246295836, 36.5721429427 ]
+			},
+			"properties" : {
+				"name" : "肥乡区",
+				"adcode" : "130407",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1779617291, 36.4685118185 ]
+			},
+			"properties" : {
+				"name" : "峰峰矿区",
+				"adcode" : "130406",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3180666, 36.5613437998 ]
+			},
+			"properties" : {
+				"name" : "复兴区",
+				"adcode" : "130404",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2871153834, 36.6130599065 ]
+			},
+			"properties" : {
+				"name" : "馆陶县",
+				"adcode" : "130433",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0072589778, 36.5044515215 ]
+			},
+			"properties" : {
+				"name" : "广平县",
+				"adcode" : "130432",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4739694747, 36.5048377481 ]
+			},
+			"properties" : {
+				"name" : "邯山区",
+				"adcode" : "130402",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8562619943, 36.8665708446 ]
+			},
+			"properties" : {
+				"name" : "鸡泽县",
+				"adcode" : "130431",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5747543293, 36.2600494456 ]
+			},
+			"properties" : {
+				"name" : "临漳县",
+				"adcode" : "130423",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1936891003, 36.7911424793 ]
+			},
+			"properties" : {
+				"name" : "邱县",
+				"adcode" : "130430",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0261429378, 36.7461765572 ]
+			},
+			"properties" : {
+				"name" : "曲周县",
+				"adcode" : "130435",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7304412123, 36.5909257988 ]
+			},
+			"properties" : {
+				"name" : "涉县",
+				"adcode" : "130426",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9234033149, 36.2434497167 ]
+			},
+			"properties" : {
+				"name" : "魏县",
+				"adcode" : "130434",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0454134079, 36.7426372368 ]
+			},
+			"properties" : {
+				"name" : "武安市",
+				"adcode" : "130481",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.617302727, 36.7827091115 ]
+			},
+			"properties" : {
+				"name" : "永年区",
+				"adcode" : "130408",
+				"adcode_s" : "1304",
+				"adcode_si" : "13",
+				"dname" : "邯郸市"
+			}
+		}
+	]
+}

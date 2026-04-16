@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 77.8811375835, 40.8474585213 ]
+			},
+			"properties" : {
+				"name" : "阿合奇县",
+				"adcode" : "653023",
+				"adcode_s" : "6530",
+				"adcode_si" : "65",
+				"dname" : "克孜勒苏柯尔克孜自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 75.2211746703, 38.6349818536 ]
+			},
+			"properties" : {
+				"name" : "阿克陶县",
+				"adcode" : "653022",
+				"adcode_s" : "6530",
+				"adcode_si" : "65",
+				"dname" : "克孜勒苏柯尔克孜自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.8572661664, 40.1233827307 ]
+			},
+			"properties" : {
+				"name" : "阿图什市",
+				"adcode" : "653001",
+				"adcode_s" : "6530",
+				"adcode_si" : "65",
+				"dname" : "克孜勒苏柯尔克孜自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 74.9061977219, 39.823406257 ]
+			},
+			"properties" : {
+				"name" : "乌恰县",
+				"adcode" : "653024",
+				"adcode_s" : "6530",
+				"adcode_si" : "65",
+				"dname" : "克孜勒苏柯尔克孜自治州"
+			}
+		}
+	]
+}

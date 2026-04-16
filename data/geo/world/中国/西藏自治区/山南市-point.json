@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.5066050822, 28.574310699 ]
+			},
+			"properties" : {
+				"name" : "措美县",
+				"adcode" : "540526",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.878253153, 27.5551963928 ]
+			},
+			"properties" : {
+				"name" : "错那市",
+				"adcode" : "540530",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.9330428583, 29.2110039172 ]
+			},
+			"properties" : {
+				"name" : "贡嘎县",
+				"adcode" : "540522",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.7117596838, 29.2900674285 ]
+			},
+			"properties" : {
+				"name" : "加查县",
+				"adcode" : "540528",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.6292470044, 28.7558553667 ]
+			},
+			"properties" : {
+				"name" : "浪卡子县",
+				"adcode" : "540531",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.9192030369, 28.4853589647 ]
+			},
+			"properties" : {
+				"name" : "隆子县",
+				"adcode" : "540529",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.890190816, 28.2515772707 ]
+			},
+			"properties" : {
+				"name" : "洛扎县",
+				"adcode" : "540527",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.8217922244, 29.2122860452 ]
+			},
+			"properties" : {
+				"name" : "乃东区",
+				"adcode" : "540502",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.605759354, 29.0087674223 ]
+			},
+			"properties" : {
+				"name" : "琼结县",
+				"adcode" : "540524",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.2011817558, 28.9475172851 ]
+			},
+			"properties" : {
+				"name" : "曲松县",
+				"adcode" : "540525",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.2225457222, 29.4035854012 ]
+			},
+			"properties" : {
+				"name" : "桑日县",
+				"adcode" : "540523",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.3986700309, 29.2766991685 ]
+			},
+			"properties" : {
+				"name" : "扎囊县",
+				"adcode" : "540521",
+				"adcode_s" : "5405",
+				"adcode_si" : "54",
+				"dname" : "山南市"
+			}
+		}
+	]
+}

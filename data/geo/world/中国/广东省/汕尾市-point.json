@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2756154336, 22.9660234961 ]
+			},
+			"properties" : {
+				"name" : "海丰县",
+				"adcode" : "441521",
+				"adcode_s" : "4415",
+				"adcode_si" : "44",
+				"dname" : "汕尾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7776082453, 22.9639445976 ]
+			},
+			"properties" : {
+				"name" : "陆丰市",
+				"adcode" : "441581",
+				"adcode_s" : "4415",
+				"adcode_si" : "44",
+				"dname" : "汕尾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.617354069, 23.2809212504 ]
+			},
+			"properties" : {
+				"name" : "陆河县",
+				"adcode" : "441523",
+				"adcode_s" : "4415",
+				"adcode_si" : "44",
+				"dname" : "汕尾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4142106325, 22.7232892138 ]
+			},
+			"properties" : {
+				"name" : "城区",
+				"adcode" : "441502",
+				"adcode_s" : "4415",
+				"adcode_si" : "44",
+				"dname" : "汕尾市"
+			}
+		}
+	]
+}

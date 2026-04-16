@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3055260846, 30.848042912 ]
+			},
+			"properties" : {
+				"name" : "枞阳县",
+				"adcode" : "340722",
+				"adcode_s" : "3407",
+				"adcode_si" : "34",
+				"dname" : "铜陵市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8358473245, 30.9538767707 ]
+			},
+			"properties" : {
+				"name" : "铜官区",
+				"adcode" : "340705",
+				"adcode_s" : "3407",
+				"adcode_si" : "34",
+				"dname" : "铜陵市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.943361838, 30.9531013965 ]
+			},
+			"properties" : {
+				"name" : "义安区",
+				"adcode" : "340706",
+				"adcode_s" : "3407",
+				"adcode_si" : "34",
+				"dname" : "铜陵市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6578538926, 30.881385195 ]
+			},
+			"properties" : {
+				"name" : "郊区",
+				"adcode" : "340711",
+				"adcode_s" : "3407",
+				"adcode_si" : "34",
+				"dname" : "铜陵市"
+			}
+		}
+	]
+}

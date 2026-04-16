@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.3265170898, 43.4724279675 ]
+			},
+			"properties" : {
+				"name" : "梨树县",
+				"adcode" : "220322",
+				"adcode_s" : "2203",
+				"adcode_si" : "22",
+				"dname" : "四平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.695788408, 43.758748639 ]
+			},
+			"properties" : {
+				"name" : "双辽市",
+				"adcode" : "220382",
+				"adcode_s" : "2203",
+				"adcode_si" : "22",
+				"dname" : "四平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.2584124587, 43.3369307893 ]
+			},
+			"properties" : {
+				"name" : "伊通满族自治县",
+				"adcode" : "220323",
+				"adcode_s" : "2203",
+				"adcode_si" : "22",
+				"dname" : "四平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.3629226554, 43.2226965913 ]
+			},
+			"properties" : {
+				"name" : "铁西区",
+				"adcode" : "220303",
+				"adcode_s" : "2203",
+				"adcode_si" : "22",
+				"dname" : "四平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.5513301143, 43.0564886016 ]
+			},
+			"properties" : {
+				"name" : "铁东区",
+				"adcode" : "220302",
+				"adcode_s" : "2203",
+				"adcode_si" : "22",
+				"dname" : "四平市"
+			}
+		}
+	]
+}

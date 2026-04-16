@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8059796391, 41.8608026056 ]
+			},
+			"properties" : {
+				"name" : "北票市",
+				"adcode" : "211381",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3302636625, 41.2298995069 ]
+			},
+			"properties" : {
+				"name" : "朝阳县",
+				"adcode" : "211321",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.6199209685, 41.8327842155 ]
+			},
+			"properties" : {
+				"name" : "建平县",
+				"adcode" : "211322",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7630688196, 41.1354084325 ]
+			},
+			"properties" : {
+				"name" : "喀喇沁左翼蒙古族自治县",
+				"adcode" : "211324",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2586533981, 40.9733839978 ]
+			},
+			"properties" : {
+				"name" : "凌源市",
+				"adcode" : "211382",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2619578455, 41.5243680896 ]
+			},
+			"properties" : {
+				"name" : "龙城区",
+				"adcode" : "211303",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5438193071, 41.5787400695 ]
+			},
+			"properties" : {
+				"name" : "双塔区",
+				"adcode" : "211302",
+				"adcode_s" : "2113",
+				"adcode_si" : "21",
+				"dname" : "朝阳市"
+			}
+		}
+	]
+}

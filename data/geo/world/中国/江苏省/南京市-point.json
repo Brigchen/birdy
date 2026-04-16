@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.95102468, 31.3165178954 ]
+			},
+			"properties" : {
+				"name" : "高淳区",
+				"adcode" : "320118",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7015279207, 32.0086328211 ]
+			},
+			"properties" : {
+				"name" : "建邺区",
+				"adcode" : "320105",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.827200386, 31.8573104958 ]
+			},
+			"properties" : {
+				"name" : "江宁区",
+				"adcode" : "320115",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0280944359, 31.5929888325 ]
+			},
+			"properties" : {
+				"name" : "溧水区",
+				"adcode" : "320117",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8361492153, 32.3969812439 ]
+			},
+			"properties" : {
+				"name" : "六合区",
+				"adcode" : "320116",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5570792203, 32.0548747902 ]
+			},
+			"properties" : {
+				"name" : "浦口区",
+				"adcode" : "320111",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9508552393, 32.1634788329 ]
+			},
+			"properties" : {
+				"name" : "栖霞区",
+				"adcode" : "320113",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8114475572, 32.0152235745 ]
+			},
+			"properties" : {
+				"name" : "秦淮区",
+				"adcode" : "320104",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8387274017, 32.0680656043 ]
+			},
+			"properties" : {
+				"name" : "玄武区",
+				"adcode" : "320102",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6314670643, 31.9151501782 ]
+			},
+			"properties" : {
+				"name" : "雨花台区",
+				"adcode" : "320114",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7565876464, 32.0860131084 ]
+			},
+			"properties" : {
+				"name" : "鼓楼区",
+				"adcode" : "320102",
+				"adcode_s" : "3201",
+				"adcode_si" : "32",
+				"dname" : "南京市"
+			}
+		}
+	]
+}

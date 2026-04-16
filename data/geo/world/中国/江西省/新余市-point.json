@@ -1,0 +1,34 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6671359379, 27.8422095515 ]
+			},
+			"properties" : {
+				"name" : "分宜县",
+				"adcode" : "360521",
+				"adcode_s" : "3605",
+				"adcode_si" : "36",
+				"dname" : "新余市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9963634362, 27.8475405723 ]
+			},
+			"properties" : {
+				"name" : "渝水区",
+				"adcode" : "360502",
+				"adcode_s" : "3605",
+				"adcode_si" : "36",
+				"dname" : "新余市"
+			}
+		}
+	]
+}

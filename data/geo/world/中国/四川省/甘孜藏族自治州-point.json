@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.2990106133, 29.9048243023 ]
+			},
+			"properties" : {
+				"name" : "巴塘县",
+				"adcode" : "513335",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.2779200197, 31.04032684 ]
+			},
+			"properties" : {
+				"name" : "白玉县",
+				"adcode" : "513331",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.761094509, 30.9482440708 ]
+			},
+			"properties" : {
+				"name" : "丹巴县",
+				"adcode" : "513323",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.1940883087, 30.8831381598 ]
+			},
+			"properties" : {
+				"name" : "道孚县",
+				"adcode" : "513326",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.23217983, 28.67253556 ]
+			},
+			"properties" : {
+				"name" : "稻城县",
+				"adcode" : "513337",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.3170209459, 28.7320514336 ]
+			},
+			"properties" : {
+				"name" : "得荣县",
+				"adcode" : "513338",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.9586463346, 32.0584851129 ]
+			},
+			"properties" : {
+				"name" : "德格县",
+				"adcode" : "513330",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.771795566, 31.9911029822 ]
+			},
+			"properties" : {
+				"name" : "甘孜县",
+				"adcode" : "513328",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.6266489044, 28.914379532 ]
+			},
+			"properties" : {
+				"name" : "九龙县",
+				"adcode" : "513324",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.744670872, 29.9573840387 ]
+			},
+			"properties" : {
+				"name" : "康定市",
+				"adcode" : "513301",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.2177167292, 29.8985238649 ]
+			},
+			"properties" : {
+				"name" : "理塘县",
+				"adcode" : "513334",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.6643588761, 31.4848206385 ]
+			},
+			"properties" : {
+				"name" : "炉霍县",
+				"adcode" : "513327",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1114893478, 29.7439195722 ]
+			},
+			"properties" : {
+				"name" : "泸定县",
+				"adcode" : "513322",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.2117136794, 32.3443415625 ]
+			},
+			"properties" : {
+				"name" : "色达县",
+				"adcode" : "513333",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.1945817379, 33.1872100722 ]
+			},
+			"properties" : {
+				"name" : "石渠县",
+				"adcode" : "513332",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.7281252881, 29.1114597288 ]
+			},
+			"properties" : {
+				"name" : "乡城县",
+				"adcode" : "513336",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.2413626024, 30.9734496383 ]
+			},
+			"properties" : {
+				"name" : "新龙县",
+				"adcode" : "513329",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.1738333183, 29.9333047123 ]
+			},
+			"properties" : {
+				"name" : "雅江县",
+				"adcode" : "513325",
+				"adcode_s" : "5133",
+				"adcode_si" : "51",
+				"dname" : "甘孜藏族自治州"
+			}
+		}
+	]
+}

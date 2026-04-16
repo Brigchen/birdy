@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1805375715, 32.563061068 ]
+			},
+			"properties" : {
+				"name" : "丹江口市",
+				"adcode" : "420381",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6176837919, 32.074576522 ]
+			},
+			"properties" : {
+				"name" : "房县",
+				"adcode" : "420325",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7804331538, 32.5207057025 ]
+			},
+			"properties" : {
+				"name" : "茅箭区",
+				"adcode" : "420302",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1390279076, 33.0441707295 ]
+			},
+			"properties" : {
+				"name" : "郧西县",
+				"adcode" : "420322",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.980961505, 32.9955137354 ]
+			},
+			"properties" : {
+				"name" : "郧阳区",
+				"adcode" : "420304",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6333973043, 32.6487375697 ]
+			},
+			"properties" : {
+				"name" : "张湾区",
+				"adcode" : "420303",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2026833293, 32.3027265962 ]
+			},
+			"properties" : {
+				"name" : "竹山县",
+				"adcode" : "420323",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7799173858, 32.0320102805 ]
+			},
+			"properties" : {
+				"name" : "竹溪县",
+				"adcode" : "420324",
+				"adcode_s" : "4203",
+				"adcode_si" : "42",
+				"dname" : "十堰市"
+			}
+		}
+	]
+}

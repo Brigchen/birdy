@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.1998125315, 46.5826862353 ]
+			},
+			"properties" : {
+				"name" : "额敏县",
+				"adcode" : "654221",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.670770805, 46.1967913646 ]
+			},
+			"properties" : {
+				"name" : "和布克赛尔蒙古自治县",
+				"adcode" : "654226",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.4659456105, 44.3406212352 ]
+			},
+			"properties" : {
+				"name" : "沙湾市",
+				"adcode" : "654223",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.1804433374, 46.8037401317 ]
+			},
+			"properties" : {
+				"name" : "塔城市",
+				"adcode" : "654201",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.8837451758, 45.6472258521 ]
+			},
+			"properties" : {
+				"name" : "托里县",
+				"adcode" : "654224",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.269103863, 44.4011819908 ]
+			},
+			"properties" : {
+				"name" : "乌苏市",
+				"adcode" : "654202",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.8043830164, 45.9958919727 ]
+			},
+			"properties" : {
+				"name" : "裕民县",
+				"adcode" : "654225",
+				"adcode_s" : "6542",
+				"adcode_si" : "65",
+				"dname" : "塔城地区"
+			}
+		}
+	]
+}

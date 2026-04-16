@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9259264623, 25.4216023276 ]
+			},
+			"properties" : {
+				"name" : "城厢区",
+				"adcode" : "350302",
+				"adcode_s" : "3503",
+				"adcode_si" : "35",
+				"dname" : "莆田市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.04287571, 25.6537617314 ]
+			},
+			"properties" : {
+				"name" : "涵江区",
+				"adcode" : "350303",
+				"adcode_s" : "3503",
+				"adcode_si" : "35",
+				"dname" : "莆田市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.102676994, 25.3876774098 ]
+			},
+			"properties" : {
+				"name" : "荔城区",
+				"adcode" : "350304",
+				"adcode_s" : "3503",
+				"adcode_si" : "35",
+				"dname" : "莆田市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6942000606, 25.4649167776 ]
+			},
+			"properties" : {
+				"name" : "仙游县",
+				"adcode" : "350322",
+				"adcode_s" : "3503",
+				"adcode_si" : "35",
+				"dname" : "莆田市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1708417715, 25.2397812314 ]
+			},
+			"properties" : {
+				"name" : "秀屿区",
+				"adcode" : "350305",
+				"adcode_s" : "3503",
+				"adcode_si" : "35",
+				"dname" : "莆田市"
+			}
+		}
+	]
+}

@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5384396534, 45.4983189377 ]
+			},
+			"properties" : {
+				"name" : "霍林郭勒市",
+				"adcode" : "150581",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.312272617, 43.7260115152 ]
+			},
+			"properties" : {
+				"name" : "开鲁县",
+				"adcode" : "150523",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.2780967183, 43.6491824329 ]
+			},
+			"properties" : {
+				"name" : "科尔沁区",
+				"adcode" : "150502",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.6852668366, 43.1866626253 ]
+			},
+			"properties" : {
+				"name" : "科尔沁左翼后旗",
+				"adcode" : "150522",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.33670507, 44.0514026849 ]
+			},
+			"properties" : {
+				"name" : "科尔沁左翼中旗",
+				"adcode" : "150521",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.5608787189, 42.8010507025 ]
+			},
+			"properties" : {
+				"name" : "库伦旗",
+				"adcode" : "150524",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.927881218, 42.9613695287 ]
+			},
+			"properties" : {
+				"name" : "奈曼旗",
+				"adcode" : "150525",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5926368762, 44.8023077135 ]
+			},
+			"properties" : {
+				"name" : "扎鲁特旗",
+				"adcode" : "150526",
+				"adcode_s" : "1505",
+				"adcode_si" : "15",
+				"dname" : "通辽市"
+			}
+		}
+	]
+}

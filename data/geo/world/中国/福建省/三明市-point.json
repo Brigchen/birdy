@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8067826955, 25.7940686419 ]
+			},
+			"properties" : {
+				"name" : "大田县",
+				"adcode" : "350425",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7797055532, 26.8173531204 ]
+			},
+			"properties" : {
+				"name" : "建宁县",
+				"adcode" : "350430",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3891241661, 26.7289323343 ]
+			},
+			"properties" : {
+				"name" : "将乐县",
+				"adcode" : "350428",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.19078119, 26.3384913382 ]
+			},
+			"properties" : {
+				"name" : "明溪县",
+				"adcode" : "350421",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6665285288, 26.3069419999 ]
+			},
+			"properties" : {
+				"name" : "宁化县",
+				"adcode" : "350424",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9096930694, 26.0965726033 ]
+			},
+			"properties" : {
+				"name" : "清流县",
+				"adcode" : "350423",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5562608357, 26.223274908 ]
+			},
+			"properties" : {
+				"name" : "三元区",
+				"adcode" : "350403",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8072708254, 26.4424149844 ]
+			},
+			"properties" : {
+				"name" : "沙县区",
+				"adcode" : "350427",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1141694631, 26.8634284536 ]
+			},
+			"properties" : {
+				"name" : "泰宁县",
+				"adcode" : "350429",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.353686251, 25.9723924015 ]
+			},
+			"properties" : {
+				"name" : "永安市",
+				"adcode" : "350481",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2428676622, 26.1473598792 ]
+			},
+			"properties" : {
+				"name" : "尤溪县",
+				"adcode" : "350426",
+				"adcode_s" : "3504",
+				"adcode_si" : "35",
+				"dname" : "三明市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4718088434, 35.0881303612 ]
+			},
+			"properties" : {
+				"name" : "山亭区",
+				"adcode" : "370406",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.692175285, 34.6293735616 ]
+			},
+			"properties" : {
+				"name" : "台儿庄区",
+				"adcode" : "370405",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1356576102, 35.060023728 ]
+			},
+			"properties" : {
+				"name" : "滕州市",
+				"adcode" : "370481",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.32179815, 34.7933400367 ]
+			},
+			"properties" : {
+				"name" : "薛城区",
+				"adcode" : "370403",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.497102592, 34.6762148828 ]
+			},
+			"properties" : {
+				"name" : "峄城区",
+				"adcode" : "370404",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5938505694, 34.865410146 ]
+			},
+			"properties" : {
+				"name" : "市中区",
+				"adcode" : "370402",
+				"adcode_s" : "3704",
+				"adcode_si" : "37",
+				"dname" : "枣庄市"
+			}
+		}
+	]
+}

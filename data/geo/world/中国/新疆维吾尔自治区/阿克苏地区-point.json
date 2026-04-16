@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.5429169586, 39.961547753 ]
+			},
+			"properties" : {
+				"name" : "阿克苏市",
+				"adcode" : "652901",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.4482008281, 40.041096331 ]
+			},
+			"properties" : {
+				"name" : "阿瓦提县",
+				"adcode" : "652928",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.8922017287, 42.0368566418 ]
+			},
+			"properties" : {
+				"name" : "拜城县",
+				"adcode" : "652926",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 78.97172976, 40.5800450059 ]
+			},
+			"properties" : {
+				"name" : "柯坪县",
+				"adcode" : "652929",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.4510918409, 41.77042834 ]
+			},
+			"properties" : {
+				"name" : "库车市",
+				"adcode" : "652902",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.9172267038, 40.3930973453 ]
+			},
+			"properties" : {
+				"name" : "沙雅县",
+				"adcode" : "652924",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.46732474, 41.6635987074 ]
+			},
+			"properties" : {
+				"name" : "温宿县",
+				"adcode" : "652922",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.2570592212, 41.2463346636 ]
+			},
+			"properties" : {
+				"name" : "乌什县",
+				"adcode" : "652927",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.9772240774, 41.3575227157 ]
+			},
+			"properties" : {
+				"name" : "新和县",
+				"adcode" : "652925",
+				"adcode_s" : "6529",
+				"adcode_si" : "65",
+				"dname" : "阿克苏地区"
+			}
+		}
+	]
+}

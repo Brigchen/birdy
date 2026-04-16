@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1445855099, 39.7610712256 ]
+			},
+			"properties" : {
+				"name" : "广灵县",
+				"adcode" : "140223",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.697270392, 39.6268334408 ]
+			},
+			"properties" : {
+				"name" : "浑源县",
+				"adcode" : "140225",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2003040041, 39.3699120227 ]
+			},
+			"properties" : {
+				"name" : "灵丘县",
+				"adcode" : "140224",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3014254389, 40.088372427 ]
+			},
+			"properties" : {
+				"name" : "平城区",
+				"adcode" : "140213",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1551532399, 40.3956154535 ]
+			},
+			"properties" : {
+				"name" : "天镇县",
+				"adcode" : "140222",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1752349366, 40.260772862 ]
+			},
+			"properties" : {
+				"name" : "新荣区",
+				"adcode" : "140212",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8098008484, 40.2151249395 ]
+			},
+			"properties" : {
+				"name" : "阳高县",
+				"adcode" : "140221",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1048830249, 40.0183366765 ]
+			},
+			"properties" : {
+				"name" : "云冈区",
+				"adcode" : "140214",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5711369979, 39.9946450884 ]
+			},
+			"properties" : {
+				"name" : "云州区",
+				"adcode" : "140215",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7643991688, 39.9928894808 ]
+			},
+			"properties" : {
+				"name" : "左云县",
+				"adcode" : "140226",
+				"adcode_s" : "1402",
+				"adcode_si" : "14",
+				"dname" : "大同市"
+			}
+		}
+	]
+}

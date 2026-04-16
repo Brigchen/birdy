@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1861429668, 28.1872283357 ]
+			},
+			"properties" : {
+				"name" : "贵溪市",
+				"adcode" : "360681",
+				"adcode_s" : "3606",
+				"adcode_si" : "36",
+				"dname" : "鹰潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9103299491, 28.3188443906 ]
+			},
+			"properties" : {
+				"name" : "余江区",
+				"adcode" : "360603",
+				"adcode_s" : "3606",
+				"adcode_si" : "36",
+				"dname" : "鹰潭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0458708115, 28.2442362714 ]
+			},
+			"properties" : {
+				"name" : "月湖区",
+				"adcode" : "360602",
+				"adcode_s" : "3606",
+				"adcode_si" : "36",
+				"dname" : "鹰潭市"
+			}
+		}
+	]
+}

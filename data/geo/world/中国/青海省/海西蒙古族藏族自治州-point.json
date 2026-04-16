@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.9102898948, 37.8354788094 ]
+			},
+			"properties" : {
+				"name" : "大柴旦",
+				"adcode" : "632857",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.0041079793, 37.6986182014 ]
+			},
+			"properties" : {
+				"name" : "德令哈市",
+				"adcode" : "632802",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.274912038, 35.8841122079 ]
+			},
+			"properties" : {
+				"name" : "都兰县",
+				"adcode" : "632822",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.4848676514, 36.5899265263 ]
+			},
+			"properties" : {
+				"name" : "格尔木市",
+				"adcode" : "632801",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.2525722403, 38.1842674482 ]
+			},
+			"properties" : {
+				"name" : "茫崖市",
+				"adcode" : "632803",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.4475287339, 38.0496474334 ]
+			},
+			"properties" : {
+				"name" : "天峻县",
+				"adcode" : "632823",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.2588644395, 36.9218094987 ]
+			},
+			"properties" : {
+				"name" : "乌兰县",
+				"adcode" : "632821",
+				"adcode_s" : "6328",
+				"adcode_si" : "63",
+				"dname" : "海西蒙古族藏族自治州"
+			}
+		}
+	]
+}

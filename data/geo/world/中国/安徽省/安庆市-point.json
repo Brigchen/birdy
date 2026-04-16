@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9445127522, 30.5108264894 ]
+			},
+			"properties" : {
+				"name" : "大观区",
+				"adcode" : "340803",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7618437552, 30.5791739849 ]
+			},
+			"properties" : {
+				"name" : "怀宁县",
+				"adcode" : "340822",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5407593656, 30.7545131497 ]
+			},
+			"properties" : {
+				"name" : "潜山市",
+				"adcode" : "340882",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2423240866, 30.1039567098 ]
+			},
+			"properties" : {
+				"name" : "宿松县",
+				"adcode" : "340826",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1254394, 30.5321197937 ]
+			},
+			"properties" : {
+				"name" : "太湖县",
+				"adcode" : "340825",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9351075985, 30.9816629532 ]
+			},
+			"properties" : {
+				"name" : "桐城市",
+				"adcode" : "340881",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.678697398, 30.2402491284 ]
+			},
+			"properties" : {
+				"name" : "望江县",
+				"adcode" : "340827",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0690520156, 30.6454354529 ]
+			},
+			"properties" : {
+				"name" : "宜秀区",
+				"adcode" : "340811",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.169803121, 30.5522115211 ]
+			},
+			"properties" : {
+				"name" : "迎江区",
+				"adcode" : "340802",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2083342015, 30.8974460227 ]
+			},
+			"properties" : {
+				"name" : "岳西县",
+				"adcode" : "340828",
+				"adcode_s" : "3408",
+				"adcode_si" : "34",
+				"dname" : "安庆市"
+			}
+		}
+	]
+}

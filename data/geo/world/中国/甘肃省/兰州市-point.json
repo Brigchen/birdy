@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.69796697, 36.112489256 ]
+			},
+			"properties" : {
+				"name" : "安宁区",
+				"adcode" : "620105",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8809019384, 36.3878792267 ]
+			},
+			"properties" : {
+				"name" : "皋兰县",
+				"adcode" : "620122",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.09693464, 36.2633785676 ]
+			},
+			"properties" : {
+				"name" : "红古区",
+				"adcode" : "620111",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.7707722037, 35.9668308134 ]
+			},
+			"properties" : {
+				"name" : "七里河区",
+				"adcode" : "620103",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.51689264, 36.1591332649 ]
+			},
+			"properties" : {
+				"name" : "西固区",
+				"adcode" : "620104",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.2428048196, 36.6035619737 ]
+			},
+			"properties" : {
+				"name" : "永登县",
+				"adcode" : "620121",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2320017551, 35.9924098597 ]
+			},
+			"properties" : {
+				"name" : "榆中县",
+				"adcode" : "620123",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8838255977, 36.0739141204 ]
+			},
+			"properties" : {
+				"name" : "城关区",
+				"adcode" : "620102",
+				"adcode_s" : "6201",
+				"adcode_si" : "62",
+				"dname" : "兰州市"
+			}
+		}
+	]
+}

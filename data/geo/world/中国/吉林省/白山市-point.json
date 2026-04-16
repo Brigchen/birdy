@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.55350089, 42.2570513534 ]
+			},
+			"properties" : {
+				"name" : "抚松县",
+				"adcode" : "220621",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.4184385407, 41.8085119495 ]
+			},
+			"properties" : {
+				"name" : "浑江区",
+				"adcode" : "220602",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.7646955076, 42.0455486055 ]
+			},
+			"properties" : {
+				"name" : "江源区",
+				"adcode" : "220605",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.8898409638, 42.4407708618 ]
+			},
+			"properties" : {
+				"name" : "靖宇县",
+				"adcode" : "220622",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.1795622894, 41.8076998133 ]
+			},
+			"properties" : {
+				"name" : "临江市",
+				"adcode" : "220681",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.8517019415, 41.5763007074 ]
+			},
+			"properties" : {
+				"name" : "长白朝鲜族自治县",
+				"adcode" : "220623",
+				"adcode_s" : "2206",
+				"adcode_si" : "22",
+				"dname" : "白山市"
+			}
+		}
+	]
+}

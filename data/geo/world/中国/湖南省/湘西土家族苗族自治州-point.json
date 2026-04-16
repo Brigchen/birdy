@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5059892345, 28.732395937 ]
+			},
+			"properties" : {
+				"name" : "保靖县",
+				"adcode" : "433125",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5080341444, 28.0107146873 ]
+			},
+			"properties" : {
+				"name" : "凤凰县",
+				"adcode" : "433123",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9930484055, 28.6018250177 ]
+			},
+			"properties" : {
+				"name" : "古丈县",
+				"adcode" : "433126",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4281556507, 28.4281802902 ]
+			},
+			"properties" : {
+				"name" : "花垣县",
+				"adcode" : "433124",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7601915356, 28.3146868491 ]
+			},
+			"properties" : {
+				"name" : "吉首市",
+				"adcode" : "433101",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5045190261, 29.2220884585 ]
+			},
+			"properties" : {
+				"name" : "龙山县",
+				"adcode" : "433130",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9914394376, 28.1615523578 ]
+			},
+			"properties" : {
+				"name" : "泸溪县",
+				"adcode" : "433122",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9649861328, 29.0124566479 ]
+			},
+			"properties" : {
+				"name" : "永顺县",
+				"adcode" : "433127",
+				"adcode_s" : "4331",
+				"adcode_si" : "43",
+				"dname" : "湘西土家族苗族自治州"
+			}
+		}
+	]
+}

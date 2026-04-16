@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.633057205, 32.6419488908 ]
+			},
+			"properties" : {
+				"name" : "阜南县",
+				"adcode" : "341225",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3864443362, 33.2214542941 ]
+			},
+			"properties" : {
+				"name" : "界首市",
+				"adcode" : "341282",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.358132025, 32.8608260442 ]
+			},
+			"properties" : {
+				"name" : "临泉县",
+				"adcode" : "341221",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6369002985, 33.3333073029 ]
+			},
+			"properties" : {
+				"name" : "太和县",
+				"adcode" : "341222",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0153915687, 32.9245315373 ]
+			},
+			"properties" : {
+				"name" : "颍东区",
+				"adcode" : "341203",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7228866445, 33.0366423593 ]
+			},
+			"properties" : {
+				"name" : "颍泉区",
+				"adcode" : "341204",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2537360086, 32.6578681987 ]
+			},
+			"properties" : {
+				"name" : "颍上县",
+				"adcode" : "341226",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7177208431, 32.8609371244 ]
+			},
+			"properties" : {
+				"name" : "颍州区",
+				"adcode" : "341202",
+				"adcode_s" : "3412",
+				"adcode_si" : "34",
+				"dname" : "阜阳市"
+			}
+		}
+	]
+}

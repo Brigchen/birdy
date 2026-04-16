@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3229373304, 26.0170697417 ]
+			},
+			"properties" : {
+				"name" : "仓山区",
+				"adcode" : "350104",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3694214861, 25.6305427747 ]
+			},
+			"properties" : {
+				"name" : "福清市",
+				"adcode" : "350181",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3016539739, 26.2210511628 ]
+			},
+			"properties" : {
+				"name" : "晋安区",
+				"adcode" : "350111",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.547163542, 26.3054037885 ]
+			},
+			"properties" : {
+				"name" : "连江县",
+				"adcode" : "350122",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4592413992, 26.5024940801 ]
+			},
+			"properties" : {
+				"name" : "罗源县",
+				"adcode" : "350123",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4591639115, 26.0714982768 ]
+			},
+			"properties" : {
+				"name" : "马尾区",
+				"adcode" : "350105",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1118030273, 26.1790004877 ]
+			},
+			"properties" : {
+				"name" : "闽侯县",
+				"adcode" : "350121",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7676160816, 26.2092301055 ]
+			},
+			"properties" : {
+				"name" : "闽清县",
+				"adcode" : "350124",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7612620602, 25.5301948733 ]
+			},
+			"properties" : {
+				"name" : "平潭县",
+				"adcode" : "350128",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.289811365, 26.0605974644 ]
+			},
+			"properties" : {
+				"name" : "台江区",
+				"adcode" : "350103",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7835338133, 25.8543889883 ]
+			},
+			"properties" : {
+				"name" : "永泰县",
+				"adcode" : "350125",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.550722099, 25.9103460795 ]
+			},
+			"properties" : {
+				"name" : "长乐区",
+				"adcode" : "350112",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2783395594, 26.0948291308 ]
+			},
+			"properties" : {
+				"name" : "鼓楼区",
+				"adcode" : "350102",
+				"adcode_s" : "3501",
+				"adcode_si" : "35",
+				"dname" : "福州市"
+			}
+		}
+	]
+}

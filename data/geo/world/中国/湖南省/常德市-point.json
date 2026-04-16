@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.149945308, 29.4457031405 ]
+			},
+			"properties" : {
+				"name" : "安乡县",
+				"adcode" : "430721",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8569562223, 29.1849290458 ]
+			},
+			"properties" : {
+				"name" : "鼎城区",
+				"adcode" : "430703",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0337407345, 28.8623727531 ]
+			},
+			"properties" : {
+				"name" : "汉寿县",
+				"adcode" : "430722",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.90345588, 29.4265787197 ]
+			},
+			"properties" : {
+				"name" : "津市市",
+				"adcode" : "430781",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6990806862, 29.7457218458 ]
+			},
+			"properties" : {
+				"name" : "澧县",
+				"adcode" : "430723",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6131514201, 29.4829315988 ]
+			},
+			"properties" : {
+				"name" : "临澧县",
+				"adcode" : "430724",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.01220703, 29.8633410007 ]
+			},
+			"properties" : {
+				"name" : "石门县",
+				"adcode" : "430726",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2582223325, 28.9138975549 ]
+			},
+			"properties" : {
+				"name" : "桃源县",
+				"adcode" : "430725",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7140575127, 29.0417514316 ]
+			},
+			"properties" : {
+				"name" : "武陵区",
+				"adcode" : "430702",
+				"adcode_s" : "4307",
+				"adcode_si" : "43",
+				"dname" : "常德市"
+			}
+		}
+	]
+}

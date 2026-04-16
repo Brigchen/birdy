@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.619372826, 25.8727573902 ]
+			},
+			"properties" : {
+				"name" : "宾川县",
+				"adcode" : "532924",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.210714304, 25.6904021846 ]
+			},
+			"properties" : {
+				"name" : "大理市",
+				"adcode" : "532901",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.9047555632, 26.0696685384 ]
+			},
+			"properties" : {
+				"name" : "洱源县",
+				"adcode" : "532930",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.2698897861, 26.3355138587 ]
+			},
+			"properties" : {
+				"name" : "鹤庆县",
+				"adcode" : "532932",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.7427202299, 26.436727711 ]
+			},
+			"properties" : {
+				"name" : "剑川县",
+				"adcode" : "532931",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.5726804706, 25.1884135106 ]
+			},
+			"properties" : {
+				"name" : "弥渡县",
+				"adcode" : "532925",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.4170987875, 24.8994714874 ]
+			},
+			"properties" : {
+				"name" : "南涧彝族自治县",
+				"adcode" : "532926",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.1711250087, 25.243771102 ]
+			},
+			"properties" : {
+				"name" : "巍山彝族回族自治县",
+				"adcode" : "532927",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.7706021458, 25.5129908616 ]
+			},
+			"properties" : {
+				"name" : "祥云县",
+				"adcode" : "532923",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.8907316313, 25.6018053992 ]
+			},
+			"properties" : {
+				"name" : "漾濞彝族自治县",
+				"adcode" : "532922",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.592794944, 25.3709814886 ]
+			},
+			"properties" : {
+				"name" : "永平县",
+				"adcode" : "532928",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.3057707853, 25.8915277318 ]
+			},
+			"properties" : {
+				"name" : "云龙县",
+				"adcode" : "532929",
+				"adcode_s" : "5329",
+				"adcode_si" : "53",
+				"dname" : "大理白族自治州"
+			}
+		}
+	]
+}

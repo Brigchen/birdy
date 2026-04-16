@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4237378158, 26.362238269 ]
+			},
+			"properties" : {
+				"name" : "常宁市",
+				"adcode" : "430482",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.017059863, 27.0822653147 ]
+			},
+			"properties" : {
+				"name" : "衡东县",
+				"adcode" : "430424",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6297267365, 26.6729215872 ]
+			},
+			"properties" : {
+				"name" : "衡南县",
+				"adcode" : "430422",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.576729365, 27.3426940925 ]
+			},
+			"properties" : {
+				"name" : "衡山县",
+				"adcode" : "430423",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3415991963, 27.1063967747 ]
+			},
+			"properties" : {
+				"name" : "衡阳县",
+				"adcode" : "430421",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9099280475, 26.4211882782 ]
+			},
+			"properties" : {
+				"name" : "耒阳市",
+				"adcode" : "430481",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6930330754, 27.2615235836 ]
+			},
+			"properties" : {
+				"name" : "南岳区",
+				"adcode" : "430412",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9502276092, 26.8036965413 ]
+			},
+			"properties" : {
+				"name" : "祁东县",
+				"adcode" : "430426",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5988875015, 26.9670093398 ]
+			},
+			"properties" : {
+				"name" : "石鼓区",
+				"adcode" : "430407",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6016642983, 26.8349839667 ]
+			},
+			"properties" : {
+				"name" : "雁峰区",
+				"adcode" : "430406",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5393031305, 26.880612154 ]
+			},
+			"properties" : {
+				"name" : "蒸湘区",
+				"adcode" : "430408",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6654869295, 26.8807146438 ]
+			},
+			"properties" : {
+				"name" : "珠晖区",
+				"adcode" : "430405",
+				"adcode_s" : "4304",
+				"adcode_si" : "43",
+				"dname" : "衡阳市"
+			}
+		}
+	]
+}

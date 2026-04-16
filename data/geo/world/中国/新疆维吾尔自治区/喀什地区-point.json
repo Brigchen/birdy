@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.23738546, 39.2866703123 ]
+			},
+			"properties" : {
+				"name" : "巴楚县",
+				"adcode" : "653130",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 77.2218022617, 39.5922632321 ]
+			},
+			"properties" : {
+				"name" : "伽师县",
+				"adcode" : "653129",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.104327146, 39.5151950168 ]
+			},
+			"properties" : {
+				"name" : "喀什市",
+				"adcode" : "653101",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 78.2345625649, 38.8403979856 ]
+			},
+			"properties" : {
+				"name" : "麦盖提县",
+				"adcode" : "653127",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 77.03547975, 38.4505014221 ]
+			},
+			"properties" : {
+				"name" : "莎车县",
+				"adcode" : "653125",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 75.470648535, 39.4234322725 ]
+			},
+			"properties" : {
+				"name" : "疏附县",
+				"adcode" : "653121",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.3731593885, 39.1772870326 ]
+			},
+			"properties" : {
+				"name" : "疏勒县",
+				"adcode" : "653122",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 75.7588311255, 37.3107276215 ]
+			},
+			"properties" : {
+				"name" : "塔什库尔干塔吉克自治县",
+				"adcode" : "653131",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.7444055955, 37.031006178 ]
+			},
+			"properties" : {
+				"name" : "叶城县",
+				"adcode" : "653126",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.3593620431, 38.7933758204 ]
+			},
+			"properties" : {
+				"name" : "英吉沙县",
+				"adcode" : "653123",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 76.9811124779, 39.1101160436 ]
+			},
+			"properties" : {
+				"name" : "岳普湖县",
+				"adcode" : "653128",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 77.2159600449, 38.1159785567 ]
+			},
+			"properties" : {
+				"name" : "泽普县",
+				"adcode" : "653124",
+				"adcode_s" : "6531",
+				"adcode_si" : "65",
+				"dname" : "喀什地区"
+			}
+		}
+	]
+}

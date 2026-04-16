@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.1995750035, 41.2676049782 ]
+			},
+			"properties" : {
+				"name" : "文圣区",
+				"adcode" : "211002",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.3045518095, 41.4113678877 ]
+			},
+			"properties" : {
+				"name" : "灯塔市",
+				"adcode" : "211081",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.4080446093, 41.1338666639 ]
+			},
+			"properties" : {
+				"name" : "弓长岭区",
+				"adcode" : "211005",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.36032943, 40.9169062261 ]
+			},
+			"properties" : {
+				"name" : "辽阳县",
+				"adcode" : "211021",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.2615937227, 41.2737075634 ]
+			},
+			"properties" : {
+				"name" : "太子河区",
+				"adcode" : "211011",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.1654739238, 41.2810382425 ]
+			},
+			"properties" : {
+				"name" : "白塔区",
+				"adcode" : "211002",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.2218232543, 41.206463382 ]
+			},
+			"properties" : {
+				"name" : "宏伟区",
+				"adcode" : "211004",
+				"adcode_s" : "2110",
+				"adcode_si" : "21",
+				"dname" : "辽阳市"
+			}
+		}
+	]
+}

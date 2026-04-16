@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.3212134759, 26.8685593423 ]
+			},
+			"properties" : {
+				"name" : "古城区",
+				"adcode" : "530702",
+				"adcode_s" : "5307",
+				"adcode_si" : "53",
+				"dname" : "丽江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.2430212224, 26.6433355161 ]
+			},
+			"properties" : {
+				"name" : "华坪县",
+				"adcode" : "530723",
+				"adcode_s" : "5307",
+				"adcode_si" : "53",
+				"dname" : "丽江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.7698931907, 27.2626102998 ]
+			},
+			"properties" : {
+				"name" : "宁蒗彝族自治县",
+				"adcode" : "530724",
+				"adcode_s" : "5307",
+				"adcode_si" : "53",
+				"dname" : "丽江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.6971781109, 26.4888684232 ]
+			},
+			"properties" : {
+				"name" : "永胜县",
+				"adcode" : "530722",
+				"adcode_s" : "5307",
+				"adcode_si" : "53",
+				"dname" : "丽江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.6771121845, 26.9751163218 ]
+			},
+			"properties" : {
+				"name" : "玉龙纳西族自治县",
+				"adcode" : "530721",
+				"adcode_s" : "5307",
+				"adcode_si" : "53",
+				"dname" : "丽江市"
+			}
+		}
+	]
+}

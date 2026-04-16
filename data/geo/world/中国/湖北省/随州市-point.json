@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.423817465, 31.6408393417 ]
+			},
+			"properties" : {
+				"name" : "曾都区",
+				"adcode" : "421303",
+				"adcode_s" : "4213",
+				"adcode_si" : "42",
+				"dname" : "随州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8003935335, 31.6784571673 ]
+			},
+			"properties" : {
+				"name" : "广水市",
+				"adcode" : "421381",
+				"adcode_s" : "4213",
+				"adcode_si" : "42",
+				"dname" : "随州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.51387574, 32.1274339606 ]
+			},
+			"properties" : {
+				"name" : "随县",
+				"adcode" : "421321",
+				"adcode_s" : "4213",
+				"adcode_si" : "42",
+				"dname" : "随州市"
+			}
+		}
+	]
+}

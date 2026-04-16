@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.072007015, 28.1983440224 ]
+			},
+			"properties" : {
+				"name" : "芙蓉区",
+				"adcode" : "430102",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9991559984, 28.305641281 ]
+			},
+			"properties" : {
+				"name" : "开福区",
+				"adcode" : "430105",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7072751341, 28.231056339 ]
+			},
+			"properties" : {
+				"name" : "浏阳市",
+				"adcode" : "430181",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3479874533, 28.1287027609 ]
+			},
+			"properties" : {
+				"name" : "宁乡市",
+				"adcode" : "430182",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9643373291, 28.1058891413 ]
+			},
+			"properties" : {
+				"name" : "天心区",
+				"adcode" : "430103",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8169167755, 28.3694710866 ]
+			},
+			"properties" : {
+				"name" : "望城区",
+				"adcode" : "430112",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0344883055, 28.130639384 ]
+			},
+			"properties" : {
+				"name" : "雨花区",
+				"adcode" : "430111",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.78661364, 28.1136754652 ]
+			},
+			"properties" : {
+				"name" : "岳麓区",
+				"adcode" : "430104",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.209410293, 28.3232151113 ]
+			},
+			"properties" : {
+				"name" : "长沙县",
+				"adcode" : "430121",
+				"adcode_s" : "4301",
+				"adcode_si" : "43",
+				"dname" : "长沙市"
+			}
+		}
+	]
+}

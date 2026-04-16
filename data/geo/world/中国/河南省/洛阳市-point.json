@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5025352345, 34.7024387593 ]
+			},
+			"properties" : {
+				"name" : "瀍河回族区",
+				"adcode" : "410304",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3596827081, 34.652916606 ]
+			},
+			"properties" : {
+				"name" : "涧西区",
+				"adcode" : "410305",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4351522845, 34.713708438 ]
+			},
+			"properties" : {
+				"name" : "老城区",
+				"adcode" : "410302",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6041064236, 33.908018344 ]
+			},
+			"properties" : {
+				"name" : "栾川县",
+				"adcode" : "410324",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5260451909, 34.6067333033 ]
+			},
+			"properties" : {
+				"name" : "洛龙区",
+				"adcode" : "410311",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4940141172, 34.3405604181 ]
+			},
+			"properties" : {
+				"name" : "洛宁县",
+				"adcode" : "410328",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4759637927, 34.8333477357 ]
+			},
+			"properties" : {
+				"name" : "孟津区",
+				"adcode" : "410322",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4229524929, 34.0580630499 ]
+			},
+			"properties" : {
+				"name" : "汝阳县",
+				"adcode" : "410326",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0368533947, 34.0052752725 ]
+			},
+			"properties" : {
+				"name" : "嵩县",
+				"adcode" : "410325",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.37076036, 34.7137968579 ]
+			},
+			"properties" : {
+				"name" : "西工区",
+				"adcode" : "410303",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1144346574, 34.8325296055 ]
+			},
+			"properties" : {
+				"name" : "新安县",
+				"adcode" : "410323",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7755959573, 34.6405912912 ]
+			},
+			"properties" : {
+				"name" : "偃师区",
+				"adcode" : "410381",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.48629336, 34.4402094251 ]
+			},
+			"properties" : {
+				"name" : "伊川县",
+				"adcode" : "410329",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0241235994, 34.4805674017 ]
+			},
+			"properties" : {
+				"name" : "宜阳县",
+				"adcode" : "410327",
+				"adcode_s" : "4103",
+				"adcode_si" : "41",
+				"dname" : "洛阳市"
+			}
+		}
+	]
+}

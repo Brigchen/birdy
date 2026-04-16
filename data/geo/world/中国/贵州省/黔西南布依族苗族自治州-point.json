@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.3704392389, 25.1367888888 ]
+			},
+			"properties" : {
+				"name" : "安龙县",
+				"adcode" : "522328",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.8286282375, 24.9202097808 ]
+			},
+			"properties" : {
+				"name" : "册亨县",
+				"adcode" : "522327",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9907206114, 25.7241572956 ]
+			},
+			"properties" : {
+				"name" : "普安县",
+				"adcode" : "522323",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.218487902, 25.8106660149 ]
+			},
+			"properties" : {
+				"name" : "晴隆县",
+				"adcode" : "522324",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.1636265762, 25.2292556616 ]
+			},
+			"properties" : {
+				"name" : "望谟县",
+				"adcode" : "522326",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.23021094, 25.470371618 ]
+			},
+			"properties" : {
+				"name" : "兴仁市",
+				"adcode" : "522302",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.8485728034, 24.9990423413 ]
+			},
+			"properties" : {
+				"name" : "兴义市",
+				"adcode" : "522301",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.6841813292, 25.4178609854 ]
+			},
+			"properties" : {
+				"name" : "贞丰县",
+				"adcode" : "522325",
+				"adcode_s" : "5223",
+				"adcode_si" : "52",
+				"dname" : "黔西南布依族苗族自治州"
+			}
+		}
+	]
+}

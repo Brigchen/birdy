@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.45741912, 36.2679776751 ]
+			},
+			"properties" : {
+				"name" : "城阳区",
+				"adcode" : "370214",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8727881952, 35.8587311631 ]
+			},
+			"properties" : {
+				"name" : "黄岛区",
+				"adcode" : "370211",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.555274528, 36.4513397715 ]
+			},
+			"properties" : {
+				"name" : "即墨区",
+				"adcode" : "370215",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9494624645, 36.2412818836 ]
+			},
+			"properties" : {
+				"name" : "胶州市",
+				"adcode" : "370281",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4317300113, 36.8566894712 ]
+			},
+			"properties" : {
+				"name" : "莱西市",
+				"adcode" : "370285",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5722405006, 36.1901005852 ]
+			},
+			"properties" : {
+				"name" : "崂山区",
+				"adcode" : "370212",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4274129575, 36.1708927105 ]
+			},
+			"properties" : {
+				"name" : "李沧区",
+				"adcode" : "370213",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9400720577, 36.7816570253 ]
+			},
+			"properties" : {
+				"name" : "平度市",
+				"adcode" : "370283",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3668480935, 36.1209799767 ]
+			},
+			"properties" : {
+				"name" : "市北区",
+				"adcode" : "370203",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3513220915, 36.0597889627 ]
+			},
+			"properties" : {
+				"name" : "市南区",
+				"adcode" : "370202",
+				"adcode_s" : "3702",
+				"adcode_si" : "37",
+				"dname" : "青岛市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.822002049, 40.7089148229 ]
+			},
+			"properties" : {
+				"name" : "建昌县",
+				"adcode" : "211422",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5994082624, 40.8659225134 ]
+			},
+			"properties" : {
+				"name" : "连山区",
+				"adcode" : "211402",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.9194456124, 40.7407743026 ]
+			},
+			"properties" : {
+				"name" : "龙港区",
+				"adcode" : "211403",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.7697380653, 41.0325382252 ]
+			},
+			"properties" : {
+				"name" : "南票区",
+				"adcode" : "211404",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0153685122, 40.2963783601 ]
+			},
+			"properties" : {
+				"name" : "绥中县",
+				"adcode" : "211421",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4638477593, 40.5864837798 ]
+			},
+			"properties" : {
+				"name" : "兴城市",
+				"adcode" : "211481",
+				"adcode_s" : "2114",
+				"adcode_si" : "21",
+				"dname" : "葫芦岛市"
+			}
+		}
+	]
+}

@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0292120819, 34.4136183164 ]
+			},
+			"properties" : {
+				"name" : "登封市",
+				"adcode" : "410185",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.587520271, 34.6787904669 ]
+			},
+			"properties" : {
+				"name" : "二七区",
+				"adcode" : "410103",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0270331159, 34.6984857017 ]
+			},
+			"properties" : {
+				"name" : "巩义市",
+				"adcode" : "410181",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.747290225, 34.6970366426 ]
+			},
+			"properties" : {
+				"name" : "管城回族区",
+				"adcode" : "410104",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.616381014, 34.8913300418 ]
+			},
+			"properties" : {
+				"name" : "惠济区",
+				"adcode" : "410108",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.736552656, 34.8115184042 ]
+			},
+			"properties" : {
+				"name" : "金水区",
+				"adcode" : "410105",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2787293948, 34.7869111479 ]
+			},
+			"properties" : {
+				"name" : "上街区",
+				"adcode" : "410106",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.427365914, 34.5091279651 ]
+			},
+			"properties" : {
+				"name" : "新密市",
+				"adcode" : "410183",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7243052351, 34.4543889299 ]
+			},
+			"properties" : {
+				"name" : "新郑市",
+				"adcode" : "410184",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4174076643, 34.7945820507 ]
+			},
+			"properties" : {
+				"name" : "荥阳市",
+				"adcode" : "410182",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9988108678, 34.7149215272 ]
+			},
+			"properties" : {
+				"name" : "中牟县",
+				"adcode" : "410122",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5412453016, 34.7814913326 ]
+			},
+			"properties" : {
+				"name" : "中原区",
+				"adcode" : "410102",
+				"adcode_s" : "4101",
+				"adcode_si" : "41",
+				"dname" : "郑州市"
+			}
+		}
+	]
+}

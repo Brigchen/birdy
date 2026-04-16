@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.368562155, 42.1088757223 ]
+			},
+			"properties" : {
+				"name" : "阜新蒙古族自治县",
+				"adcode" : "210921",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.42391931, 41.7600467821 ]
+			},
+			"properties" : {
+				"name" : "清河门区",
+				"adcode" : "210905",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.7250247944, 41.9917540188 ]
+			},
+			"properties" : {
+				"name" : "太平区",
+				"adcode" : "210904",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6157409658, 42.0342858434 ]
+			},
+			"properties" : {
+				"name" : "细河区",
+				"adcode" : "210911",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.8165900316, 42.0549558698 ]
+			},
+			"properties" : {
+				"name" : "新邱区",
+				"adcode" : "210903",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.4620086975, 42.51513924 ]
+			},
+			"properties" : {
+				"name" : "彰武县",
+				"adcode" : "210922",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6283000479, 41.9546872143 ]
+			},
+			"properties" : {
+				"name" : "海州区",
+				"adcode" : "210906",
+				"adcode_s" : "2109",
+				"adcode_si" : "21",
+				"dname" : "阜新市"
+			}
+		}
+	]
+}

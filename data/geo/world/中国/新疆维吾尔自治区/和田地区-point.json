@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.5883171413, 36.2249742432 ]
+			},
+			"properties" : {
+				"name" : "策勒县",
+				"adcode" : "653225",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.9501575967, 37.1526185491 ]
+			},
+			"properties" : {
+				"name" : "和田市",
+				"adcode" : "653201",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.3398312028, 35.6634087681 ]
+			},
+			"properties" : {
+				"name" : "和田县",
+				"adcode" : "653221",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.705903605, 37.822887758 ]
+			},
+			"properties" : {
+				"name" : "洛浦县",
+				"adcode" : "653224",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.0424246325, 37.4797974746 ]
+			},
+			"properties" : {
+				"name" : "民丰县",
+				"adcode" : "653227",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.03936606, 38.3727969818 ]
+			},
+			"properties" : {
+				"name" : "墨玉县",
+				"adcode" : "653222",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 78.48951471, 36.6703009617 ]
+			},
+			"properties" : {
+				"name" : "皮山县",
+				"adcode" : "653223",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.9856819329, 37.1423348437 ]
+			},
+			"properties" : {
+				"name" : "于田县",
+				"adcode" : "653226",
+				"adcode_s" : "6532",
+				"adcode_si" : "65",
+				"dname" : "和田地区"
+			}
+		}
+	]
+}

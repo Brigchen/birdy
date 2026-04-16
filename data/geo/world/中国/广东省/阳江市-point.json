@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8844923935, 21.8292023436 ]
+			},
+			"properties" : {
+				"name" : "江城区",
+				"adcode" : "441702",
+				"adcode_s" : "4417",
+				"adcode_si" : "44",
+				"dname" : "阳江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6824781788, 22.220422056 ]
+			},
+			"properties" : {
+				"name" : "阳春市",
+				"adcode" : "441781",
+				"adcode_s" : "4417",
+				"adcode_si" : "44",
+				"dname" : "阳江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0849599333, 21.9694890514 ]
+			},
+			"properties" : {
+				"name" : "阳东区",
+				"adcode" : "441704",
+				"adcode_s" : "4417",
+				"adcode_si" : "44",
+				"dname" : "阳江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5912776525, 21.7180146993 ]
+			},
+			"properties" : {
+				"name" : "阳西县",
+				"adcode" : "441721",
+				"adcode_s" : "4417",
+				"adcode_si" : "44",
+				"dname" : "阳江市"
+			}
+		}
+	]
+}

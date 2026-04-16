@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.7418973208, 23.7062124943 ]
+			},
+			"properties" : {
+				"name" : "富宁县",
+				"adcode" : "532628",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9969617653, 23.9641472608 ]
+			},
+			"properties" : {
+				"name" : "广南县",
+				"adcode" : "532627",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1160917215, 23.3905903727 ]
+			},
+			"properties" : {
+				"name" : "麻栗坡县",
+				"adcode" : "532624",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2605978233, 22.9522629571 ]
+			},
+			"properties" : {
+				"name" : "马关县",
+				"adcode" : "532625",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1018088767, 24.1226018542 ]
+			},
+			"properties" : {
+				"name" : "丘北县",
+				"adcode" : "532626",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0831777067, 23.3960161505 ]
+			},
+			"properties" : {
+				"name" : "文山市",
+				"adcode" : "532601",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6786335709, 23.3597324528 ]
+			},
+			"properties" : {
+				"name" : "西畴县",
+				"adcode" : "532623",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.445209025, 23.6614708947 ]
+			},
+			"properties" : {
+				"name" : "砚山县",
+				"adcode" : "532622",
+				"adcode_s" : "5326",
+				"adcode_si" : "53",
+				"dname" : "文山壮族苗族自治州"
+			}
+		}
+	]
+}

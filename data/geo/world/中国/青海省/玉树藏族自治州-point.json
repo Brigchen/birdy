@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.0182123907, 33.9169211594 ]
+			},
+			"properties" : {
+				"name" : "称多县",
+				"adcode" : "632723",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 96.1298794702, 32.1738278742 ]
+			},
+			"properties" : {
+				"name" : "囊谦县",
+				"adcode" : "632725",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.2802008984, 34.9501849365 ]
+			},
+			"properties" : {
+				"name" : "曲麻莱县",
+				"adcode" : "632726",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 96.6557519393, 32.9181593557 ]
+			},
+			"properties" : {
+				"name" : "玉树市",
+				"adcode" : "632701",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.283743946, 33.0603470868 ]
+			},
+			"properties" : {
+				"name" : "杂多县",
+				"adcode" : "632722",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.14896952, 35.4708391107 ]
+			},
+			"properties" : {
+				"name" : "治多县",
+				"adcode" : "632724",
+				"adcode_s" : "6327",
+				"adcode_si" : "63",
+				"dname" : "玉树藏族自治州"
+			}
+		}
+	]
+}

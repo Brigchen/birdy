@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0587262188, 35.1828321877 ]
+			},
+			"properties" : {
+				"name" : "博爱县",
+				"adcode" : "410822",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2069722564, 35.2445494053 ]
+			},
+			"properties" : {
+				"name" : "解放区",
+				"adcode" : "410802",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.36715324, 35.2959155219 ]
+			},
+			"properties" : {
+				"name" : "马村区",
+				"adcode" : "410804",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7579018906, 34.9206361215 ]
+			},
+			"properties" : {
+				"name" : "孟州市",
+				"adcode" : "410883",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8756318693, 35.1285348301 ]
+			},
+			"properties" : {
+				"name" : "沁阳市",
+				"adcode" : "410882",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2768055788, 35.2358807517 ]
+			},
+			"properties" : {
+				"name" : "山阳区",
+				"adcode" : "410811",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0431123574, 34.9451934443 ]
+			},
+			"properties" : {
+				"name" : "温县",
+				"adcode" : "410825",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3875744223, 35.0517986656 ]
+			},
+			"properties" : {
+				"name" : "武陟县",
+				"adcode" : "410823",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.43423366, 35.2415750937 ]
+			},
+			"properties" : {
+				"name" : "修武县",
+				"adcode" : "410821",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1500581484, 35.266003886 ]
+			},
+			"properties" : {
+				"name" : "中站区",
+				"adcode" : "410803",
+				"adcode_s" : "4108",
+				"adcode_si" : "41",
+				"dname" : "焦作市"
+			}
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1213791312, 35.9644991873 ]
+			},
+			"properties" : {
+				"name" : "鹤山区",
+				"adcode" : "410602",
+				"adcode_s" : "4106",
+				"adcode_si" : "41",
+				"dname" : "鹤壁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.50304063, 35.7216005948 ]
+			},
+			"properties" : {
+				"name" : "浚县",
+				"adcode" : "410621",
+				"adcode_s" : "4106",
+				"adcode_si" : "41",
+				"dname" : "鹤壁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3048244808, 35.7300411571 ]
+			},
+			"properties" : {
+				"name" : "淇滨区",
+				"adcode" : "410611",
+				"adcode_s" : "4106",
+				"adcode_si" : "41",
+				"dname" : "鹤壁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1558332699, 35.6620185571 ]
+			},
+			"properties" : {
+				"name" : "淇县",
+				"adcode" : "410622",
+				"adcode_s" : "4106",
+				"adcode_si" : "41",
+				"dname" : "鹤壁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2185286281, 35.9149772644 ]
+			},
+			"properties" : {
+				"name" : "山城区",
+				"adcode" : "410603",
+				"adcode_s" : "4106",
+				"adcode_si" : "41",
+				"dname" : "鹤壁市"
+			}
+		}
+	]
+}

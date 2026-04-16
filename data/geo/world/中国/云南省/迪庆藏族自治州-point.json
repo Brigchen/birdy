@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.0229778187, 28.353137539 ]
+			},
+			"properties" : {
+				"name" : "德钦县",
+				"adcode" : "533422",
+				"adcode_s" : "5334",
+				"adcode_si" : "53",
+				"dname" : "迪庆藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.1635466305, 27.3280494529 ]
+			},
+			"properties" : {
+				"name" : "维西傈僳族自治县",
+				"adcode" : "533423",
+				"adcode_s" : "5334",
+				"adcode_si" : "53",
+				"dname" : "迪庆藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.8213530064, 27.9037250833 ]
+			},
+			"properties" : {
+				"name" : "香格里拉市",
+				"adcode" : "533401",
+				"adcode_s" : "5334",
+				"adcode_si" : "53",
+				"dname" : "迪庆藏族自治州"
+			}
+		}
+	]
+}

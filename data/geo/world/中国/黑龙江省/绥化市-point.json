@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.39094237, 46.6058330548 ]
+			},
+			"properties" : {
+				"name" : "安达市",
+				"adcode" : "231281",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.8948376, 46.6336537037 ]
+			},
+			"properties" : {
+				"name" : "北林区",
+				"adcode" : "231202",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.8786532345, 47.435167626 ]
+			},
+			"properties" : {
+				"name" : "海伦市",
+				"adcode" : "231283",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.200507627, 46.3498765725 ]
+			},
+			"properties" : {
+				"name" : "兰西县",
+				"adcode" : "231222",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.8281684413, 47.1930711353 ]
+			},
+			"properties" : {
+				"name" : "明水县",
+				"adcode" : "231225",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.9443792495, 46.8382072307 ]
+			},
+			"properties" : {
+				"name" : "青冈县",
+				"adcode" : "231223",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.552686435, 46.8949375657 ]
+			},
+			"properties" : {
+				"name" : "庆安县",
+				"adcode" : "231224",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.7051778247, 47.5740191278 ]
+			},
+			"properties" : {
+				"name" : "绥棱县",
+				"adcode" : "231226",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.5793534359, 46.8610888341 ]
+			},
+			"properties" : {
+				"name" : "望奎县",
+				"adcode" : "231221",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.8374135611, 46.0000487111 ]
+			},
+			"properties" : {
+				"name" : "肇东市",
+				"adcode" : "231282",
+				"adcode_s" : "2312",
+				"adcode_si" : "23",
+				"dname" : "绥化市"
+			}
+		}
+	]
+}

@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1817419561, 30.1844925088 ]
+			},
+			"properties" : {
+				"name" : "滨江区",
+				"adcode" : "330108",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8842002777, 29.6108247998 ]
+			},
+			"properties" : {
+				"name" : "淳安县",
+				"adcode" : "330127",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.834839426, 29.9976027994 ]
+			},
+			"properties" : {
+				"name" : "富阳区",
+				"adcode" : "330111",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1559522069, 30.3305547658 ]
+			},
+			"properties" : {
+				"name" : "拱墅区",
+				"adcode" : "330105",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.54719899, 29.5615691155 ]
+			},
+			"properties" : {
+				"name" : "建德市",
+				"adcode" : "330182",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3384750051, 30.204034421 ]
+			},
+			"properties" : {
+				"name" : "临安区",
+				"adcode" : "330112",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.22461046, 30.449354984 ]
+			},
+			"properties" : {
+				"name" : "临平区",
+				"adcode" : "330113",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5213033239, 30.3146906587 ]
+			},
+			"properties" : {
+				"name" : "钱塘区",
+				"adcode" : "330114",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2143490547, 30.2897249163 ]
+			},
+			"properties" : {
+				"name" : "上城区",
+				"adcode" : "330102",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5494150361, 29.8332127817 ]
+			},
+			"properties" : {
+				"name" : "桐庐县",
+				"adcode" : "330122",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2112659747, 30.0422856503 ]
+			},
+			"properties" : {
+				"name" : "萧山区",
+				"adcode" : "330109",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9081497146, 30.3694206908 ]
+			},
+			"properties" : {
+				"name" : "余杭区",
+				"adcode" : "330110",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0774418615, 30.2034976386 ]
+			},
+			"properties" : {
+				"name" : "西湖区",
+				"adcode" : "330103",
+				"adcode_s" : "3301",
+				"adcode_si" : "33",
+				"dname" : "杭州市"
+			}
+		}
+	]
+}

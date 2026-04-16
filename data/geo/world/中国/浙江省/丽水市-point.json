@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1810663878, 28.6630344906 ]
+			},
+			"properties" : {
+				"name" : "缙云县",
+				"adcode" : "331122",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.6079127759, 27.8931490332 ]
+			},
+			"properties" : {
+				"name" : "景宁畲族自治县",
+				"adcode" : "331127",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.838658322, 28.4442564876 ]
+			},
+			"properties" : {
+				"name" : "莲都区",
+				"adcode" : "331102",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0706586036, 28.0473903121 ]
+			},
+			"properties" : {
+				"name" : "龙泉市",
+				"adcode" : "331181",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1357635118, 28.205165975 ]
+			},
+			"properties" : {
+				"name" : "青田县",
+				"adcode" : "331121",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.16391248, 27.5820586145 ]
+			},
+			"properties" : {
+				"name" : "庆元县",
+				"adcode" : "331126",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4296663662, 28.4089612787 ]
+			},
+			"properties" : {
+				"name" : "松阳县",
+				"adcode" : "331124",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0777359411, 28.5224889358 ]
+			},
+			"properties" : {
+				"name" : "遂昌县",
+				"adcode" : "331123",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.529981367, 28.1287519612 ]
+			},
+			"properties" : {
+				"name" : "云和县",
+				"adcode" : "331125",
+				"adcode_s" : "3311",
+				"adcode_si" : "33",
+				"dname" : "丽水市"
+			}
+		}
+	]
+}

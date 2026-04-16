@@ -1,0 +1,230 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8793529004, 40.9474836616 ]
+			},
+			"properties" : {
+				"name" : "赤城县",
+				"adcode" : "130732",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2064765602, 41.0179337959 ]
+			},
+			"properties" : {
+				"name" : "崇礼区",
+				"adcode" : "130709",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6230807728, 41.5719467489 ]
+			},
+			"properties" : {
+				"name" : "沽源县",
+				"adcode" : "130724",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.45900615, 40.5278373252 ]
+			},
+			"properties" : {
+				"name" : "怀安县",
+				"adcode" : "130728",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.621527319, 40.3403799973 ]
+			},
+			"properties" : {
+				"name" : "怀来县",
+				"adcode" : "130730",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5939015031, 41.7756678467 ]
+			},
+			"properties" : {
+				"name" : "康保县",
+				"adcode" : "130723",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0336432405, 40.7587059426 ]
+			},
+			"properties" : {
+				"name" : "桥东区",
+				"adcode" : "130702",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1397111453, 41.1236621596 ]
+			},
+			"properties" : {
+				"name" : "尚义县",
+				"adcode" : "130725",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5987923071, 40.8392815347 ]
+			},
+			"properties" : {
+				"name" : "万全区",
+				"adcode" : "130708",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6977255454, 39.8710228401 ]
+			},
+			"properties" : {
+				"name" : "蔚县",
+				"adcode" : "130726",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3040666126, 40.539926367 ]
+			},
+			"properties" : {
+				"name" : "下花园区",
+				"adcode" : "130706",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0458549647, 40.5293949051 ]
+			},
+			"properties" : {
+				"name" : "宣化区",
+				"adcode" : "130705",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3810002614, 40.1309940301 ]
+			},
+			"properties" : {
+				"name" : "阳原县",
+				"adcode" : "130727",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7590601409, 41.2851948601 ]
+			},
+			"properties" : {
+				"name" : "张北县",
+				"adcode" : "130722",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2112069359, 40.0940233435 ]
+			},
+			"properties" : {
+				"name" : "涿鹿县",
+				"adcode" : "130731",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.87373137, 40.6946615578 ]
+			},
+			"properties" : {
+				"name" : "桥西区",
+				"adcode" : "130704",
+				"adcode_s" : "1307",
+				"adcode_si" : "13",
+				"dname" : "张家口市"
+			}
+		}
+	]
+}

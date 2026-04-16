@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4288844817, 40.1677070395 ]
+			},
+			"properties" : {
+				"name" : "阿拉善右旗",
+				"adcode" : "152922",
+				"adcode_s" : "1529",
+				"adcode_si" : "15",
+				"dname" : "阿拉善盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.02155164, 39.5080694465 ]
+			},
+			"properties" : {
+				"name" : "阿拉善左旗",
+				"adcode" : "152921",
+				"adcode_s" : "1529",
+				"adcode_si" : "15",
+				"dname" : "阿拉善盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.100079257, 41.676862145 ]
+			},
+			"properties" : {
+				"name" : "额济纳旗",
+				"adcode" : "152923",
+				"adcode_s" : "1529",
+				"adcode_si" : "15",
+				"dname" : "阿拉善盟"
+			}
+		}
+	]
+}

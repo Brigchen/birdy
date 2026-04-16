@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6943908695, 37.5109846402 ]
+			},
+			"properties" : {
+				"name" : "柏乡县",
+				"adcode" : "130524",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1858193769, 37.0765592083 ]
+			},
+			"properties" : {
+				"name" : "广宗县",
+				"adcode" : "130531",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.046432028, 37.2717744165 ]
+			},
+			"properties" : {
+				"name" : "巨鹿县",
+				"adcode" : "130529",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3722928104, 37.4562681505 ]
+			},
+			"properties" : {
+				"name" : "临城县",
+				"adcode" : "130522",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5157038143, 36.851732308 ]
+			},
+			"properties" : {
+				"name" : "临西县",
+				"adcode" : "130535",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7805246012, 37.3582987171 ]
+			},
+			"properties" : {
+				"name" : "隆尧县",
+				"adcode" : "130525",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.603787475, 37.1969338527 ]
+			},
+			"properties" : {
+				"name" : "南宫市",
+				"adcode" : "130581",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7412912401, 37.0105957328 ]
+			},
+			"properties" : {
+				"name" : "南和区",
+				"adcode" : "130506",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.461867025, 37.2713824331 ]
+			},
+			"properties" : {
+				"name" : "内丘县",
+				"adcode" : "130523",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0086152646, 37.6052739541 ]
+			},
+			"properties" : {
+				"name" : "宁晋县",
+				"adcode" : "130528",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9926743995, 37.0493485591 ]
+			},
+			"properties" : {
+				"name" : "平乡县",
+				"adcode" : "130532",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6791427985, 37.0345111817 ]
+			},
+			"properties" : {
+				"name" : "清河县",
+				"adcode" : "130534",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7585842684, 37.167833848 ]
+			},
+			"properties" : {
+				"name" : "任泽区",
+				"adcode" : "130505",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.26267781, 36.914723154 ]
+			},
+			"properties" : {
+				"name" : "沙河市",
+				"adcode" : "130582",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.37573663, 37.0715518887 ]
+			},
+			"properties" : {
+				"name" : "威县",
+				"adcode" : "130533",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5525543056, 37.0898568066 ]
+			},
+			"properties" : {
+				"name" : "襄都区",
+				"adcode" : "130502",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.26130782, 37.5039345282 ]
+			},
+			"properties" : {
+				"name" : "新河县",
+				"adcode" : "130530",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1317359124, 37.1446032384 ]
+			},
+			"properties" : {
+				"name" : "信都区",
+				"adcode" : "130503",
+				"adcode_s" : "1305",
+				"adcode_si" : "13",
+				"dname" : "邢台市"
+			}
+		}
+	]
+}

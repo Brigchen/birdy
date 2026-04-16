@@ -1,0 +1,29 @@
+# Birdy / 鸟图智慧仓储 — Python 依赖
+# 安装: pip install -r requirements.txt
+#
+# PyTorch：若使用 NVIDIA GPU，建议到 https://pytorch.org 按 CUDA 版本安装
+# torch / torchvision，再安装本文件其余依赖（可注释掉下面两行后单独安装）。
+
+# 深度学习 / 推理
+torch>=1.9.0
+torchvision>=0.10.0
+ultralytics>=8.0.0
+
+# 图像与数值
+opencv-python>=4.5.0
+Pillow>=8.0.0
+numpy>=1.19.0
+
+# 图形界面
+PyQt5>=5.15.0
+
+# 网络与地理编码 / EXIF
+requests>=2.25.0
+piexif>=1.1.3
+geopy>=2.0.0
+
+# 其它
+tqdm>=4.60.0
+
+# 可选：RAW 照片
+# rawpy>=0.16.0

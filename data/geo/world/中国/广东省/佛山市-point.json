@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.06850885, 23.0163346647 ]
+			},
+			"properties" : {
+				"name" : "禅城区",
+				"adcode" : "440604",
+				"adcode_s" : "4406",
+				"adcode_si" : "44",
+				"dname" : "佛山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6720553723, 22.8215536639 ]
+			},
+			"properties" : {
+				"name" : "高明区",
+				"adcode" : "440608",
+				"adcode_s" : "4406",
+				"adcode_si" : "44",
+				"dname" : "佛山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0334117418, 23.0770329752 ]
+			},
+			"properties" : {
+				"name" : "南海区",
+				"adcode" : "440605",
+				"adcode_s" : "4406",
+				"adcode_si" : "44",
+				"dname" : "佛山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8932027481, 23.2918174726 ]
+			},
+			"properties" : {
+				"name" : "三水区",
+				"adcode" : "440607",
+				"adcode_s" : "4406",
+				"adcode_si" : "44",
+				"dname" : "佛山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1793642613, 22.8428467176 ]
+			},
+			"properties" : {
+				"name" : "顺德区",
+				"adcode" : "440606",
+				"adcode_s" : "4406",
+				"adcode_si" : "44",
+				"dname" : "佛山市"
+			}
+		}
+	]
+}

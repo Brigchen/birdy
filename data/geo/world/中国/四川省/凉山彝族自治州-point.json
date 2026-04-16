@@ -1,0 +1,244 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.8736139534, 27.5967228006 ]
+			},
+			"properties" : {
+				"name" : "布拖县",
+				"adcode" : "513429",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.18227589, 27.3599372727 ]
+			},
+			"properties" : {
+				"name" : "德昌县",
+				"adcode" : "513424",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7593187296, 28.9721525632 ]
+			},
+			"properties" : {
+				"name" : "甘洛县",
+				"adcode" : "513435",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7352439637, 26.5702802098 ]
+			},
+			"properties" : {
+				"name" : "会东县",
+				"adcode" : "513426",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.2549900963, 26.58697707 ]
+			},
+			"properties" : {
+				"name" : "会理市",
+				"adcode" : "513425",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.1935515506, 27.702098996 ]
+			},
+			"properties" : {
+				"name" : "金阳县",
+				"adcode" : "513430",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4957794399, 28.2857705977 ]
+			},
+			"properties" : {
+				"name" : "雷波县",
+				"adcode" : "513437",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0927278026, 28.4410871081 ]
+			},
+			"properties" : {
+				"name" : "美姑县",
+				"adcode" : "513436",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0603915745, 28.510634793 ]
+			},
+			"properties" : {
+				"name" : "冕宁县",
+				"adcode" : "513433",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.9454549851, 28.3562606026 ]
+			},
+			"properties" : {
+				"name" : "木里藏族自治县",
+				"adcode" : "513422",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7089188863, 27.0876493148 ]
+			},
+			"properties" : {
+				"name" : "宁南县",
+				"adcode" : "513427",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.5597903422, 27.5452448603 ]
+			},
+			"properties" : {
+				"name" : "普格县",
+				"adcode" : "513428",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1095303613, 27.8577395683 ]
+			},
+			"properties" : {
+				"name" : "西昌市",
+				"adcode" : "513401",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4403291697, 28.1927534941 ]
+			},
+			"properties" : {
+				"name" : "喜德县",
+				"adcode" : "513432",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.3759855, 27.4652528534 ]
+			},
+			"properties" : {
+				"name" : "盐源县",
+				"adcode" : "513423",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.6199220934, 28.5894527113 ]
+			},
+			"properties" : {
+				"name" : "越西县",
+				"adcode" : "513434",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.8241495294, 28.0100473508 ]
+			},
+			"properties" : {
+				"name" : "昭觉县",
+				"adcode" : "513431",
+				"adcode_s" : "5134",
+				"adcode_si" : "51",
+				"dname" : "凉山彝族自治州"
+			}
+		}
+	]
+}

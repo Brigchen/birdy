@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6532599277, 24.3446337532 ]
+			},
+			"properties" : {
+				"name" : "大埔县",
+				"adcode" : "441422",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2825447298, 23.9147536956 ]
+			},
+			"properties" : {
+				"name" : "丰顺县",
+				"adcode" : "441423",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1845137407, 24.6800172401 ]
+			},
+			"properties" : {
+				"name" : "蕉岭县",
+				"adcode" : "441427",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1670927056, 24.2646163039 ]
+			},
+			"properties" : {
+				"name" : "梅江区",
+				"adcode" : "441402",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.36001108, 24.5229805112 ]
+			},
+			"properties" : {
+				"name" : "梅县区",
+				"adcode" : "441403",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9209407695, 24.6926815279 ]
+			},
+			"properties" : {
+				"name" : "平远县",
+				"adcode" : "441426",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6297626928, 23.799349201 ]
+			},
+			"properties" : {
+				"name" : "五华县",
+				"adcode" : "441424",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7422217829, 24.2642526439 ]
+			},
+			"properties" : {
+				"name" : "兴宁市",
+				"adcode" : "441481",
+				"adcode_s" : "4414",
+				"adcode_si" : "44",
+				"dname" : "梅州市"
+			}
+		}
+	]
+}

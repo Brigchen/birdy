@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.2949782225, 23.2640857102 ]
+			},
+			"properties" : {
+				"name" : "沧源佤族自治县",
+				"adcode" : "530927",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.9134121478, 24.6071537825 ]
+			},
+			"properties" : {
+				"name" : "凤庆县",
+				"adcode" : "530921",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.4263228324, 23.6383613587 ]
+			},
+			"properties" : {
+				"name" : "耿马傣族佤族自治县",
+				"adcode" : "530926",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.1320493134, 23.8454871274 ]
+			},
+			"properties" : {
+				"name" : "临翔区",
+				"adcode" : "530902",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.8780794709, 23.4663034114 ]
+			},
+			"properties" : {
+				"name" : "双江拉祜族佤族布朗族傣族自治县",
+				"adcode" : "530925",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.4198922006, 24.0859453326 ]
+			},
+			"properties" : {
+				"name" : "永德县",
+				"adcode" : "530923",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.2258800819, 24.323519388 ]
+			},
+			"properties" : {
+				"name" : "云县",
+				"adcode" : "530922",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.9981766744, 23.8980176548 ]
+			},
+			"properties" : {
+				"name" : "镇康县",
+				"adcode" : "530924",
+				"adcode_s" : "5309",
+				"adcode_si" : "53",
+				"dname" : "临沧市"
+			}
+		}
+	]
+}

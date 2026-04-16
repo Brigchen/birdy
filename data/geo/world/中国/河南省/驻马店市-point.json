@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3941772602, 32.8612696633 ]
+			},
+			"properties" : {
+				"name" : "泌阳县",
+				"adcode" : "411726",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6360023292, 32.9883930571 ]
+			},
+			"properties" : {
+				"name" : "平舆县",
+				"adcode" : "411723",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9613596062, 32.6947321281 ]
+			},
+			"properties" : {
+				"name" : "确山县",
+				"adcode" : "411725",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3138444642, 32.9168349399 ]
+			},
+			"properties" : {
+				"name" : "汝南县",
+				"adcode" : "411727",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3964106343, 33.2966045843 ]
+			},
+			"properties" : {
+				"name" : "上蔡县",
+				"adcode" : "411722",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.890099277, 33.1631173265 ]
+			},
+			"properties" : {
+				"name" : "遂平县",
+				"adcode" : "411728",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.89383306, 33.3893014517 ]
+			},
+			"properties" : {
+				"name" : "西平县",
+				"adcode" : "411721",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9376708138, 32.7795120398 ]
+			},
+			"properties" : {
+				"name" : "新蔡县",
+				"adcode" : "411729",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8981972415, 32.9697832914 ]
+			},
+			"properties" : {
+				"name" : "驿城区",
+				"adcode" : "411702",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.486150093, 32.5430066108 ]
+			},
+			"properties" : {
+				"name" : "正阳县",
+				"adcode" : "411724",
+				"adcode_s" : "4117",
+				"adcode_si" : "41",
+				"dname" : "驻马店市"
+			}
+		}
+	]
+}

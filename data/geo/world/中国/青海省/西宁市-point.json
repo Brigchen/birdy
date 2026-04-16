@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.68200728, 36.6746322995 ]
+			},
+			"properties" : {
+				"name" : "城北区",
+				"adcode" : "630105",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.8402892958, 36.5830716253 ]
+			},
+			"properties" : {
+				"name" : "城东区",
+				"adcode" : "630102",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7065833876, 36.6224239684 ]
+			},
+			"properties" : {
+				"name" : "城西区",
+				"adcode" : "630104",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.4557532156, 37.1316235035 ]
+			},
+			"properties" : {
+				"name" : "大通回族土族自治县",
+				"adcode" : "630121",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.1644255148, 36.6256146832 ]
+			},
+			"properties" : {
+				"name" : "湟源县",
+				"adcode" : "630123",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5240761814, 36.5998775325 ]
+			},
+			"properties" : {
+				"name" : "湟中区",
+				"adcode" : "630106",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7205820496, 36.5428526173 ]
+			},
+			"properties" : {
+				"name" : "城中区",
+				"adcode" : "630102",
+				"adcode_s" : "6301",
+				"adcode_si" : "63",
+				"dname" : "西宁市"
+			}
+		}
+	]
+}

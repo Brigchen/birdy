@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.3323195983, 37.5245747039 ]
+			},
+			"properties" : {
+				"name" : "古浪县",
+				"adcode" : "620622",
+				"adcode_s" : "6206",
+				"adcode_si" : "62",
+				"dname" : "武威市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7586933494, 37.9090275207 ]
+			},
+			"properties" : {
+				"name" : "凉州区",
+				"adcode" : "620602",
+				"adcode_s" : "6206",
+				"adcode_si" : "62",
+				"dname" : "武威市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.01740785, 38.6360569617 ]
+			},
+			"properties" : {
+				"name" : "民勤县",
+				"adcode" : "620621",
+				"adcode_s" : "6206",
+				"adcode_si" : "62",
+				"dname" : "武威市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4346460165, 37.5767082102 ]
+			},
+			"properties" : {
+				"name" : "天祝藏族自治县",
+				"adcode" : "620623",
+				"adcode_s" : "6206",
+				"adcode_si" : "62",
+				"dname" : "武威市"
+			}
+		}
+	]
+}

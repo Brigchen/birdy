@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.2614160309, 42.6635239258 ]
+			},
+			"properties" : {
+				"name" : "高昌区",
+				"adcode" : "650402",
+				"adcode_s" : "6504",
+				"adcode_si" : "65",
+				"dname" : "吐鲁番市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.6068647667, 42.2804464032 ]
+			},
+			"properties" : {
+				"name" : "鄯善县",
+				"adcode" : "650421",
+				"adcode_s" : "6504",
+				"adcode_si" : "65",
+				"dname" : "吐鲁番市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.3941954853, 42.4490877207 ]
+			},
+			"properties" : {
+				"name" : "托克逊县",
+				"adcode" : "650422",
+				"adcode_s" : "6504",
+				"adcode_si" : "65",
+				"dname" : "吐鲁番市"
+			}
+		}
+	]
+}

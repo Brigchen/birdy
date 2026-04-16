@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2039869027, 27.7144698448 ]
+			},
+			"properties" : {
+				"name" : "碧江区",
+				"adcode" : "520602",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0849830352, 28.2617552722 ]
+			},
+			"properties" : {
+				"name" : "德江县",
+				"adcode" : "520626",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.766669717, 27.7251450717 ]
+			},
+			"properties" : {
+				"name" : "江口县",
+				"adcode" : "520621",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1589209446, 27.4883503159 ]
+			},
+			"properties" : {
+				"name" : "石阡县",
+				"adcode" : "520623",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1398559728, 27.8463462079 ]
+			},
+			"properties" : {
+				"name" : "思南县",
+				"adcode" : "520624",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.99742167, 28.0368274049 ]
+			},
+			"properties" : {
+				"name" : "松桃苗族自治县",
+				"adcode" : "520628",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.108974452, 27.5730357508 ]
+			},
+			"properties" : {
+				"name" : "万山区",
+				"adcode" : "520603",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.34829784, 28.4668191514 ]
+			},
+			"properties" : {
+				"name" : "沿河土家族自治县",
+				"adcode" : "520627",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5226505549, 27.99624935 ]
+			},
+			"properties" : {
+				"name" : "印江土家族苗族自治县",
+				"adcode" : "520625",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.982632113, 27.3244647633 ]
+			},
+			"properties" : {
+				"name" : "玉屏侗族自治县",
+				"adcode" : "520622",
+				"adcode_s" : "5206",
+				"adcode_si" : "52",
+				"dname" : "铜仁市"
+			}
+		}
+	]
+}

@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4441875094, 27.3580729537 ]
+			},
+			"properties" : {
+				"name" : "安福县",
+				"adcode" : "360829",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.73496568, 27.0945662997 ]
+			},
+			"properties" : {
+				"name" : "吉安县",
+				"adcode" : "360821",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2423073514, 27.1977754901 ]
+			},
+			"properties" : {
+				"name" : "吉水县",
+				"adcode" : "360822",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9372493201, 27.1550908666 ]
+			},
+			"properties" : {
+				"name" : "吉州区",
+				"adcode" : "360802",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1134698252, 26.6302238835 ]
+			},
+			"properties" : {
+				"name" : "井冈山市",
+				"adcode" : "360881",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.11465012, 26.9802791184 ]
+			},
+			"properties" : {
+				"name" : "青原区",
+				"adcode" : "360803",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3591603131, 26.3413025749 ]
+			},
+			"properties" : {
+				"name" : "遂川县",
+				"adcode" : "360827",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0729699298, 26.7007364028 ]
+			},
+			"properties" : {
+				"name" : "泰和县",
+				"adcode" : "360826",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8135375998, 26.4418426473 ]
+			},
+			"properties" : {
+				"name" : "万安县",
+				"adcode" : "360828",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.204051827, 27.6271037363 ]
+			},
+			"properties" : {
+				"name" : "峡江县",
+				"adcode" : "360823",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4952862907, 27.7363557893 ]
+			},
+			"properties" : {
+				"name" : "新干县",
+				"adcode" : "360824",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7667408, 26.9643974349 ]
+			},
+			"properties" : {
+				"name" : "永丰县",
+				"adcode" : "360825",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1768819803, 26.9700737165 ]
+			},
+			"properties" : {
+				"name" : "永新县",
+				"adcode" : "360830",
+				"adcode_s" : "3608",
+				"adcode_si" : "36",
+				"dname" : "吉安市"
+			}
+		}
+	]
+}

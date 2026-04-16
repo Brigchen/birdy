@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9757707471, 23.2730845479 ]
+			},
+			"properties" : {
+				"name" : "德庆县",
+				"adcode" : "441226",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6134020646, 23.2064404889 ]
+			},
+			"properties" : {
+				"name" : "鼎湖区",
+				"adcode" : "441203",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4663551359, 23.1005716095 ]
+			},
+			"properties" : {
+				"name" : "端州区",
+				"adcode" : "441202",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7116950274, 23.5574263004 ]
+			},
+			"properties" : {
+				"name" : "封开县",
+				"adcode" : "441225",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.50439884, 22.9375685078 ]
+			},
+			"properties" : {
+				"name" : "高要区",
+				"adcode" : "441204",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4314767215, 23.6740234656 ]
+			},
+			"properties" : {
+				"name" : "广宁县",
+				"adcode" : "441223",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1685136723, 23.9705977451 ]
+			},
+			"properties" : {
+				"name" : "怀集县",
+				"adcode" : "441224",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6761690003, 23.4284205226 ]
+			},
+			"properties" : {
+				"name" : "四会市",
+				"adcode" : "441284",
+				"adcode_s" : "4412",
+				"adcode_si" : "44",
+				"dname" : "肇庆市"
+			}
+		}
+	]
+}

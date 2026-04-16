@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.9034107517, 27.902789781 ]
+			},
+			"properties" : {
+				"name" : "大关县",
+				"adcode" : "530624",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4178978499, 27.2131086252 ]
+			},
+			"properties" : {
+				"name" : "鲁甸县",
+				"adcode" : "530621",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.1214997523, 27.0043322407 ]
+			},
+			"properties" : {
+				"name" : "巧家县",
+				"adcode" : "530622",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.15158713, 28.4709538077 ]
+			},
+			"properties" : {
+				"name" : "水富市",
+				"adcode" : "530681",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0055611397, 28.5363954867 ]
+			},
+			"properties" : {
+				"name" : "绥江县",
+				"adcode" : "530626",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.0407979608, 27.8886425325 ]
+			},
+			"properties" : {
+				"name" : "威信县",
+				"adcode" : "530629",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.22507762, 28.1584917216 ]
+			},
+			"properties" : {
+				"name" : "盐津县",
+				"adcode" : "530623",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2327469226, 27.6278601775 ]
+			},
+			"properties" : {
+				"name" : "彝良县",
+				"adcode" : "530628",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.6435698355, 27.9272560713 ]
+			},
+			"properties" : {
+				"name" : "永善县",
+				"adcode" : "530625",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.6112573823, 27.4280652114 ]
+			},
+			"properties" : {
+				"name" : "昭阳区",
+				"adcode" : "530602",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.8248047396, 27.5660097632 ]
+			},
+			"properties" : {
+				"name" : "镇雄县",
+				"adcode" : "530627",
+				"adcode_s" : "5306",
+				"adcode_si" : "53",
+				"dname" : "昭通市"
+			}
+		}
+	]
+}

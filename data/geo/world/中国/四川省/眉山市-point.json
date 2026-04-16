@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4152024735, 30.0309693296 ]
+			},
+			"properties" : {
+				"name" : "丹棱县",
+				"adcode" : "511424",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.7407301128, 30.0523184835 ]
+			},
+			"properties" : {
+				"name" : "东坡区",
+				"adcode" : "511402",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.021125255, 29.5871877705 ]
+			},
+			"properties" : {
+				"name" : "洪雅县",
+				"adcode" : "511423",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8550483752, 30.2517076427 ]
+			},
+			"properties" : {
+				"name" : "彭山区",
+				"adcode" : "511403",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8295717873, 29.8185848398 ]
+			},
+			"properties" : {
+				"name" : "青神县",
+				"adcode" : "511425",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2170738299, 29.9826383953 ]
+			},
+			"properties" : {
+				"name" : "仁寿县",
+				"adcode" : "511421",
+				"adcode_s" : "5114",
+				"adcode_si" : "51",
+				"dname" : "眉山市"
+			}
+		}
+	]
+}

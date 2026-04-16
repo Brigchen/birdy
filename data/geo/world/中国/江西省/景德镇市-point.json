@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1355697849, 29.2370237567 ]
+			},
+			"properties" : {
+				"name" : "昌江区",
+				"adcode" : "360202",
+				"adcode_s" : "3602",
+				"adcode_si" : "36",
+				"dname" : "景德镇市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.2973168279, 29.5528040423 ]
+			},
+			"properties" : {
+				"name" : "浮梁县",
+				"adcode" : "360222",
+				"adcode_s" : "3602",
+				"adcode_si" : "36",
+				"dname" : "景德镇市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.2613904273, 28.9667249712 ]
+			},
+			"properties" : {
+				"name" : "乐平市",
+				"adcode" : "360281",
+				"adcode_s" : "3602",
+				"adcode_si" : "36",
+				"dname" : "景德镇市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.22902147, 29.2939401421 ]
+			},
+			"properties" : {
+				"name" : "珠山区",
+				"adcode" : "360203",
+				"adcode_s" : "3602",
+				"adcode_si" : "36",
+				"dname" : "景德镇市"
+			}
+		}
+	]
+}

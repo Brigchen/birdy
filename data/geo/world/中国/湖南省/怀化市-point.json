@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.22153471, 27.9551837321 ]
+			},
+			"properties" : {
+				"name" : "辰溪县",
+				"adcode" : "431223",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.00153412, 27.5358616966 ]
+			},
+			"properties" : {
+				"name" : "鹤城区",
+				"adcode" : "431202",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0762831827, 27.236098323 ]
+			},
+			"properties" : {
+				"name" : "洪江市",
+				"adcode" : "431281",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7879073395, 26.9427046879 ]
+			},
+			"properties" : {
+				"name" : "会同县",
+				"adcode" : "431225",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5796184938, 26.5474625732 ]
+			},
+			"properties" : {
+				"name" : "靖州苗族侗族自治县",
+				"adcode" : "431229",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7185425645, 27.7891157577 ]
+			},
+			"properties" : {
+				"name" : "麻阳苗族自治县",
+				"adcode" : "431226",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7336010117, 26.2124164194 ]
+			},
+			"properties" : {
+				"name" : "通道侗族自治县",
+				"adcode" : "431230",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1583331772, 27.2318298415 ]
+			},
+			"properties" : {
+				"name" : "新晃侗族自治县",
+				"adcode" : "431227",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.64712865, 27.8324824683 ]
+			},
+			"properties" : {
+				"name" : "溆浦县",
+				"adcode" : "431224",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5893300694, 28.5730786723 ]
+			},
+			"properties" : {
+				"name" : "沅陵县",
+				"adcode" : "431222",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6004731496, 27.4001030083 ]
+			},
+			"properties" : {
+				"name" : "芷江侗族自治县",
+				"adcode" : "431228",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.12422104, 27.6054931034 ]
+			},
+			"properties" : {
+				"name" : "中方县",
+				"adcode" : "431221",
+				"adcode_s" : "4312",
+				"adcode_si" : "43",
+				"dname" : "怀化市"
+			}
+		}
+	]
+}

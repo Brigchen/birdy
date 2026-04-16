@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9224309214, 35.8032928058 ]
+			},
+			"properties" : {
+				"name" : "高平市",
+				"adcode" : "140581",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3309598691, 35.6845131178 ]
+			},
+			"properties" : {
+				"name" : "陵川县",
+				"adcode" : "140524",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.360181001, 35.7878652009 ]
+			},
+			"properties" : {
+				"name" : "沁水县",
+				"adcode" : "140521",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.349053685, 35.4207037563 ]
+			},
+			"properties" : {
+				"name" : "阳城县",
+				"adcode" : "140522",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.88841759, 35.3387399167 ]
+			},
+			"properties" : {
+				"name" : "泽州县",
+				"adcode" : "140525",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8434034652, 35.5148632704 ]
+			},
+			"properties" : {
+				"name" : "城区",
+				"adcode" : "140502",
+				"adcode_s" : "1405",
+				"adcode_si" : "14",
+				"dname" : "晋城市"
+			}
+		}
+	]
+}

@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "屯昌县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0453784419, 19.3424311237 ]
+			},
+			"properties" : {
+				"name" : "屯昌县",
+				"adcode" : "469022",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

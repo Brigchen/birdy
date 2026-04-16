@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1817997387, 32.253794916 ]
+			},
+			"properties" : {
+				"name" : "霍邱县",
+				"adcode" : "341522",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2350371782, 31.2830874841 ]
+			},
+			"properties" : {
+				"name" : "霍山县",
+				"adcode" : "341525",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6181039734, 31.6597893356 ]
+			},
+			"properties" : {
+				"name" : "金安区",
+				"adcode" : "341502",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7670926386, 31.4748861243 ]
+			},
+			"properties" : {
+				"name" : "金寨县",
+				"adcode" : "341524",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8164575099, 31.3056916828 ]
+			},
+			"properties" : {
+				"name" : "舒城县",
+				"adcode" : "341523",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0463707609, 31.8707415533 ]
+			},
+			"properties" : {
+				"name" : "叶集区",
+				"adcode" : "341504",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3204586582, 31.7526923761 ]
+			},
+			"properties" : {
+				"name" : "裕安区",
+				"adcode" : "341503",
+				"adcode_s" : "3415",
+				"adcode_si" : "34",
+				"dname" : "六安市"
+			}
+		}
+	]
+}

@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2564548297, 22.2255579927 ]
+			},
+			"properties" : {
+				"name" : "斗门区",
+				"adcode" : "440403",
+				"adcode_s" : "4404",
+				"adcode_si" : "44",
+				"dname" : "珠海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1820627013, 22.049897518 ]
+			},
+			"properties" : {
+				"name" : "金湾区",
+				"adcode" : "440404",
+				"adcode_s" : "4404",
+				"adcode_si" : "44",
+				"dname" : "珠海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5236008237, 22.2896886824 ]
+			},
+			"properties" : {
+				"name" : "香洲区",
+				"adcode" : "440402",
+				"adcode_s" : "4404",
+				"adcode_si" : "44",
+				"dname" : "珠海市"
+			}
+		}
+	]
+}

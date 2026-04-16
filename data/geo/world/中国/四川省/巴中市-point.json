@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8597612284, 31.822928795 ]
+			},
+			"properties" : {
+				"name" : "巴州区",
+				"adcode" : "511902",
+				"adcode_s" : "5119",
+				"adcode_si" : "51",
+				"dname" : "巴中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.568304408, 31.7294192475 ]
+			},
+			"properties" : {
+				"name" : "恩阳区",
+				"adcode" : "511903",
+				"adcode_s" : "5119",
+				"adcode_si" : "51",
+				"dname" : "巴中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8257296828, 32.3330310914 ]
+			},
+			"properties" : {
+				"name" : "南江县",
+				"adcode" : "511922",
+				"adcode_s" : "5119",
+				"adcode_si" : "51",
+				"dname" : "巴中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1557885053, 31.5926907078 ]
+			},
+			"properties" : {
+				"name" : "平昌县",
+				"adcode" : "511923",
+				"adcode_s" : "5119",
+				"adcode_si" : "51",
+				"dname" : "巴中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.3417094961, 32.1308040825 ]
+			},
+			"properties" : {
+				"name" : "通江县",
+				"adcode" : "511921",
+				"adcode_s" : "5119",
+				"adcode_si" : "51",
+				"dname" : "巴中市"
+			}
+		}
+	]
+}

@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6164582393, 31.2861811222 ]
+			},
+			"properties" : {
+				"name" : "红安县",
+				"adcode" : "421122",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9302695176, 29.9948207477 ]
+			},
+			"properties" : {
+				"name" : "黄梅县",
+				"adcode" : "421127",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9395012691, 30.5141502378 ]
+			},
+			"properties" : {
+				"name" : "黄州区",
+				"adcode" : "421102",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4692526095, 30.9281672874 ]
+			},
+			"properties" : {
+				"name" : "罗田县",
+				"adcode" : "421123",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0777783212, 31.213603813 ]
+			},
+			"properties" : {
+				"name" : "麻城市",
+				"adcode" : "421181",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5888728116, 30.3250247353 ]
+			},
+			"properties" : {
+				"name" : "蕲春县",
+				"adcode" : "421126",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0027626447, 30.7203131269 ]
+			},
+			"properties" : {
+				"name" : "团风县",
+				"adcode" : "421121",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6142613345, 30.0121574153 ]
+			},
+			"properties" : {
+				"name" : "武穴市",
+				"adcode" : "421182",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2637314573, 30.5031923198 ]
+			},
+			"properties" : {
+				"name" : "浠水县",
+				"adcode" : "421125",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7627447358, 30.8692185062 ]
+			},
+			"properties" : {
+				"name" : "英山县",
+				"adcode" : "421124",
+				"adcode_s" : "4211",
+				"adcode_si" : "42",
+				"dname" : "黄冈市"
+			}
+		}
+	]
+}

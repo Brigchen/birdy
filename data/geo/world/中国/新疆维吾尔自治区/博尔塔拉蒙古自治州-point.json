@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.604716566, 45.0626375819 ]
+			},
+			"properties" : {
+				"name" : "阿拉山口市",
+				"adcode" : "652702",
+				"adcode_s" : "6527",
+				"adcode_si" : "65",
+				"dname" : "博尔塔拉蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.7623200407, 44.8144382923 ]
+			},
+			"properties" : {
+				"name" : "博乐市",
+				"adcode" : "652701",
+				"adcode_s" : "6527",
+				"adcode_si" : "65",
+				"dname" : "博尔塔拉蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.9094486794, 44.5117983526 ]
+			},
+			"properties" : {
+				"name" : "精河县",
+				"adcode" : "652722",
+				"adcode_s" : "6527",
+				"adcode_si" : "65",
+				"dname" : "博尔塔拉蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.9424970824, 44.9614649926 ]
+			},
+			"properties" : {
+				"name" : "温泉县",
+				"adcode" : "652723",
+				"adcode_s" : "6527",
+				"adcode_si" : "65",
+				"dname" : "博尔塔拉蒙古自治州"
+			}
+		}
+	]
+}

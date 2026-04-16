@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7533538385, 39.342292913 ]
+			},
+			"properties" : {
+				"name" : "安次区",
+				"adcode" : "131002",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.42360049, 39.1229221487 ]
+			},
+			"properties" : {
+				"name" : "霸州市",
+				"adcode" : "131081",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9417944732, 39.8877887278 ]
+			},
+			"properties" : {
+				"name" : "大厂回族自治县",
+				"adcode" : "131028",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5762356092, 38.6621860451 ]
+			},
+			"properties" : {
+				"name" : "大城县",
+				"adcode" : "131025",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2775122689, 39.3442197125 ]
+			},
+			"properties" : {
+				"name" : "固安县",
+				"adcode" : "131022",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.715290895, 39.5472150954 ]
+			},
+			"properties" : {
+				"name" : "广阳区",
+				"adcode" : "131003",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0082442443, 39.9601091709 ]
+			},
+			"properties" : {
+				"name" : "三河市",
+				"adcode" : "131082",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4823316145, 38.9044616445 ]
+			},
+			"properties" : {
+				"name" : "文安县",
+				"adcode" : "131026",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0386832134, 39.7353228883 ]
+			},
+			"properties" : {
+				"name" : "香河县",
+				"adcode" : "131024",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5490675316, 39.2971015906 ]
+			},
+			"properties" : {
+				"name" : "永清县",
+				"adcode" : "131023",
+				"adcode_s" : "1310",
+				"adcode_si" : "13",
+				"dname" : "廊坊市"
+			}
+		}
+	]
+}

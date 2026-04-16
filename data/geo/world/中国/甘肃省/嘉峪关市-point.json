@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.2111291259, 39.8304698118 ]
+			},
+			"properties" : {
+				"name" : "嘉峪关市",
+				"adcode" : "620200",
+				"adcode_s" : "6202",
+				"adcode_si" : "62",
+				"dname" : "嘉峪关市"
+			}
+		}
+	]
+}

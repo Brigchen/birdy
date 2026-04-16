@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2143121079, 23.0305038123 ]
+			},
+			"properties" : {
+				"name" : "惠来县",
+				"adcode" : "445224",
+				"adcode_s" : "4452",
+				"adcode_si" : "44",
+				"dname" : "揭阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.34704649, 23.6746553767 ]
+			},
+			"properties" : {
+				"name" : "揭东区",
+				"adcode" : "445203",
+				"adcode_s" : "4452",
+				"adcode_si" : "44",
+				"dname" : "揭阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9069194692, 23.4941425766 ]
+			},
+			"properties" : {
+				"name" : "揭西县",
+				"adcode" : "445222",
+				"adcode_s" : "4452",
+				"adcode_si" : "44",
+				"dname" : "揭阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0674307808, 23.2859121508 ]
+			},
+			"properties" : {
+				"name" : "普宁市",
+				"adcode" : "445281",
+				"adcode_s" : "4452",
+				"adcode_si" : "44",
+				"dname" : "揭阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.36540703, 23.5446912415 ]
+			},
+			"properties" : {
+				"name" : "榕城区",
+				"adcode" : "445202",
+				"adcode_s" : "4452",
+				"adcode_si" : "44",
+				"dname" : "揭阳市"
+			}
+		}
+	]
+}

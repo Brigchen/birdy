@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9739157925, 24.5318023944 ]
+			},
+			"properties" : {
+				"name" : "海沧区",
+				"adcode" : "350205",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1332417831, 24.5207197125 ]
+			},
+			"properties" : {
+				"name" : "湖里区",
+				"adcode" : "350206",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0174649494, 24.637984057 ]
+			},
+			"properties" : {
+				"name" : "集美区",
+				"adcode" : "350211",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1263000878, 24.4667327578 ]
+			},
+			"properties" : {
+				"name" : "思明区",
+				"adcode" : "350203",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1045779213, 24.775566966 ]
+			},
+			"properties" : {
+				"name" : "同安区",
+				"adcode" : "350212",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2686584709, 24.6723842484 ]
+			},
+			"properties" : {
+				"name" : "翔安区",
+				"adcode" : "350213",
+				"adcode_s" : "3502",
+				"adcode_si" : "35",
+				"dname" : "厦门市"
+			}
+		}
+	]
+}

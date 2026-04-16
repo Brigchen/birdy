@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.288958137, 30.8219143799 ]
+			},
+			"properties" : {
+				"name" : "巴东县",
+				"adcode" : "422823",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.53587097, 30.4340362526 ]
+			},
+			"properties" : {
+				"name" : "恩施市",
+				"adcode" : "422801",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1886762403, 29.9149631026 ]
+			},
+			"properties" : {
+				"name" : "鹤峰县",
+				"adcode" : "422828",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9281035355, 30.5749220842 ]
+			},
+			"properties" : {
+				"name" : "建始县",
+				"adcode" : "422822",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.235354682, 29.4224408434 ]
+			},
+			"properties" : {
+				"name" : "来凤县",
+				"adcode" : "422827",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8154808922, 30.2361985215 ]
+			},
+			"properties" : {
+				"name" : "利川市",
+				"adcode" : "422802",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9925052628, 29.7331590602 ]
+			},
+			"properties" : {
+				"name" : "咸丰县",
+				"adcode" : "422826",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5530500782, 29.8828683097 ]
+			},
+			"properties" : {
+				"name" : "宣恩县",
+				"adcode" : "422825",
+				"adcode_s" : "4228",
+				"adcode_si" : "42",
+				"dname" : "恩施土家族苗族自治州"
+			}
+		}
+	]
+}

@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.432317379, 33.6797015016 ]
+			},
+			"properties" : {
+				"name" : "丹凤县",
+				"adcode" : "611022",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2606574972, 34.160743062 ]
+			},
+			"properties" : {
+				"name" : "洛南县",
+				"adcode" : "611021",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9697622634, 33.4233155976 ]
+			},
+			"properties" : {
+				"name" : "山阳县",
+				"adcode" : "611024",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.754754827, 33.4076028106 ]
+			},
+			"properties" : {
+				"name" : "商南县",
+				"adcode" : "611023",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8619750464, 33.8910389998 ]
+			},
+			"properties" : {
+				"name" : "商州区",
+				"adcode" : "611002",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2682912564, 33.6908762017 ]
+			},
+			"properties" : {
+				"name" : "柞水县",
+				"adcode" : "611026",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.0665237875, 33.3761905107 ]
+			},
+			"properties" : {
+				"name" : "镇安县",
+				"adcode" : "611025",
+				"adcode_s" : "6110",
+				"adcode_si" : "61",
+				"dname" : "商洛市"
+			}
+		}
+	]
+}

@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.6444869751, 27.0573367314 ]
+			},
+			"properties" : {
+				"name" : "福安市",
+				"adcode" : "350981",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3117655395, 27.1550953181 ]
+			},
+			"properties" : {
+				"name" : "福鼎市",
+				"adcode" : "350982",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8681820798, 26.6161753075 ]
+			},
+			"properties" : {
+				"name" : "古田县",
+				"adcode" : "350922",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4382197793, 26.7630726912 ]
+			},
+			"properties" : {
+				"name" : "蕉城区",
+				"adcode" : "350902",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9780645524, 26.9187642391 ]
+			},
+			"properties" : {
+				"name" : "屏南县",
+				"adcode" : "350923",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.47263534, 27.3889967808 ]
+			},
+			"properties" : {
+				"name" : "寿宁县",
+				"adcode" : "350924",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9759701355, 26.870365553 ]
+			},
+			"properties" : {
+				"name" : "霞浦县",
+				"adcode" : "350921",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8761155069, 27.2046515327 ]
+			},
+			"properties" : {
+				"name" : "柘荣县",
+				"adcode" : "350926",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3021795994, 27.0920105899 ]
+			},
+			"properties" : {
+				"name" : "周宁县",
+				"adcode" : "350925",
+				"adcode_s" : "3509",
+				"adcode_si" : "35",
+				"dname" : "宁德市"
+			}
+		}
+	]
+}

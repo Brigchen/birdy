@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.6759924002, 33.7427220803 ]
+			},
+			"properties" : {
+				"name" : "成县",
+				"adcode" : "621221",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.4433355902, 34.0096610292 ]
+			},
+			"properties" : {
+				"name" : "宕昌县",
+				"adcode" : "621223",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0131158325, 33.8899487639 ]
+			},
+			"properties" : {
+				"name" : "徽县",
+				"adcode" : "621227",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.6268520597, 33.2806197394 ]
+			},
+			"properties" : {
+				"name" : "康县",
+				"adcode" : "621224",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.0539132694, 34.1064226786 ]
+			},
+			"properties" : {
+				"name" : "礼县",
+				"adcode" : "621226",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3864509468, 33.8997895178 ]
+			},
+			"properties" : {
+				"name" : "两当县",
+				"adcode" : "621228",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.7749280192, 32.9429708406 ]
+			},
+			"properties" : {
+				"name" : "文县",
+				"adcode" : "621222",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1249578988, 33.2879899954 ]
+			},
+			"properties" : {
+				"name" : "武都区",
+				"adcode" : "621202",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.3280832832, 33.9145522691 ]
+			},
+			"properties" : {
+				"name" : "西和县",
+				"adcode" : "621225",
+				"adcode_s" : "6212",
+				"adcode_si" : "62",
+				"dname" : "陇南市"
+			}
+		}
+	]
+}

@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4752755746, 35.0347629096 ]
+			},
+			"properties" : {
+				"name" : "封丘县",
+				"adcode" : "410727",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.904551745, 35.3987083417 ]
+			},
+			"properties" : {
+				"name" : "凤泉区",
+				"adcode" : "410704",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9696690215, 35.2771591166 ]
+			},
+			"properties" : {
+				"name" : "红旗区",
+				"adcode" : "410702",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6758401484, 35.5372344725 ]
+			},
+			"properties" : {
+				"name" : "辉县市",
+				"adcode" : "410782",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6384021124, 35.198303771 ]
+			},
+			"properties" : {
+				"name" : "获嘉县",
+				"adcode" : "410724",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8926982012, 35.3367199993 ]
+			},
+			"properties" : {
+				"name" : "牧野区",
+				"adcode" : "410711",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.83857459, 35.2865742536 ]
+			},
+			"properties" : {
+				"name" : "卫滨区",
+				"adcode" : "410703",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.09658218, 35.4500915243 ]
+			},
+			"properties" : {
+				"name" : "卫辉市",
+				"adcode" : "410781",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.79369204, 35.1935556819 ]
+			},
+			"properties" : {
+				"name" : "新乡县",
+				"adcode" : "410721",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.20571582, 35.2386674094 ]
+			},
+			"properties" : {
+				"name" : "延津县",
+				"adcode" : "410726",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.942947349, 35.0209577953 ]
+			},
+			"properties" : {
+				"name" : "原阳县",
+				"adcode" : "410725",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7545886865, 35.2127942865 ]
+			},
+			"properties" : {
+				"name" : "长垣市",
+				"adcode" : "410783",
+				"adcode_s" : "4107",
+				"adcode_si" : "41",
+				"dname" : "新乡市"
+			}
+		}
+	]
+}

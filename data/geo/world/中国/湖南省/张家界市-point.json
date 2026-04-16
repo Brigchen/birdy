@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9244655511, 29.3941735225 ]
+			},
+			"properties" : {
+				"name" : "慈利县",
+				"adcode" : "430821",
+				"adcode_s" : "4308",
+				"adcode_si" : "43",
+				"dname" : "张家界市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1748730107, 29.5646564895 ]
+			},
+			"properties" : {
+				"name" : "桑植县",
+				"adcode" : "430822",
+				"adcode_s" : "4308",
+				"adcode_si" : "43",
+				"dname" : "张家界市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4996683004, 29.3510893843 ]
+			},
+			"properties" : {
+				"name" : "武陵源区",
+				"adcode" : "430811",
+				"adcode_s" : "4308",
+				"adcode_si" : "43",
+				"dname" : "张家界市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4568341294, 29.1219503528 ]
+			},
+			"properties" : {
+				"name" : "永定区",
+				"adcode" : "430803",
+				"adcode_s" : "4308",
+				"adcode_si" : "43",
+				"dname" : "张家界市"
+			}
+		}
+	]
+}

@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "乐东黎族自治县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.0478462938, 18.6503998544 ]
+			},
+			"properties" : {
+				"name" : "乐东黎族自治县",
+				"adcode" : "469027",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

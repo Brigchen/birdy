@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9326840927, 23.7994328771 ]
+			},
+			"properties" : {
+				"name" : "合山市",
+				"adcode" : "451381",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.14012503, 24.1625220319 ]
+			},
+			"properties" : {
+				"name" : "金秀瑶族自治县",
+				"adcode" : "451324",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6770912349, 23.6070911665 ]
+			},
+			"properties" : {
+				"name" : "武宣县",
+				"adcode" : "451323",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.760991007, 24.0162459659 ]
+			},
+			"properties" : {
+				"name" : "象州县",
+				"adcode" : "451322",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.7412688678, 24.0151904943 ]
+			},
+			"properties" : {
+				"name" : "忻城县",
+				"adcode" : "451321",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1826050682, 23.6607273954 ]
+			},
+			"properties" : {
+				"name" : "兴宾区",
+				"adcode" : "451302",
+				"adcode_s" : "4513",
+				"adcode_si" : "45",
+				"dname" : "来宾市"
+			}
+		}
+	]
+}

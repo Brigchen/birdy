@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.99503392, 43.8097797569 ]
+			},
+			"properties" : {
+				"name" : "昌吉市",
+				"adcode" : "652301",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.2969183375, 44.4163182479 ]
+			},
+			"properties" : {
+				"name" : "阜康市",
+				"adcode" : "652302",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.682882904, 44.365402614 ]
+			},
+			"properties" : {
+				"name" : "呼图壁县",
+				"adcode" : "652323",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.0440261797, 44.3438353946 ]
+			},
+			"properties" : {
+				"name" : "吉木萨尔县",
+				"adcode" : "652327",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.31665775, 44.6154327487 ]
+			},
+			"properties" : {
+				"name" : "玛纳斯县",
+				"adcode" : "652324",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.8148365635, 44.0962889847 ]
+			},
+			"properties" : {
+				"name" : "木垒哈萨克自治县",
+				"adcode" : "652328",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.7496527108, 44.2227391701 ]
+			},
+			"properties" : {
+				"name" : "奇台县",
+				"adcode" : "652325",
+				"adcode_s" : "6523",
+				"adcode_si" : "65",
+				"dname" : "昌吉回族自治州"
+			}
+		}
+	]
+}

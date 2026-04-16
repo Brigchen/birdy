@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "白沙黎族自治县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.3467537346, 19.2120072063 ]
+			},
+			"properties" : {
+				"name" : "白沙黎族自治县",
+				"adcode" : "469025",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

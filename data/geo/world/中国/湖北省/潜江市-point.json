@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7567060466, 30.3400500041 ]
+			},
+			"properties" : {
+				"name" : "潜江市",
+				"adcode" : "429005",
+				"adcode_s" : "4290",
+				"adcode_si" : "42",
+				"dname" : "潜江市"
+			}
+		}
+	]
+}

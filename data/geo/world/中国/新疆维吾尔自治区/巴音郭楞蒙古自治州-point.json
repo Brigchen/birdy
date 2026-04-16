@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.8747134795, 41.8502104288 ]
+			},
+			"properties" : {
+				"name" : "博湖县",
+				"adcode" : "652829",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.1754051234, 42.8246343748 ]
+			},
+			"properties" : {
+				"name" : "和静县",
+				"adcode" : "652827",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.5863909066, 42.1289007867 ]
+			},
+			"properties" : {
+				"name" : "和硕县",
+				"adcode" : "652828",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.5106777325, 41.5183037996 ]
+			},
+			"properties" : {
+				"name" : "库尔勒市",
+				"adcode" : "652801",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.570079137, 41.8092454315 ]
+			},
+			"properties" : {
+				"name" : "轮台县",
+				"adcode" : "652822",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.4909744844, 38.0637557764 ]
+			},
+			"properties" : {
+				"name" : "且末县",
+				"adcode" : "652825",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.7508031002, 38.9316735775 ]
+			},
+			"properties" : {
+				"name" : "若羌县",
+				"adcode" : "652824",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.8682766187, 40.8480666831 ]
+			},
+			"properties" : {
+				"name" : "尉犁县",
+				"adcode" : "652823",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.8893169016, 42.10495372 ]
+			},
+			"properties" : {
+				"name" : "焉耆回族自治县",
+				"adcode" : "652826",
+				"adcode_s" : "6528",
+				"adcode_si" : "65",
+				"dname" : "巴音郭楞蒙古自治州"
+			}
+		}
+	]
+}

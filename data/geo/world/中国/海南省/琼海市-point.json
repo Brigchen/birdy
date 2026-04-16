@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "琼海市",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4004792735, 19.2101064327 ]
+			},
+			"properties" : {
+				"name" : "琼海市",
+				"adcode" : "469002",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

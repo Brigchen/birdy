@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.66307232, 45.9871320607 ]
+			},
+			"properties" : {
+				"name" : "大同区",
+				"adcode" : "230606",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.2317738806, 46.549481968 ]
+			},
+			"properties" : {
+				"name" : "杜尔伯特蒙古族自治县",
+				"adcode" : "230624",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.8748441853, 46.3436758537 ]
+			},
+			"properties" : {
+				"name" : "红岗区",
+				"adcode" : "230605",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.8868642624, 47.151475231 ]
+			},
+			"properties" : {
+				"name" : "林甸县",
+				"adcode" : "230623",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.1139111827, 46.5189784364 ]
+			},
+			"properties" : {
+				"name" : "龙凤区",
+				"adcode" : "230603",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.7696713921, 46.6978158107 ]
+			},
+			"properties" : {
+				"name" : "让胡路区",
+				"adcode" : "230604",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.0509842768, 46.7090142032 ]
+			},
+			"properties" : {
+				"name" : "萨尔图区",
+				"adcode" : "230602",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.7555058379, 45.6397624891 ]
+			},
+			"properties" : {
+				"name" : "肇源县",
+				"adcode" : "230622",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.2955199478, 45.8303364348 ]
+			},
+			"properties" : {
+				"name" : "肇州县",
+				"adcode" : "230621",
+				"adcode_s" : "2306",
+				"adcode_si" : "23",
+				"dname" : "大庆市"
+			}
+		}
+	]
+}

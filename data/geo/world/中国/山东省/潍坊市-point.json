@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1086934073, 36.3002459541 ]
+			},
+			"properties" : {
+				"name" : "安丘市",
+				"adcode" : "370784",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9014033227, 36.5295001536 ]
+			},
+			"properties" : {
+				"name" : "昌乐县",
+				"adcode" : "370725",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4368707849, 36.8705821308 ]
+			},
+			"properties" : {
+				"name" : "昌邑市",
+				"adcode" : "370786",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4351516878, 36.4823468399 ]
+			},
+			"properties" : {
+				"name" : "坊子区",
+				"adcode" : "370704",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7015165577, 36.3804723647 ]
+			},
+			"properties" : {
+				"name" : "高密市",
+				"adcode" : "370785",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.157794416, 36.9875964932 ]
+			},
+			"properties" : {
+				"name" : "寒亭区",
+				"adcode" : "370703",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1969228615, 36.6991510737 ]
+			},
+			"properties" : {
+				"name" : "奎文区",
+				"adcode" : "370705",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5460991181, 36.3586034677 ]
+			},
+			"properties" : {
+				"name" : "临朐县",
+				"adcode" : "370724",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.458254058, 36.6741479921 ]
+			},
+			"properties" : {
+				"name" : "青州市",
+				"adcode" : "370781",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8160334215, 37.0109799162 ]
+			},
+			"properties" : {
+				"name" : "寿光市",
+				"adcode" : "370783",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0219452016, 36.6952350353 ]
+			},
+			"properties" : {
+				"name" : "潍城区",
+				"adcode" : "370702",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4035790223, 36.0075847463 ]
+			},
+			"properties" : {
+				"name" : "诸城市",
+				"adcode" : "370782",
+				"adcode_s" : "3707",
+				"adcode_si" : "37",
+				"dname" : "潍坊市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7532986385, 31.5728266525 ]
+			},
+			"properties" : {
+				"name" : "博望区",
+				"adcode" : "340506",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5949142206, 31.4672411008 ]
+			},
+			"properties" : {
+				"name" : "当涂县",
+				"adcode" : "340521",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0424914383, 31.657314632 ]
+			},
+			"properties" : {
+				"name" : "含山县",
+				"adcode" : "340522",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2930929387, 31.7548396764 ]
+			},
+			"properties" : {
+				"name" : "和县",
+				"adcode" : "340523",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.54619541, 31.7084814399 ]
+			},
+			"properties" : {
+				"name" : "花山区",
+				"adcode" : "340503",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.54122885, 31.6333920724 ]
+			},
+			"properties" : {
+				"name" : "雨山区",
+				"adcode" : "340504",
+				"adcode_s" : "3405",
+				"adcode_si" : "34",
+				"dname" : "马鞍山市"
+			}
+		}
+	]
+}

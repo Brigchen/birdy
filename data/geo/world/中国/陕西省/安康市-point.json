@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9068006845, 32.7257185403 ]
+			},
+			"properties" : {
+				"name" : "白河县",
+				"adcode" : "610929",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8869807797, 32.8120062262 ]
+			},
+			"properties" : {
+				"name" : "汉滨区",
+				"adcode" : "610902",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4844723276, 32.8971045128 ]
+			},
+			"properties" : {
+				"name" : "汉阴县",
+				"adcode" : "610921",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8730426571, 32.2423433522 ]
+			},
+			"properties" : {
+				"name" : "岚皋县",
+				"adcode" : "610925",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4408678536, 33.5317961981 ]
+			},
+			"properties" : {
+				"name" : "宁陕县",
+				"adcode" : "610923",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2589616937, 32.2869295596 ]
+			},
+			"properties" : {
+				"name" : "平利县",
+				"adcode" : "610926",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2385863315, 33.0608092923 ]
+			},
+			"properties" : {
+				"name" : "石泉县",
+				"adcode" : "610922",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.412248318, 32.8978230988 ]
+			},
+			"properties" : {
+				"name" : "旬阳市",
+				"adcode" : "610928",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4455481922, 31.9355492698 ]
+			},
+			"properties" : {
+				"name" : "镇坪县",
+				"adcode" : "610927",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.43326941, 32.4445505964 ]
+			},
+			"properties" : {
+				"name" : "紫阳县",
+				"adcode" : "610924",
+				"adcode_s" : "6109",
+				"adcode_si" : "61",
+				"dname" : "安康市"
+			}
+		}
+	]
+}

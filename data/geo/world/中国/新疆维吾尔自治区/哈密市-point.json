@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.8018734611, 44.2617340195 ]
+			},
+			"properties" : {
+				"name" : "巴里坤哈萨克自治县",
+				"adcode" : "650521",
+				"adcode_s" : "6505",
+				"adcode_si" : "65",
+				"dname" : "哈密市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.9042788551, 43.5600749674 ]
+			},
+			"properties" : {
+				"name" : "伊吾县",
+				"adcode" : "650522",
+				"adcode_s" : "6505",
+				"adcode_si" : "65",
+				"dname" : "哈密市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.7831177205, 41.7402634253 ]
+			},
+			"properties" : {
+				"name" : "伊州区",
+				"adcode" : "650502",
+				"adcode_s" : "6505",
+				"adcode_si" : "65",
+				"dname" : "哈密市"
+			}
+		}
+	]
+}

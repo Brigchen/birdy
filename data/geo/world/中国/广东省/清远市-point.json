@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5542090628, 23.8774279829 ]
+			},
+			"properties" : {
+				"name" : "佛冈县",
+				"adcode" : "441821",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2518732744, 24.5701145985 ]
+			},
+			"properties" : {
+				"name" : "连南瑶族自治县",
+				"adcode" : "441826",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.18338945, 24.3005414575 ]
+			},
+			"properties" : {
+				"name" : "连山壮族瑶族自治县",
+				"adcode" : "441825",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4474725675, 24.9335535599 ]
+			},
+			"properties" : {
+				"name" : "连州市",
+				"adcode" : "441882",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1316475861, 23.6730407013 ]
+			},
+			"properties" : {
+				"name" : "清城区",
+				"adcode" : "441802",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8240085804, 23.9100927553 ]
+			},
+			"properties" : {
+				"name" : "清新区",
+				"adcode" : "441803",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6695705585, 24.506125778 ]
+			},
+			"properties" : {
+				"name" : "阳山县",
+				"adcode" : "441823",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3117023768, 24.2222122497 ]
+			},
+			"properties" : {
+				"name" : "英德市",
+				"adcode" : "441881",
+				"adcode_s" : "4418",
+				"adcode_si" : "44",
+				"dname" : "清远市"
+			}
+		}
+	]
+}

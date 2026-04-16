@@ -1,0 +1,244 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3323414824, 25.3180185871 ]
+			},
+			"properties" : {
+				"name" : "叠彩区",
+				"adcode" : "450303",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8984773639, 24.9457738677 ]
+			},
+			"properties" : {
+				"name" : "恭城瑶族自治县",
+				"adcode" : "450332",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.0660997316, 25.4552457719 ]
+			},
+			"properties" : {
+				"name" : "灌阳县",
+				"adcode" : "450327",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3576652892, 24.5218230857 ]
+			},
+			"properties" : {
+				"name" : "荔浦市",
+				"adcode" : "450381",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0602793093, 25.3025135973 ]
+			},
+			"properties" : {
+				"name" : "临桂区",
+				"adcode" : "450312",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.26350621, 25.5449893858 ]
+			},
+			"properties" : {
+				"name" : "灵川县",
+				"adcode" : "450323",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9992304064, 25.8652177162 ]
+			},
+			"properties" : {
+				"name" : "龙胜各族自治县",
+				"adcode" : "450328",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7862397564, 24.5581929485 ]
+			},
+			"properties" : {
+				"name" : "平乐县",
+				"adcode" : "450330",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3439163159, 25.2596505553 ]
+			},
+			"properties" : {
+				"name" : "七星区",
+				"adcode" : "450305",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.014702531, 25.9330557918 ]
+			},
+			"properties" : {
+				"name" : "全州县",
+				"adcode" : "450324",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2777385204, 25.2022345993 ]
+			},
+			"properties" : {
+				"name" : "象山区",
+				"adcode" : "450304",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5901402819, 25.6039123369 ]
+			},
+			"properties" : {
+				"name" : "兴安县",
+				"adcode" : "450325",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.258085607, 25.2870233864 ]
+			},
+			"properties" : {
+				"name" : "秀峰区",
+				"adcode" : "450302",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3551826935, 25.0988329887 ]
+			},
+			"properties" : {
+				"name" : "雁山区",
+				"adcode" : "450311",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4725335901, 24.8544180472 ]
+			},
+			"properties" : {
+				"name" : "阳朔县",
+				"adcode" : "450321",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9066170844, 24.9931429909 ]
+			},
+			"properties" : {
+				"name" : "永福县",
+				"adcode" : "450326",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5870063094, 26.0651154937 ]
+			},
+			"properties" : {
+				"name" : "资源县",
+				"adcode" : "450329",
+				"adcode_s" : "4503",
+				"adcode_si" : "45",
+				"dname" : "桂林市"
+			}
+		}
+	]
+}

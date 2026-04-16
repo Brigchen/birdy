@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.07943261, 28.9732789945 ]
+			},
+			"properties" : {
+				"name" : "峨边彝族自治县",
+				"adcode" : "511132",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.3931375381, 29.5027671689 ]
+			},
+			"properties" : {
+				"name" : "峨眉山市",
+				"adcode" : "511181",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.5514389169, 29.7728400771 ]
+			},
+			"properties" : {
+				"name" : "夹江县",
+				"adcode" : "511126",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.9715902846, 29.2279718542 ]
+			},
+			"properties" : {
+				"name" : "犍为县",
+				"adcode" : "511123",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.07723697, 29.3118923604 ]
+			},
+			"properties" : {
+				"name" : "金口河区",
+				"adcode" : "511113",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0466850754, 29.6411152071 ]
+			},
+			"properties" : {
+				"name" : "井研县",
+				"adcode" : "511124",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.478758282, 28.7858673621 ]
+			},
+			"properties" : {
+				"name" : "马边彝族自治县",
+				"adcode" : "511133",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8169623788, 29.0042759347 ]
+			},
+			"properties" : {
+				"name" : "沐川县",
+				"adcode" : "511129",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.58557232, 29.3439619524 ]
+			},
+			"properties" : {
+				"name" : "沙湾区",
+				"adcode" : "511111",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8008653807, 29.4127134623 ]
+			},
+			"properties" : {
+				"name" : "五通桥区",
+				"adcode" : "511112",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.7873628872, 29.6086150259 ]
+			},
+			"properties" : {
+				"name" : "市中区",
+				"adcode" : "511102",
+				"adcode_s" : "5111",
+				"adcode_si" : "51",
+				"dname" : "乐山市"
+			}
+		}
+	]
+}

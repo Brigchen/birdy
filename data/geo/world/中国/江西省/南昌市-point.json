@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5834145553, 28.8329612668 ]
+			},
+			"properties" : {
+				"name" : "安义县",
+				"adcode" : "360123",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9125126392, 28.7287508026 ]
+			},
+			"properties" : {
+				"name" : "东湖区",
+				"adcode" : "360102",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7838470569, 28.6014426352 ]
+			},
+			"properties" : {
+				"name" : "红谷滩区",
+				"adcode" : "360113",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3046438311, 28.4382269502 ]
+			},
+			"properties" : {
+				"name" : "进贤县",
+				"adcode" : "360124",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.18678628, 28.7476938556 ]
+			},
+			"properties" : {
+				"name" : "南昌县",
+				"adcode" : "360121",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9157950178, 28.6263573247 ]
+			},
+			"properties" : {
+				"name" : "青云谱区",
+				"adcode" : "360104",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.96761675, 28.9609206758 ]
+			},
+			"properties" : {
+				"name" : "新建区",
+				"adcode" : "360112",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8723892563, 28.6469953019 ]
+			},
+			"properties" : {
+				"name" : "西湖区",
+				"adcode" : "360103",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.98265665, 28.6289174675 ]
+			},
+			"properties" : {
+				"name" : "青山湖区",
+				"adcode" : "360111",
+				"adcode_s" : "3601",
+				"adcode_si" : "36",
+				"dname" : "南昌市"
+			}
+		}
+	]
+}

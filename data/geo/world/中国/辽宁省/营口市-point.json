@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.1804425168, 40.2638267146 ]
+			},
+			"properties" : {
+				"name" : "鲅鱼圈区",
+				"adcode" : "210804",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.546687084, 40.6283702973 ]
+			},
+			"properties" : {
+				"name" : "大石桥市",
+				"adcode" : "210882",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.6543789748, 40.2584857812 ]
+			},
+			"properties" : {
+				"name" : "盖州市",
+				"adcode" : "210881",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.2709714303, 40.548516948 ]
+			},
+			"properties" : {
+				"name" : "西市区",
+				"adcode" : "210803",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.3663324638, 40.8527421086 ]
+			},
+			"properties" : {
+				"name" : "站前区",
+				"adcode" : "210802",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.2960601437, 40.6349735121 ]
+			},
+			"properties" : {
+				"name" : "老边区",
+				"adcode" : "210811",
+				"adcode_s" : "2108",
+				"adcode_si" : "21",
+				"dname" : "营口市"
+			}
+		}
+	]
+}

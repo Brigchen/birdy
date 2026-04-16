@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5554058069, 26.641579454 ]
+			},
+			"properties" : {
+				"name" : "观山湖区",
+				"adcode" : "520115",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.654606844, 26.382693834 ]
+			},
+			"properties" : {
+				"name" : "花溪区",
+				"adcode" : "520111",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0359340688, 27.0714634344 ]
+			},
+			"properties" : {
+				"name" : "开阳县",
+				"adcode" : "520121",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7809325292, 26.5469402983 ]
+			},
+			"properties" : {
+				"name" : "南明区",
+				"adcode" : "520102",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3330268628, 26.6880992467 ]
+			},
+			"properties" : {
+				"name" : "清镇市",
+				"adcode" : "520181",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8712205655, 26.7557848266 ]
+			},
+			"properties" : {
+				"name" : "乌当区",
+				"adcode" : "520112",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6714269421, 27.1481371651 ]
+			},
+			"properties" : {
+				"name" : "息烽县",
+				"adcode" : "520122",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.618697615, 26.869560279 ]
+			},
+			"properties" : {
+				"name" : "修文县",
+				"adcode" : "520123",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7090579057, 26.6078661902 ]
+			},
+			"properties" : {
+				"name" : "云岩区",
+				"adcode" : "520103",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6855917268, 26.7348921189 ]
+			},
+			"properties" : {
+				"name" : "白云区",
+				"adcode" : "520111",
+				"adcode_s" : "5201",
+				"adcode_si" : "52",
+				"dname" : "贵阳市"
+			}
+		}
+	]
+}

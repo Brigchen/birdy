@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6979216384, 32.132368941 ]
+			},
+			"properties" : {
+				"name" : "固始县",
+				"adcode" : "411525",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8311784025, 31.9374882774 ]
+			},
+			"properties" : {
+				"name" : "光山县",
+				"adcode" : "411522",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3137698864, 32.4416528382 ]
+			},
+			"properties" : {
+				"name" : "淮滨县",
+				"adcode" : "411527",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1522952292, 32.1286993076 ]
+			},
+			"properties" : {
+				"name" : "潢川县",
+				"adcode" : "411526",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4311698371, 32.027203052 ]
+			},
+			"properties" : {
+				"name" : "罗山县",
+				"adcode" : "411521",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0520978043, 32.3458565613 ]
+			},
+			"properties" : {
+				"name" : "平桥区",
+				"adcode" : "411503",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3633822325, 31.7618004406 ]
+			},
+			"properties" : {
+				"name" : "商城县",
+				"adcode" : "411524",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9549113295, 32.0465702674 ]
+			},
+			"properties" : {
+				"name" : "浉河区",
+				"adcode" : "411502",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8600061782, 32.4068867123 ]
+			},
+			"properties" : {
+				"name" : "息县",
+				"adcode" : "411528",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8474606485, 31.6424671777 ]
+			},
+			"properties" : {
+				"name" : "新县",
+				"adcode" : "411523",
+				"adcode_s" : "4115",
+				"adcode_si" : "41",
+				"dname" : "信阳市"
+			}
+		}
+	]
+}

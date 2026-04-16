@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0567608299, 35.0463648065 ]
+			},
+			"properties" : {
+				"name" : "彬州市",
+				"adcode" : "610482",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5592522138, 34.863917416 ]
+			},
+			"properties" : {
+				"name" : "淳化县",
+				"adcode" : "610430",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.7697354408, 34.6037149042 ]
+			},
+			"properties" : {
+				"name" : "泾阳县",
+				"adcode" : "610423",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4712735961, 34.5928294079 ]
+			},
+			"properties" : {
+				"name" : "礼泉县",
+				"adcode" : "610425",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2174521566, 34.522656938 ]
+			},
+			"properties" : {
+				"name" : "乾县",
+				"adcode" : "610424",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.62313831, 34.3751152951 ]
+			},
+			"properties" : {
+				"name" : "秦都区",
+				"adcode" : "610402",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9680413711, 34.699009976 ]
+			},
+			"properties" : {
+				"name" : "三原县",
+				"adcode" : "610422",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.7894642644, 34.4187731712 ]
+			},
+			"properties" : {
+				"name" : "渭城区",
+				"adcode" : "610404",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1794848357, 34.3116527543 ]
+			},
+			"properties" : {
+				"name" : "武功县",
+				"adcode" : "610431",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4634928076, 34.3028593076 ]
+			},
+			"properties" : {
+				"name" : "兴平市",
+				"adcode" : "610481",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.497397519, 35.1572277241 ]
+			},
+			"properties" : {
+				"name" : "旬邑县",
+				"adcode" : "610429",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0382641405, 34.2779232922 ]
+			},
+			"properties" : {
+				"name" : "杨陵区",
+				"adcode" : "610403",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1374658025, 34.8066466134 ]
+			},
+			"properties" : {
+				"name" : "永寿县",
+				"adcode" : "610426",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8235017882, 35.1649856008 ]
+			},
+			"properties" : {
+				"name" : "长武县",
+				"adcode" : "610428",
+				"adcode_s" : "6104",
+				"adcode_si" : "61",
+				"dname" : "咸阳市"
+			}
+		}
+	]
+}

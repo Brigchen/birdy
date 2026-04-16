@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3695204993, 29.2340997457 ]
+			},
+			"properties" : {
+				"name" : "东阳市",
+				"adcode" : "330783",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7985940044, 29.1523971304 ]
+			},
+			"properties" : {
+				"name" : "金东区",
+				"adcode" : "330703",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5217874444, 29.2807312084 ]
+			},
+			"properties" : {
+				"name" : "兰溪市",
+				"adcode" : "330781",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5565354282, 29.0411212967 ]
+			},
+			"properties" : {
+				"name" : "磐安县",
+				"adcode" : "330727",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8996526742, 29.5227134301 ]
+			},
+			"properties" : {
+				"name" : "浦江县",
+				"adcode" : "330726",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7096615187, 28.7706771057 ]
+			},
+			"properties" : {
+				"name" : "武义县",
+				"adcode" : "330723",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5063794525, 28.9813088508 ]
+			},
+			"properties" : {
+				"name" : "婺城区",
+				"adcode" : "330702",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0560412455, 29.3030370716 ]
+			},
+			"properties" : {
+				"name" : "义乌市",
+				"adcode" : "330782",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0978493778, 28.9373533703 ]
+			},
+			"properties" : {
+				"name" : "永康市",
+				"adcode" : "330784",
+				"adcode_s" : "3307",
+				"adcode_si" : "33",
+				"dname" : "金华市"
+			}
+		}
+	]
+}

@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.7195431918, 51.8839239899 ]
+			},
+			"properties" : {
+				"name" : "呼玛县",
+				"adcode" : "232721",
+				"adcode_s" : "2327",
+				"adcode_si" : "23",
+				"dname" : "大兴安岭地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.7000302511, 52.9340669267 ]
+			},
+			"properties" : {
+				"name" : "漠河市",
+				"adcode" : "232701",
+				"adcode_s" : "2327",
+				"adcode_si" : "23",
+				"dname" : "大兴安岭地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.6258060465, 52.7067055907 ]
+			},
+			"properties" : {
+				"name" : "塔河县",
+				"adcode" : "232722",
+				"adcode_s" : "2327",
+				"adcode_si" : "23",
+				"dname" : "大兴安岭地区"
+			}
+		}
+	]
+}

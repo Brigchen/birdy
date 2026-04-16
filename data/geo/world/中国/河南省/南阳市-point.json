@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0453965252, 32.6811180127 ]
+			},
+			"properties" : {
+				"name" : "邓州市",
+				"adcode" : "411381",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.003648448, 33.2952661425 ]
+			},
+			"properties" : {
+				"name" : "方城县",
+				"adcode" : "411322",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.381583926, 33.4674547115 ]
+			},
+			"properties" : {
+				"name" : "南召县",
+				"adcode" : "411321",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.85882281, 33.2727670752 ]
+			},
+			"properties" : {
+				"name" : "内乡县",
+				"adcode" : "411325",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9839545332, 32.9783601847 ]
+			},
+			"properties" : {
+				"name" : "社旗县",
+				"adcode" : "411327",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8450326606, 32.6171631653 ]
+			},
+			"properties" : {
+				"name" : "唐河县",
+				"adcode" : "411328",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.40537966, 32.4457983503 ]
+			},
+			"properties" : {
+				"name" : "桐柏县",
+				"adcode" : "411330",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.623048395, 32.9075199763 ]
+			},
+			"properties" : {
+				"name" : "宛城区",
+				"adcode" : "411302",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.556176515, 33.1144339451 ]
+			},
+			"properties" : {
+				"name" : "卧龙区",
+				"adcode" : "411303",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4266539542, 33.4823394345 ]
+			},
+			"properties" : {
+				"name" : "西峡县",
+				"adcode" : "411323",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4333627533, 32.9848655625 ]
+			},
+			"properties" : {
+				"name" : "淅川县",
+				"adcode" : "411326",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4051823591, 32.5507908252 ]
+			},
+			"properties" : {
+				"name" : "新野县",
+				"adcode" : "411329",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1807313621, 33.066048208 ]
+			},
+			"properties" : {
+				"name" : "镇平县",
+				"adcode" : "411324",
+				"adcode_s" : "4113",
+				"adcode_si" : "41",
+				"dname" : "南阳市"
+			}
+		}
+	]
+}

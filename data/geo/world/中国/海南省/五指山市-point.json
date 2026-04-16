@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "五指山市",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5044151656, 18.8291508192 ]
+			},
+			"properties" : {
+				"name" : "五指山市",
+				"adcode" : "469001",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

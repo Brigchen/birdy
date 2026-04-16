@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5907090458, 25.4961306151 ]
+			},
+			"properties" : {
+				"name" : "道县",
+				"adcode" : "431124",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.42760311, 26.557306286 ]
+			},
+			"properties" : {
+				"name" : "东安县",
+				"adcode" : "431122",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7400058756, 24.9743608365 ]
+			},
+			"properties" : {
+				"name" : "江华瑶族自治县",
+				"adcode" : "431129",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.24194526, 25.2618349527 ]
+			},
+			"properties" : {
+				"name" : "江永县",
+				"adcode" : "431125",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1841992737, 25.3160698411 ]
+			},
+			"properties" : {
+				"name" : "蓝山县",
+				"adcode" : "431127",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.62690271, 26.5329814986 ]
+			},
+			"properties" : {
+				"name" : "冷水滩区",
+				"adcode" : "431103",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5488846025, 26.1328753702 ]
+			},
+			"properties" : {
+				"name" : "零陵区",
+				"adcode" : "431102",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.976347494, 25.6507205704 ]
+			},
+			"properties" : {
+				"name" : "宁远县",
+				"adcode" : "431126",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9610055592, 26.4566938314 ]
+			},
+			"properties" : {
+				"name" : "祁阳市",
+				"adcode" : "431121",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7042759292, 25.9120559888 ]
+			},
+			"properties" : {
+				"name" : "双牌县",
+				"adcode" : "431123",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2233087394, 25.8865148799 ]
+			},
+			"properties" : {
+				"name" : "新田县",
+				"adcode" : "431128",
+				"adcode_s" : "4311",
+				"adcode_si" : "43",
+				"dname" : "永州市"
+			}
+		}
+	]
+}

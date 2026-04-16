@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.992982946, 35.2452329398 ]
+			},
+			"properties" : {
+				"name" : "崇信县",
+				"adcode" : "620823",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5963191709, 35.1980310028 ]
+			},
+			"properties" : {
+				"name" : "华亭市",
+				"adcode" : "620881",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4314579566, 35.3485926907 ]
+			},
+			"properties" : {
+				"name" : "泾川县",
+				"adcode" : "620821",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.66683343, 35.428924917 ]
+			},
+			"properties" : {
+				"name" : "静宁县",
+				"adcode" : "620826",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7379177355, 35.5098180553 ]
+			},
+			"properties" : {
+				"name" : "崆峒区",
+				"adcode" : "620802",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.3972404885, 35.069052943 ]
+			},
+			"properties" : {
+				"name" : "灵台县",
+				"adcode" : "620822",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0549663607, 35.249635222 ]
+			},
+			"properties" : {
+				"name" : "庄浪县",
+				"adcode" : "620825",
+				"adcode_s" : "6208",
+				"adcode_si" : "62",
+				"dname" : "平凉市"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.475372099, 38.9218316978 ]
+			},
+			"properties" : {
+				"name" : "甘州区",
+				"adcode" : "620702",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.8267478158, 39.5080815067 ]
+			},
+			"properties" : {
+				"name" : "高台县",
+				"adcode" : "620724",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.1752651936, 39.346629985 ]
+			},
+			"properties" : {
+				"name" : "临泽县",
+				"adcode" : "620723",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.6968976435, 38.5897371368 ]
+			},
+			"properties" : {
+				"name" : "民乐县",
+				"adcode" : "620722",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.1764443336, 38.4480626989 ]
+			},
+			"properties" : {
+				"name" : "山丹县",
+				"adcode" : "620725",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.2026586448, 39.2920722162 ]
+			},
+			"properties" : {
+				"name" : "肃南裕固族自治县",
+				"adcode" : "620721",
+				"adcode_s" : "6207",
+				"adcode_si" : "62",
+				"dname" : "张掖市"
+			}
+		}
+	]
+}

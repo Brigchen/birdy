@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 96.8782463566, 30.1569715442 ]
+			},
+			"properties" : {
+				"name" : "八宿县",
+				"adcode" : "540326",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.5900557953, 30.8872125044 ]
+			},
+			"properties" : {
+				"name" : "边坝县",
+				"adcode" : "540330",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.8373387893, 30.5834197985 ]
+			},
+			"properties" : {
+				"name" : "察雅县",
+				"adcode" : "540325",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.05756478, 31.7928414375 ]
+			},
+			"properties" : {
+				"name" : "丁青县",
+				"adcode" : "540324",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.4878942923, 30.7419428902 ]
+			},
+			"properties" : {
+				"name" : "贡觉县",
+				"adcode" : "540322",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.0302773751, 31.8073497405 ]
+			},
+			"properties" : {
+				"name" : "江达县",
+				"adcode" : "540321",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.2355896103, 31.4408390541 ]
+			},
+			"properties" : {
+				"name" : "卡若区",
+				"adcode" : "540302",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 96.3934164028, 31.4362962923 ]
+			},
+			"properties" : {
+				"name" : "类乌齐县",
+				"adcode" : "540323",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.9078768243, 30.7319551962 ]
+			},
+			"properties" : {
+				"name" : "洛隆县",
+				"adcode" : "540329",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.6132593198, 29.6156694184 ]
+			},
+			"properties" : {
+				"name" : "芒康县",
+				"adcode" : "540328",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.8018060199, 29.5574136016 ]
+			},
+			"properties" : {
+				"name" : "左贡县",
+				"adcode" : "540327",
+				"adcode_s" : "5403",
+				"adcode_si" : "54",
+				"dname" : "昌都市"
+			}
+		}
+	]
+}

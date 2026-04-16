@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.771544937, 22.7051430689 ]
+			},
+			"properties" : {
+				"name" : "江城哈尼族彝族自治县",
+				"adcode" : "530826",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.80351414, 24.5089263776 ]
+			},
+			"properties" : {
+				"name" : "景东彝族自治县",
+				"adcode" : "530823",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.5563094669, 23.3642995146 ]
+			},
+			"properties" : {
+				"name" : "景谷傣族彝族自治县",
+				"adcode" : "530824",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.03890546, 22.671997755 ]
+			},
+			"properties" : {
+				"name" : "澜沧拉祜族自治县",
+				"adcode" : "530828",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.4703327784, 22.2909632737 ]
+			},
+			"properties" : {
+				"name" : "孟连傣族拉祜族佤族自治县",
+				"adcode" : "530827",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5478982733, 23.3589416242 ]
+			},
+			"properties" : {
+				"name" : "墨江哈尼族自治县",
+				"adcode" : "530822",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.189067487, 23.0933472229 ]
+			},
+			"properties" : {
+				"name" : "宁洱哈尼族彝族自治县",
+				"adcode" : "530821",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.8498740529, 22.7362612692 ]
+			},
+			"properties" : {
+				"name" : "思茅区",
+				"adcode" : "530802",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.5094072873, 22.6970358792 ]
+			},
+			"properties" : {
+				"name" : "西盟佤族自治县",
+				"adcode" : "530829",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.94283873, 23.8414874006 ]
+			},
+			"properties" : {
+				"name" : "镇沅彝族哈尼族拉祜族自治县",
+				"adcode" : "530825",
+				"adcode_s" : "5308",
+				"adcode_si" : "53",
+				"dname" : "普洱市"
+			}
+		}
+	]
+}

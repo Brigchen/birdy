@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.95037366, 27.9422195479 ]
+			},
+			"properties" : {
+				"name" : "古蔺县",
+				"adcode" : "510525",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.94866357, 28.835028579 ]
+			},
+			"properties" : {
+				"name" : "合江县",
+				"adcode" : "510522",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.2723296305, 28.855928433 ]
+			},
+			"properties" : {
+				"name" : "江阳区",
+				"adcode" : "510502",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4450534728, 28.9704222209 ]
+			},
+			"properties" : {
+				"name" : "龙马潭区",
+				"adcode" : "510504",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4706992645, 29.1549816356 ]
+			},
+			"properties" : {
+				"name" : "泸县",
+				"adcode" : "510521",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.3869661954, 28.6455124855 ]
+			},
+			"properties" : {
+				"name" : "纳溪区",
+				"adcode" : "510503",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4592572972, 28.0958236529 ]
+			},
+			"properties" : {
+				"name" : "叙永县",
+				"adcode" : "510524",
+				"adcode_s" : "5105",
+				"adcode_si" : "51",
+				"dname" : "泸州市"
+			}
+		}
+	]
+}

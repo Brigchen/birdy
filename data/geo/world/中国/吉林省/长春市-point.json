@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.8053445603, 44.5521938699 ]
+			},
+			"properties" : {
+				"name" : "德惠市",
+				"adcode" : "220183",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.6075169928, 43.9464055673 ]
+			},
+			"properties" : {
+				"name" : "二道区",
+				"adcode" : "220105",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.66060947, 43.8922840848 ]
+			},
+			"properties" : {
+				"name" : "公主岭市",
+				"adcode" : "220184",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.033030115, 44.2302225535 ]
+			},
+			"properties" : {
+				"name" : "九台区",
+				"adcode" : "220113",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.3176930462, 44.079913182 ]
+			},
+			"properties" : {
+				"name" : "宽城区",
+				"adcode" : "220103",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.1653990883, 43.9027579242 ]
+			},
+			"properties" : {
+				"name" : "绿园区",
+				"adcode" : "220106",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.4064845396, 43.7229160993 ]
+			},
+			"properties" : {
+				"name" : "南关区",
+				"adcode" : "220102",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.0782560081, 44.4703952634 ]
+			},
+			"properties" : {
+				"name" : "农安县",
+				"adcode" : "220122",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.700266896, 43.5225932486 ]
+			},
+			"properties" : {
+				"name" : "双阳区",
+				"adcode" : "220112",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.5898520412, 44.8707439472 ]
+			},
+			"properties" : {
+				"name" : "榆树市",
+				"adcode" : "220182",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.3023167615, 43.4959991228 ]
+			},
+			"properties" : {
+				"name" : "朝阳区",
+				"adcode" : "220105",
+				"adcode_s" : "2201",
+				"adcode_si" : "22",
+				"dname" : "长春市"
+			}
+		}
+	]
+}

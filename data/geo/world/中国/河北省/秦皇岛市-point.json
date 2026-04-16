@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4185979637, 39.8402543429 ]
+			},
+			"properties" : {
+				"name" : "北戴河区",
+				"adcode" : "130304",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0865086995, 39.6281855941 ]
+			},
+			"properties" : {
+				"name" : "昌黎县",
+				"adcode" : "130322",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2668919529, 39.9561783428 ]
+			},
+			"properties" : {
+				"name" : "抚宁区",
+				"adcode" : "130306",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.575731943, 40.0889771661 ]
+			},
+			"properties" : {
+				"name" : "海港区",
+				"adcode" : "130302",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9729675928, 39.9130884097 ]
+			},
+			"properties" : {
+				"name" : "卢龙县",
+				"adcode" : "130324",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1251972376, 40.345775931 ]
+			},
+			"properties" : {
+				"name" : "青龙满族自治县",
+				"adcode" : "130321",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7367464335, 40.0184932148 ]
+			},
+			"properties" : {
+				"name" : "山海关区",
+				"adcode" : "130303",
+				"adcode_s" : "1303",
+				"adcode_si" : "13",
+				"dname" : "秦皇岛市"
+			}
+		}
+	]
+}

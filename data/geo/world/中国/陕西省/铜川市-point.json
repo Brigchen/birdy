@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.05448023, 35.0126501623 ]
+			},
+			"properties" : {
+				"name" : "王益区",
+				"adcode" : "610202",
+				"adcode_s" : "6102",
+				"adcode_si" : "61",
+				"dname" : "铜川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8320906558, 35.0532479129 ]
+			},
+			"properties" : {
+				"name" : "耀州区",
+				"adcode" : "610204",
+				"adcode_s" : "6102",
+				"adcode_si" : "61",
+				"dname" : "铜川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1934096964, 35.3787151832 ]
+			},
+			"properties" : {
+				"name" : "宜君县",
+				"adcode" : "610222",
+				"adcode_s" : "6102",
+				"adcode_si" : "61",
+				"dname" : "铜川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2934042993, 35.1671751277 ]
+			},
+			"properties" : {
+				"name" : "印台区",
+				"adcode" : "610203",
+				"adcode_s" : "6102",
+				"adcode_si" : "61",
+				"dname" : "铜川市"
+			}
+		}
+	]
+}

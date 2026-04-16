@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.5596888172, 25.8589718316 ]
+			},
+			"properties" : {
+				"name" : "关岭布依族苗族自治县",
+				"adcode" : "520424",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.2824923192, 26.4056778467 ]
+			},
+			"properties" : {
+				"name" : "平坝区",
+				"adcode" : "520403",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.732227547, 26.3434349761 ]
+			},
+			"properties" : {
+				"name" : "普定县",
+				"adcode" : "520422",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0429948137, 26.1929024098 ]
+			},
+			"properties" : {
+				"name" : "西秀区",
+				"adcode" : "520402",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.8236340854, 25.8406924006 ]
+			},
+			"properties" : {
+				"name" : "镇宁布依族苗族自治县",
+				"adcode" : "520423",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.057848195, 25.8132108316 ]
+			},
+			"properties" : {
+				"name" : "紫云苗族布依族自治县",
+				"adcode" : "520425",
+				"adcode_s" : "5204",
+				"adcode_si" : "52",
+				"dname" : "安顺市"
+			}
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4085956292, 34.4488368426 ]
+			},
+			"properties" : {
+				"name" : "砀山县",
+				"adcode" : "341321",
+				"adcode_s" : "3413",
+				"adcode_si" : "34",
+				"dname" : "宿州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.530852682, 33.6853445331 ]
+			},
+			"properties" : {
+				"name" : "灵璧县",
+				"adcode" : "341323",
+				"adcode_s" : "3413",
+				"adcode_si" : "34",
+				"dname" : "宿州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8779678261, 33.5398320457 ]
+			},
+			"properties" : {
+				"name" : "泗县",
+				"adcode" : "341324",
+				"adcode_s" : "3413",
+				"adcode_si" : "34",
+				"dname" : "宿州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8004391754, 34.2065881916 ]
+			},
+			"properties" : {
+				"name" : "萧县",
+				"adcode" : "341322",
+				"adcode_s" : "3413",
+				"adcode_si" : "34",
+				"dname" : "宿州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1468211624, 33.7207504457 ]
+			},
+			"properties" : {
+				"name" : "埇桥区",
+				"adcode" : "341302",
+				"adcode_s" : "3413",
+				"adcode_si" : "34",
+				"dname" : "宿州市"
+			}
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1955639362, 29.6570903502 ]
+			},
+			"properties" : {
+				"name" : "东兴区",
+				"adcode" : "511011",
+				"adcode_s" : "5110",
+				"adcode_si" : "51",
+				"dname" : "内江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.2424310582, 29.3645258783 ]
+			},
+			"properties" : {
+				"name" : "隆昌市",
+				"adcode" : "511083",
+				"adcode_s" : "5110",
+				"adcode_si" : "51",
+				"dname" : "内江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.5848480792, 29.5960679724 ]
+			},
+			"properties" : {
+				"name" : "威远县",
+				"adcode" : "511024",
+				"adcode_s" : "5110",
+				"adcode_si" : "51",
+				"dname" : "内江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.7867532495, 29.7319966674 ]
+			},
+			"properties" : {
+				"name" : "资中县",
+				"adcode" : "511025",
+				"adcode_s" : "5110",
+				"adcode_si" : "51",
+				"dname" : "内江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9549054978, 29.5418191294 ]
+			},
+			"properties" : {
+				"name" : "市中区",
+				"adcode" : "511002",
+				"adcode_s" : "5110",
+				"adcode_si" : "51",
+				"dname" : "内江市"
+			}
+		}
+	]
+}

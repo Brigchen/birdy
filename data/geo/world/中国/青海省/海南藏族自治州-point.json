@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.074770009, 36.5019318269 ]
+			},
+			"properties" : {
+				"name" : "共和县",
+				"adcode" : "632521",
+				"adcode_s" : "6325",
+				"adcode_si" : "63",
+				"dname" : "海南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.4307858974, 36.0010305758 ]
+			},
+			"properties" : {
+				"name" : "贵德县",
+				"adcode" : "632523",
+				"adcode_s" : "6325",
+				"adcode_si" : "63",
+				"dname" : "海南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.9024617116, 35.6982705432 ]
+			},
+			"properties" : {
+				"name" : "贵南县",
+				"adcode" : "632525",
+				"adcode_s" : "6325",
+				"adcode_si" : "63",
+				"dname" : "海南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.5878464459, 35.0716604294 ]
+			},
+			"properties" : {
+				"name" : "同德县",
+				"adcode" : "632522",
+				"adcode_s" : "6325",
+				"adcode_si" : "63",
+				"dname" : "海南藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.73496919, 35.5199129664 ]
+			},
+			"properties" : {
+				"name" : "兴海县",
+				"adcode" : "632524",
+				"adcode_s" : "6325",
+				"adcode_si" : "63",
+				"dname" : "海南藏族自治州"
+			}
+		}
+	]
+}

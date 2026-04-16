@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "澄迈县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9846815097, 19.6901307616 ]
+			},
+			"properties" : {
+				"name" : "澄迈县",
+				"adcode" : "469023",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

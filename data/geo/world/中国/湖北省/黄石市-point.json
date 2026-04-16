@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.834402176, 30.0685156191 ]
+			},
+			"properties" : {
+				"name" : "大冶市",
+				"adcode" : "420281",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0547907406, 30.2350108215 ]
+			},
+			"properties" : {
+				"name" : "黄石港区",
+				"adcode" : "420202",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8978915769, 30.2140229854 ]
+			},
+			"properties" : {
+				"name" : "铁山区",
+				"adcode" : "420205",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2021056198, 30.1754633471 ]
+			},
+			"properties" : {
+				"name" : "西塞山区",
+				"adcode" : "420203",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9835784413, 30.1957664299 ]
+			},
+			"properties" : {
+				"name" : "下陆区",
+				"adcode" : "420204",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1289407834, 29.8244713702 ]
+			},
+			"properties" : {
+				"name" : "阳新县",
+				"adcode" : "420222",
+				"adcode_s" : "4202",
+				"adcode_si" : "42",
+				"dname" : "黄石市"
+			}
+		}
+	]
+}

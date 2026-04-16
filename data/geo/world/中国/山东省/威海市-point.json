@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.1069066157, 37.3724976731 ]
+			},
+			"properties" : {
+				"name" : "环翠区",
+				"adcode" : "371002",
+				"adcode_s" : "3710",
+				"adcode_si" : "37",
+				"dname" : "威海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.391517832, 37.1153368899 ]
+			},
+			"properties" : {
+				"name" : "荣成市",
+				"adcode" : "371082",
+				"adcode_s" : "3710",
+				"adcode_si" : "37",
+				"dname" : "威海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.5193967867, 36.9656833587 ]
+			},
+			"properties" : {
+				"name" : "乳山市",
+				"adcode" : "371083",
+				"adcode_s" : "3710",
+				"adcode_si" : "37",
+				"dname" : "威海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.02110711, 37.1034268401 ]
+			},
+			"properties" : {
+				"name" : "文登区",
+				"adcode" : "371003",
+				"adcode_s" : "3710",
+				"adcode_si" : "37",
+				"dname" : "威海市"
+			}
+		}
+	]
+}

@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2754352337, 22.2363877636 ]
+			},
+			"properties" : {
+				"name" : "恩平市",
+				"adcode" : "440785",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9003017488, 22.7087711022 ]
+			},
+			"properties" : {
+				"name" : "鹤山市",
+				"adcode" : "440784",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1232759017, 22.5510555132 ]
+			},
+			"properties" : {
+				"name" : "江海区",
+				"adcode" : "440704",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.663501425, 22.4687353488 ]
+			},
+			"properties" : {
+				"name" : "开平市",
+				"adcode" : "440783",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.048977916, 22.6568697518 ]
+			},
+			"properties" : {
+				"name" : "蓬江区",
+				"adcode" : "440703",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7005479292, 22.057709004 ]
+			},
+			"properties" : {
+				"name" : "台山市",
+				"adcode" : "440781",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0232352267, 22.3888959682 ]
+			},
+			"properties" : {
+				"name" : "新会区",
+				"adcode" : "440705",
+				"adcode_s" : "4407",
+				"adcode_si" : "44",
+				"dname" : "江门市"
+			}
+		}
+	]
+}

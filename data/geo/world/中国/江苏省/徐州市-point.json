@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6037103533, 34.6905076853 ]
+			},
+			"properties" : {
+				"name" : "丰县",
+				"adcode" : "320321",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4873968146, 34.4044644445 ]
+			},
+			"properties" : {
+				"name" : "贾汪区",
+				"adcode" : "320305",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8985466135, 34.6974467285 ]
+			},
+			"properties" : {
+				"name" : "沛县",
+				"adcode" : "320322",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8888328599, 34.3946307476 ]
+			},
+			"properties" : {
+				"name" : "邳州市",
+				"adcode" : "320382",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.14588163, 34.248106113 ]
+			},
+			"properties" : {
+				"name" : "泉山区",
+				"adcode" : "320311",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8786640438, 33.9419010586 ]
+			},
+			"properties" : {
+				"name" : "睢宁县",
+				"adcode" : "320324",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4741425645, 34.1833919899 ]
+			},
+			"properties" : {
+				"name" : "铜山区",
+				"adcode" : "320312",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3375642535, 34.2831445536 ]
+			},
+			"properties" : {
+				"name" : "新沂市",
+				"adcode" : "320381",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.2628556349, 34.2129215322 ]
+			},
+			"properties" : {
+				"name" : "云龙区",
+				"adcode" : "320303",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.275063455, 34.2923195883 ]
+			},
+			"properties" : {
+				"name" : "鼓楼区",
+				"adcode" : "320303",
+				"adcode_s" : "3203",
+				"adcode_si" : "32",
+				"dname" : "徐州市"
+			}
+		}
+	]
+}

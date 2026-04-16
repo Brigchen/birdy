@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.1295515936, 43.6107012407 ]
+			},
+			"properties" : {
+				"name" : "察布查尔锡伯自治县",
+				"adcode" : "654022",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 82.0211269458, 43.4564915479 ]
+			},
+			"properties" : {
+				"name" : "巩留县",
+				"adcode" : "654024",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.9649647395, 44.2555397568 ]
+			},
+			"properties" : {
+				"name" : "霍城县",
+				"adcode" : "654023",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.5065577511, 44.459725872 ]
+			},
+			"properties" : {
+				"name" : "霍尔果斯市",
+				"adcode" : "654004",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.0076570547, 44.5487107413 ]
+			},
+			"properties" : {
+				"name" : "奎屯市",
+				"adcode" : "654003",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.2229277008, 43.8086135274 ]
+			},
+			"properties" : {
+				"name" : "尼勒克县",
+				"adcode" : "654028",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.9973901672, 42.9176172071 ]
+			},
+			"properties" : {
+				"name" : "特克斯县",
+				"adcode" : "654027",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.5491665953, 43.3688958949 ]
+			},
+			"properties" : {
+				"name" : "新源县",
+				"adcode" : "654025",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.28414593, 43.94974357 ]
+			},
+			"properties" : {
+				"name" : "伊宁市",
+				"adcode" : "654002",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.7478387082, 44.0000153388 ]
+			},
+			"properties" : {
+				"name" : "伊宁县",
+				"adcode" : "654021",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.9749757031, 42.7676186257 ]
+			},
+			"properties" : {
+				"name" : "昭苏县",
+				"adcode" : "654026",
+				"adcode_s" : "6540",
+				"adcode_si" : "65",
+				"dname" : "伊犁哈萨克自治州"
+			}
+		}
+	]
+}

@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.64720564, 29.9140019139 ]
+			},
+			"properties" : {
+				"name" : "昂仁县",
+				"adcode" : "540226",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.0950571517, 28.8157385635 ]
+			},
+			"properties" : {
+				"name" : "白朗县",
+				"adcode" : "540228",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.9052641358, 28.2342312037 ]
+			},
+			"properties" : {
+				"name" : "定结县",
+				"adcode" : "540231",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.9912886189, 28.4738825016 ]
+			},
+			"properties" : {
+				"name" : "定日县",
+				"adcode" : "540223",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.5633051069, 28.3136366546 ]
+			},
+			"properties" : {
+				"name" : "岗巴县",
+				"adcode" : "540237",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.2974016424, 28.86330508 ]
+			},
+			"properties" : {
+				"name" : "吉隆县",
+				"adcode" : "540234",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.67739311, 29.0195827253 ]
+			},
+			"properties" : {
+				"name" : "江孜县",
+				"adcode" : "540222",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.6429976225, 28.4385856454 ]
+			},
+			"properties" : {
+				"name" : "康马县",
+				"adcode" : "540230",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.8494359677, 29.17702453 ]
+			},
+			"properties" : {
+				"name" : "拉孜县",
+				"adcode" : "540225",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.3714721894, 29.8105869351 ]
+			},
+			"properties" : {
+				"name" : "南木林县",
+				"adcode" : "540221",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.0585041584, 28.5962755159 ]
+			},
+			"properties" : {
+				"name" : "聂拉木县",
+				"adcode" : "540235",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.9673695182, 29.2215527613 ]
+			},
+			"properties" : {
+				"name" : "仁布县",
+				"adcode" : "540229",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.7155574313, 29.4269314179 ]
+			},
+			"properties" : {
+				"name" : "萨嘎县",
+				"adcode" : "540236",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.3383278387, 28.8515642757 ]
+			},
+			"properties" : {
+				"name" : "萨迦县",
+				"adcode" : "540224",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.765452405, 29.2874108326 ]
+			},
+			"properties" : {
+				"name" : "桑珠孜区",
+				"adcode" : "540202",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.0736930929, 29.91094605 ]
+			},
+			"properties" : {
+				"name" : "谢通门县",
+				"adcode" : "540227",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.0697172046, 27.8071035393 ]
+			},
+			"properties" : {
+				"name" : "亚东县",
+				"adcode" : "540233",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 83.6533201106, 30.4749266508 ]
+			},
+			"properties" : {
+				"name" : "仲巴县",
+				"adcode" : "540232",
+				"adcode_s" : "5402",
+				"adcode_si" : "54",
+				"dname" : "日喀则市"
+			}
+		}
+	]
+}

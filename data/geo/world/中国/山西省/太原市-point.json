@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.096529009, 37.8975015739 ]
+			},
+			"properties" : {
+				"name" : "古交市",
+				"adcode" : "140181",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4931553823, 37.9780596765 ]
+			},
+			"properties" : {
+				"name" : "尖草坪区",
+				"adcode" : "140108",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4290120188, 37.7299217786 ]
+			},
+			"properties" : {
+				"name" : "晋源区",
+				"adcode" : "140110",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7847984124, 38.0277877042 ]
+			},
+			"properties" : {
+				"name" : "娄烦县",
+				"adcode" : "140123",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.39283637, 37.5402997915 ]
+			},
+			"properties" : {
+				"name" : "清徐县",
+				"adcode" : "140121",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3955736445, 37.8682577295 ]
+			},
+			"properties" : {
+				"name" : "万柏林区",
+				"adcode" : "140109",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5624742843, 37.7157471603 ]
+			},
+			"properties" : {
+				"name" : "小店区",
+				"adcode" : "140105",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.6331745912, 37.9181069637 ]
+			},
+			"properties" : {
+				"name" : "杏花岭区",
+				"adcode" : "140107",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.67416251, 38.0989876601 ]
+			},
+			"properties" : {
+				"name" : "阳曲县",
+				"adcode" : "140122",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.715049915, 37.8886898431 ]
+			},
+			"properties" : {
+				"name" : "迎泽区",
+				"adcode" : "140106",
+				"adcode_s" : "1401",
+				"adcode_si" : "14",
+				"dname" : "太原市"
+			}
+		}
+	]
+}

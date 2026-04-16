@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1956184795, 31.4495606605 ]
+			},
+			"properties" : {
+				"name" : "滨湖区",
+				"adcode" : "320211",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2046404613, 31.6523820503 ]
+			},
+			"properties" : {
+				"name" : "惠山区",
+				"adcode" : "320206",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2994055809, 31.8334560543 ]
+			},
+			"properties" : {
+				"name" : "江阴市",
+				"adcode" : "320281",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2933509721, 31.5822371236 ]
+			},
+			"properties" : {
+				"name" : "梁溪区",
+				"adcode" : "320213",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4782690174, 31.6273017184 ]
+			},
+			"properties" : {
+				"name" : "锡山区",
+				"adcode" : "320205",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4296771606, 31.5142028782 ]
+			},
+			"properties" : {
+				"name" : "新吴区",
+				"adcode" : "320214",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.7785320937, 31.3576834738 ]
+			},
+			"properties" : {
+				"name" : "宜兴市",
+				"adcode" : "320282",
+				"adcode_s" : "3202",
+				"adcode_si" : "32",
+				"dname" : "无锡市"
+			}
+		}
+	]
+}

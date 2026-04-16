@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.488556815, 29.4822717377 ]
+			},
+			"properties" : {
+				"name" : "华容县",
+				"adcode" : "430623",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8810528135, 29.5521355069 ]
+			},
+			"properties" : {
+				"name" : "君山区",
+				"adcode" : "430611",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5079214444, 29.4922728738 ]
+			},
+			"properties" : {
+				"name" : "临湘市",
+				"adcode" : "430682",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1129616424, 28.7983588086 ]
+			},
+			"properties" : {
+				"name" : "汨罗市",
+				"adcode" : "430681",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7087695771, 28.7592193744 ]
+			},
+			"properties" : {
+				"name" : "平江县",
+				"adcode" : "430626",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7931372719, 28.7102710817 ]
+			},
+			"properties" : {
+				"name" : "湘阴县",
+				"adcode" : "430624",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2042125048, 29.3358753792 ]
+			},
+			"properties" : {
+				"name" : "岳阳楼区",
+				"adcode" : "430602",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2479634305, 29.1240149341 ]
+			},
+			"properties" : {
+				"name" : "岳阳县",
+				"adcode" : "430621",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2936569278, 29.5081314074 ]
+			},
+			"properties" : {
+				"name" : "云溪区",
+				"adcode" : "430603",
+				"adcode_s" : "4306",
+				"adcode_si" : "43",
+				"dname" : "岳阳市"
+			}
+		}
+	]
+}

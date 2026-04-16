@@ -1,0 +1,286 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1425034325, 30.6916176983 ]
+			},
+			"properties" : {
+				"name" : "成华区",
+				"adcode" : "510108",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.6462107288, 30.6480624299 ]
+			},
+			"properties" : {
+				"name" : "崇州市",
+				"adcode" : "510184",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.3773839, 30.6390822144 ]
+			},
+			"properties" : {
+				"name" : "大邑县",
+				"adcode" : "510129",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.6290059604, 31.0350503685 ]
+			},
+			"properties" : {
+				"name" : "都江堰市",
+				"adcode" : "510181",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.5278400816, 30.3894494169 ]
+			},
+			"properties" : {
+				"name" : "简阳市",
+				"adcode" : "510185",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0449565825, 30.7099967427 ]
+			},
+			"properties" : {
+				"name" : "金牛区",
+				"adcode" : "510106",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6080134937, 30.7241934265 ]
+			},
+			"properties" : {
+				"name" : "金堂县",
+				"adcode" : "510121",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1127291354, 30.6039761329 ]
+			},
+			"properties" : {
+				"name" : "锦江区",
+				"adcode" : "510104",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2924310333, 30.5981467117 ]
+			},
+			"properties" : {
+				"name" : "龙泉驿区",
+				"adcode" : "510112",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8812598616, 31.1449498577 ]
+			},
+			"properties" : {
+				"name" : "彭州市",
+				"adcode" : "510182",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.8772164274, 30.8360477048 ]
+			},
+			"properties" : {
+				"name" : "郫都区",
+				"adcode" : "510117",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4898855135, 30.2363474026 ]
+			},
+			"properties" : {
+				"name" : "蒲江县",
+				"adcode" : "510131",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3409978408, 30.7943869589 ]
+			},
+			"properties" : {
+				"name" : "青白江区",
+				"adcode" : "510113",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.9461251573, 30.6934847331 ]
+			},
+			"properties" : {
+				"name" : "青羊区",
+				"adcode" : "510105",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.2366034305, 30.3691237734 ]
+			},
+			"properties" : {
+				"name" : "邛崃市",
+				"adcode" : "510183",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.033188111, 30.4506925969 ]
+			},
+			"properties" : {
+				"name" : "双流区",
+				"adcode" : "510116",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.808992996, 30.7253915221 ]
+			},
+			"properties" : {
+				"name" : "温江区",
+				"adcode" : "510115",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.01965915, 30.6187214473 ]
+			},
+			"properties" : {
+				"name" : "武侯区",
+				"adcode" : "510107",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1111201025, 30.8534490731 ]
+			},
+			"properties" : {
+				"name" : "新都区",
+				"adcode" : "510114",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.823356221, 30.4240661874 ]
+			},
+			"properties" : {
+				"name" : "新津区",
+				"adcode" : "510118",
+				"adcode_s" : "5101",
+				"adcode_si" : "51",
+				"dname" : "成都市"
+			}
+		}
+	]
+}

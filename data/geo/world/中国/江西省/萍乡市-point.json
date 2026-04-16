@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8967171769, 27.6451586802 ]
+			},
+			"properties" : {
+				"name" : "安源区",
+				"adcode" : "360302",
+				"adcode_s" : "3603",
+				"adcode_si" : "36",
+				"dname" : "萍乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9478073126, 27.2201622388 ]
+			},
+			"properties" : {
+				"name" : "莲花县",
+				"adcode" : "360321",
+				"adcode_s" : "3603",
+				"adcode_si" : "36",
+				"dname" : "萍乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0598804585, 27.5704769943 ]
+			},
+			"properties" : {
+				"name" : "芦溪县",
+				"adcode" : "360323",
+				"adcode_s" : "3603",
+				"adcode_si" : "36",
+				"dname" : "萍乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8596389668, 27.8331730642 ]
+			},
+			"properties" : {
+				"name" : "上栗县",
+				"adcode" : "360322",
+				"adcode_s" : "3603",
+				"adcode_si" : "36",
+				"dname" : "萍乡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7201495222, 27.5152826697 ]
+			},
+			"properties" : {
+				"name" : "湘东区",
+				"adcode" : "360313",
+				"adcode_s" : "3603",
+				"adcode_si" : "36",
+				"dname" : "萍乡市"
+			}
+		}
+	]
+}

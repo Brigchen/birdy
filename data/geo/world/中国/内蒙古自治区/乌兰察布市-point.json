@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0561993506, 41.5212039268 ]
+			},
+			"properties" : {
+				"name" : "察哈尔右翼后旗",
+				"adcode" : "150928",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.23526508, 40.8510680951 ]
+			},
+			"properties" : {
+				"name" : "察哈尔右翼前旗",
+				"adcode" : "150926",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4569956018, 41.4194219148 ]
+			},
+			"properties" : {
+				"name" : "察哈尔右翼中旗",
+				"adcode" : "150927",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2953685647, 40.550540735 ]
+			},
+			"properties" : {
+				"name" : "丰镇市",
+				"adcode" : "150981",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.170831225, 41.9290629626 ]
+			},
+			"properties" : {
+				"name" : "化德县",
+				"adcode" : "150922",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1418534035, 41.0877977189 ]
+			},
+			"properties" : {
+				"name" : "集宁区",
+				"adcode" : "150902",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.5374077818, 40.4949870636 ]
+			},
+			"properties" : {
+				"name" : "凉城县",
+				"adcode" : "150925",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6092417895, 41.7176822411 ]
+			},
+			"properties" : {
+				"name" : "商都县",
+				"adcode" : "150923",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5777975037, 42.2934730501 ]
+			},
+			"properties" : {
+				"name" : "四子王旗",
+				"adcode" : "150929",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7607847961, 40.9433014162 ]
+			},
+			"properties" : {
+				"name" : "兴和县",
+				"adcode" : "150924",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.40393427, 40.8530016271 ]
+			},
+			"properties" : {
+				"name" : "卓资县",
+				"adcode" : "150921",
+				"adcode_s" : "1509",
+				"adcode_si" : "15",
+				"dname" : "乌兰察布市"
+			}
+		}
+	]
+}

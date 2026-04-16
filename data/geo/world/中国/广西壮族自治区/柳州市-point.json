@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.3831458368, 24.4511825459 ]
+			},
+			"properties" : {
+				"name" : "柳北区",
+				"adcode" : "450205",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2199015563, 24.6262678948 ]
+			},
+			"properties" : {
+				"name" : "柳城县",
+				"adcode" : "450222",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.217075746, 24.1678169276 ]
+			},
+			"properties" : {
+				"name" : "柳江区",
+				"adcode" : "450206",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2048823353, 24.3819051459 ]
+			},
+			"properties" : {
+				"name" : "柳南区",
+				"adcode" : "450204",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8160330835, 24.5419057875 ]
+			},
+			"properties" : {
+				"name" : "鹿寨县",
+				"adcode" : "450223",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.503295507, 25.1359869955 ]
+			},
+			"properties" : {
+				"name" : "融安县",
+				"adcode" : "450224",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.0474220594, 25.3401588116 ]
+			},
+			"properties" : {
+				"name" : "融水苗族自治县",
+				"adcode" : "450225",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4995316058, 25.7448138831 ]
+			},
+			"properties" : {
+				"name" : "三江侗族自治县",
+				"adcode" : "450226",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.65774168, 24.2035770388 ]
+			},
+			"properties" : {
+				"name" : "鱼峰区",
+				"adcode" : "450203",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4655518408, 24.3684893211 ]
+			},
+			"properties" : {
+				"name" : "城中区",
+				"adcode" : "450202",
+				"adcode_s" : "4502",
+				"adcode_si" : "45",
+				"dname" : "柳州市"
+			}
+		}
+	]
+}

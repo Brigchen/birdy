@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.8935147987, 31.9586987854 ]
+			},
+			"properties" : {
+				"name" : "崇川区",
+				"adcode" : "320602",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.471226191, 32.5513508434 ]
+			},
+			"properties" : {
+				"name" : "海安市",
+				"adcode" : "320685",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3030061794, 31.9621412391 ]
+			},
+			"properties" : {
+				"name" : "海门区",
+				"adcode" : "320684",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6881854572, 31.8781338568 ]
+			},
+			"properties" : {
+				"name" : "启东市",
+				"adcode" : "320681",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.0727069374, 32.3842457587 ]
+			},
+			"properties" : {
+				"name" : "如东县",
+				"adcode" : "320623",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5690310569, 32.2693408927 ]
+			},
+			"properties" : {
+				"name" : "如皋市",
+				"adcode" : "320682",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.0347297519, 32.1127540187 ]
+			},
+			"properties" : {
+				"name" : "通州区",
+				"adcode" : "320612",
+				"adcode_s" : "3206",
+				"adcode_si" : "32",
+				"dname" : "南通市"
+			}
+		}
+	]
+}

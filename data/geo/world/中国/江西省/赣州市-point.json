@@ -1,0 +1,258 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.385224481, 25.2352505982 ]
+			},
+			"properties" : {
+				"name" : "安远县",
+				"adcode" : "360726",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1874405397, 25.6765280441 ]
+			},
+			"properties" : {
+				"name" : "崇义县",
+				"adcode" : "360725",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5276428425, 25.5133247701 ]
+			},
+			"properties" : {
+				"name" : "大余县",
+				"adcode" : "360723",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0819978418, 24.8207476675 ]
+			},
+			"properties" : {
+				"name" : "定南县",
+				"adcode" : "360728",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0317369, 25.6074666072 ]
+			},
+			"properties" : {
+				"name" : "赣县区",
+				"adcode" : "360704",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.753995614, 25.502089412 ]
+			},
+			"properties" : {
+				"name" : "会昌县",
+				"adcode" : "360733",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7201591338, 24.7693893221 ]
+			},
+			"properties" : {
+				"name" : "龙南市",
+				"adcode" : "360783",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6920033277, 25.8353196262 ]
+			},
+			"properties" : {
+				"name" : "南康区",
+				"adcode" : "360703",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.000814062, 26.586474256 ]
+			},
+			"properties" : {
+				"name" : "宁都县",
+				"adcode" : "360730",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5110580275, 24.8499708753 ]
+			},
+			"properties" : {
+				"name" : "全南县",
+				"adcode" : "360729",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.97480709, 25.9186980903 ]
+			},
+			"properties" : {
+				"name" : "瑞金市",
+				"adcode" : "360781",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3910990069, 25.9361535316 ]
+			},
+			"properties" : {
+				"name" : "上犹县",
+				"adcode" : "360724",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3612157303, 26.3029415564 ]
+			},
+			"properties" : {
+				"name" : "石城县",
+				"adcode" : "360735",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9703641866, 25.2830398974 ]
+			},
+			"properties" : {
+				"name" : "信丰县",
+				"adcode" : "360722",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4352966036, 26.422519822 ]
+			},
+			"properties" : {
+				"name" : "兴国县",
+				"adcode" : "360732",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6535766241, 24.9013524707 ]
+			},
+			"properties" : {
+				"name" : "寻乌县",
+				"adcode" : "360734",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4974730567, 25.9332546317 ]
+			},
+			"properties" : {
+				"name" : "于都县",
+				"adcode" : "360731",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9161005719, 25.8188148779 ]
+			},
+			"properties" : {
+				"name" : "章贡区",
+				"adcode" : "360702",
+				"adcode_s" : "3607",
+				"adcode_si" : "36",
+				"dname" : "赣州市"
+			}
+		}
+	]
+}

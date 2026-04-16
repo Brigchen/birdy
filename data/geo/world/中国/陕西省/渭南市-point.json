@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5592997062, 35.2657761453 ]
+			},
+			"properties" : {
+				"name" : "白水县",
+				"adcode" : "610527",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8898720792, 35.216416968 ]
+			},
+			"properties" : {
+				"name" : "澄城县",
+				"adcode" : "610525",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9978721085, 34.7929936808 ]
+			},
+			"properties" : {
+				"name" : "大荔县",
+				"adcode" : "610523",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2233802509, 34.8741615181 ]
+			},
+			"properties" : {
+				"name" : "富平县",
+				"adcode" : "610528",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.380976153, 35.5750480152 ]
+			},
+			"properties" : {
+				"name" : "韩城市",
+				"adcode" : "610581",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1783036027, 35.2018570141 ]
+			},
+			"properties" : {
+				"name" : "合阳县",
+				"adcode" : "610524",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0438647087, 34.5238105178 ]
+			},
+			"properties" : {
+				"name" : "华阴市",
+				"adcode" : "610582",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7985078673, 34.4068839201 ]
+			},
+			"properties" : {
+				"name" : "华州区",
+				"adcode" : "610503",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5532622089, 34.5488947156 ]
+			},
+			"properties" : {
+				"name" : "临渭区",
+				"adcode" : "610502",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6156507582, 34.9618269497 ]
+			},
+			"properties" : {
+				"name" : "蒲城县",
+				"adcode" : "610526",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2814789201, 34.508554592 ]
+			},
+			"properties" : {
+				"name" : "潼关县",
+				"adcode" : "610522",
+				"adcode_s" : "6105",
+				"adcode_si" : "61",
+				"dname" : "渭南市"
+			}
+		}
+	]
+}

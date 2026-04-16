@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.269294059, 7.7496920685 ]
+			},
+			"properties" : {
+				"name" : "三沙市",
+				"adcode" : "460300",
+				"adcode_s" : "4603",
+				"adcode_si" : "46",
+				"dname" : "三沙市"
+			}
+		}
+	]
+}

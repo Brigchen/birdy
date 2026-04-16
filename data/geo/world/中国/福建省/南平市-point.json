@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3440039663, 27.6527292258 ]
+			},
+			"properties" : {
+				"name" : "光泽县",
+				"adcode" : "350723",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.471420479, 27.0440438189 ]
+			},
+			"properties" : {
+				"name" : "建瓯市",
+				"adcode" : "350783",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.07170353, 27.3247806361 ]
+			},
+			"properties" : {
+				"name" : "建阳区",
+				"adcode" : "350703",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5129871963, 27.9421419773 ]
+			},
+			"properties" : {
+				"name" : "浦城县",
+				"adcode" : "350722",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4693321107, 27.2319769555 ]
+			},
+			"properties" : {
+				"name" : "邵武市",
+				"adcode" : "350781",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8621943668, 26.9061456994 ]
+			},
+			"properties" : {
+				"name" : "顺昌县",
+				"adcode" : "350721",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7544253092, 27.6084179269 ]
+			},
+			"properties" : {
+				"name" : "松溪县",
+				"adcode" : "350724",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0000377295, 27.7451538903 ]
+			},
+			"properties" : {
+				"name" : "武夷山市",
+				"adcode" : "350782",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2435562706, 26.5873918801 ]
+			},
+			"properties" : {
+				"name" : "延平区",
+				"adcode" : "350702",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9586713514, 27.3221940087 ]
+			},
+			"properties" : {
+				"name" : "政和县",
+				"adcode" : "350725",
+				"adcode_s" : "3507",
+				"adcode_si" : "35",
+				"dname" : "南平市"
+			}
+		}
+	]
+}

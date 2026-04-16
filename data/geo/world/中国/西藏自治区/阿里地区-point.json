@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.2040552766, 30.7405416616 ]
+			},
+			"properties" : {
+				"name" : "措勤县",
+				"adcode" : "542527",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.3087234131, 31.9984695167 ]
+			},
+			"properties" : {
+				"name" : "噶尔县",
+				"adcode" : "542523",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.2744270299, 33.8145439723 ]
+			},
+			"properties" : {
+				"name" : "改则县",
+				"adcode" : "542526",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.82513494, 31.8190835217 ]
+			},
+			"properties" : {
+				"name" : "革吉县",
+				"adcode" : "542525",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 81.6007157295, 30.7498851822 ]
+			},
+			"properties" : {
+				"name" : "普兰县",
+				"adcode" : "542521",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 80.7080655414, 33.9721010398 ]
+			},
+			"properties" : {
+				"name" : "日土县",
+				"adcode" : "542524",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 79.5464792726, 31.5459825659 ]
+			},
+			"properties" : {
+				"name" : "札达县",
+				"adcode" : "542522",
+				"adcode_s" : "5425",
+				"adcode_si" : "54",
+				"dname" : "阿里地区"
+			}
+		}
+	]
+}

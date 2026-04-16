@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.84017961, 36.5048239843 ]
+			},
+			"properties" : {
+				"name" : "博山区",
+				"adcode" : "370304",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.815765074, 37.1647315683 ]
+			},
+			"properties" : {
+				"name" : "高青县",
+				"adcode" : "370322",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0219666561, 36.9914833762 ]
+			},
+			"properties" : {
+				"name" : "桓台县",
+				"adcode" : "370321",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3017393, 36.8747898307 ]
+			},
+			"properties" : {
+				"name" : "临淄区",
+				"adcode" : "370305",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1917413715, 36.1290737503 ]
+			},
+			"properties" : {
+				"name" : "沂源县",
+				"adcode" : "370323",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.06543008, 36.7959852869 ]
+			},
+			"properties" : {
+				"name" : "张店区",
+				"adcode" : "370303",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8994730723, 36.7798964433 ]
+			},
+			"properties" : {
+				"name" : "周村区",
+				"adcode" : "370306",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0152170093, 36.5749273431 ]
+			},
+			"properties" : {
+				"name" : "淄川区",
+				"adcode" : "370302",
+				"adcode_s" : "3703",
+				"adcode_si" : "37",
+				"dname" : "淄博市"
+			}
+		}
+	]
+}

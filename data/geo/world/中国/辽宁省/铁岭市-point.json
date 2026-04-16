@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9337768895, 42.9908447133 ]
+			},
+			"properties" : {
+				"name" : "昌图县",
+				"adcode" : "211224",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.5744721334, 42.4277947928 ]
+			},
+			"properties" : {
+				"name" : "调兵山市",
+				"adcode" : "211281",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.2720253685, 42.3016273494 ]
+			},
+			"properties" : {
+				"name" : "开原市",
+				"adcode" : "211282",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.2676718334, 42.5067991607 ]
+			},
+			"properties" : {
+				"name" : "清河区",
+				"adcode" : "211204",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.722589735, 42.303464921 ]
+			},
+			"properties" : {
+				"name" : "铁岭县",
+				"adcode" : "211221",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.7260766936, 42.7038263745 ]
+			},
+			"properties" : {
+				"name" : "西丰县",
+				"adcode" : "211223",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.846663686, 42.2445799112 ]
+			},
+			"properties" : {
+				"name" : "银州区",
+				"adcode" : "211202",
+				"adcode_s" : "2112",
+				"adcode_si" : "21",
+				"dname" : "铁岭市"
+			}
+		}
+	]
+}

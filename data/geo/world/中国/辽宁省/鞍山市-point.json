@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.7707125901, 40.823290468 ]
+			},
+			"properties" : {
+				"name" : "海城市",
+				"adcode" : "210381",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.09723288, 41.1583586465 ]
+			},
+			"properties" : {
+				"name" : "立山区",
+				"adcode" : "210304",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.9372151348, 40.9856230522 ]
+			},
+			"properties" : {
+				"name" : "千山区",
+				"adcode" : "210311",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.43244439, 41.3407154758 ]
+			},
+			"properties" : {
+				"name" : "台安县",
+				"adcode" : "210321",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.3336640624, 40.3946950392 ]
+			},
+			"properties" : {
+				"name" : "岫岩满族自治县",
+				"adcode" : "210323",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.9243187822, 41.131824758 ]
+			},
+			"properties" : {
+				"name" : "铁西区",
+				"adcode" : "210303",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.0958328224, 41.0532096066 ]
+			},
+			"properties" : {
+				"name" : "铁东区",
+				"adcode" : "210302",
+				"adcode_s" : "2103",
+				"adcode_si" : "21",
+				"dname" : "鞍山市"
+			}
+		}
+	]
+}

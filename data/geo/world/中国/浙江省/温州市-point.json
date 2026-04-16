@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4213249978, 27.4200872249 ]
+			},
+			"properties" : {
+				"name" : "苍南县",
+				"adcode" : "330327",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.9164782293, 27.9500065331 ]
+			},
+			"properties" : {
+				"name" : "洞头区",
+				"adcode" : "330305",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.0048115122, 28.2546483825 ]
+			},
+			"properties" : {
+				"name" : "乐清市",
+				"adcode" : "330382",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6142005558, 27.5254221747 ]
+			},
+			"properties" : {
+				"name" : "龙港市",
+				"adcode" : "330383",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.7935462936, 27.9012046696 ]
+			},
+			"properties" : {
+				"name" : "龙湾区",
+				"adcode" : "330303",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5546763442, 28.0647102607 ]
+			},
+			"properties" : {
+				"name" : "鹿城区",
+				"adcode" : "330302",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.5481582696, 27.9692494189 ]
+			},
+			"properties" : {
+				"name" : "瓯海区",
+				"adcode" : "330304",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.372529586, 27.6369360773 ]
+			},
+			"properties" : {
+				"name" : "平阳县",
+				"adcode" : "330326",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.4553822349, 27.8272354284 ]
+			},
+			"properties" : {
+				"name" : "瑞安市",
+				"adcode" : "330381",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.874152433, 27.5329957138 ]
+			},
+			"properties" : {
+				"name" : "泰顺县",
+				"adcode" : "330329",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0174306835, 27.8094967465 ]
+			},
+			"properties" : {
+				"name" : "文成县",
+				"adcode" : "330328",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6581441594, 28.3329923444 ]
+			},
+			"properties" : {
+				"name" : "永嘉县",
+				"adcode" : "330324",
+				"adcode_s" : "3303",
+				"adcode_si" : "33",
+				"dname" : "温州市"
+			}
+		}
+	]
+}

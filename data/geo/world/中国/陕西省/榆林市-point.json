@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.81171298, 37.5397988236 ]
+			},
+			"properties" : {
+				"name" : "定边县",
+				"adcode" : "610825",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8547416132, 39.1796153216 ]
+			},
+			"properties" : {
+				"name" : "府谷县",
+				"adcode" : "610822",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4510345358, 37.8495629886 ]
+			},
+			"properties" : {
+				"name" : "横山区",
+				"adcode" : "610803",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3614487019, 38.0717257251 ]
+			},
+			"properties" : {
+				"name" : "佳县",
+				"adcode" : "610828",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8011885571, 37.4769376661 ]
+			},
+			"properties" : {
+				"name" : "靖边县",
+				"adcode" : "610824",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.32564374, 37.8243564315 ]
+			},
+			"properties" : {
+				"name" : "米脂县",
+				"adcode" : "610827",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2772132758, 37.1791136248 ]
+			},
+			"properties" : {
+				"name" : "清涧县",
+				"adcode" : "610830",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3194972663, 38.8209406295 ]
+			},
+			"properties" : {
+				"name" : "神木市",
+				"adcode" : "610881",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3841303896, 37.5143789351 ]
+			},
+			"properties" : {
+				"name" : "绥德县",
+				"adcode" : "610826",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6796240642, 37.5876972987 ]
+			},
+			"properties" : {
+				"name" : "吴堡县",
+				"adcode" : "610829",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6358664343, 38.3825355723 ]
+			},
+			"properties" : {
+				"name" : "榆阳区",
+				"adcode" : "610802",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8652589708, 37.526433364 ]
+			},
+			"properties" : {
+				"name" : "子洲县",
+				"adcode" : "610831",
+				"adcode_s" : "6108",
+				"adcode_si" : "61",
+				"dname" : "榆林市"
+			}
+		}
+	]
+}

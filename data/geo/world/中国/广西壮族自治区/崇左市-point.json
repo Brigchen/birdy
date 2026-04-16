@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.07925113, 22.7123159238 ]
+			},
+			"properties" : {
+				"name" : "大新县",
+				"adcode" : "451424",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8177116729, 22.5197622289 ]
+			},
+			"properties" : {
+				"name" : "扶绥县",
+				"adcode" : "451421",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4507209607, 22.5263119755 ]
+			},
+			"properties" : {
+				"name" : "江州区",
+				"adcode" : "451402",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8485606973, 22.428626308 ]
+			},
+			"properties" : {
+				"name" : "龙州县",
+				"adcode" : "451423",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.284473396, 22.0015544951 ]
+			},
+			"properties" : {
+				"name" : "宁明县",
+				"adcode" : "451422",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.833560993, 22.067304798 ]
+			},
+			"properties" : {
+				"name" : "凭祥市",
+				"adcode" : "451481",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0706805769, 23.1135748804 ]
+			},
+			"properties" : {
+				"name" : "天等县",
+				"adcode" : "451425",
+				"adcode_s" : "4514",
+				"adcode_si" : "45",
+				"dname" : "崇左市"
+			}
+		}
+	]
+}

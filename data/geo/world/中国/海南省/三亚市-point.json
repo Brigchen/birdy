@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7191146767, 18.3806272817 ]
+			},
+			"properties" : {
+				"name" : "海棠区",
+				"adcode" : "460202",
+				"adcode_s" : "4602",
+				"adcode_si" : "46",
+				"dname" : "三亚市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.5843497037, 18.2948645051 ]
+			},
+			"properties" : {
+				"name" : "吉阳区",
+				"adcode" : "460203",
+				"adcode_s" : "4602",
+				"adcode_si" : "46",
+				"dname" : "三亚市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.3741343487, 18.4365282502 ]
+			},
+			"properties" : {
+				"name" : "天涯区",
+				"adcode" : "460204",
+				"adcode_s" : "4602",
+				"adcode_si" : "46",
+				"dname" : "三亚市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.121911732, 18.4115174672 ]
+			},
+			"properties" : {
+				"name" : "崖州区",
+				"adcode" : "460205",
+				"adcode_s" : "4602",
+				"adcode_si" : "46",
+				"dname" : "三亚市"
+			}
+		}
+	]
+}

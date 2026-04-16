@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "临高县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7122775894, 19.8020824853 ]
+			},
+			"properties" : {
+				"name" : "临高县",
+				"adcode" : "469024",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

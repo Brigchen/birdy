@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.9379760433, 24.6737915357 ]
+			},
+			"properties" : {
+				"name" : "澄江市",
+				"adcode" : "530481",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.2115186144, 24.2427282335 ]
+			},
+			"properties" : {
+				"name" : "峨山彝族自治县",
+				"adcode" : "530426",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4921652989, 24.3665175319 ]
+			},
+			"properties" : {
+				"name" : "红塔区",
+				"adcode" : "530402",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.9909591702, 24.2812351216 ]
+			},
+			"properties" : {
+				"name" : "华宁县",
+				"adcode" : "530424",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7612583805, 24.3540313086 ]
+			},
+			"properties" : {
+				"name" : "江川区",
+				"adcode" : "530403",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7034902764, 24.113251085 ]
+			},
+			"properties" : {
+				"name" : "通海县",
+				"adcode" : "530423",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7309508533, 24.0259555464 ]
+			},
+			"properties" : {
+				"name" : "新平彝族傣族自治县",
+				"adcode" : "530427",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1147658297, 24.6925305331 ]
+			},
+			"properties" : {
+				"name" : "易门县",
+				"adcode" : "530425",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0103481975, 23.5815242052 ]
+			},
+			"properties" : {
+				"name" : "元江哈尼族彝族傣族自治县",
+				"adcode" : "530428",
+				"adcode_s" : "5304",
+				"adcode_si" : "53",
+				"dname" : "玉溪市"
+			}
+		}
+	]
+}

@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.9175820189, 22.1068097777 ]
+			},
+			"properties" : {
+				"name" : "景洪市",
+				"adcode" : "532801",
+				"adcode_s" : "5328",
+				"adcode_si" : "53",
+				"dname" : "西双版纳傣族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.3297271064, 21.9574629568 ]
+			},
+			"properties" : {
+				"name" : "勐海县",
+				"adcode" : "532822",
+				"adcode_s" : "5328",
+				"adcode_si" : "53",
+				"dname" : "西双版纳傣族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.4528687942, 21.734135541 ]
+			},
+			"properties" : {
+				"name" : "勐腊县",
+				"adcode" : "532823",
+				"adcode_s" : "5328",
+				"adcode_si" : "53",
+				"dname" : "西双版纳傣族自治州"
+			}
+		}
+	]
+}

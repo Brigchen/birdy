@@ -1,0 +1,244 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2956034775, 36.1569353122 ]
+			},
+			"properties" : {
+				"name" : "安泽县",
+				"adcode" : "141026",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6995303395, 36.4267889503 ]
+			},
+			"properties" : {
+				"name" : "大宁县",
+				"adcode" : "141030",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4704145014, 36.6361356944 ]
+			},
+			"properties" : {
+				"name" : "汾西县",
+				"adcode" : "141034",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9145122806, 35.9393866831 ]
+			},
+			"properties" : {
+				"name" : "浮山县",
+				"adcode" : "141027",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9986199008, 36.2977182194 ]
+			},
+			"properties" : {
+				"name" : "古县",
+				"adcode" : "141025",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6471753614, 36.3189396194 ]
+			},
+			"properties" : {
+				"name" : "洪洞县",
+				"adcode" : "141024",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3594250125, 35.6160414965 ]
+			},
+			"properties" : {
+				"name" : "侯马市",
+				"adcode" : "141081",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8178358881, 36.5936736315 ]
+			},
+			"properties" : {
+				"name" : "霍州市",
+				"adcode" : "141082",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7158523358, 36.1532163304 ]
+			},
+			"properties" : {
+				"name" : "吉县",
+				"adcode" : "141028",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1501600314, 36.4184955575 ]
+			},
+			"properties" : {
+				"name" : "蒲县",
+				"adcode" : "141033",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5147250799, 35.6989591375 ]
+			},
+			"properties" : {
+				"name" : "曲沃县",
+				"adcode" : "141021",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9971483757, 36.7058034893 ]
+			},
+			"properties" : {
+				"name" : "隰县",
+				"adcode" : "141031",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9315561529, 35.9189552719 ]
+			},
+			"properties" : {
+				"name" : "乡宁县",
+				"adcode" : "141029",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3734387809, 35.8683459313 ]
+			},
+			"properties" : {
+				"name" : "襄汾县",
+				"adcode" : "141023",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4616009016, 36.1200315501 ]
+			},
+			"properties" : {
+				"name" : "尧都区",
+				"adcode" : "141002",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.80916252, 35.7111140332 ]
+			},
+			"properties" : {
+				"name" : "翼城县",
+				"adcode" : "141022",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6050935738, 36.7308561731 ]
+			},
+			"properties" : {
+				"name" : "永和县",
+				"adcode" : "141032",
+				"adcode_s" : "1410",
+				"adcode_si" : "14",
+				"dname" : "临汾市"
+			}
+		}
+	]
+}

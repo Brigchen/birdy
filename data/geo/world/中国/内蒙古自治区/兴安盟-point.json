@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3452257092, 47.1541732584 ]
+			},
+			"properties" : {
+				"name" : "阿尔山市",
+				"adcode" : "152202",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3350937065, 46.44216311 ]
+			},
+			"properties" : {
+				"name" : "科尔沁右翼前旗",
+				"adcode" : "152221",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.92411547, 45.4688008917 ]
+			},
+			"properties" : {
+				"name" : "科尔沁右翼中旗",
+				"adcode" : "152222",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.507349129, 45.6238846543 ]
+			},
+			"properties" : {
+				"name" : "突泉县",
+				"adcode" : "152224",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.0686309755, 46.1087914266 ]
+			},
+			"properties" : {
+				"name" : "乌兰浩特市",
+				"adcode" : "152201",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.3767872204, 46.7808671135 ]
+			},
+			"properties" : {
+				"name" : "扎赉特旗",
+				"adcode" : "152223",
+				"adcode_s" : "1522",
+				"adcode_si" : "15",
+				"dname" : "兴安盟"
+			}
+		}
+	]
+}

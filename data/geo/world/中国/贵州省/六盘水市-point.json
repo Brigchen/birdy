@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.3727789086, 26.2334193014 ]
+			},
+			"properties" : {
+				"name" : "六枝特区",
+				"adcode" : "520203",
+				"adcode_s" : "5202",
+				"adcode_si" : "52",
+				"dname" : "六盘水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.658410451, 25.7689497551 ]
+			},
+			"properties" : {
+				"name" : "盘州市",
+				"adcode" : "520281",
+				"adcode_s" : "5202",
+				"adcode_si" : "52",
+				"dname" : "六盘水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9192393879, 26.360199541 ]
+			},
+			"properties" : {
+				"name" : "水城区",
+				"adcode" : "520221",
+				"adcode_s" : "5202",
+				"adcode_si" : "52",
+				"dname" : "六盘水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.8995508241, 26.7213272329 ]
+			},
+			"properties" : {
+				"name" : "钟山区",
+				"adcode" : "520201",
+				"adcode_s" : "5202",
+				"adcode_si" : "52",
+				"dname" : "六盘水市"
+			}
+		}
+	]
+}

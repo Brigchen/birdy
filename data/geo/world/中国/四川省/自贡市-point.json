@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.909123155, 29.402617282 ]
+			},
+			"properties" : {
+				"name" : "大安区",
+				"adcode" : "510304",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.0178052825, 29.1085306519 ]
+			},
+			"properties" : {
+				"name" : "富顺县",
+				"adcode" : "510322",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.5857330256, 29.298702972 ]
+			},
+			"properties" : {
+				"name" : "贡井区",
+				"adcode" : "510303",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3193464122, 29.4180288863 ]
+			},
+			"properties" : {
+				"name" : "荣县",
+				"adcode" : "510321",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.8448222042, 29.2483741821 ]
+			},
+			"properties" : {
+				"name" : "沿滩区",
+				"adcode" : "510311",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.7075114055, 29.2640840999 ]
+			},
+			"properties" : {
+				"name" : "自流井区",
+				"adcode" : "510302",
+				"adcode_s" : "5103",
+				"adcode_si" : "51",
+				"dname" : "自贡市"
+			}
+		}
+	]
+}

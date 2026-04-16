@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8823189968, 44.2591604501 ]
+			},
+			"properties" : {
+				"name" : "阿巴嘎旗",
+				"adcode" : "152522",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7556424331, 45.80866809 ]
+			},
+			"properties" : {
+				"name" : "东乌珠穆沁旗",
+				"adcode" : "152525",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4857337935, 42.1878971676 ]
+			},
+			"properties" : {
+				"name" : "多伦县",
+				"adcode" : "152531",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.0464213536, 43.4124142207 ]
+			},
+			"properties" : {
+				"name" : "二连浩特市",
+				"adcode" : "152501",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9029243819, 42.8775646756 ]
+			},
+			"properties" : {
+				"name" : "苏尼特右旗",
+				"adcode" : "152524",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1325802477, 44.0239201957 ]
+			},
+			"properties" : {
+				"name" : "苏尼特左旗",
+				"adcode" : "152523",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.291135707, 41.8977993734 ]
+			},
+			"properties" : {
+				"name" : "太仆寺旗",
+				"adcode" : "152527",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8072324704, 44.721671773 ]
+			},
+			"properties" : {
+				"name" : "西乌珠穆沁旗",
+				"adcode" : "152526",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1230041001, 44.0644340209 ]
+			},
+			"properties" : {
+				"name" : "锡林浩特市",
+				"adcode" : "152502",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1065254541, 42.3596404349 ]
+			},
+			"properties" : {
+				"name" : "镶黄旗",
+				"adcode" : "152528",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9268376298, 42.6646225182 ]
+			},
+			"properties" : {
+				"name" : "正蓝旗",
+				"adcode" : "152530",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0112405775, 42.5453208509 ]
+			},
+			"properties" : {
+				"name" : "正镶白旗",
+				"adcode" : "152529",
+				"adcode_s" : "1525",
+				"adcode_si" : "15",
+				"dname" : "锡林郭勒盟"
+			}
+		}
+	]
+}

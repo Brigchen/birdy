@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3803048685, 22.5204068686 ]
+			},
+			"properties" : {
+				"name" : "中山市",
+				"adcode" : "442000",
+				"adcode_s" : "4420",
+				"adcode_si" : "44",
+				"dname" : "中山市"
+			}
+		}
+	]
+}

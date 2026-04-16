@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.8284868904, 36.1311409438 ]
+			},
+			"properties" : {
+				"name" : "钢城区",
+				"adcode" : "370117",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8788633959, 36.6776990602 ]
+			},
+			"properties" : {
+				"name" : "槐荫区",
+				"adcode" : "370104",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1377387389, 37.0261876305 ]
+			},
+			"properties" : {
+				"name" : "济阳区",
+				"adcode" : "370115",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6113044276, 36.3164236899 ]
+			},
+			"properties" : {
+				"name" : "莱芜区",
+				"adcode" : "370116",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.258965325, 36.6519076584 ]
+			},
+			"properties" : {
+				"name" : "历城区",
+				"adcode" : "370112",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0892913542, 36.6532729631 ]
+			},
+			"properties" : {
+				"name" : "历下区",
+				"adcode" : "370102",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4105269147, 36.1976766286 ]
+			},
+			"properties" : {
+				"name" : "平阴县",
+				"adcode" : "370124",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1958250882, 37.3193402015 ]
+			},
+			"properties" : {
+				"name" : "商河县",
+				"adcode" : "370126",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9710437223, 36.7703544239 ]
+			},
+			"properties" : {
+				"name" : "天桥区",
+				"adcode" : "370105",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4665026636, 36.738518974 ]
+			},
+			"properties" : {
+				"name" : "章丘区",
+				"adcode" : "370114",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7913885058, 36.4223138479 ]
+			},
+			"properties" : {
+				"name" : "长清区",
+				"adcode" : "370113",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9658021557, 36.5795068103 ]
+			},
+			"properties" : {
+				"name" : "市中区",
+				"adcode" : "370102",
+				"adcode_s" : "3701",
+				"adcode_si" : "37",
+				"dname" : "济南市"
+			}
+		}
+	]
+}

@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8881348534, 40.3260751966 ]
+			},
+			"properties" : {
+				"name" : "和林格尔县",
+				"adcode" : "150123",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5516909049, 40.8670138794 ]
+			},
+			"properties" : {
+				"name" : "回民区",
+				"adcode" : "150103",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6932163167, 39.8811159099 ]
+			},
+			"properties" : {
+				"name" : "清水河县",
+				"adcode" : "150124",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9349579003, 40.784680395 ]
+			},
+			"properties" : {
+				"name" : "赛罕区",
+				"adcode" : "150105",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.28820445, 40.7350080926 ]
+			},
+			"properties" : {
+				"name" : "土默特左旗",
+				"adcode" : "150121",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3060410642, 40.3528960603 ]
+			},
+			"properties" : {
+				"name" : "托克托县",
+				"adcode" : "150122",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.16762624, 41.1081399218 ]
+			},
+			"properties" : {
+				"name" : "武川县",
+				"adcode" : "150125",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.68100486, 40.7136668268 ]
+			},
+			"properties" : {
+				"name" : "玉泉区",
+				"adcode" : "150104",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.926751435, 40.993949976 ]
+			},
+			"properties" : {
+				"name" : "新城区",
+				"adcode" : "150102",
+				"adcode_s" : "1501",
+				"adcode_si" : "15",
+				"dname" : "呼和浩特市"
+			}
+		}
+	]
+}

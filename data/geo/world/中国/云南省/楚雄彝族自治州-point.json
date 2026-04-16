@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.34878877, 24.8326298565 ]
+			},
+			"properties" : {
+				"name" : "楚雄市",
+				"adcode" : "532301",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.2361407507, 25.9440292201 ]
+			},
+			"properties" : {
+				"name" : "大姚县",
+				"adcode" : "532326",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0193424372, 25.1810733001 ]
+			},
+			"properties" : {
+				"name" : "禄丰市",
+				"adcode" : "532331",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5895867961, 25.4037517918 ]
+			},
+			"properties" : {
+				"name" : "牟定县",
+				"adcode" : "532323",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.04542532, 25.2179978871 ]
+			},
+			"properties" : {
+				"name" : "南华县",
+				"adcode" : "532324",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.6320749008, 24.532266573 ]
+			},
+			"properties" : {
+				"name" : "双柏县",
+				"adcode" : "532322",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1936005919, 25.7272635058 ]
+			},
+			"properties" : {
+				"name" : "武定县",
+				"adcode" : "532329",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.2029021489, 25.5141329221 ]
+			},
+			"properties" : {
+				"name" : "姚安县",
+				"adcode" : "532325",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5537636223, 26.1410611603 ]
+			},
+			"properties" : {
+				"name" : "永仁县",
+				"adcode" : "532327",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.863199402, 25.7784083766 ]
+			},
+			"properties" : {
+				"name" : "元谋县",
+				"adcode" : "532328",
+				"adcode_s" : "5323",
+				"adcode_si" : "53",
+				"dname" : "楚雄彝族自治州"
+			}
+		}
+	]
+}

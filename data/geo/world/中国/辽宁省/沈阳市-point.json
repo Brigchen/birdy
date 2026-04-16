@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.5060497356, 41.8625148889 ]
+			},
+			"properties" : {
+				"name" : "大东区",
+				"adcode" : "210104",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.25109841, 42.3763344894 ]
+			},
+			"properties" : {
+				"name" : "法库县",
+				"adcode" : "210124",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.442962745, 41.8634975324 ]
+			},
+			"properties" : {
+				"name" : "皇姑区",
+				"adcode" : "210105",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.6203339312, 41.7592141327 ]
+			},
+			"properties" : {
+				"name" : "浑南区",
+				"adcode" : "210112",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.40113237, 42.8146624126 ]
+			},
+			"properties" : {
+				"name" : "康平县",
+				"adcode" : "210123",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.7684439232, 41.5571684997 ]
+			},
+			"properties" : {
+				"name" : "辽中区",
+				"adcode" : "210115",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.4924769399, 42.0333246804 ]
+			},
+			"properties" : {
+				"name" : "沈北新区",
+				"adcode" : "210113",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.5357136353, 41.8117968678 ]
+			},
+			"properties" : {
+				"name" : "沈河区",
+				"adcode" : "210103",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.4135797565, 41.5810161677 ]
+			},
+			"properties" : {
+				"name" : "苏家屯区",
+				"adcode" : "210111",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.853430771, 42.0081044337 ]
+			},
+			"properties" : {
+				"name" : "新民市",
+				"adcode" : "210181",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.2483026943, 41.9055288378 ]
+			},
+			"properties" : {
+				"name" : "于洪区",
+				"adcode" : "210114",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.2058294, 41.7288217804 ]
+			},
+			"properties" : {
+				"name" : "铁西区",
+				"adcode" : "210103",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.4082464957, 41.7676362004 ]
+			},
+			"properties" : {
+				"name" : "和平区",
+				"adcode" : "210101",
+				"adcode_s" : "2101",
+				"adcode_si" : "21",
+				"dname" : "沈阳市"
+			}
+		}
+	]
+}

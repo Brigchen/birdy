@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.076136803, 28.6014744234 ]
+			},
+			"properties" : {
+				"name" : "黄岩区",
+				"adcode" : "331003",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4428503969, 28.6603108859 ]
+			},
+			"properties" : {
+				"name" : "椒江区",
+				"adcode" : "331002",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.2122277702, 28.8536699598 ]
+			},
+			"properties" : {
+				"name" : "临海市",
+				"adcode" : "331082",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3740488748, 28.5555717724 ]
+			},
+			"properties" : {
+				"name" : "路桥区",
+				"adcode" : "331004",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4801781121, 29.0128028857 ]
+			},
+			"properties" : {
+				"name" : "三门县",
+				"adcode" : "331022",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.9747688808, 29.1488046463 ]
+			},
+			"properties" : {
+				"name" : "天台县",
+				"adcode" : "331023",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.41474722, 28.3999492015 ]
+			},
+			"properties" : {
+				"name" : "温岭市",
+				"adcode" : "331081",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6300830392, 28.7358404186 ]
+			},
+			"properties" : {
+				"name" : "仙居县",
+				"adcode" : "331024",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.2673839958, 28.1811763332 ]
+			},
+			"properties" : {
+				"name" : "玉环市",
+				"adcode" : "331083",
+				"adcode_s" : "3310",
+				"adcode_si" : "33",
+				"dname" : "台州市"
+			}
+		}
+	]
+}

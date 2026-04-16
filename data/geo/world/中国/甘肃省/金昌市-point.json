@@ -1,0 +1,34 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.1555316939, 38.6451557472 ]
+			},
+			"properties" : {
+				"name" : "金川区",
+				"adcode" : "620302",
+				"adcode_s" : "6203",
+				"adcode_si" : "62",
+				"dname" : "金昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.9673263419, 38.2866386822 ]
+			},
+			"properties" : {
+				"name" : "永昌县",
+				"adcode" : "620321",
+				"adcode_s" : "6203",
+				"adcode_si" : "62",
+				"dname" : "金昌市"
+			}
+		}
+	]
+}

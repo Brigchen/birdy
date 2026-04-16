@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1595735272, 36.5539985829 ]
+			},
+			"properties" : {
+				"name" : "白银区",
+				"adcode" : "620402",
+				"adcode_s" : "6204",
+				"adcode_si" : "62",
+				"dname" : "白银市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.0919701733, 35.956226077 ]
+			},
+			"properties" : {
+				"name" : "会宁县",
+				"adcode" : "620422",
+				"adcode_s" : "6204",
+				"adcode_si" : "62",
+				"dname" : "白银市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0522715506, 37.1356965379 ]
+			},
+			"properties" : {
+				"name" : "景泰县",
+				"adcode" : "620423",
+				"adcode_s" : "6204",
+				"adcode_si" : "62",
+				"dname" : "白银市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6875977027, 36.5053770042 ]
+			},
+			"properties" : {
+				"name" : "靖远县",
+				"adcode" : "620421",
+				"adcode_s" : "6204",
+				"adcode_si" : "62",
+				"dname" : "白银市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9188144661, 36.708762938 ]
+			},
+			"properties" : {
+				"name" : "平川区",
+				"adcode" : "620403",
+				"adcode_s" : "6204",
+				"adcode_si" : "62",
+				"dname" : "白银市"
+			}
+		}
+	]
+}

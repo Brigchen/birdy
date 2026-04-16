@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9296458883, 23.1651164752 ]
+			},
+			"properties" : {
+				"name" : "宾阳县",
+				"adcode" : "450126",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.1584613753, 22.7713641242 ]
+			},
+			"properties" : {
+				"name" : "横州市",
+				"adcode" : "450127",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.14458716, 22.5605215358 ]
+			},
+			"properties" : {
+				"name" : "江南区",
+				"adcode" : "450105",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.3494618214, 22.4421870757 ]
+			},
+			"properties" : {
+				"name" : "良庆区",
+				"adcode" : "450108",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6878293291, 23.1042208995 ]
+			},
+			"properties" : {
+				"name" : "隆安县",
+				"adcode" : "450123",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1583656685, 23.6610458257 ]
+			},
+			"properties" : {
+				"name" : "马山县",
+				"adcode" : "450124",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.709560405, 22.8245209766 ]
+			},
+			"properties" : {
+				"name" : "青秀区",
+				"adcode" : "450103",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.635379065, 23.5184931936 ]
+			},
+			"properties" : {
+				"name" : "上林县",
+				"adcode" : "450125",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2490605656, 23.2539113437 ]
+			},
+			"properties" : {
+				"name" : "武鸣区",
+				"adcode" : "450110",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0825064384, 22.9179517725 ]
+			},
+			"properties" : {
+				"name" : "西乡塘区",
+				"adcode" : "450107",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.54150309, 22.9336000579 ]
+			},
+			"properties" : {
+				"name" : "兴宁区",
+				"adcode" : "450102",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5966100874, 22.5999078291 ]
+			},
+			"properties" : {
+				"name" : "邕宁区",
+				"adcode" : "450109",
+				"adcode_s" : "4501",
+				"adcode_si" : "45",
+				"dname" : "南宁市"
+			}
+		}
+	]
+}

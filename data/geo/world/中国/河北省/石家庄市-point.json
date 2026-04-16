@@ -1,0 +1,314 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5954214424, 37.616179216 ]
+			},
+			"properties" : {
+				"name" : "高邑县",
+				"adcode" : "130127",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.81681204, 37.9927849843 ]
+			},
+			"properties" : {
+				"name" : "藁城区",
+				"adcode" : "130109",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0788672312, 37.9842988444 ]
+			},
+			"properties" : {
+				"name" : "晋州市",
+				"adcode" : "130183",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0368546988, 38.0749487948 ]
+			},
+			"properties" : {
+				"name" : "井陉矿区",
+				"adcode" : "130107",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.17265234, 37.969118474 ]
+			},
+			"properties" : {
+				"name" : "井陉县",
+				"adcode" : "130121",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.15499794, 38.581216842 ]
+			},
+			"properties" : {
+				"name" : "灵寿县",
+				"adcode" : "130126",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3349836737, 38.0775573852 ]
+			},
+			"properties" : {
+				"name" : "鹿泉区",
+				"adcode" : "130110",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6277228455, 37.8915990388 ]
+			},
+			"properties" : {
+				"name" : "栾城区",
+				"adcode" : "130111",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8598840691, 38.4015859336 ]
+			},
+			"properties" : {
+				"name" : "平山县",
+				"adcode" : "130131",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2211945603, 38.1879578956 ]
+			},
+			"properties" : {
+				"name" : "深泽县",
+				"adcode" : "130128",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9392000349, 38.1766737976 ]
+			},
+			"properties" : {
+				"name" : "无极县",
+				"adcode" : "130130",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2856640643, 37.9169814804 ]
+			},
+			"properties" : {
+				"name" : "辛集市",
+				"adcode" : "130181",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7491609416, 38.3712538736 ]
+			},
+			"properties" : {
+				"name" : "新乐市",
+				"adcode" : "130184",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4447465573, 38.5402547001 ]
+			},
+			"properties" : {
+				"name" : "行唐县",
+				"adcode" : "130125",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5794415624, 38.0088627294 ]
+			},
+			"properties" : {
+				"name" : "裕华区",
+				"adcode" : "130108",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.40626156, 37.8162486711 ]
+			},
+			"properties" : {
+				"name" : "元氏县",
+				"adcode" : "130132",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2777216915, 37.6213083324 ]
+			},
+			"properties" : {
+				"name" : "赞皇县",
+				"adcode" : "130129",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8221458987, 37.7631001134 ]
+			},
+			"properties" : {
+				"name" : "赵县",
+				"adcode" : "130133",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5555163115, 38.2219972752 ]
+			},
+			"properties" : {
+				"name" : "正定县",
+				"adcode" : "130123",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4418785739, 38.0999152184 ]
+			},
+			"properties" : {
+				"name" : "新华区",
+				"adcode" : "030102",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4437760708, 38.0233892576 ]
+			},
+			"properties" : {
+				"name" : "桥西区",
+				"adcode" : "130104",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.52997367, 38.0802771203 ]
+			},
+			"properties" : {
+				"name" : "长安区",
+				"adcode" : "130116",
+				"adcode_s" : "1301",
+				"adcode_si" : "13",
+				"dname" : "石家庄市"
+			}
+		}
+	]
+}

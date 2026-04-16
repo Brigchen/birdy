@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7081610626, 30.5636364952 ]
+			},
+			"properties" : {
+				"name" : "宝兴县",
+				"adcode" : "511827",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.6218096702, 29.4291426934 ]
+			},
+			"properties" : {
+				"name" : "汉源县",
+				"adcode" : "511823",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.01814117, 30.4001216079 ]
+			},
+			"properties" : {
+				"name" : "芦山县",
+				"adcode" : "511826",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.2193756397, 30.127798965 ]
+			},
+			"properties" : {
+				"name" : "名山区",
+				"adcode" : "511803",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.2857839622, 29.2320022757 ]
+			},
+			"properties" : {
+				"name" : "石棉县",
+				"adcode" : "511824",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.5696556953, 30.0742631294 ]
+			},
+			"properties" : {
+				"name" : "天全县",
+				"adcode" : "511825",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.63176604, 29.7957487367 ]
+			},
+			"properties" : {
+				"name" : "荥经县",
+				"adcode" : "511822",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.032027151, 29.9596133519 ]
+			},
+			"properties" : {
+				"name" : "雨城区",
+				"adcode" : "511802",
+				"adcode_s" : "5118",
+				"adcode_si" : "51",
+				"dname" : "雅安市"
+			}
+		}
+	]
+}

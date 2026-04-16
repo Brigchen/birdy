@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4666397038, 26.1509639691 ]
+			},
+			"properties" : {
+				"name" : "都匀市",
+				"adcode" : "522701",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.553211482, 25.6334038337 ]
+			},
+			"properties" : {
+				"name" : "独山县",
+				"adcode" : "522726",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4798040027, 26.7741684432 ]
+			},
+			"properties" : {
+				"name" : "福泉市",
+				"adcode" : "522702",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1938134676, 26.4306418553 ]
+			},
+			"properties" : {
+				"name" : "贵定县",
+				"adcode" : "522723",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7124762497, 25.979980706 ]
+			},
+			"properties" : {
+				"name" : "惠水县",
+				"adcode" : "522731",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.95805307, 25.3582523335 ]
+			},
+			"properties" : {
+				"name" : "荔波县",
+				"adcode" : "522722",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.9857255652, 26.5023918926 ]
+			},
+			"properties" : {
+				"name" : "龙里县",
+				"adcode" : "522730",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7001211234, 25.415737658 ]
+			},
+			"properties" : {
+				"name" : "罗甸县",
+				"adcode" : "522728",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.102707797, 25.788270474 ]
+			},
+			"properties" : {
+				"name" : "平塘县",
+				"adcode" : "522727",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.946071798, 25.8495034898 ]
+			},
+			"properties" : {
+				"name" : "三都水族自治县",
+				"adcode" : "522732",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4104374431, 27.1682269422 ]
+			},
+			"properties" : {
+				"name" : "瓮安县",
+				"adcode" : "522725",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3941244295, 25.9977566582 ]
+			},
+			"properties" : {
+				"name" : "长顺县",
+				"adcode" : "522729",
+				"adcode_s" : "5227",
+				"adcode_si" : "52",
+				"dname" : "黔南布依族苗族自治州"
+			}
+		}
+	]
+}

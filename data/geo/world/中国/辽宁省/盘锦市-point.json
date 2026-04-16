@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.0720848224, 40.934660663 ]
+			},
+			"properties" : {
+				"name" : "大洼区",
+				"adcode" : "211104",
+				"adcode_s" : "2111",
+				"adcode_si" : "21",
+				"dname" : "盘锦市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.027781483, 41.302458758 ]
+			},
+			"properties" : {
+				"name" : "盘山县",
+				"adcode" : "211122",
+				"adcode_s" : "2111",
+				"adcode_si" : "21",
+				"dname" : "盘锦市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.0268068635, 41.1941447496 ]
+			},
+			"properties" : {
+				"name" : "双台子区",
+				"adcode" : "211102",
+				"adcode_s" : "2111",
+				"adcode_si" : "21",
+				"dname" : "盘锦市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.7963703642, 41.0403670008 ]
+			},
+			"properties" : {
+				"name" : "兴隆台区",
+				"adcode" : "211103",
+				"adcode_s" : "2111",
+				"adcode_si" : "21",
+				"dname" : "盘锦市"
+			}
+		}
+	]
+}

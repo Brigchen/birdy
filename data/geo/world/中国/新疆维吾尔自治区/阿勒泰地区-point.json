@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.9155107992, 47.8794501186 ]
+			},
+			"properties" : {
+				"name" : "阿勒泰市",
+				"adcode" : "654301",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.2237604543, 48.3029161135 ]
+			},
+			"properties" : {
+				"name" : "布尔津县",
+				"adcode" : "654321",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.0396254855, 46.0675772063 ]
+			},
+			"properties" : {
+				"name" : "福海县",
+				"adcode" : "654323",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 89.3832039876, 46.5103832316 ]
+			},
+			"properties" : {
+				"name" : "富蕴县",
+				"adcode" : "654322",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.9723459575, 48.1324039875 ]
+			},
+			"properties" : {
+				"name" : "哈巴河县",
+				"adcode" : "654324",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.1985164133, 47.398076303 ]
+			},
+			"properties" : {
+				"name" : "吉木乃县",
+				"adcode" : "654326",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.3937543091, 46.2521441478 ]
+			},
+			"properties" : {
+				"name" : "青河县",
+				"adcode" : "654325",
+				"adcode_s" : "6543",
+				"adcode_si" : "65",
+				"dname" : "阿勒泰地区"
+			}
+		}
+	]
+}

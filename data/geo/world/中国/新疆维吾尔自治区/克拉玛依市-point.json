@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.302190089, 45.6247926772 ]
+			},
+			"properties" : {
+				"name" : "白碱滩区",
+				"adcode" : "650204",
+				"adcode_s" : "6502",
+				"adcode_si" : "65",
+				"dname" : "克拉玛依市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.8833123787, 44.2823005342 ]
+			},
+			"properties" : {
+				"name" : "独山子区",
+				"adcode" : "650202",
+				"adcode_s" : "6502",
+				"adcode_si" : "65",
+				"dname" : "克拉玛依市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 84.9420357475, 45.2393234595 ]
+			},
+			"properties" : {
+				"name" : "克拉玛依区",
+				"adcode" : "650203",
+				"adcode_s" : "6502",
+				"adcode_si" : "65",
+				"dname" : "克拉玛依市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.5934427697, 45.9816759773 ]
+			},
+			"properties" : {
+				"name" : "乌尔禾区",
+				"adcode" : "650205",
+				"adcode_s" : "6502",
+				"adcode_si" : "65",
+				"dname" : "克拉玛依市"
+			}
+		}
+	]
+}

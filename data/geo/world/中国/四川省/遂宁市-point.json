@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4174412362, 30.3692972346 ]
+			},
+			"properties" : {
+				"name" : "安居区",
+				"adcode" : "510904",
+				"adcode_s" : "5109",
+				"adcode_si" : "51",
+				"dname" : "遂宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.5933034329, 30.5247055626 ]
+			},
+			"properties" : {
+				"name" : "船山区",
+				"adcode" : "510903",
+				"adcode_s" : "5109",
+				"adcode_si" : "51",
+				"dname" : "遂宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.2464616746, 30.5765089255 ]
+			},
+			"properties" : {
+				"name" : "大英县",
+				"adcode" : "510923",
+				"adcode_s" : "5109",
+				"adcode_si" : "51",
+				"dname" : "遂宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.570760995, 30.7247999655 ]
+			},
+			"properties" : {
+				"name" : "蓬溪县",
+				"adcode" : "510921",
+				"adcode_s" : "5109",
+				"adcode_si" : "51",
+				"dname" : "遂宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.3783717662, 30.904376537 ]
+			},
+			"properties" : {
+				"name" : "射洪市",
+				"adcode" : "510981",
+				"adcode_s" : "5109",
+				"adcode_si" : "51",
+				"dname" : "遂宁市"
+			}
+		}
+	]
+}

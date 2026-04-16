@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7904594828, 29.6142108461 ]
+			},
+			"properties" : {
+				"name" : "柴桑区",
+				"adcode" : "360404",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6110561098, 29.4076093728 ]
+			},
+			"properties" : {
+				"name" : "德安县",
+				"adcode" : "360426",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3292723215, 29.3256436745 ]
+			},
+			"properties" : {
+				"name" : "都昌县",
+				"adcode" : "360428",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8248341407, 29.2513863891 ]
+			},
+			"properties" : {
+				"name" : "共青城市",
+				"adcode" : "360482",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2798292062, 29.6642807305 ]
+			},
+			"properties" : {
+				"name" : "湖口县",
+				"adcode" : "360429",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0424057986, 29.6420152816 ]
+			},
+			"properties" : {
+				"name" : "濂溪区",
+				"adcode" : "360402",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9730815723, 29.3857529747 ]
+			},
+			"properties" : {
+				"name" : "庐山市",
+				"adcode" : "360483",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6176254868, 29.8306622994 ]
+			},
+			"properties" : {
+				"name" : "彭泽县",
+				"adcode" : "360430",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.4328479485, 29.5898018955 ]
+			},
+			"properties" : {
+				"name" : "瑞昌市",
+				"adcode" : "360481",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.011341791, 29.2603321191 ]
+			},
+			"properties" : {
+				"name" : "武宁县",
+				"adcode" : "360423",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4342216505, 28.9967035369 ]
+			},
+			"properties" : {
+				"name" : "修水县",
+				"adcode" : "360424",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.986360375, 29.714875957 ]
+			},
+			"properties" : {
+				"name" : "浔阳区",
+				"adcode" : "360403",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.595633125, 29.141693928 ]
+			},
+			"properties" : {
+				"name" : "永修县",
+				"adcode" : "360425",
+				"adcode_s" : "3604",
+				"adcode_si" : "36",
+				"dname" : "九江市"
+			}
+		}
+	]
+}

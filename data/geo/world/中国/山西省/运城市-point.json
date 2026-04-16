@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6967755073, 35.6259783586 ]
+			},
+			"properties" : {
+				"name" : "河津市",
+				"adcode" : "140882",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9526791185, 35.5921200519 ]
+			},
+			"properties" : {
+				"name" : "稷山县",
+				"adcode" : "140824",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6361178616, 35.4937250269 ]
+			},
+			"properties" : {
+				"name" : "绛县",
+				"adcode" : "140826",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6137065156, 35.1436058086 ]
+			},
+			"properties" : {
+				"name" : "临猗县",
+				"adcode" : "140821",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.251917659, 34.9163296001 ]
+			},
+			"properties" : {
+				"name" : "平陆县",
+				"adcode" : "140829",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6049677927, 34.7048812108 ]
+			},
+			"properties" : {
+				"name" : "芮城县",
+				"adcode" : "140830",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.703497173, 35.3823094615 ]
+			},
+			"properties" : {
+				"name" : "万荣县",
+				"adcode" : "140822",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3071950175, 35.3682219934 ]
+			},
+			"properties" : {
+				"name" : "闻喜县",
+				"adcode" : "140823",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3460792818, 35.1210728781 ]
+			},
+			"properties" : {
+				"name" : "夏县",
+				"adcode" : "140828",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1604174186, 35.6259037651 ]
+			},
+			"properties" : {
+				"name" : "新绛县",
+				"adcode" : "140825",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.95202331, 35.0992666829 ]
+			},
+			"properties" : {
+				"name" : "盐湖区",
+				"adcode" : "140802",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4764649495, 34.88951403 ]
+			},
+			"properties" : {
+				"name" : "永济市",
+				"adcode" : "140881",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8121985892, 35.2160525062 ]
+			},
+			"properties" : {
+				"name" : "垣曲县",
+				"adcode" : "140827",
+				"adcode_s" : "1408",
+				"adcode_si" : "14",
+				"dname" : "运城市"
+			}
+		}
+	]
+}

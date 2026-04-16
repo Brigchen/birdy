@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1543963781, 33.1526136859 ]
+			},
+			"properties" : {
+				"name" : "利辛县",
+				"adcode" : "341623",
+				"adcode_s" : "3416",
+				"adcode_si" : "34",
+				"dname" : "亳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5793584448, 33.2186388262 ]
+			},
+			"properties" : {
+				"name" : "蒙城县",
+				"adcode" : "341622",
+				"adcode_s" : "3416",
+				"adcode_si" : "34",
+				"dname" : "亳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.801311959, 33.7759788178 ]
+			},
+			"properties" : {
+				"name" : "谯城区",
+				"adcode" : "341602",
+				"adcode_s" : "3416",
+				"adcode_si" : "34",
+				"dname" : "亳州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2114675116, 33.5536148928 ]
+			},
+			"properties" : {
+				"name" : "涡阳县",
+				"adcode" : "341621",
+				"adcode_s" : "3416",
+				"adcode_si" : "34",
+				"dname" : "亳州市"
+			}
+		}
+	]
+}

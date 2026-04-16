@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.21165655, 25.2823962333 ]
+			},
+			"properties" : {
+				"name" : "乐昌市",
+				"adcode" : "440281",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.3756486561, 25.1868266567 ]
+			},
+			"properties" : {
+				"name" : "南雄市",
+				"adcode" : "440282",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.58420291, 24.6145063448 ]
+			},
+			"properties" : {
+				"name" : "曲江区",
+				"adcode" : "440205",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7741615119, 25.1451049169 ]
+			},
+			"properties" : {
+				"name" : "仁化县",
+				"adcode" : "440224",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1638886964, 24.8086693706 ]
+			},
+			"properties" : {
+				"name" : "乳源瑶族自治县",
+				"adcode" : "440232",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1039660849, 24.8495692146 ]
+			},
+			"properties" : {
+				"name" : "始兴县",
+				"adcode" : "440222",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.98307823, 24.3447697142 ]
+			},
+			"properties" : {
+				"name" : "翁源县",
+				"adcode" : "440229",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.34942738, 24.6577972856 ]
+			},
+			"properties" : {
+				"name" : "武江区",
+				"adcode" : "440203",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1301338025, 24.0667779496 ]
+			},
+			"properties" : {
+				"name" : "新丰县",
+				"adcode" : "440233",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5654633752, 24.9160025521 ]
+			},
+			"properties" : {
+				"name" : "浈江区",
+				"adcode" : "440204",
+				"adcode_s" : "4402",
+				"adcode_si" : "44",
+				"dname" : "韶关市"
+			}
+		}
+	]
+}

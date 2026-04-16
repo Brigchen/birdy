@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.12684309, 21.4754291467 ]
+			},
+			"properties" : {
+				"name" : "海城区",
+				"adcode" : "450502",
+				"adcode_s" : "4505",
+				"adcode_si" : "45",
+				"dname" : "北海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.3104697815, 21.773723494 ]
+			},
+			"properties" : {
+				"name" : "合浦县",
+				"adcode" : "450521",
+				"adcode_s" : "4505",
+				"adcode_si" : "45",
+				"dname" : "北海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4652359252, 21.5630346685 ]
+			},
+			"properties" : {
+				"name" : "铁山港区",
+				"adcode" : "450512",
+				"adcode_s" : "4505",
+				"adcode_si" : "45",
+				"dname" : "北海市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2722912231, 21.5310254599 ]
+			},
+			"properties" : {
+				"name" : "银海区",
+				"adcode" : "450503",
+				"adcode_s" : "4505",
+				"adcode_si" : "45",
+				"dname" : "北海市"
+			}
+		}
+	]
+}

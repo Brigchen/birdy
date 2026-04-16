@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.2898469709, 31.0026186481 ]
+			},
+			"properties" : {
+				"name" : "广汉市",
+				"adcode" : "510681",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.4063017221, 31.1751016706 ]
+			},
+			"properties" : {
+				"name" : "旌阳区",
+				"adcode" : "510603",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.525892368, 31.3164687438 ]
+			},
+			"properties" : {
+				"name" : "罗江区",
+				"adcode" : "510604",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1207939444, 31.4321374843 ]
+			},
+			"properties" : {
+				"name" : "绵竹市",
+				"adcode" : "510683",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.03559171, 31.1845978576 ]
+			},
+			"properties" : {
+				"name" : "什邡市",
+				"adcode" : "510682",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.7958917925, 30.8829392209 ]
+			},
+			"properties" : {
+				"name" : "中江县",
+				"adcode" : "510623",
+				"adcode_s" : "5106",
+				"adcode_si" : "51",
+				"dname" : "德阳市"
+			}
+		}
+	]
+}

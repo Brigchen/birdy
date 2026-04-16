@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.8536989772, 41.5390220901 ]
+			},
+			"properties" : {
+				"name" : "北镇市",
+				"adcode" : "210782",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.0735379006, 41.1502659027 ]
+			},
+			"properties" : {
+				"name" : "古塔区",
+				"adcode" : "210702",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.2495025283, 41.7914420858 ]
+			},
+			"properties" : {
+				"name" : "黑山县",
+				"adcode" : "210726",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.971449035, 41.2197633004 ]
+			},
+			"properties" : {
+				"name" : "凌海市",
+				"adcode" : "210781",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.1758133134, 41.1248326768 ]
+			},
+			"properties" : {
+				"name" : "凌河区",
+				"adcode" : "210703",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.1460397696, 40.9893870851 ]
+			},
+			"properties" : {
+				"name" : "太和区",
+				"adcode" : "210711",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.290377041, 41.5258660669 ]
+			},
+			"properties" : {
+				"name" : "义县",
+				"adcode" : "210727",
+				"adcode_s" : "2107",
+				"adcode_si" : "21",
+				"dname" : "锦州市"
+			}
+		}
+	]
+}

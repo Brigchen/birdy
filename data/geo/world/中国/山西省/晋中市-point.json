@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4615892565, 37.3415790596 ]
+			},
+			"properties" : {
+				"name" : "和顺县",
+				"adcode" : "140723",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9823317301, 37.0192061808 ]
+			},
+			"properties" : {
+				"name" : "介休市",
+				"adcode" : "140781",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7226028708, 36.8286268745 ]
+			},
+			"properties" : {
+				"name" : "灵石县",
+				"adcode" : "140729",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.2525389669, 37.1415608948 ]
+			},
+			"properties" : {
+				"name" : "平遥县",
+				"adcode" : "140728",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4565970747, 37.2847047006 ]
+			},
+			"properties" : {
+				"name" : "祁县",
+				"adcode" : "140727",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1245961178, 37.8202699751 ]
+			},
+			"properties" : {
+				"name" : "寿阳县",
+				"adcode" : "140725",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7239918776, 37.4014314645 ]
+			},
+			"properties" : {
+				"name" : "太谷区",
+				"adcode" : "140703",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7428801862, 37.5586132127 ]
+			},
+			"properties" : {
+				"name" : "昔阳县",
+				"adcode" : "140724",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8300215689, 37.6451439691 ]
+			},
+			"properties" : {
+				"name" : "榆次区",
+				"adcode" : "140702",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.9413450483, 37.1329035789 ]
+			},
+			"properties" : {
+				"name" : "榆社县",
+				"adcode" : "140721",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4623640304, 37.0260746562 ]
+			},
+			"properties" : {
+				"name" : "左权县",
+				"adcode" : "140722",
+				"adcode_s" : "1407",
+				"adcode_si" : "14",
+				"dname" : "晋中市"
+			}
+		}
+	]
+}

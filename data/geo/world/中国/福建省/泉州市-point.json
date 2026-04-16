@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9008025783, 25.1219751808 ]
+			},
+			"properties" : {
+				"name" : "安溪县",
+				"adcode" : "350524",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.246054186, 25.6711823359 ]
+			},
+			"properties" : {
+				"name" : "德化县",
+				"adcode" : "350526",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6502815252, 24.9018307249 ]
+			},
+			"properties" : {
+				"name" : "丰泽区",
+				"adcode" : "350503",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8030264166, 24.9900963878 ]
+			},
+			"properties" : {
+				"name" : "惠安县",
+				"adcode" : "350521",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4253545, 24.4714288513 ]
+			},
+			"properties" : {
+				"name" : "金门县",
+				"adcode" : "350527",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4825906655, 24.7668428617 ]
+			},
+			"properties" : {
+				"name" : "晋江市",
+				"adcode" : "350582",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.545735226, 24.9124851075 ]
+			},
+			"properties" : {
+				"name" : "鲤城区",
+				"adcode" : "350502",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6266014258, 25.1416474823 ]
+			},
+			"properties" : {
+				"name" : "洛江区",
+				"adcode" : "350504",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3776191142, 25.0147446341 ]
+			},
+			"properties" : {
+				"name" : "南安市",
+				"adcode" : "350583",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8508350049, 25.1658238429 ]
+			},
+			"properties" : {
+				"name" : "泉港区",
+				"adcode" : "350505",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6839126583, 24.7426437162 ]
+			},
+			"properties" : {
+				"name" : "石狮市",
+				"adcode" : "350581",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1312646211, 25.3924973699 ]
+			},
+			"properties" : {
+				"name" : "永春县",
+				"adcode" : "350525",
+				"adcode_s" : "3505",
+				"adcode_si" : "35",
+				"dname" : "泉州市"
+			}
+		}
+	]
+}

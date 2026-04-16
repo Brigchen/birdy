@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3772016568, 37.4333148017 ]
+			},
+			"properties" : {
+				"name" : "德城区",
+				"adcode" : "371402",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.1329265581, 37.6678634951 ]
+			},
+			"properties" : {
+				"name" : "乐陵市",
+				"adcode" : "371481",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8871847506, 37.2292764488 ]
+			},
+			"properties" : {
+				"name" : "临邑县",
+				"adcode" : "371424",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6846466479, 37.4041562541 ]
+			},
+			"properties" : {
+				"name" : "陵城区",
+				"adcode" : "371403",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8011145444, 37.6786838222 ]
+			},
+			"properties" : {
+				"name" : "宁津县",
+				"adcode" : "371422",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4240699283, 37.1409600968 ]
+			},
+			"properties" : {
+				"name" : "平原县",
+				"adcode" : "371426",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6658135897, 36.7163830516 ]
+			},
+			"properties" : {
+				"name" : "齐河县",
+				"adcode" : "371425",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4504817409, 37.7953486174 ]
+			},
+			"properties" : {
+				"name" : "庆云县",
+				"adcode" : "371423",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.07094494, 37.2620207173 ]
+			},
+			"properties" : {
+				"name" : "武城县",
+				"adcode" : "371428",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0256105647, 37.0104843524 ]
+			},
+			"properties" : {
+				"name" : "夏津县",
+				"adcode" : "371427",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5692380386, 36.9125828851 ]
+			},
+			"properties" : {
+				"name" : "禹城市",
+				"adcode" : "371482",
+				"adcode_s" : "3714",
+				"adcode_si" : "37",
+				"dname" : "德州市"
+			}
+		}
+	]
+}

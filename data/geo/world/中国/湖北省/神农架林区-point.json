@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4746972017, 31.5914458059 ]
+			},
+			"properties" : {
+				"name" : "神农架林区",
+				"adcode" : "429021",
+				"adcode_s" : "4290",
+				"adcode_si" : "42",
+				"dname" : "神农架林区"
+			}
+		}
+	]
+}

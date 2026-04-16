@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4095630122, 32.0772602322 ]
+			},
+			"properties" : {
+				"name" : "丹徒区",
+				"adcode" : "321112",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.6322678313, 31.9561864725 ]
+			},
+			"properties" : {
+				"name" : "丹阳市",
+				"adcode" : "321181",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.73020922, 32.1761663773 ]
+			},
+			"properties" : {
+				"name" : "京口区",
+				"adcode" : "321102",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1950716166, 31.9280989493 ]
+			},
+			"properties" : {
+				"name" : "句容市",
+				"adcode" : "321183",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.4191117421, 32.1923622617 ]
+			},
+			"properties" : {
+				"name" : "润州区",
+				"adcode" : "321111",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.763720405, 32.2656157583 ]
+			},
+			"properties" : {
+				"name" : "扬中市",
+				"adcode" : "321182",
+				"adcode_s" : "3211",
+				"adcode_si" : "32",
+				"dname" : "镇江市"
+			}
+		}
+	]
+}

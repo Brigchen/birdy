@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5417817908, 34.822906022 ]
+			},
+			"properties" : {
+				"name" : "曹县",
+				"adcode" : "371721",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.9326516784, 34.983626094 ]
+			},
+			"properties" : {
+				"name" : "成武县",
+				"adcode" : "371723",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1108165245, 34.7331729652 ]
+			},
+			"properties" : {
+				"name" : "单县",
+				"adcode" : "371722",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.6165463067, 35.0982808516 ]
+			},
+			"properties" : {
+				"name" : "定陶区",
+				"adcode" : "371703",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0614174043, 35.1763263484 ]
+			},
+			"properties" : {
+				"name" : "东明县",
+				"adcode" : "371728",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0264728808, 35.2740150408 ]
+			},
+			"properties" : {
+				"name" : "巨野县",
+				"adcode" : "371724",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5402529037, 35.5490034835 ]
+			},
+			"properties" : {
+				"name" : "鄄城县",
+				"adcode" : "371726",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.456721832, 35.2773324144 ]
+			},
+			"properties" : {
+				"name" : "牡丹区",
+				"adcode" : "371702",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8824509839, 35.6073581555 ]
+			},
+			"properties" : {
+				"name" : "郓城县",
+				"adcode" : "371725",
+				"adcode_s" : "3717",
+				"adcode_si" : "37",
+				"dname" : "菏泽市"
+			}
+		}
+	]
+}

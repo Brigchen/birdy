@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.158204287, 31.0825901977 ]
+			},
+			"properties" : {
+				"name" : "繁昌区",
+				"adcode" : "340211",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4511821765, 31.2359486062 ]
+			},
+			"properties" : {
+				"name" : "镜湖区",
+				"adcode" : "340202",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2573098864, 31.3743918604 ]
+			},
+			"properties" : {
+				"name" : "鸠江区",
+				"adcode" : "340207",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.276312016, 30.8922451226 ]
+			},
+			"properties" : {
+				"name" : "南陵县",
+				"adcode" : "340223",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.5674306778, 31.147386998 ]
+			},
+			"properties" : {
+				"name" : "湾沚区",
+				"adcode" : "340210",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.802229043, 31.304393379 ]
+			},
+			"properties" : {
+				"name" : "无为市",
+				"adcode" : "340281",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2872557742, 31.2182510369 ]
+			},
+			"properties" : {
+				"name" : "弋江区",
+				"adcode" : "340209",
+				"adcode_s" : "3402",
+				"adcode_si" : "34",
+				"dname" : "芜湖市"
+			}
+		}
+	]
+}

@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.2464885817, 30.7842425593 ]
+			},
+			"properties" : {
+				"name" : "高坪区",
+				"adcode" : "511303",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.9354556408, 30.6960438672 ]
+			},
+			"properties" : {
+				"name" : "嘉陵区",
+				"adcode" : "511304",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0514435155, 31.5518631241 ]
+			},
+			"properties" : {
+				"name" : "阆中市",
+				"adcode" : "511381",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.91274205, 31.2795294416 ]
+			},
+			"properties" : {
+				"name" : "南部县",
+				"adcode" : "511321",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.4182810161, 31.0026811086 ]
+			},
+			"properties" : {
+				"name" : "蓬安县",
+				"adcode" : "511323",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0958273926, 30.9455970666 ]
+			},
+			"properties" : {
+				"name" : "顺庆区",
+				"adcode" : "511302",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.846597366, 31.0606361924 ]
+			},
+			"properties" : {
+				"name" : "西充县",
+				"adcode" : "511325",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5141575707, 31.434386498 ]
+			},
+			"properties" : {
+				"name" : "仪陇县",
+				"adcode" : "511324",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7078659803, 31.1583917611 ]
+			},
+			"properties" : {
+				"name" : "营山县",
+				"adcode" : "511322",
+				"adcode_s" : "5113",
+				"adcode_si" : "51",
+				"dname" : "南充市"
+			}
+		}
+	]
+}

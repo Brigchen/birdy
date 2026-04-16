@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3525543668, 30.8894873831 ]
+			},
+			"properties" : {
+				"name" : "广德市",
+				"adcode" : "341882",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6521701049, 30.1570744119 ]
+			},
+			"properties" : {
+				"name" : "绩溪县",
+				"adcode" : "341824",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.3639257948, 30.5954424805 ]
+			},
+			"properties" : {
+				"name" : "泾县",
+				"adcode" : "341823",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.4716298974, 30.31835959 ]
+			},
+			"properties" : {
+				"name" : "旌德县",
+				"adcode" : "341825",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1571489249, 31.0955892009 ]
+			},
+			"properties" : {
+				"name" : "郎溪县",
+				"adcode" : "341821",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9852584509, 30.4990722898 ]
+			},
+			"properties" : {
+				"name" : "宁国市",
+				"adcode" : "341881",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7869351182, 30.9397147836 ]
+			},
+			"properties" : {
+				"name" : "宣州区",
+				"adcode" : "341802",
+				"adcode_s" : "3418",
+				"adcode_si" : "34",
+				"dname" : "宣城市"
+			}
+		}
+	]
+}

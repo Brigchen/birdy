@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.88601836, 22.9873045486 ]
+			},
+			"properties" : {
+				"name" : "东莞市",
+				"adcode" : "441900",
+				"adcode_s" : "4419",
+				"adcode_si" : "44",
+				"dname" : "东莞市"
+			}
+		}
+	]
+}

@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.9667820915, 41.6701880519 ]
+			},
+			"properties" : {
+				"name" : "东昌区",
+				"adcode" : "220502",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.22654521, 41.7557626853 ]
+			},
+			"properties" : {
+				"name" : "二道江区",
+				"adcode" : "220503",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.3304810986, 42.5490661119 ]
+			},
+			"properties" : {
+				"name" : "辉南县",
+				"adcode" : "220523",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.9866753284, 41.2426801599 ]
+			},
+			"properties" : {
+				"name" : "集安市",
+				"adcode" : "220582",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.9038278706, 42.1767959301 ]
+			},
+			"properties" : {
+				"name" : "柳河县",
+				"adcode" : "220524",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.6571688665, 42.4304386889 ]
+			},
+			"properties" : {
+				"name" : "梅河口市",
+				"adcode" : "220581",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.7361908315, 41.7730041346 ]
+			},
+			"properties" : {
+				"name" : "通化县",
+				"adcode" : "220521",
+				"adcode_s" : "2205",
+				"adcode_si" : "22",
+				"dname" : "通化市"
+			}
+		}
+	]
+}

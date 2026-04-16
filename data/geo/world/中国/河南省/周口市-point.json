@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7098009069, 33.6177373987 ]
+			},
+			"properties" : {
+				"name" : "川汇区",
+				"adcode" : "411602",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2888771058, 33.6371184731 ]
+			},
+			"properties" : {
+				"name" : "郸城县",
+				"adcode" : "411625",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4251239765, 34.0957930314 ]
+			},
+			"properties" : {
+				"name" : "扶沟县",
+				"adcode" : "411621",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.903133774, 33.7118077919 ]
+			},
+			"properties" : {
+				"name" : "淮阳区",
+				"adcode" : "411603",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.3700082573, 33.8872963535 ]
+			},
+			"properties" : {
+				"name" : "鹿邑县",
+				"adcode" : "411628",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.5372408983, 33.5142569193 ]
+			},
+			"properties" : {
+				"name" : "商水县",
+				"adcode" : "411623",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.1670737403, 33.2908773682 ]
+			},
+			"properties" : {
+				"name" : "沈丘县",
+				"adcode" : "411624",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8436222198, 34.0922696469 ]
+			},
+			"properties" : {
+				"name" : "太康县",
+				"adcode" : "411627",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4657390608, 33.788677712 ]
+			},
+			"properties" : {
+				"name" : "西华县",
+				"adcode" : "411622",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.8821366772, 33.2698667651 ]
+			},
+			"properties" : {
+				"name" : "项城市",
+				"adcode" : "411681",
+				"adcode_s" : "4116",
+				"adcode_si" : "41",
+				"dname" : "周口市"
+			}
+		}
+	]
+}

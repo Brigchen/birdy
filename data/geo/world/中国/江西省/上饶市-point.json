@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.73874475, 28.9570771019 ]
+			},
+			"properties" : {
+				"name" : "德兴市",
+				"adcode" : "361181",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.2658343633, 28.360850219 ]
+			},
+			"properties" : {
+				"name" : "广丰区",
+				"adcode" : "361103",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.825051735, 28.582692619 ]
+			},
+			"properties" : {
+				"name" : "广信区",
+				"adcode" : "361104",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6337131199, 28.5110621759 ]
+			},
+			"properties" : {
+				"name" : "横峰县",
+				"adcode" : "361125",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7801244054, 29.240034662 ]
+			},
+			"properties" : {
+				"name" : "鄱阳县",
+				"adcode" : "361128",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7017416242, 28.107176905 ]
+			},
+			"properties" : {
+				"name" : "铅山县",
+				"adcode" : "361124",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0027462206, 28.700011482 ]
+			},
+			"properties" : {
+				"name" : "万年县",
+				"adcode" : "361129",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.7755084174, 29.3237297943 ]
+			},
+			"properties" : {
+				"name" : "婺源县",
+				"adcode" : "361130",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0406515132, 28.4945908566 ]
+			},
+			"properties" : {
+				"name" : "信州区",
+				"adcode" : "361102",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4051318062, 28.4491424084 ]
+			},
+			"properties" : {
+				"name" : "弋阳县",
+				"adcode" : "361126",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6091380783, 28.6794271678 ]
+			},
+			"properties" : {
+				"name" : "余干县",
+				"adcode" : "361127",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.1569167607, 28.7563620582 ]
+			},
+			"properties" : {
+				"name" : "玉山县",
+				"adcode" : "361123",
+				"adcode_s" : "3611",
+				"adcode_si" : "36",
+				"dname" : "上饶市"
+			}
+		}
+	]
+}

@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8864025272, 34.0201573746 ]
+			},
+			"properties" : {
+				"name" : "杜集区",
+				"adcode" : "340602",
+				"adcode_s" : "3406",
+				"adcode_si" : "34",
+				"dname" : "淮北市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8799906374, 33.835043954 ]
+			},
+			"properties" : {
+				"name" : "烈山区",
+				"adcode" : "340604",
+				"adcode_s" : "3406",
+				"adcode_si" : "34",
+				"dname" : "淮北市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6969363536, 33.6491697247 ]
+			},
+			"properties" : {
+				"name" : "濉溪县",
+				"adcode" : "340621",
+				"adcode_s" : "3406",
+				"adcode_si" : "34",
+				"dname" : "淮北市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.72549937, 33.9839843094 ]
+			},
+			"properties" : {
+				"name" : "相山区",
+				"adcode" : "340603",
+				"adcode_s" : "3406",
+				"adcode_si" : "34",
+				"dname" : "淮北市"
+			}
+		}
+	]
+}

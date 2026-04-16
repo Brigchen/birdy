@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6281871226, 35.6381865362 ]
+			},
+			"properties" : {
+				"name" : "安定区",
+				"adcode" : "621102",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.10925023, 35.464509047 ]
+			},
+			"properties" : {
+				"name" : "临洮县",
+				"adcode" : "621124",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6237068769, 35.1062869681 ]
+			},
+			"properties" : {
+				"name" : "陇西县",
+				"adcode" : "621122",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.015485305, 34.4375687881 ]
+			},
+			"properties" : {
+				"name" : "岷县",
+				"adcode" : "621126",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1838890342, 35.2074991056 ]
+			},
+			"properties" : {
+				"name" : "通渭县",
+				"adcode" : "621121",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.1379746355, 35.1352302171 ]
+			},
+			"properties" : {
+				"name" : "渭源县",
+				"adcode" : "621123",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.3565479214, 34.7219390379 ]
+			},
+			"properties" : {
+				"name" : "漳县",
+				"adcode" : "621125",
+				"adcode_s" : "6211",
+				"adcode_si" : "62",
+				"dname" : "定西市"
+			}
+		}
+	]
+}

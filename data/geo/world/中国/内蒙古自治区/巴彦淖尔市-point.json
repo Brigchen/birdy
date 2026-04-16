@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.67342322, 40.5772888725 ]
+			},
+			"properties" : {
+				"name" : "磴口县",
+				"adcode" : "150822",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0221222095, 40.8824005812 ]
+			},
+			"properties" : {
+				"name" : "杭锦后旗",
+				"adcode" : "150826",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4298322157, 40.9237396207 ]
+			},
+			"properties" : {
+				"name" : "临河区",
+				"adcode" : "150802",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.4015527668, 41.5210350317 ]
+			},
+			"properties" : {
+				"name" : "乌拉特后旗",
+				"adcode" : "150825",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.094391849, 40.8972117376 ]
+			},
+			"properties" : {
+				"name" : "乌拉特前旗",
+				"adcode" : "150823",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.4541581544, 41.8238061903 ]
+			},
+			"properties" : {
+				"name" : "乌拉特中旗",
+				"adcode" : "150824",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0599900063, 41.0372838391 ]
+			},
+			"properties" : {
+				"name" : "五原县",
+				"adcode" : "150821",
+				"adcode_s" : "1508",
+				"adcode_si" : "15",
+				"dname" : "巴彦淖尔市"
+			}
+		}
+	]
+}

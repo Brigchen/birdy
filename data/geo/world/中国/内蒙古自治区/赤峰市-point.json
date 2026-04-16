@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0372750252, 44.1873206354 ]
+			},
+			"properties" : {
+				"name" : "阿鲁科尔沁旗",
+				"adcode" : "150421",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1451007945, 42.4204126764 ]
+			},
+			"properties" : {
+				"name" : "敖汉旗",
+				"adcode" : "150430",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.13237747, 43.4620127975 ]
+			},
+			"properties" : {
+				"name" : "巴林右旗",
+				"adcode" : "150423",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.261754542, 44.1977108592 ]
+			},
+			"properties" : {
+				"name" : "巴林左旗",
+				"adcode" : "150422",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9777899434, 42.1881666323 ]
+			},
+			"properties" : {
+				"name" : "红山区",
+				"adcode" : "150402",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.75400514, 41.9730180019 ]
+			},
+			"properties" : {
+				"name" : "喀喇沁旗",
+				"adcode" : "150428",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3429150304, 43.242428201 ]
+			},
+			"properties" : {
+				"name" : "克什克腾旗",
+				"adcode" : "150425",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.0995636857, 43.7525464518 ]
+			},
+			"properties" : {
+				"name" : "林西县",
+				"adcode" : "150424",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8924142961, 41.5625382947 ]
+			},
+			"properties" : {
+				"name" : "宁城县",
+				"adcode" : "150429",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6060421103, 42.4012974097 ]
+			},
+			"properties" : {
+				"name" : "松山区",
+				"adcode" : "150404",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2403536975, 42.9646424375 ]
+			},
+			"properties" : {
+				"name" : "翁牛特旗",
+				"adcode" : "150426",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.26838214, 42.0855284182 ]
+			},
+			"properties" : {
+				"name" : "元宝山区",
+				"adcode" : "150403",
+				"adcode_s" : "1504",
+				"adcode_si" : "15",
+				"dname" : "赤峰市"
+			}
+		}
+	]
+}

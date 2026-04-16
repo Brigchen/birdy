@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.5841133168, 24.7552179728 ]
+			},
+			"properties" : {
+				"name" : "昌宁县",
+				"adcode" : "530524",
+				"adcode_s" : "5305",
+				"adcode_si" : "53",
+				"dname" : "保山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.8358018363, 24.4955494947 ]
+			},
+			"properties" : {
+				"name" : "龙陵县",
+				"adcode" : "530523",
+				"adcode_s" : "5305",
+				"adcode_si" : "53",
+				"dname" : "保山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.0616126019, 25.202230202 ]
+			},
+			"properties" : {
+				"name" : "隆阳区",
+				"adcode" : "530502",
+				"adcode_s" : "5305",
+				"adcode_si" : "53",
+				"dname" : "保山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.1505685104, 24.6530756815 ]
+			},
+			"properties" : {
+				"name" : "施甸县",
+				"adcode" : "530521",
+				"adcode_s" : "5305",
+				"adcode_si" : "53",
+				"dname" : "保山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.4932136793, 25.2758149694 ]
+			},
+			"properties" : {
+				"name" : "腾冲市",
+				"adcode" : "530581",
+				"adcode_s" : "5305",
+				"adcode_si" : "53",
+				"dname" : "保山市"
+			}
+		}
+	]
+}

@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7698175956, 32.8762559752 ]
+			},
+			"properties" : {
+				"name" : "阿坝县",
+				"adcode" : "513231",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0495351283, 32.1644071526 ]
+			},
+			"properties" : {
+				"name" : "黑水县",
+				"adcode" : "513228",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.6312088433, 32.7270919451 ]
+			},
+			"properties" : {
+				"name" : "红原县",
+				"adcode" : "513233",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.8006327969, 31.5221479679 ]
+			},
+			"properties" : {
+				"name" : "金川县",
+				"adcode" : "513226",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.9249442398, 33.3134477575 ]
+			},
+			"properties" : {
+				"name" : "九寨沟县",
+				"adcode" : "513225",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0124847482, 31.575702635 ]
+			},
+			"properties" : {
+				"name" : "理县",
+				"adcode" : "513222",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.0157683082, 32.013868706 ]
+			},
+			"properties" : {
+				"name" : "马尔康市",
+				"adcode" : "513201",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.6297978746, 31.8480665148 ]
+			},
+			"properties" : {
+				"name" : "茂县",
+				"adcode" : "513223",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.0533107566, 32.1423735241 ]
+			},
+			"properties" : {
+				"name" : "壤塘县",
+				"adcode" : "513230",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.8852114396, 33.6583932762 ]
+			},
+			"properties" : {
+				"name" : "若尔盖县",
+				"adcode" : "513232",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.5249070157, 32.6193552544 ]
+			},
+			"properties" : {
+				"name" : "松潘县",
+				"adcode" : "513224",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.2852565504, 31.1646004639 ]
+			},
+			"properties" : {
+				"name" : "汶川县",
+				"adcode" : "513221",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.4669630646, 31.1308111693 ]
+			},
+			"properties" : {
+				"name" : "小金县",
+				"adcode" : "513227",
+				"adcode_s" : "5132",
+				"adcode_si" : "51",
+				"dname" : "阿坝藏族羌族自治州"
+			}
+		}
+	]
+}

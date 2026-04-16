@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3629539442, 21.2700202665 ]
+			},
+			"properties" : {
+				"name" : "赤坎区",
+				"adcode" : "440802",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.0023134518, 20.7907061992 ]
+			},
+			"properties" : {
+				"name" : "雷州市",
+				"adcode" : "440882",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1290268698, 21.6396955598 ]
+			},
+			"properties" : {
+				"name" : "廉江市",
+				"adcode" : "440881",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2424266839, 21.1536408295 ]
+			},
+			"properties" : {
+				"name" : "麻章区",
+				"adcode" : "440811",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.4972696866, 21.3162449363 ]
+			},
+			"properties" : {
+				"name" : "坡头区",
+				"adcode" : "440804",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.044861223, 21.2951868287 ]
+			},
+			"properties" : {
+				"name" : "遂溪县",
+				"adcode" : "440823",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7015097205, 21.4392325834 ]
+			},
+			"properties" : {
+				"name" : "吴川市",
+				"adcode" : "440883",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3701643725, 21.190233078 ]
+			},
+			"properties" : {
+				"name" : "霞山区",
+				"adcode" : "440803",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2454868999, 20.4269754862 ]
+			},
+			"properties" : {
+				"name" : "徐闻县",
+				"adcode" : "440825",
+				"adcode_s" : "4408",
+				"adcode_si" : "44",
+				"dname" : "湛江市"
+			}
+		}
+	]
+}

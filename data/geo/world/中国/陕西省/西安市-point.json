@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.0887698784, 34.3011908186 ]
+			},
+			"properties" : {
+				"name" : "灞桥区",
+				"adcode" : "610111",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.956012537, 34.2480798412 ]
+			},
+			"properties" : {
+				"name" : "碑林区",
+				"adcode" : "610103",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.06095402, 34.5228722912 ]
+			},
+			"properties" : {
+				"name" : "高陵区",
+				"adcode" : "610117",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.5810469639, 33.9984246376 ]
+			},
+			"properties" : {
+				"name" : "鄠邑区",
+				"adcode" : "610118",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.4119101898, 34.0957523891 ]
+			},
+			"properties" : {
+				"name" : "蓝田县",
+				"adcode" : "610122",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8965815091, 34.2718775353 ]
+			},
+			"properties" : {
+				"name" : "莲湖区",
+				"adcode" : "610104",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.2795660476, 34.4555344845 ]
+			},
+			"properties" : {
+				"name" : "临潼区",
+				"adcode" : "610115",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9110739006, 34.3453069178 ]
+			},
+			"properties" : {
+				"name" : "未央区",
+				"adcode" : "610112",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.289748183, 34.6404386553 ]
+			},
+			"properties" : {
+				"name" : "阎良区",
+				"adcode" : "610114",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.93046527, 34.2024149388 ]
+			},
+			"properties" : {
+				"name" : "雁塔区",
+				"adcode" : "610113",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.1077110927, 33.9508286746 ]
+			},
+			"properties" : {
+				"name" : "周至县",
+				"adcode" : "610124",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.9284865543, 34.0379164966 ]
+			},
+			"properties" : {
+				"name" : "长安区",
+				"adcode" : "610116",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.98393193, 34.2826666617 ]
+			},
+			"properties" : {
+				"name" : "新城区",
+				"adcode" : "610102",
+				"adcode_s" : "6101",
+				"adcode_si" : "61",
+				"dname" : "西安市"
+			}
+		}
+	]
+}

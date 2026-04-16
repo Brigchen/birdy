@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.36924638, 29.6444720838 ]
+			},
+			"properties" : {
+				"name" : "巴宜区",
+				"adcode" : "540402",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.5497991169, 30.1195935539 ]
+			},
+			"properties" : {
+				"name" : "波密县",
+				"adcode" : "540424",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.0595937458, 28.6777030274 ]
+			},
+			"properties" : {
+				"name" : "察隅县",
+				"adcode" : "540425",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.2341221219, 30.0212307155 ]
+			},
+			"properties" : {
+				"name" : "工布江达县",
+				"adcode" : "540421",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.0983721448, 28.9583548902 ]
+			},
+			"properties" : {
+				"name" : "朗县",
+				"adcode" : "540426",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.0067256856, 29.2450444089 ]
+			},
+			"properties" : {
+				"name" : "米林市",
+				"adcode" : "540422",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.0070223137, 28.7250195172 ]
+			},
+			"properties" : {
+				"name" : "墨脱县",
+				"adcode" : "540423",
+				"adcode_s" : "5404",
+				"adcode_si" : "54",
+				"dname" : "林芝市"
+			}
+		}
+	]
+}

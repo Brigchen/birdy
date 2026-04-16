@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.8658432292, 29.8671863096 ]
+			},
+			"properties" : {
+				"name" : "北仑区",
+				"adcode" : "330206",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3260179822, 30.2058306027 ]
+			},
+			"properties" : {
+				"name" : "慈溪市",
+				"adcode" : "330282",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3654706256, 29.6131611044 ]
+			},
+			"properties" : {
+				"name" : "奉化区",
+				"adcode" : "330213",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6647996465, 29.7553481191 ]
+			},
+			"properties" : {
+				"name" : "鄞州区",
+				"adcode" : "330212",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4605400945, 29.3041484543 ]
+			},
+			"properties" : {
+				"name" : "宁海县",
+				"adcode" : "330226",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.8335970955, 29.4132991375 ]
+			},
+			"properties" : {
+				"name" : "象山县",
+				"adcode" : "330225",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.3487913831, 29.8258234507 ]
+			},
+			"properties" : {
+				"name" : "海曙区",
+				"adcode" : "330203",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.291062058, 29.9883024018 ]
+			},
+			"properties" : {
+				"name" : "余姚市",
+				"adcode" : "330281",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.6001370053, 29.9928077339 ]
+			},
+			"properties" : {
+				"name" : "镇海区",
+				"adcode" : "330211",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.4834936511, 29.9621060347 ]
+			},
+			"properties" : {
+				"name" : "江北区",
+				"adcode" : "330205",
+				"adcode_s" : "3302",
+				"adcode_si" : "33",
+				"dname" : "宁波市"
+			}
+		}
+	]
+}

@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.0547247507, 27.7117358176 ]
+			},
+			"properties" : {
+				"name" : "崇仁县",
+				"adcode" : "361024",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6084238848, 28.2185785663 ]
+			},
+			"properties" : {
+				"name" : "东乡区",
+				"adcode" : "361003",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3515891459, 26.7591160186 ]
+			},
+			"properties" : {
+				"name" : "广昌县",
+				"adcode" : "361030",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7458605624, 27.9285920688 ]
+			},
+			"properties" : {
+				"name" : "金溪县",
+				"adcode" : "361027",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.832124675, 27.3695228501 ]
+			},
+			"properties" : {
+				"name" : "乐安县",
+				"adcode" : "361025",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.9199113593, 27.2585113127 ]
+			},
+			"properties" : {
+				"name" : "黎川县",
+				"adcode" : "361022",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3511986935, 27.9216518008 ]
+			},
+			"properties" : {
+				"name" : "临川区",
+				"adcode" : "361002",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6701592447, 27.5166596883 ]
+			},
+			"properties" : {
+				"name" : "南城县",
+				"adcode" : "361021",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4888479141, 27.1123436265 ]
+			},
+			"properties" : {
+				"name" : "南丰县",
+				"adcode" : "361023",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.239815738, 27.3900182514 ]
+			},
+			"properties" : {
+				"name" : "宜黄县",
+				"adcode" : "361026",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.03911409, 27.7612971447 ]
+			},
+			"properties" : {
+				"name" : "资溪县",
+				"adcode" : "361028",
+				"adcode_s" : "3610",
+				"adcode_si" : "36",
+				"dname" : "抚州市"
+			}
+		}
+	]
+}

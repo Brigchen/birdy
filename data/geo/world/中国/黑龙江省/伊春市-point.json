@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.5579478771, 47.6290076481 ]
+			},
+			"properties" : {
+				"name" : "乌翠区",
+				"adcode" : "230718",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.9027681977, 46.866095384 ]
+			},
+			"properties" : {
+				"name" : "大箐山县",
+				"adcode" : "230725",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.3704893992, 48.2334390135 ]
+			},
+			"properties" : {
+				"name" : "丰林县",
+				"adcode" : "230724",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.9955311547, 48.7583441675 ]
+			},
+			"properties" : {
+				"name" : "嘉荫县",
+				"adcode" : "230722",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.536334442, 47.4967237173 ]
+			},
+			"properties" : {
+				"name" : "金林区",
+				"adcode" : "230751",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.2612779769, 47.7532768781 ]
+			},
+			"properties" : {
+				"name" : "伊美区",
+				"adcode" : "230717",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.3726676048, 47.0735045041 ]
+			},
+			"properties" : {
+				"name" : "南岔县",
+				"adcode" : "230726",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.4529748522, 48.6023282613 ]
+			},
+			"properties" : {
+				"name" : "汤旺县",
+				"adcode" : "230723",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.2686748558, 46.9176238792 ]
+			},
+			"properties" : {
+				"name" : "铁力市",
+				"adcode" : "230781",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.6612531042, 48.0727826692 ]
+			},
+			"properties" : {
+				"name" : "友好区",
+				"adcode" : "230719",
+				"adcode_s" : "2307",
+				"adcode_si" : "23",
+				"dname" : "伊春市"
+			}
+		}
+	]
+}

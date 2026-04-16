@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.4420545925, 42.5747619802 ]
+			},
+			"properties" : {
+				"name" : "东丰县",
+				"adcode" : "220421",
+				"adcode_s" : "2204",
+				"adcode_si" : "22",
+				"dname" : "辽源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.21059587, 42.7608262651 ]
+			},
+			"properties" : {
+				"name" : "东辽县",
+				"adcode" : "220422",
+				"adcode_s" : "2204",
+				"adcode_si" : "22",
+				"dname" : "辽源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.2071859905, 42.9084623427 ]
+			},
+			"properties" : {
+				"name" : "龙山区",
+				"adcode" : "220402",
+				"adcode_s" : "2204",
+				"adcode_si" : "22",
+				"dname" : "辽源市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.127137369, 42.9833231399 ]
+			},
+			"properties" : {
+				"name" : "西安区",
+				"adcode" : "220403",
+				"adcode_s" : "2204",
+				"adcode_si" : "22",
+				"dname" : "辽源市"
+			}
+		}
+	]
+}

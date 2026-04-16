@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8102981769, 25.601130333 ]
+			},
+			"properties" : {
+				"name" : "连城县",
+				"adcode" : "350825",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.557793779, 25.1236688485 ]
+			},
+			"properties" : {
+				"name" : "上杭县",
+				"adcode" : "350823",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1245458885, 25.1355264016 ]
+			},
+			"properties" : {
+				"name" : "武平县",
+				"adcode" : "350824",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0749589583, 25.2188339318 ]
+			},
+			"properties" : {
+				"name" : "新罗区",
+				"adcode" : "350802",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.46090449, 25.3413848626 ]
+			},
+			"properties" : {
+				"name" : "漳平市",
+				"adcode" : "350881",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3608992052, 25.6937578358 ]
+			},
+			"properties" : {
+				"name" : "长汀县",
+				"adcode" : "350821",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8145909012, 24.7586729571 ]
+			},
+			"properties" : {
+				"name" : "永定区",
+				"adcode" : "350803",
+				"adcode_s" : "3508",
+				"adcode_si" : "35",
+				"dname" : "龙岩市"
+			}
+		}
+	]
+}

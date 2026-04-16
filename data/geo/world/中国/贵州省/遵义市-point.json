@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8109732857, 27.5142039724 ]
+			},
+			"properties" : {
+				"name" : "播州区",
+				"adcode" : "520304",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.908328428, 28.4916793767 ]
+			},
+			"properties" : {
+				"name" : "赤水市",
+				"adcode" : "520381",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.606094757, 28.9306165834 ]
+			},
+			"properties" : {
+				"name" : "道真仡佬族苗族自治县",
+				"adcode" : "520325",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.7611159674, 27.9265580692 ]
+			},
+			"properties" : {
+				"name" : "凤冈县",
+				"adcode" : "520327",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.072853403, 27.6737085271 ]
+			},
+			"properties" : {
+				"name" : "红花岗区",
+				"adcode" : "520302",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.8244289307, 27.8656693453 ]
+			},
+			"properties" : {
+				"name" : "汇川区",
+				"adcode" : "520303",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.4747825, 27.7086988591 ]
+			},
+			"properties" : {
+				"name" : "湄潭县",
+				"adcode" : "520328",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.29632565, 27.7089006681 ]
+			},
+			"properties" : {
+				"name" : "仁怀市",
+				"adcode" : "520382",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1926916364, 28.1429190904 ]
+			},
+			"properties" : {
+				"name" : "绥阳县",
+				"adcode" : "520323",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.85651931, 28.3295381778 ]
+			},
+			"properties" : {
+				"name" : "桐梓县",
+				"adcode" : "520322",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.909214842, 28.6579974384 ]
+			},
+			"properties" : {
+				"name" : "务川仡佬族苗族自治县",
+				"adcode" : "520326",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.292090831, 28.328911751 ]
+			},
+			"properties" : {
+				"name" : "习水县",
+				"adcode" : "520330",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6983605838, 27.3927581311 ]
+			},
+			"properties" : {
+				"name" : "余庆县",
+				"adcode" : "520329",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.38895472, 28.5490266874 ]
+			},
+			"properties" : {
+				"name" : "正安县",
+				"adcode" : "520324",
+				"adcode_s" : "5203",
+				"adcode_si" : "52",
+				"dname" : "遵义市"
+			}
+		}
+	]
+}

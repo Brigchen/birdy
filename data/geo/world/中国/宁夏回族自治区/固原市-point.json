@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3434505267, 35.5234176531 ]
+			},
+			"properties" : {
+				"name" : "泾源县",
+				"adcode" : "640424",
+				"adcode_s" : "6404",
+				"adcode_si" : "64",
+				"dname" : "固原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0689828108, 35.590259068 ]
+			},
+			"properties" : {
+				"name" : "隆德县",
+				"adcode" : "640423",
+				"adcode_s" : "6404",
+				"adcode_si" : "64",
+				"dname" : "固原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6517574752, 35.9661408476 ]
+			},
+			"properties" : {
+				"name" : "彭阳县",
+				"adcode" : "640425",
+				"adcode_s" : "6404",
+				"adcode_si" : "64",
+				"dname" : "固原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.7165079704, 35.9334852766 ]
+			},
+			"properties" : {
+				"name" : "西吉县",
+				"adcode" : "640422",
+				"adcode_s" : "6404",
+				"adcode_si" : "64",
+				"dname" : "固原市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.2552831948, 36.1249447039 ]
+			},
+			"properties" : {
+				"name" : "原州区",
+				"adcode" : "640402",
+				"adcode_s" : "6404",
+				"adcode_si" : "64",
+				"dname" : "固原市"
+			}
+		}
+	]
+}

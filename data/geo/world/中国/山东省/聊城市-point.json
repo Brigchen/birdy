@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1676166592, 36.5823344939 ]
+			},
+			"properties" : {
+				"name" : "茌平区",
+				"adcode" : "371503",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2716936642, 36.3258702916 ]
+			},
+			"properties" : {
+				"name" : "东阿县",
+				"adcode" : "371524",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8951833596, 36.449452221 ]
+			},
+			"properties" : {
+				"name" : "东昌府区",
+				"adcode" : "371502",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2451277481, 36.8330707525 ]
+			},
+			"properties" : {
+				"name" : "高唐县",
+				"adcode" : "371526",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5282634808, 36.5305992962 ]
+			},
+			"properties" : {
+				"name" : "冠县",
+				"adcode" : "371525",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.7703195375, 36.776360405 ]
+			},
+			"properties" : {
+				"name" : "临清市",
+				"adcode" : "371581",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5400578318, 36.1323468412 ]
+			},
+			"properties" : {
+				"name" : "莘县",
+				"adcode" : "371522",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8615190617, 36.1405437857 ]
+			},
+			"properties" : {
+				"name" : "阳谷县",
+				"adcode" : "371521",
+				"adcode_s" : "3715",
+				"adcode_si" : "37",
+				"dname" : "聊城市"
+			}
+		}
+	]
+}

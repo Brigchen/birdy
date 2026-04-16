@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0991980685, 39.7859409922 ]
+			},
+			"properties" : {
+				"name" : "怀仁市",
+				"adcode" : "140681",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.218000836, 39.6132131194 ]
+			},
+			"properties" : {
+				"name" : "平鲁区",
+				"adcode" : "140603",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7736923085, 39.5134395515 ]
+			},
+			"properties" : {
+				"name" : "山阴县",
+				"adcode" : "140621",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.4404150531, 39.2815937383 ]
+			},
+			"properties" : {
+				"name" : "朔城区",
+				"adcode" : "140602",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.247140175, 39.5017425878 ]
+			},
+			"properties" : {
+				"name" : "应县",
+				"adcode" : "140622",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.407910185, 40.0004638448 ]
+			},
+			"properties" : {
+				"name" : "右玉县",
+				"adcode" : "140623",
+				"adcode_s" : "1406",
+				"adcode_si" : "14",
+				"dname" : "朔州市"
+			}
+		}
+	]
+}

@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3350065882, 39.0807187417 ]
+			},
+			"properties" : {
+				"name" : "大武口区",
+				"adcode" : "640202",
+				"adcode_s" : "6402",
+				"adcode_si" : "64",
+				"dname" : "石嘴山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.649247581, 39.2208605071 ]
+			},
+			"properties" : {
+				"name" : "惠农区",
+				"adcode" : "640205",
+				"adcode_s" : "6402",
+				"adcode_si" : "64",
+				"dname" : "石嘴山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5422002413, 38.8878826337 ]
+			},
+			"properties" : {
+				"name" : "平罗县",
+				"adcode" : "640221",
+				"adcode_s" : "6402",
+				"adcode_si" : "64",
+				"dname" : "石嘴山市"
+			}
+		}
+	]
+}

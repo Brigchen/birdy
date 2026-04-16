@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.0231656644, 33.9107890092 ]
+			},
+			"properties" : {
+				"name" : "宝丰县",
+				"adcode" : "410421",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2205145457, 34.000397665 ]
+			},
+			"properties" : {
+				"name" : "郏县",
+				"adcode" : "410425",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.7274131504, 33.744333242 ]
+			},
+			"properties" : {
+				"name" : "鲁山县",
+				"adcode" : "410423",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8001241864, 34.1582337428 ]
+			},
+			"properties" : {
+				"name" : "汝州市",
+				"adcode" : "410482",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.8833201842, 33.8876778865 ]
+			},
+			"properties" : {
+				"name" : "石龙区",
+				"adcode" : "410404",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3620259201, 33.7622476261 ]
+			},
+			"properties" : {
+				"name" : "卫东区",
+				"adcode" : "410403",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5127973684, 33.2856255312 ]
+			},
+			"properties" : {
+				"name" : "舞钢市",
+				"adcode" : "410481",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.319477, 33.5146054261 ]
+			},
+			"properties" : {
+				"name" : "叶县",
+				"adcode" : "410422",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2522969292, 33.6996133204 ]
+			},
+			"properties" : {
+				"name" : "湛河区",
+				"adcode" : "410411",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.1736375159, 33.7673491085 ]
+			},
+			"properties" : {
+				"name" : "新华区",
+				"adcode" : "410402",
+				"adcode_s" : "4104",
+				"adcode_si" : "41",
+				"dname" : "平顶山市"
+			}
+		}
+	]
+}

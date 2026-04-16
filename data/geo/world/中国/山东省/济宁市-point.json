@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.294962482, 35.4263994443 ]
+			},
+			"properties" : {
+				"name" : "嘉祥县",
+				"adcode" : "370829",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3031014458, 35.0455994826 ]
+			},
+			"properties" : {
+				"name" : "金乡县",
+				"adcode" : "370828",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1123940942, 35.7955010017 ]
+			},
+			"properties" : {
+				"name" : "梁山县",
+				"adcode" : "370832",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0202947178, 35.6099275765 ]
+			},
+			"properties" : {
+				"name" : "曲阜市",
+				"adcode" : "370881",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5612207512, 35.3752019593 ]
+			},
+			"properties" : {
+				"name" : "任城区",
+				"adcode" : "370811",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.332986673, 35.6344450226 ]
+			},
+			"properties" : {
+				"name" : "泗水县",
+				"adcode" : "370831",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.775031545, 35.0680771767 ]
+			},
+			"properties" : {
+				"name" : "微山县",
+				"adcode" : "370826",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4940793664, 35.7090124993 ]
+			},
+			"properties" : {
+				"name" : "汶上县",
+				"adcode" : "370830",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.742377301, 35.5678368381 ]
+			},
+			"properties" : {
+				"name" : "兖州区",
+				"adcode" : "370812",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.5614248063, 35.0155089015 ]
+			},
+			"properties" : {
+				"name" : "鱼台县",
+				"adcode" : "370827",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0771611598, 35.3482020909 ]
+			},
+			"properties" : {
+				"name" : "邹城市",
+				"adcode" : "370883",
+				"adcode_s" : "3708",
+				"adcode_si" : "37",
+				"dname" : "济宁市"
+			}
+		}
+	]
+}

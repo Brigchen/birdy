@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3585708503, 35.4563227118 ]
+			},
+			"properties" : {
+				"name" : "东港区",
+				"adcode" : "371102",
+				"adcode_s" : "3711",
+				"adcode_si" : "37",
+				"dname" : "日照市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8754124651, 35.6671706492 ]
+			},
+			"properties" : {
+				"name" : "莒县",
+				"adcode" : "371122",
+				"adcode_s" : "3711",
+				"adcode_si" : "37",
+				"dname" : "日照市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.12915475, 35.3894462706 ]
+			},
+			"properties" : {
+				"name" : "岚山区",
+				"adcode" : "371103",
+				"adcode_s" : "3711",
+				"adcode_si" : "37",
+				"dname" : "日照市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2379017392, 35.7380376336 ]
+			},
+			"properties" : {
+				"name" : "五莲县",
+				"adcode" : "371121",
+				"adcode_s" : "3711",
+				"adcode_si" : "37",
+				"dname" : "日照市"
+			}
+		}
+	]
+}

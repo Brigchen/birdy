@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.9924472106, 26.9296471337 ]
+			},
+			"properties" : {
+				"name" : "米易县",
+				"adcode" : "510421",
+				"adcode_s" : "5104",
+				"adcode_si" : "51",
+				"dname" : "攀枝花市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.7240593793, 26.3987199267 ]
+			},
+			"properties" : {
+				"name" : "仁和区",
+				"adcode" : "510411",
+				"adcode_s" : "5104",
+				"adcode_si" : "51",
+				"dname" : "攀枝花市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5448816481, 26.6136907134 ]
+			},
+			"properties" : {
+				"name" : "西区",
+				"adcode" : "510403",
+				"adcode_s" : "5104",
+				"adcode_si" : "51",
+				"dname" : "攀枝花市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.5777754625, 26.9333119181 ]
+			},
+			"properties" : {
+				"name" : "盐边县",
+				"adcode" : "510422",
+				"adcode_s" : "5104",
+				"adcode_si" : "51",
+				"dname" : "攀枝花市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.745226941, 26.5961791274 ]
+			},
+			"properties" : {
+				"name" : "东区",
+				"adcode" : "510402",
+				"adcode_s" : "5104",
+				"adcode_si" : "51",
+				"dname" : "攀枝花市"
+			}
+		}
+	]
+}

@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.619127281, 32.3764963709 ]
+			},
+			"properties" : {
+				"name" : "安多县",
+				"adcode" : "540624",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.0114928853, 32.194564807 ]
+			},
+			"properties" : {
+				"name" : "巴青县",
+				"adcode" : "540628",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.1153144277, 31.2095932578 ]
+			},
+			"properties" : {
+				"name" : "班戈县",
+				"adcode" : "540627",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 93.486424145, 31.4417985546 ]
+			},
+			"properties" : {
+				"name" : "比如县",
+				"adcode" : "540622",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.971840797, 30.9302862481 ]
+			},
+			"properties" : {
+				"name" : "嘉黎县",
+				"adcode" : "540621",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.65008627, 32.3461635662 ]
+			},
+			"properties" : {
+				"name" : "聂荣县",
+				"adcode" : "540623",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.0265720721, 31.2475987965 ]
+			},
+			"properties" : {
+				"name" : "色尼区",
+				"adcode" : "540602",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.7258175662, 31.0284847421 ]
+			},
+			"properties" : {
+				"name" : "申扎县",
+				"adcode" : "540625",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.2548015895, 34.0842796005 ]
+			},
+			"properties" : {
+				"name" : "双湖县",
+				"adcode" : "540630",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.3086650901, 31.5868152774 ]
+			},
+			"properties" : {
+				"name" : "索县",
+				"adcode" : "540626",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 86.6294706833, 32.5000157033 ]
+			},
+			"properties" : {
+				"name" : "尼玛县",
+				"adcode" : "540629",
+				"adcode_s" : "5406",
+				"adcode_si" : "54",
+				"dname" : "那曲市"
+			}
+		}
+	]
+}

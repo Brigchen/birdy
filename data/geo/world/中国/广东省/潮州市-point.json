@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.47065456, 23.707746491 ]
+			},
+			"properties" : {
+				"name" : "潮安区",
+				"adcode" : "445103",
+				"adcode_s" : "4451",
+				"adcode_si" : "44",
+				"dname" : "潮州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8937535094, 23.8658637977 ]
+			},
+			"properties" : {
+				"name" : "饶平县",
+				"adcode" : "445122",
+				"adcode_s" : "4451",
+				"adcode_si" : "44",
+				"dname" : "潮州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7080197032, 23.6747103093 ]
+			},
+			"properties" : {
+				"name" : "湘桥区",
+				"adcode" : "445102",
+				"adcode_s" : "4451",
+				"adcode_si" : "44",
+				"dname" : "潮州市"
+			}
+		}
+	]
+}

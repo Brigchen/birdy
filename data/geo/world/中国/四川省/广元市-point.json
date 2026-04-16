@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0967794705, 31.939455044 ]
+			},
+			"properties" : {
+				"name" : "苍溪县",
+				"adcode" : "510824",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.9527519486, 32.654446091 ]
+			},
+			"properties" : {
+				"name" : "朝天区",
+				"adcode" : "510812",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.4929749245, 31.9188301007 ]
+			},
+			"properties" : {
+				"name" : "剑阁县",
+				"adcode" : "510823",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.7720612905, 32.414435687 ]
+			},
+			"properties" : {
+				"name" : "利州区",
+				"adcode" : "510802",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.12223749, 32.4556421014 ]
+			},
+			"properties" : {
+				"name" : "青川县",
+				"adcode" : "510822",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3918789132, 32.3680296471 ]
+			},
+			"properties" : {
+				"name" : "旺苍县",
+				"adcode" : "510821",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.8307728954, 32.1636167521 ]
+			},
+			"properties" : {
+				"name" : "昭化区",
+				"adcode" : "510811",
+				"adcode_s" : "5108",
+				"adcode_si" : "51",
+				"dname" : "广元市"
+			}
+		}
+	]
+}

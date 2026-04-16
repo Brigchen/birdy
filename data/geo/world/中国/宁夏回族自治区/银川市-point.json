@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.08018011, 38.7554123916 ]
+			},
+			"properties" : {
+				"name" : "贺兰县",
+				"adcode" : "640122",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.1918259137, 38.4583216781 ]
+			},
+			"properties" : {
+				"name" : "金凤区",
+				"adcode" : "640106",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5413986226, 37.9781062594 ]
+			},
+			"properties" : {
+				"name" : "灵武市",
+				"adcode" : "640181",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.0317162282, 38.5389566906 ]
+			},
+			"properties" : {
+				"name" : "西夏区",
+				"adcode" : "640105",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.4825657361, 38.4740218015 ]
+			},
+			"properties" : {
+				"name" : "兴庆区",
+				"adcode" : "640104",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.2402444, 38.2894172708 ]
+			},
+			"properties" : {
+				"name" : "永宁县",
+				"adcode" : "640121",
+				"adcode_s" : "6401",
+				"adcode_si" : "64",
+				"dname" : "银川市"
+			}
+		}
+	]
+}

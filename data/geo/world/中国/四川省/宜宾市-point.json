@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.6841714136, 28.8109352566 ]
+			},
+			"properties" : {
+				"name" : "翠屏区",
+				"adcode" : "511502",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.58864927, 28.4237632282 ]
+			},
+			"properties" : {
+				"name" : "高县",
+				"adcode" : "511525",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.7980170822, 28.1942106548 ]
+			},
+			"properties" : {
+				"name" : "珙县",
+				"adcode" : "511526",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1164573002, 28.6535418049 ]
+			},
+			"properties" : {
+				"name" : "江安县",
+				"adcode" : "511523",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9314629129, 28.8935765856 ]
+			},
+			"properties" : {
+				"name" : "南溪区",
+				"adcode" : "511503",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.0113226158, 28.7084325114 ]
+			},
+			"properties" : {
+				"name" : "屏山县",
+				"adcode" : "511529",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.1312513573, 28.2521652884 ]
+			},
+			"properties" : {
+				"name" : "兴文县",
+				"adcode" : "511528",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.200337205, 29.0242189627 ]
+			},
+			"properties" : {
+				"name" : "叙州区",
+				"adcode" : "511504",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.5793260637, 28.0397665588 ]
+			},
+			"properties" : {
+				"name" : "筠连县",
+				"adcode" : "511527",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.9181069581, 28.5119079235 ]
+			},
+			"properties" : {
+				"name" : "长宁县",
+				"adcode" : "511524",
+				"adcode_s" : "5115",
+				"adcode_si" : "51",
+				"dname" : "宜宾市"
+			}
+		}
+	]
+}

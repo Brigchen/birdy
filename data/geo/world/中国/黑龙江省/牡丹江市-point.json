@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.5079489311, 44.705854034 ]
+			},
+			"properties" : {
+				"name" : "爱民区",
+				"adcode" : "231004",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.945738825, 44.2986787842 ]
+			},
+			"properties" : {
+				"name" : "东安区",
+				"adcode" : "231002",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.8370034031, 44.0212462232 ]
+			},
+			"properties" : {
+				"name" : "东宁市",
+				"adcode" : "231086",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.5352809205, 45.1426230931 ]
+			},
+			"properties" : {
+				"name" : "海林市",
+				"adcode" : "231083",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.6588740078, 45.6836935583 ]
+			},
+			"properties" : {
+				"name" : "林口县",
+				"adcode" : "231025",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.4158778613, 44.5668427938 ]
+			},
+			"properties" : {
+				"name" : "穆棱市",
+				"adcode" : "231085",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.2018118828, 44.0510023897 ]
+			},
+			"properties" : {
+				"name" : "宁安市",
+				"adcode" : "231084",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.088184486, 44.3992264949 ]
+			},
+			"properties" : {
+				"name" : "绥芬河市",
+				"adcode" : "231081",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.8684781088, 44.6479214726 ]
+			},
+			"properties" : {
+				"name" : "阳明区",
+				"adcode" : "231003",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.5591474111, 44.4564755196 ]
+			},
+			"properties" : {
+				"name" : "西安区",
+				"adcode" : "231003",
+				"adcode_s" : "2310",
+				"adcode_si" : "23",
+				"dname" : "牡丹江市"
+			}
+		}
+	]
+}

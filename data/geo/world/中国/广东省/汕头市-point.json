@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4024165891, 23.1784839837 ]
+			},
+			"properties" : {
+				"name" : "潮南区",
+				"adcode" : "440514",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.477130478, 23.3432728849 ]
+			},
+			"properties" : {
+				"name" : "潮阳区",
+				"adcode" : "440513",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8064871602, 23.5264299073 ]
+			},
+			"properties" : {
+				"name" : "澄海区",
+				"adcode" : "440515",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6992936011, 23.2837724008 ]
+			},
+			"properties" : {
+				"name" : "濠江区",
+				"adcode" : "440512",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6341450265, 23.3852483311 ]
+			},
+			"properties" : {
+				"name" : "金平区",
+				"adcode" : "440511",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.7524240417, 23.3952596518 ]
+			},
+			"properties" : {
+				"name" : "龙湖区",
+				"adcode" : "440507",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.0572249661, 23.436636423 ]
+			},
+			"properties" : {
+				"name" : "南澳县",
+				"adcode" : "440523",
+				"adcode_s" : "4405",
+				"adcode_si" : "44",
+				"dname" : "汕头市"
+			}
+		}
+	]
+}

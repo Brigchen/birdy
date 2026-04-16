@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.26471289, 23.295118154 ]
+			},
+			"properties" : {
+				"name" : "博罗县",
+				"adcode" : "441322",
+				"adcode_s" : "4413",
+				"adcode_si" : "44",
+				"dname" : "惠州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4528616135, 23.0963719503 ]
+			},
+			"properties" : {
+				"name" : "惠城区",
+				"adcode" : "441302",
+				"adcode_s" : "4413",
+				"adcode_si" : "44",
+				"dname" : "惠州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9436620976, 23.0416722041 ]
+			},
+			"properties" : {
+				"name" : "惠东县",
+				"adcode" : "441323",
+				"adcode_s" : "4413",
+				"adcode_si" : "44",
+				"dname" : "惠州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.4633736326, 22.8724018841 ]
+			},
+			"properties" : {
+				"name" : "惠阳区",
+				"adcode" : "441303",
+				"adcode_s" : "4413",
+				"adcode_si" : "44",
+				"dname" : "惠州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1260487393, 23.6629404372 ]
+			},
+			"properties" : {
+				"name" : "龙门县",
+				"adcode" : "441324",
+				"adcode_s" : "4413",
+				"adcode_si" : "44",
+				"dname" : "惠州市"
+			}
+		}
+	]
+}

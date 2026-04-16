@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9517898383, 33.839570092 ]
+			},
+			"properties" : {
+				"name" : "临颍县",
+				"adcode" : "411122",
+				"adcode_s" : "4111",
+				"adcode_si" : "41",
+				"dname" : "漯河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.66802287, 33.5446564572 ]
+			},
+			"properties" : {
+				"name" : "舞阳县",
+				"adcode" : "411121",
+				"adcode_s" : "4111",
+				"adcode_si" : "41",
+				"dname" : "漯河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9315654105, 33.6670234033 ]
+			},
+			"properties" : {
+				"name" : "郾城区",
+				"adcode" : "411103",
+				"adcode_s" : "4111",
+				"adcode_si" : "41",
+				"dname" : "漯河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.9167989333, 33.5319263468 ]
+			},
+			"properties" : {
+				"name" : "源汇区",
+				"adcode" : "411102",
+				"adcode_s" : "4111",
+				"adcode_si" : "41",
+				"dname" : "漯河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1753374327, 33.5664716621 ]
+			},
+			"properties" : {
+				"name" : "召陵区",
+				"adcode" : "411104",
+				"adcode_s" : "4111",
+				"adcode_si" : "41",
+				"dname" : "漯河市"
+			}
+		}
+	]
+}

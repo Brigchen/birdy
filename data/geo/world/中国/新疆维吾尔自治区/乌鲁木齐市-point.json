@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 88.3384611727, 43.5569556417 ]
+			},
+			"properties" : {
+				"name" : "达坂城区",
+				"adcode" : "650107",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.7370275626, 44.4486394446 ]
+			},
+			"properties" : {
+				"name" : "米东区",
+				"adcode" : "650109",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.4727429956, 43.7177887603 ]
+			},
+			"properties" : {
+				"name" : "沙依巴克区",
+				"adcode" : "650103",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.6685981085, 43.8633475084 ]
+			},
+			"properties" : {
+				"name" : "水磨沟区",
+				"adcode" : "650105",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.62827437, 43.7208697368 ]
+			},
+			"properties" : {
+				"name" : "天山区",
+				"adcode" : "650102",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.3704774367, 43.9255425981 ]
+			},
+			"properties" : {
+				"name" : "头屯河区",
+				"adcode" : "650106",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.11981667, 43.3349520166 ]
+			},
+			"properties" : {
+				"name" : "乌鲁木齐县",
+				"adcode" : "650121",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 87.5167120657, 43.9483587984 ]
+			},
+			"properties" : {
+				"name" : "新市区",
+				"adcode" : "650104",
+				"adcode_s" : "6501",
+				"adcode_si" : "65",
+				"dname" : "乌鲁木齐市"
+			}
+		}
+	]
+}

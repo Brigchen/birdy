@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.9013728503, 30.3308729864 ]
+			},
+			"properties" : {
+				"name" : "鄂城区",
+				"adcode" : "420704",
+				"adcode_s" : "4207",
+				"adcode_si" : "42",
+				"dname" : "鄂州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.7186686575, 30.4821892479 ]
+			},
+			"properties" : {
+				"name" : "华容区",
+				"adcode" : "420703",
+				"adcode_s" : "4207",
+				"adcode_si" : "42",
+				"dname" : "鄂州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.6192913623, 30.1735696509 ]
+			},
+			"properties" : {
+				"name" : "梁子湖区",
+				"adcode" : "420702",
+				"adcode_s" : "4207",
+				"adcode_si" : "42",
+				"dname" : "鄂州市"
+			}
+		}
+	]
+}

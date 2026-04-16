@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9294443409, 41.7665567692 ]
+			},
+			"properties" : {
+				"name" : "白云鄂博矿区",
+				"adcode" : "150206",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.34374499, 42.0560783754 ]
+			},
+			"properties" : {
+				"name" : "达尔罕茂明安联合旗",
+				"adcode" : "150223",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.053513178, 40.5756724268 ]
+			},
+			"properties" : {
+				"name" : "东河区",
+				"adcode" : "150202",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1356399809, 41.1202795183 ]
+			},
+			"properties" : {
+				"name" : "固阳县",
+				"adcode" : "150222",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.9129446, 40.5813076843 ]
+			},
+			"properties" : {
+				"name" : "九原区",
+				"adcode" : "150207",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8066494265, 40.6635026062 ]
+			},
+			"properties" : {
+				"name" : "昆都仑区",
+				"adcode" : "150203",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3038164684, 40.7432641195 ]
+			},
+			"properties" : {
+				"name" : "石拐区",
+				"adcode" : "150205",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.6810349557, 40.518931187 ]
+			},
+			"properties" : {
+				"name" : "土默特右旗",
+				"adcode" : "150221",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8976842267, 40.6578840213 ]
+			},
+			"properties" : {
+				"name" : "青山区",
+				"adcode" : "150207",
+				"adcode_s" : "1502",
+				"adcode_si" : "15",
+				"dname" : "包头市"
+			}
+		}
+	]
+}

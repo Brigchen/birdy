@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4817554951, 27.6814678303 ]
+			},
+			"properties" : {
+				"name" : "冷水江市",
+				"adcode" : "431381",
+				"adcode_s" : "4313",
+				"adcode_si" : "43",
+				"dname" : "娄底市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.7825586385, 27.7414157447 ]
+			},
+			"properties" : {
+				"name" : "涟源市",
+				"adcode" : "431382",
+				"adcode_s" : "4313",
+				"adcode_si" : "43",
+				"dname" : "娄底市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9928733001, 27.7639993779 ]
+			},
+			"properties" : {
+				"name" : "娄星区",
+				"adcode" : "431302",
+				"adcode_s" : "4313",
+				"adcode_si" : "43",
+				"dname" : "娄底市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.1757548444, 27.4626864343 ]
+			},
+			"properties" : {
+				"name" : "双峰县",
+				"adcode" : "431321",
+				"adcode_s" : "4313",
+				"adcode_si" : "43",
+				"dname" : "娄底市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.2347566329, 27.8701078469 ]
+			},
+			"properties" : {
+				"name" : "新化县",
+				"adcode" : "431322",
+				"adcode_s" : "4313",
+				"adcode_si" : "43",
+				"dname" : "娄底市"
+			}
+		}
+	]
+}

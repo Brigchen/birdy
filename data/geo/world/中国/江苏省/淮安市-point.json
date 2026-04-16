@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.8155109679, 33.2293474001 ]
+			},
+			"properties" : {
+				"name" : "洪泽区",
+				"adcode" : "320813",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.2905219213, 33.4991465873 ]
+			},
+			"properties" : {
+				"name" : "淮安区",
+				"adcode" : "320803",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.9238228864, 33.6592877593 ]
+			},
+			"properties" : {
+				"name" : "淮阴区",
+				"adcode" : "320804",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.1308457809, 33.0211206011 ]
+			},
+			"properties" : {
+				"name" : "金湖县",
+				"adcode" : "320831",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.3129884215, 33.8793405998 ]
+			},
+			"properties" : {
+				"name" : "涟水县",
+				"adcode" : "320826",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.0413823513, 33.5174820483 ]
+			},
+			"properties" : {
+				"name" : "清江浦区",
+				"adcode" : "320812",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.56346623, 32.9366420027 ]
+			},
+			"properties" : {
+				"name" : "盱眙县",
+				"adcode" : "320830",
+				"adcode_s" : "3208",
+				"adcode_si" : "32",
+				"dname" : "淮安市"
+			}
+		}
+	]
+}

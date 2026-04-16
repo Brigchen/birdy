@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.503025, 19.9695915759 ]
+			},
+			"properties" : {
+				"name" : "美兰区",
+				"adcode" : "460108",
+				"adcode_s" : "4601",
+				"adcode_si" : "46",
+				"dname" : "海口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.493337091, 19.7367860307 ]
+			},
+			"properties" : {
+				"name" : "琼山区",
+				"adcode" : "460107",
+				"adcode_s" : "4601",
+				"adcode_si" : "46",
+				"dname" : "海口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.2273738603, 19.8910691176 ]
+			},
+			"properties" : {
+				"name" : "秀英区",
+				"adcode" : "460105",
+				"adcode_s" : "4601",
+				"adcode_si" : "46",
+				"dname" : "海口市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.331428766, 19.865512841 ]
+			},
+			"properties" : {
+				"name" : "龙华区",
+				"adcode" : "460106",
+				"adcode_s" : "4601",
+				"adcode_si" : "46",
+				"dname" : "海口市"
+			}
+		}
+	]
+}

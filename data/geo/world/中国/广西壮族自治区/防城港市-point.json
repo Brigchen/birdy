@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.050101007, 21.6086999869 ]
+			},
+			"properties" : {
+				"name" : "东兴市",
+				"adcode" : "450681",
+				"adcode_s" : "4506",
+				"adcode_si" : "45",
+				"dname" : "防城港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0571050989, 21.7677707729 ]
+			},
+			"properties" : {
+				"name" : "防城区",
+				"adcode" : "450603",
+				"adcode_s" : "4506",
+				"adcode_si" : "45",
+				"dname" : "防城港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.511490091, 21.6469421183 ]
+			},
+			"properties" : {
+				"name" : "港口区",
+				"adcode" : "450602",
+				"adcode_s" : "4506",
+				"adcode_si" : "45",
+				"dname" : "防城港市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8918117949, 22.050309183 ]
+			},
+			"properties" : {
+				"name" : "上思县",
+				"adcode" : "450621",
+				"adcode_s" : "4506",
+				"adcode_si" : "45",
+				"dname" : "防城港市"
+			}
+		}
+	]
+}

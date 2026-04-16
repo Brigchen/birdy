@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.1130031017, 47.616215415 ]
+			},
+			"properties" : {
+				"name" : "东山区",
+				"adcode" : "230406",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.2534683543, 47.3191100689 ]
+			},
+			"properties" : {
+				"name" : "工农区",
+				"adcode" : "230403",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.747844894, 47.7364651853 ]
+			},
+			"properties" : {
+				"name" : "萝北县",
+				"adcode" : "230421",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.8413406478, 47.4739202303 ]
+			},
+			"properties" : {
+				"name" : "绥滨县",
+				"adcode" : "230422",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.26058294, 47.2121228978 ]
+			},
+			"properties" : {
+				"name" : "兴安区",
+				"adcode" : "230405",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.2868978773, 47.3381770967 ]
+			},
+			"properties" : {
+				"name" : "向阳区",
+				"adcode" : "230403",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.2770283187, 47.282454789 ]
+			},
+			"properties" : {
+				"name" : "南山区",
+				"adcode" : "230405",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.3098478298, 47.3897340378 ]
+			},
+			"properties" : {
+				"name" : "兴山区",
+				"adcode" : "230407",
+				"adcode_s" : "2304",
+				"adcode_si" : "23",
+				"dname" : "鹤岗市"
+			}
+		}
+	]
+}

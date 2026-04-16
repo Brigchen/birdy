@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.3157265709, 24.740487776 ]
+			},
+			"properties" : {
+				"name" : "梁河县",
+				"adcode" : "533122",
+				"adcode_s" : "5331",
+				"adcode_si" : "53",
+				"dname" : "德宏傣族景颇族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.9588112468, 24.3785262756 ]
+			},
+			"properties" : {
+				"name" : "陇川县",
+				"adcode" : "533124",
+				"adcode_s" : "5331",
+				"adcode_si" : "53",
+				"dname" : "德宏傣族景颇族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.4203244821, 24.3261208512 ]
+			},
+			"properties" : {
+				"name" : "芒市",
+				"adcode" : "533103",
+				"adcode_s" : "5331",
+				"adcode_si" : "53",
+				"dname" : "德宏傣族景颇族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.8049038936, 24.0344169785 ]
+			},
+			"properties" : {
+				"name" : "瑞丽市",
+				"adcode" : "533102",
+				"adcode_s" : "5331",
+				"adcode_si" : "53",
+				"dname" : "德宏傣族景颇族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.9151571096, 24.8588469128 ]
+			},
+			"properties" : {
+				"name" : "盈江县",
+				"adcode" : "533123",
+				"adcode_s" : "5331",
+				"adcode_si" : "53",
+				"dname" : "德宏傣族景颇族自治州"
+			}
+		}
+	]
+}

@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3823611, 27.2351615134 ]
+			},
+			"properties" : {
+				"name" : "北塔区",
+				"adcode" : "430511",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.3141828149, 26.3225404392 ]
+			},
+			"properties" : {
+				"name" : "城步苗族自治县",
+				"adcode" : "430529",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.430175265, 27.1628150467 ]
+			},
+			"properties" : {
+				"name" : "大祥区",
+				"adcode" : "430503",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5884580528, 27.1004392872 ]
+			},
+			"properties" : {
+				"name" : "洞口县",
+				"adcode" : "430525",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9613702871, 27.3488874262 ]
+			},
+			"properties" : {
+				"name" : "隆回县",
+				"adcode" : "430524",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8449526355, 27.190902226 ]
+			},
+			"properties" : {
+				"name" : "邵东市",
+				"adcode" : "430582",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3205968267, 26.9826841926 ]
+			},
+			"properties" : {
+				"name" : "邵阳县",
+				"adcode" : "430523",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5415981096, 27.2466775593 ]
+			},
+			"properties" : {
+				"name" : "双清区",
+				"adcode" : "430502",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.1944548402, 26.7108737201 ]
+			},
+			"properties" : {
+				"name" : "绥宁县",
+				"adcode" : "430527",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.7342404207, 26.7837880828 ]
+			},
+			"properties" : {
+				"name" : "武冈市",
+				"adcode" : "430581",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9129681523, 26.5459375349 ]
+			},
+			"properties" : {
+				"name" : "新宁县",
+				"adcode" : "430528",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.4590641828, 27.4277319722 ]
+			},
+			"properties" : {
+				"name" : "新邵县",
+				"adcode" : "430522",
+				"adcode_s" : "4305",
+				"adcode_si" : "43",
+				"dname" : "邵阳市"
+			}
+		}
+	]
+}

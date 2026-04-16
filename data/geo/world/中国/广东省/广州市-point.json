@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.85882891, 23.8047776664 ]
+			},
+			"properties" : {
+				"name" : "从化区",
+				"adcode" : "440117",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4002814622, 22.9772856688 ]
+			},
+			"properties" : {
+				"name" : "番禺区",
+				"adcode" : "440113",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3204278129, 23.0837490895 ]
+			},
+			"properties" : {
+				"name" : "海珠区",
+				"adcode" : "440105",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2078771343, 23.4433830569 ]
+			},
+			"properties" : {
+				"name" : "花都区",
+				"adcode" : "440114",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4986785663, 23.220591019 ]
+			},
+			"properties" : {
+				"name" : "黄埔区",
+				"adcode" : "440112",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.222884289, 23.0909364139 ]
+			},
+			"properties" : {
+				"name" : "荔湾区",
+				"adcode" : "440103",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.4760742835, 22.8062494185 ]
+			},
+			"properties" : {
+				"name" : "南沙区",
+				"adcode" : "440115",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.36756367, 23.1631336832 ]
+			},
+			"properties" : {
+				"name" : "天河区",
+				"adcode" : "440106",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.2766523111, 23.1357560353 ]
+			},
+			"properties" : {
+				"name" : "越秀区",
+				"adcode" : "440104",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7561671677, 23.3423270789 ]
+			},
+			"properties" : {
+				"name" : "增城区",
+				"adcode" : "440118",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3153603407, 23.291459529 ]
+			},
+			"properties" : {
+				"name" : "白云区",
+				"adcode" : "440111",
+				"adcode_s" : "4401",
+				"adcode_si" : "44",
+				"dname" : "广州市"
+			}
+		}
+	]
+}

@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2992066261, 36.0017131207 ]
+			},
+			"properties" : {
+				"name" : "合水县",
+				"adcode" : "621024",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.0258441405, 36.3778449355 ]
+			},
+			"properties" : {
+				"name" : "华池县",
+				"adcode" : "621023",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0615389147, 36.6087781634 ]
+			},
+			"properties" : {
+				"name" : "环县",
+				"adcode" : "621022",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.117127958, 35.541333661 ]
+			},
+			"properties" : {
+				"name" : "宁县",
+				"adcode" : "621026",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6714524606, 36.0402131948 ]
+			},
+			"properties" : {
+				"name" : "庆城县",
+				"adcode" : "621021",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6626552477, 35.6702676393 ]
+			},
+			"properties" : {
+				"name" : "西峰区",
+				"adcode" : "621002",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1662849025, 35.7807544419 ]
+			},
+			"properties" : {
+				"name" : "镇原县",
+				"adcode" : "621027",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.3673948534, 35.4058667903 ]
+			},
+			"properties" : {
+				"name" : "正宁县",
+				"adcode" : "621025",
+				"adcode_s" : "6210",
+				"adcode_si" : "62",
+				"dname" : "庆阳市"
+			}
+		}
+	]
+}

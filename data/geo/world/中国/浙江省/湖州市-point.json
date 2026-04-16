@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.5715664369, 30.6224495388 ]
+			},
+			"properties" : {
+				"name" : "安吉县",
+				"adcode" : "330523",
+				"adcode_s" : "3305",
+				"adcode_si" : "33",
+				"dname" : "湖州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.0384651027, 30.5638640545 ]
+			},
+			"properties" : {
+				"name" : "德清县",
+				"adcode" : "330521",
+				"adcode_s" : "3305",
+				"adcode_si" : "33",
+				"dname" : "湖州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2980468124, 30.7632359293 ]
+			},
+			"properties" : {
+				"name" : "南浔区",
+				"adcode" : "330503",
+				"adcode_s" : "3305",
+				"adcode_si" : "33",
+				"dname" : "湖州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.987555805, 30.773607077 ]
+			},
+			"properties" : {
+				"name" : "吴兴区",
+				"adcode" : "330502",
+				"adcode_s" : "3305",
+				"adcode_si" : "33",
+				"dname" : "湖州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.8086632121, 30.9793952956 ]
+			},
+			"properties" : {
+				"name" : "长兴县",
+				"adcode" : "330522",
+				"adcode_s" : "3305",
+				"adcode_si" : "33",
+				"dname" : "湖州市"
+			}
+		}
+	]
+}

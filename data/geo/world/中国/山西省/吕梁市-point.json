@@ -1,0 +1,188 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3250556439, 37.8799050221 ]
+			},
+			"properties" : {
+				"name" : "方山县",
+				"adcode" : "141128",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.73380373, 37.3101072692 ]
+			},
+			"properties" : {
+				"name" : "汾阳市",
+				"adcode" : "141182",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.8072222783, 37.6798415702 ]
+			},
+			"properties" : {
+				"name" : "交城县",
+				"adcode" : "141122",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3031496153, 36.9513945928 ]
+			},
+			"properties" : {
+				"name" : "交口县",
+				"adcode" : "141130",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.5943032775, 38.3373266874 ]
+			},
+			"properties" : {
+				"name" : "岚县",
+				"adcode" : "141127",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.3012487506, 37.5455941575 ]
+			},
+			"properties" : {
+				"name" : "离石区",
+				"adcode" : "141102",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8885841009, 37.955528967 ]
+			},
+			"properties" : {
+				"name" : "临县",
+				"adcode" : "141124",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8647461431, 37.3971399025 ]
+			},
+			"properties" : {
+				"name" : "柳林县",
+				"adcode" : "141125",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.73733002, 37.0650002874 ]
+			},
+			"properties" : {
+				"name" : "石楼县",
+				"adcode" : "141126",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.9530404882, 37.4525548529 ]
+			},
+			"properties" : {
+				"name" : "文水县",
+				"adcode" : "141121",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.6398517435, 37.071305109 ]
+			},
+			"properties" : {
+				"name" : "孝义市",
+				"adcode" : "141181",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.0567408391, 38.3849672921 ]
+			},
+			"properties" : {
+				"name" : "兴县",
+				"adcode" : "141123",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1729229741, 37.2599899113 ]
+			},
+			"properties" : {
+				"name" : "中阳县",
+				"adcode" : "141129",
+				"adcode_s" : "1411",
+				"adcode_si" : "14",
+				"dname" : "吕梁市"
+			}
+		}
+	]
+}

@@ -1,0 +1,76 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1817722569, 21.6622791671 ]
+			},
+			"properties" : {
+				"name" : "电白区",
+				"adcode" : "440904",
+				"adcode_s" : "4409",
+				"adcode_si" : "44",
+				"dname" : "茂名市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.9646360805, 22.0322020286 ]
+			},
+			"properties" : {
+				"name" : "高州市",
+				"adcode" : "440981",
+				"adcode_s" : "4409",
+				"adcode_si" : "44",
+				"dname" : "茂名市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.5319184107, 21.8401555467 ]
+			},
+			"properties" : {
+				"name" : "化州市",
+				"adcode" : "440982",
+				"adcode_s" : "4409",
+				"adcode_si" : "44",
+				"dname" : "茂名市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8575677531, 21.6735966154 ]
+			},
+			"properties" : {
+				"name" : "茂南区",
+				"adcode" : "440902",
+				"adcode_s" : "4409",
+				"adcode_si" : "44",
+				"dname" : "茂名市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 111.1134903574, 22.428737047 ]
+			},
+			"properties" : {
+				"name" : "信宜市",
+				"adcode" : "440983",
+				"adcode_s" : "4409",
+				"adcode_si" : "44",
+				"dname" : "茂名市"
+			}
+		}
+	]
+}

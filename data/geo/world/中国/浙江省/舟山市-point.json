@@ -1,0 +1,62 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.1666873519, 30.2883612144 ]
+			},
+			"properties" : {
+				"name" : "岱山县",
+				"adcode" : "330921",
+				"adcode_s" : "3309",
+				"adcode_si" : "33",
+				"dname" : "舟山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.1096013454, 30.0705805006 ]
+			},
+			"properties" : {
+				"name" : "定海区",
+				"adcode" : "330902",
+				"adcode_s" : "3309",
+				"adcode_si" : "33",
+				"dname" : "舟山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.450515, 30.7153726425 ]
+			},
+			"properties" : {
+				"name" : "嵊泗县",
+				"adcode" : "330922",
+				"adcode_s" : "3309",
+				"adcode_si" : "33",
+				"dname" : "舟山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 122.09066, 29.7507281499 ]
+			},
+			"properties" : {
+				"name" : "普陀区",
+				"adcode" : "330903",
+				"adcode_s" : "3309",
+				"adcode_si" : "33",
+				"dname" : "舟山市"
+			}
+		}
+	]
+}

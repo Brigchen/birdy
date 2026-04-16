@@ -1,0 +1,202 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.384043647, 24.849526901 ]
+			},
+			"properties" : {
+				"name" : "安宁市",
+				"adcode" : "530181",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.8419670439, 24.8625897105 ]
+			},
+			"properties" : {
+				"name" : "呈贡区",
+				"adcode" : "530114",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0708041561, 26.1358467495 ]
+			},
+			"properties" : {
+				"name" : "东川区",
+				"adcode" : "530113",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.456924075, 25.3035159737 ]
+			},
+			"properties" : {
+				"name" : "富民县",
+				"adcode" : "530124",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.9503804313, 25.1150676695 ]
+			},
+			"properties" : {
+				"name" : "官渡区",
+				"adcode" : "530111",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.68763768, 24.6216903823 ]
+			},
+			"properties" : {
+				"name" : "晋宁区",
+				"adcode" : "530115",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.5848621786, 25.9403472972 ]
+			},
+			"properties" : {
+				"name" : "禄劝彝族苗族自治县",
+				"adcode" : "530128",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.7917436589, 25.1443953944 ]
+			},
+			"properties" : {
+				"name" : "盘龙区",
+				"adcode" : "530103",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.4176247678, 24.7436066285 ]
+			},
+			"properties" : {
+				"name" : "石林彝族自治县",
+				"adcode" : "530126",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.0032752055, 25.3437272105 ]
+			},
+			"properties" : {
+				"name" : "嵩明县",
+				"adcode" : "530127",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.6648477529, 25.1614630232 ]
+			},
+			"properties" : {
+				"name" : "五华区",
+				"adcode" : "530102",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 102.53705382, 24.801513521 ]
+			},
+			"properties" : {
+				"name" : "西山区",
+				"adcode" : "530112",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.1188176128, 25.6631160695 ]
+			},
+			"properties" : {
+				"name" : "寻甸回族彝族自治县",
+				"adcode" : "530129",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 103.1907159948, 24.943702318 ]
+			},
+			"properties" : {
+				"name" : "宜良县",
+				"adcode" : "530125",
+				"adcode_s" : "5301",
+				"adcode_si" : "53",
+				"dname" : "昆明市"
+			}
+		}
+	]
+}

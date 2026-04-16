@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.853019521, 40.2126622974 ]
+			},
+			"properties" : {
+				"name" : "达拉特旗",
+				"adcode" : "150621",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.7435215757, 39.825526702 ]
+			},
+			"properties" : {
+				"name" : "东胜区",
+				"adcode" : "150602",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.7455209117, 39.2738952147 ]
+			},
+			"properties" : {
+				"name" : "鄂托克旗",
+				"adcode" : "150624",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.5715067816, 38.2704264809 ]
+			},
+			"properties" : {
+				"name" : "鄂托克前旗",
+				"adcode" : "150623",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.2019874209, 40.2034356155 ]
+			},
+			"properties" : {
+				"name" : "杭锦旗",
+				"adcode" : "150625",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8131500557, 39.6418538757 ]
+			},
+			"properties" : {
+				"name" : "康巴什区",
+				"adcode" : "150603",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 108.8767232099, 38.6294429657 ]
+			},
+			"properties" : {
+				"name" : "乌审旗",
+				"adcode" : "150626",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.6924414933, 39.4155003724 ]
+			},
+			"properties" : {
+				"name" : "伊金霍洛旗",
+				"adcode" : "150627",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 110.8729624118, 39.7856856072 ]
+			},
+			"properties" : {
+				"name" : "准格尔旗",
+				"adcode" : "150622",
+				"adcode_s" : "1506",
+				"adcode_si" : "15",
+				"dname" : "鄂尔多斯市"
+			}
+		}
+	]
+}

@@ -1,0 +1,84 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- 本地工具 / Agent 工作区 ---
+.workbuddy/
+
+# --- 本地备份副本（勿提交）---
+*_backup.py
+
+# --- 模型与权重（体积大；与 src/ 同级 models/ 为当前布局）---
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.engine
+models/*.mlmodel
+models/*.weights
+# 兼容旧路径（若仍存在）
+src/models/*.pt
+src/models/*.pth
+src/models/*.onnx
+src/models/*.engine
+src/models/*.mlmodel
+# 误放在仓库根目录的权重
+/*.pt
+/*.pth
+/*.onnx
+
+# bird_info.json 通常较小，可纳入版本控制；若需忽略可取消下一行注释
+# models/bird_info.json
+
+# --- API 密钥与本地配置（公开仓库勿提交）---
+src/doubao_api_config.json
+src/amap_api_config.json
+# 若复制到项目根目录
+/doubao_api_config.json
+/amap_api_config.json
+
+# 豆包按模型用量统计（运行目录或配置路径）
+doubao_api_usage.json
+**/doubao_api_usage.json
+
+# GUI 保存的界面参数
+src/gui_config.json
+src/gui_config-*.json
+
+# --- 本地测试数据与输出 ---
+test_images/
+outputs/
+crops/
+Screened_images/
+**/Screened_images/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- 日志与临时 ---
+*.log
+*.tmp
+~$*

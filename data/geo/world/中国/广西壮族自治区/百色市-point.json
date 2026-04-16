@@ -1,0 +1,174 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5842900378, 23.3786864633 ]
+			},
+			"properties" : {
+				"name" : "德保县",
+				"adcode" : "451024",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.3114560637, 23.1460014604 ]
+			},
+			"properties" : {
+				"name" : "靖西市",
+				"adcode" : "451081",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.5074689835, 24.8266337638 ]
+			},
+			"properties" : {
+				"name" : "乐业县",
+				"adcode" : "451028",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6380106671, 24.3607426077 ]
+			},
+			"properties" : {
+				"name" : "凌云县",
+				"adcode" : "451027",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.2989219401, 24.6778799689 ]
+			},
+			"properties" : {
+				"name" : "隆林各族自治县",
+				"adcode" : "451031",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.8253979474, 23.2443041682 ]
+			},
+			"properties" : {
+				"name" : "那坡县",
+				"adcode" : "451026",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.5667518103, 23.5372005693 ]
+			},
+			"properties" : {
+				"name" : "平果市",
+				"adcode" : "451082",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.1811383953, 23.6108082036 ]
+			},
+			"properties" : {
+				"name" : "田东县",
+				"adcode" : "451022",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.9893434956, 24.3916159831 ]
+			},
+			"properties" : {
+				"name" : "田林县",
+				"adcode" : "451029",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.7564359355, 23.6286840791 ]
+			},
+			"properties" : {
+				"name" : "田阳区",
+				"adcode" : "451003",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.334478325, 24.250791563 ]
+			},
+			"properties" : {
+				"name" : "西林县",
+				"adcode" : "451030",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.4954765754, 23.9381991859 ]
+			},
+			"properties" : {
+				"name" : "右江区",
+				"adcode" : "451002",
+				"adcode_s" : "4510",
+				"adcode_si" : "45",
+				"dname" : "百色市"
+			}
+		}
+	]
+}

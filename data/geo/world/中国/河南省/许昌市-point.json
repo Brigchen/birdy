@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.95826001, 34.0784083405 ]
+			},
+			"properties" : {
+				"name" : "建安区",
+				"adcode" : "411003",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8114787116, 34.0385676145 ]
+			},
+			"properties" : {
+				"name" : "魏都区",
+				"adcode" : "411002",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.556093871, 33.8573369881 ]
+			},
+			"properties" : {
+				"name" : "襄城县",
+				"adcode" : "411025",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.1898190021, 34.0068689161 ]
+			},
+			"properties" : {
+				"name" : "鄢陵县",
+				"adcode" : "411024",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.3796762305, 34.1954482835 ]
+			},
+			"properties" : {
+				"name" : "禹州市",
+				"adcode" : "411081",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.8424623388, 34.2321020478 ]
+			},
+			"properties" : {
+				"name" : "长葛市",
+				"adcode" : "411082",
+				"adcode_s" : "4110",
+				"adcode_si" : "41",
+				"dname" : "许昌市"
+			}
+		}
+	]
+}

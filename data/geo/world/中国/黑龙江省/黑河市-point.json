@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.7493596897, 50.2051319487 ]
+			},
+			"properties" : {
+				"name" : "爱辉区",
+				"adcode" : "231102",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.1001784709, 48.1069793483 ]
+			},
+			"properties" : {
+				"name" : "北安市",
+				"adcode" : "231181",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 125.7583531195, 49.5945100846 ]
+			},
+			"properties" : {
+				"name" : "嫩江市",
+				"adcode" : "231183",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 127.3038983654, 49.3609745067 ]
+			},
+			"properties" : {
+				"name" : "孙吴县",
+				"adcode" : "231124",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 126.62435664, 48.7932768631 ]
+			},
+			"properties" : {
+				"name" : "五大连池市",
+				"adcode" : "231182",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.3561158562, 48.8744974405 ]
+			},
+			"properties" : {
+				"name" : "逊克县",
+				"adcode" : "231123",
+				"adcode_s" : "2311",
+				"adcode_si" : "23",
+				"dname" : "黑河市"
+			}
+		}
+	]
+}

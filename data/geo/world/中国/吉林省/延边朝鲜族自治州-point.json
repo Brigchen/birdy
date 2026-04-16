@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.4251201654, 42.688220374 ]
+			},
+			"properties" : {
+				"name" : "安图县",
+				"adcode" : "222426",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.226128915, 43.5537891812 ]
+			},
+			"properties" : {
+				"name" : "敦化市",
+				"adcode" : "222403",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 128.8975638776, 42.4565592545 ]
+			},
+			"properties" : {
+				"name" : "和龙市",
+				"adcode" : "222406",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.6878562423, 43.0652382955 ]
+			},
+			"properties" : {
+				"name" : "珲春市",
+				"adcode" : "222404",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.8259838956, 43.024895106 ]
+			},
+			"properties" : {
+				"name" : "图们市",
+				"adcode" : "222402",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.9402276229, 43.5315448977 ]
+			},
+			"properties" : {
+				"name" : "汪清县",
+				"adcode" : "222424",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.3267939323, 43.092838659 ]
+			},
+			"properties" : {
+				"name" : "延吉市",
+				"adcode" : "222401",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.5474639406, 42.6291203709 ]
+			},
+			"properties" : {
+				"name" : "龙井市",
+				"adcode" : "222405",
+				"adcode_s" : "2224",
+				"adcode_si" : "22",
+				"dname" : "延边朝鲜族自治州"
+			}
+		}
+	]
+}

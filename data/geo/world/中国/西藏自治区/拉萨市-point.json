@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.44448155, 29.6534502414 ]
+			},
+			"properties" : {
+				"name" : "达孜区",
+				"adcode" : "540104",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.8856117421, 30.4191693762 ]
+			},
+			"properties" : {
+				"name" : "当雄县",
+				"adcode" : "540122",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.7881914067, 29.8030876181 ]
+			},
+			"properties" : {
+				"name" : "堆龙德庆区",
+				"adcode" : "540103",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.343101261, 30.1138224542 ]
+			},
+			"properties" : {
+				"name" : "林周县",
+				"adcode" : "540121",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 92.0242503925, 29.9118135544 ]
+			},
+			"properties" : {
+				"name" : "墨竹工卡县",
+				"adcode" : "540127",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.0872501279, 29.5999178869 ]
+			},
+			"properties" : {
+				"name" : "尼木县",
+				"adcode" : "540123",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 90.7052082975, 29.4409266155 ]
+			},
+			"properties" : {
+				"name" : "曲水县",
+				"adcode" : "540124",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 91.1610225488, 29.6624445737 ]
+			},
+			"properties" : {
+				"name" : "城关区",
+				"adcode" : "540102",
+				"adcode_s" : "5401",
+				"adcode_si" : "54",
+				"dname" : "拉萨市"
+			}
+		}
+	]
+}

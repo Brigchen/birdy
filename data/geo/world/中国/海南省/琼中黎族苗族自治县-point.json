@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "琼中黎族苗族自治县",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 109.8504612056, 19.0324416639 ]
+			},
+			"properties" : {
+				"name" : "琼中黎族苗族自治县",
+				"adcode" : "469030",
+				"adcode_s" : "4690",
+				"adcode_si" : "46",
+				"dname" : "海南省直辖县级行政单位"
+			}
+		}
+	]
+}

@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.95175628, 32.3738652717 ]
+			},
+			"properties" : {
+				"name" : "高港区",
+				"adcode" : "321203",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9206872571, 32.4972849511 ]
+			},
+			"properties" : {
+				"name" : "海陵区",
+				"adcode" : "321202",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.093151444, 32.5246212498 ]
+			},
+			"properties" : {
+				"name" : "姜堰区",
+				"adcode" : "321204",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.2657143145, 32.0352665554 ]
+			},
+			"properties" : {
+				"name" : "靖江市",
+				"adcode" : "321282",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1303600622, 32.2029943035 ]
+			},
+			"properties" : {
+				"name" : "泰兴市",
+				"adcode" : "321283",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 119.9853322821, 32.9571700583 ]
+			},
+			"properties" : {
+				"name" : "兴化市",
+				"adcode" : "321281",
+				"adcode_s" : "3212",
+				"adcode_si" : "32",
+				"dname" : "泰州市"
+			}
+		}
+	]
+}

@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.4517647836, 39.022900786 ]
+			},
+			"properties" : {
+				"name" : "阿克塞哈萨克族自治县",
+				"adcode" : "620924",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 94.1539025376, 40.3746050941 ]
+			},
+			"properties" : {
+				"name" : "敦煌市",
+				"adcode" : "620982",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 95.8034006985, 40.7350694255 ]
+			},
+			"properties" : {
+				"name" : "瓜州县",
+				"adcode" : "620922",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.111074985, 40.2756056189 ]
+			},
+			"properties" : {
+				"name" : "金塔县",
+				"adcode" : "620921",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 96.8638800506, 41.6865697856 ]
+			},
+			"properties" : {
+				"name" : "肃北蒙古族自治县",
+				"adcode" : "620923",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.569746057, 39.7155649341 ]
+			},
+			"properties" : {
+				"name" : "肃州区",
+				"adcode" : "620902",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 97.4682637759, 40.2389739442 ]
+			},
+			"properties" : {
+				"name" : "玉门市",
+				"adcode" : "620981",
+				"adcode_s" : "6209",
+				"adcode_si" : "62",
+				"dname" : "酒泉市"
+			}
+		}
+	]
+}

@@ -1,0 +1,230 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.629171155, 38.3156582019 ]
+			},
+			"properties" : {
+				"name" : "沧县",
+				"adcode" : "130921",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6657322586, 37.8807725348 ]
+			},
+			"properties" : {
+				"name" : "东光县",
+				"adcode" : "130923",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5571460747, 38.1365285363 ]
+			},
+			"properties" : {
+				"name" : "海兴县",
+				"adcode" : "130924",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.2604669675, 38.4769569649 ]
+			},
+			"properties" : {
+				"name" : "河间市",
+				"adcode" : "130984",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.4047825672, 38.3942238812 ]
+			},
+			"properties" : {
+				"name" : "黄骅市",
+				"adcode" : "130983",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.102540465, 38.0512981215 ]
+			},
+			"properties" : {
+				"name" : "孟村回族自治县",
+				"adcode" : "130930",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.80280307, 38.0586315819 ]
+			},
+			"properties" : {
+				"name" : "南皮县",
+				"adcode" : "130927",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.39467584, 38.1061204176 ]
+			},
+			"properties" : {
+				"name" : "泊头市",
+				"adcode" : "130981",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8386628836, 38.5573586787 ]
+			},
+			"properties" : {
+				"name" : "青县",
+				"adcode" : "130922",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1506906854, 38.7341092873 ]
+			},
+			"properties" : {
+				"name" : "任丘市",
+				"adcode" : "130982",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8738516942, 38.415767356 ]
+			},
+			"properties" : {
+				"name" : "肃宁县",
+				"adcode" : "130926",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.4942714512, 37.6556665331 ]
+			},
+			"properties" : {
+				"name" : "吴桥县",
+				"adcode" : "130928",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.163365964, 38.2361811305 ]
+			},
+			"properties" : {
+				"name" : "献县",
+				"adcode" : "130929",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.2544120348, 37.9537774277 ]
+			},
+			"properties" : {
+				"name" : "盐山县",
+				"adcode" : "130925",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.822754692, 38.3145713664 ]
+			},
+			"properties" : {
+				"name" : "运河区",
+				"adcode" : "130903",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.8993680369, 38.305953628 ]
+			},
+			"properties" : {
+				"name" : "新华区",
+				"adcode" : "130902",
+				"adcode_s" : "1309",
+				"adcode_si" : "13",
+				"dname" : "沧州市"
+			}
+		}
+	]
+}

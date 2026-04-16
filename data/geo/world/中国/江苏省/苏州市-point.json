@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.819667599, 31.6651785528 ]
+			},
+			"properties" : {
+				"name" : "常熟市",
+				"adcode" : "320581",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.7129855432, 31.3333051869 ]
+			},
+			"properties" : {
+				"name" : "姑苏区",
+				"adcode" : "320508",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.396723332, 31.3642791947 ]
+			},
+			"properties" : {
+				"name" : "虎丘区",
+				"adcode" : "320505",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.9549583412, 31.3247607659 ]
+			},
+			"properties" : {
+				"name" : "昆山市",
+				"adcode" : "320583",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 121.1289624855, 31.5540162562 ]
+			},
+			"properties" : {
+				"name" : "太仓市",
+				"adcode" : "320585",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.62725398, 31.0362008854 ]
+			},
+			"properties" : {
+				"name" : "吴江区",
+				"adcode" : "320509",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.3147174297, 31.1478479822 ]
+			},
+			"properties" : {
+				"name" : "吴中区",
+				"adcode" : "320506",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6242873497, 31.4445442382 ]
+			},
+			"properties" : {
+				"name" : "相城区",
+				"adcode" : "320507",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.6165431969, 31.9036601322 ]
+			},
+			"properties" : {
+				"name" : "张家港市",
+				"adcode" : "320582",
+				"adcode_s" : "3205",
+				"adcode_si" : "32",
+				"dname" : "苏州市"
+			}
+		}
+	]
+}

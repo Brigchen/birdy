@@ -1,0 +1,118 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 132.3883950062, 46.4001562853 ]
+			},
+			"properties" : {
+				"name" : "宝清县",
+				"adcode" : "230523",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.1416667916, 46.8131604989 ]
+			},
+			"properties" : {
+				"name" : "集贤县",
+				"adcode" : "230521",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.1695107671, 46.6434112668 ]
+			},
+			"properties" : {
+				"name" : "尖山区",
+				"adcode" : "230502",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.1798825882, 46.4849182436 ]
+			},
+			"properties" : {
+				"name" : "岭东区",
+				"adcode" : "230503",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 133.7150063802, 47.0626241912 ]
+			},
+			"properties" : {
+				"name" : "饶河县",
+				"adcode" : "230524",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.2839038055, 46.6599413701 ]
+			},
+			"properties" : {
+				"name" : "四方台区",
+				"adcode" : "230505",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.8400912276, 46.779973943 ]
+			},
+			"properties" : {
+				"name" : "友谊县",
+				"adcode" : "230522",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.53771224, 46.4607808206 ]
+			},
+			"properties" : {
+				"name" : "宝山区",
+				"adcode" : "230513",
+				"adcode_s" : "2305",
+				"adcode_si" : "23",
+				"dname" : "双鸭山市"
+			}
+		}
+	]
+}

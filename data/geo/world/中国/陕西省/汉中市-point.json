@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.2492840044, 33.2187665946 ]
+			},
+			"properties" : {
+				"name" : "城固县",
+				"adcode" : "610722",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.9189037596, 33.5436286244 ]
+			},
+			"properties" : {
+				"name" : "佛坪县",
+				"adcode" : "610730",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.0349255675, 33.1831434623 ]
+			},
+			"properties" : {
+				"name" : "汉台区",
+				"adcode" : "610702",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.9532416581, 33.610127306 ]
+			},
+			"properties" : {
+				"name" : "留坝县",
+				"adcode" : "610729",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.1526003301, 33.3809790122 ]
+			},
+			"properties" : {
+				"name" : "略阳县",
+				"adcode" : "610727",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.6541339733, 33.2395155235 ]
+			},
+			"properties" : {
+				"name" : "勉县",
+				"adcode" : "610725",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.93756089, 32.9097264907 ]
+			},
+			"properties" : {
+				"name" : "南郑区",
+				"adcode" : "610703",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.03699884, 32.982198922 ]
+			},
+			"properties" : {
+				"name" : "宁强县",
+				"adcode" : "610726",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.5041333608, 32.8266429927 ]
+			},
+			"properties" : {
+				"name" : "西乡县",
+				"adcode" : "610724",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.6038985805, 33.3670521643 ]
+			},
+			"properties" : {
+				"name" : "洋县",
+				"adcode" : "610723",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 107.8709482464, 32.5134472713 ]
+			},
+			"properties" : {
+				"name" : "镇巴县",
+				"adcode" : "610728",
+				"adcode_s" : "6107",
+				"adcode_si" : "61",
+				"dname" : "汉中市"
+			}
+		}
+	]
+}

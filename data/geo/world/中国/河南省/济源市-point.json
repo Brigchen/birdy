@@ -1,0 +1,20 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 112.3922400383, 35.0997947841 ]
+			},
+			"properties" : {
+				"name" : "济源市",
+				"adcode" : "419001",
+				"adcode_s" : "4190",
+				"adcode_si" : "41",
+				"dname" : "济源市"
+			}
+		}
+	]
+}

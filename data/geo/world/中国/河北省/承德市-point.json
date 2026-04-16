@@ -1,0 +1,160 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.29150549, 41.0463930228 ]
+			},
+			"properties" : {
+				"name" : "承德县",
+				"adcode" : "130821",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.6116669031, 41.4164289327 ]
+			},
+			"properties" : {
+				"name" : "丰宁满族自治县",
+				"adcode" : "130826",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.6226807893, 40.5706895722 ]
+			},
+			"properties" : {
+				"name" : "宽城满族自治县",
+				"adcode" : "130827",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.5575647603, 41.5094313408 ]
+			},
+			"properties" : {
+				"name" : "隆化县",
+				"adcode" : "130825",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.3440222172, 40.9187199152 ]
+			},
+			"properties" : {
+				"name" : "滦平县",
+				"adcode" : "130824",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 118.7264403855, 41.0668573613 ]
+			},
+			"properties" : {
+				"name" : "平泉市",
+				"adcode" : "130881",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.79876701, 40.897191032 ]
+			},
+			"properties" : {
+				"name" : "双滦区",
+				"adcode" : "130803",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.9531275502, 40.9727080382 ]
+			},
+			"properties" : {
+				"name" : "双桥区",
+				"adcode" : "130802",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.534217951, 42.0987500482 ]
+			},
+			"properties" : {
+				"name" : "围场满族蒙古族自治县",
+				"adcode" : "130828",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.72752346, 40.3734229102 ]
+			},
+			"properties" : {
+				"name" : "兴隆县",
+				"adcode" : "130822",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 117.6652236764, 40.52435596 ]
+			},
+			"properties" : {
+				"name" : "鹰手营子矿区",
+				"adcode" : "130804",
+				"adcode_s" : "1308",
+				"adcode_si" : "13",
+				"dname" : "承德市"
+			}
+		}
+	]
+}

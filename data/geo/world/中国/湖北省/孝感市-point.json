@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6214567731, 31.3006488233 ]
+			},
+			"properties" : {
+				"name" : "安陆市",
+				"adcode" : "420982",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.2983705855, 31.5739113815 ]
+			},
+			"properties" : {
+				"name" : "大悟县",
+				"adcode" : "420922",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.6690796097, 30.6186353227 ]
+			},
+			"properties" : {
+				"name" : "汉川市",
+				"adcode" : "420984",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.0227080106, 31.2355435655 ]
+			},
+			"properties" : {
+				"name" : "孝昌县",
+				"adcode" : "420921",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 114.00647715, 30.9194243583 ]
+			},
+			"properties" : {
+				"name" : "孝南区",
+				"adcode" : "420902",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.5440573199, 30.921711875 ]
+			},
+			"properties" : {
+				"name" : "应城市",
+				"adcode" : "420981",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 113.7656459038, 31.0014380245 ]
+			},
+			"properties" : {
+				"name" : "云梦县",
+				"adcode" : "420923",
+				"adcode_s" : "4209",
+				"adcode_si" : "42",
+				"dname" : "孝感市"
+			}
+		}
+	]
+}

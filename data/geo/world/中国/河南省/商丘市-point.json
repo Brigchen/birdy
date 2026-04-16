@@ -1,0 +1,132 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5928113, 34.5009707421 ]
+			},
+			"properties" : {
+				"name" : "梁园区",
+				"adcode" : "411402",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.165157813, 34.6919135238 ]
+			},
+			"properties" : {
+				"name" : "民权县",
+				"adcode" : "411421",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.2869796987, 34.4499204987 ]
+			},
+			"properties" : {
+				"name" : "宁陵县",
+				"adcode" : "411423",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.0308126311, 34.3951228269 ]
+			},
+			"properties" : {
+				"name" : "睢县",
+				"adcode" : "411422",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.5594803512, 34.2456369537 ]
+			},
+			"properties" : {
+				"name" : "睢阳区",
+				"adcode" : "411403",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.1455306176, 34.2184977297 ]
+			},
+			"properties" : {
+				"name" : "夏邑县",
+				"adcode" : "411426",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 116.3188539531, 33.9670952254 ]
+			},
+			"properties" : {
+				"name" : "永城市",
+				"adcode" : "411481",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.8975307149, 34.3608044475 ]
+			},
+			"properties" : {
+				"name" : "虞城县",
+				"adcode" : "411425",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 115.29324558, 34.130934149 ]
+			},
+			"properties" : {
+				"name" : "柘城县",
+				"adcode" : "411424",
+				"adcode_s" : "4114",
+				"adcode_si" : "41",
+				"dname" : "商丘市"
+			}
+		}
+	]
+}

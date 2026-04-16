@@ -1,0 +1,90 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.5373000626, 32.9195755897 ]
+			},
+			"properties" : {
+				"name" : "班玛县",
+				"adcode" : "632622",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.46562535, 33.3399128328 ]
+			},
+			"properties" : {
+				"name" : "达日县",
+				"adcode" : "632624",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 100.1414134954, 34.0155467357 ]
+			},
+			"properties" : {
+				"name" : "甘德县",
+				"adcode" : "632623",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 101.0019575912, 33.4791076902 ]
+			},
+			"properties" : {
+				"name" : "久治县",
+				"adcode" : "632625",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 98.2381396119, 34.7935600453 ]
+			},
+			"properties" : {
+				"name" : "玛多县",
+				"adcode" : "632626",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 99.898066522, 34.5952695277 ]
+			},
+			"properties" : {
+				"name" : "玛沁县",
+				"adcode" : "632621",
+				"adcode_s" : "6326",
+				"adcode_si" : "63",
+				"dname" : "果洛藏族自治州"
+			}
+		}
+	]
+}

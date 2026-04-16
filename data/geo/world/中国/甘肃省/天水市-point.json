@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.2626965304, 34.8036646472 ]
+			},
+			"properties" : {
+				"name" : "甘谷县",
+				"adcode" : "620523",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.1299822056, 34.4169504757 ]
+			},
+			"properties" : {
+				"name" : "麦积区",
+				"adcode" : "620503",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.6872995996, 34.9487792365 ]
+			},
+			"properties" : {
+				"name" : "秦安县",
+				"adcode" : "620522",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 105.6233810017, 34.3952748236 ]
+			},
+			"properties" : {
+				"name" : "秦州区",
+				"adcode" : "620502",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.1296393237, 34.7375605881 ]
+			},
+			"properties" : {
+				"name" : "清水县",
+				"adcode" : "620521",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 104.8758430683, 34.673935262 ]
+			},
+			"properties" : {
+				"name" : "武山县",
+				"adcode" : "620524",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 106.246581581, 35.0304033722 ]
+			},
+			"properties" : {
+				"name" : "张家川回族自治县",
+				"adcode" : "620525",
+				"adcode_s" : "6205",
+				"adcode_si" : "62",
+				"dname" : "天水市"
+			}
+		}
+	]
+}

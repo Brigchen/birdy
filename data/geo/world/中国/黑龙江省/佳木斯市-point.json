@@ -1,0 +1,146 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.5076934458, 46.8668992663 ]
+			},
+			"properties" : {
+				"name" : "东风区",
+				"adcode" : "230805",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 134.2816483041, 47.9157653335 ]
+			},
+			"properties" : {
+				"name" : "抚远市",
+				"adcode" : "230883",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 132.5247415331, 47.1613561876 ]
+			},
+			"properties" : {
+				"name" : "富锦市",
+				"adcode" : "230882",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 131.01790005, 47.1003865547 ]
+			},
+			"properties" : {
+				"name" : "桦川县",
+				"adcode" : "230826",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.6226615236, 46.2984351215 ]
+			},
+			"properties" : {
+				"name" : "桦南县",
+				"adcode" : "230822",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.3798503979, 46.8057787091 ]
+			},
+			"properties" : {
+				"name" : "前进区",
+				"adcode" : "230804",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 129.870752355, 46.9358434337 ]
+			},
+			"properties" : {
+				"name" : "汤原县",
+				"adcode" : "230828",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 133.2582039728, 47.8241085512 ]
+			},
+			"properties" : {
+				"name" : "同江市",
+				"adcode" : "230881",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.2441713414, 46.7608358605 ]
+			},
+			"properties" : {
+				"name" : "郊区",
+				"adcode" : "230811",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 130.3494730751, 46.8346382359 ]
+			},
+			"properties" : {
+				"name" : "兴山区",
+				"adcode" : "230807",
+				"adcode_s" : "2308",
+				"adcode_si" : "23",
+				"dname" : "佳木斯市"
+			}
+		}
+	]
+}

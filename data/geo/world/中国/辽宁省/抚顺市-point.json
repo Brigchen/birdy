@@ -1,0 +1,104 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "县名2",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.1620402619, 41.9676082479 ]
+			},
+			"properties" : {
+				"name" : "东洲区",
+				"adcode" : "210403",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.266449655, 41.729011899 ]
+			},
+			"properties" : {
+				"name" : "抚顺县",
+				"adcode" : "210421",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.9114155878, 42.110045089 ]
+			},
+			"properties" : {
+				"name" : "清原满族自治县",
+				"adcode" : "210423",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9017343357, 41.9378001841 ]
+			},
+			"properties" : {
+				"name" : "顺城区",
+				"adcode" : "210411",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.878699775, 41.7772616091 ]
+			},
+			"properties" : {
+				"name" : "望花区",
+				"adcode" : "210404",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 124.8334420616, 41.621348595 ]
+			},
+			"properties" : {
+				"name" : "新宾满族自治县",
+				"adcode" : "210422",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 123.9555787893, 41.7740858868 ]
+			},
+			"properties" : {
+				"name" : "新抚区",
+				"adcode" : "210402",
+				"adcode_s" : "2104",
+				"adcode_si" : "21",
+				"dname" : "抚顺市"
+			}
+		}
+	]
+}
