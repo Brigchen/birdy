@@ -8,7 +8,7 @@
 - 其它开关与回退 Key 在 geocoding_config.py 中设置
 
 作者: brigchen@gmail.com
-版权说明: 基于开源协议，请勿商用
+版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import json
 import math

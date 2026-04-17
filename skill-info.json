@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -36,6 +36,11 @@
     "自动化脚本支持"
   ],
   "changelog": {
+    "2.0.2": [
+      "README 顶部定位与功能介绍重写：聚焦拍鸟海量相片自动化整理、筛选、归档与批量水印输出",
+      "许可说明统一为仅限爱好者、公益、科研等非盈利用途，明确请勿商业使用",
+      "鸟体检测权重文件名由 yolov8x-seg.pt 更名为 bird-seg.pt，代码与文档同步"
+    ],
     "2.0.1": [
       "本地物种权重文件更名为 birdiden_v1.pth（原 model20240824.pth），代码与文档同步",
       "明确 models/bird_info.json 应纳入版本控制；.gitignore 说明更新，避免误忽略 bird_info"

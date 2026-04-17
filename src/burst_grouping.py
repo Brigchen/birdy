@@ -10,7 +10,7 @@
 配置项在 burst_config.py 中设置
 
 作者: brigchen@gmail.com
-版权说明: 基于开源协议，请勿商用
+版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import os
 import cv2
@@ -384,7 +384,7 @@ def detect_birds_in_image(image_path: str, conf: float = 0.25) -> List[Dict]:
         from ultralytics import YOLO
         
         # 使用默认的yolov8x模型
-        model_path = PROJECT_ROOT / "models" / "yolov8x-seg.pt"
+        model_path = PROJECT_ROOT / "models" / "bird-seg.pt"
         model = YOLO(str(model_path))
         
         results = model(image_path, conf=conf, verbose=False)
@@ -526,7 +526,7 @@ def get_or_load_model(force_reload: bool = False):
     
     try:
         # model = YOLO("yolov8x.pt")
-        model_path = PROJECT_ROOT / "models" / "yolov8x-seg.pt"
+        model_path = PROJECT_ROOT / "models" / "bird-seg.pt"
         model = YOLO(str(model_path))
         MODEL_CACHE = model
         return model

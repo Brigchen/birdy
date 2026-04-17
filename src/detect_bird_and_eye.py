@@ -14,7 +14,7 @@
 支持混合识别：本地模型与豆包API切换或自动回退
 
 作者: brigchen@gmail.com
-版权说明: 基于开源协议，请勿商用
+版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import os
 import re
@@ -1309,7 +1309,7 @@ def geo_refine_species(
 _BIRDY_ROOT = _PROJECT_ROOT
 _SPECIES_MODEL_PATH = str(_BIRDY_ROOT / "models" / "birdiden_v1.pth")
 _BIRD_INFO_PATH = str(_BIRDY_ROOT / "models" / "bird_info.json")
-_DEFAULT_BIRD_YOLO = str(_BIRDY_ROOT / "models" / "yolov8x-seg.pt")
+_DEFAULT_BIRD_YOLO = str(_BIRDY_ROOT / "models" / "bird-seg.pt")
 _DEFAULT_EYE_YOLO = str(_BIRDY_ROOT / "models" / "birdeye.pt")
 
 # 低于接受阈值的识别结果按「未知」归入 未知目/未知科/未知属/未知
@@ -1503,7 +1503,7 @@ class BirdAndEyeDetector:
             self.bird_model = YOLO(bird_model_path)
         except Exception as e:
             raise _runtime_error_bad_torch_file(
-                e, bird_model_path, "鸟类检测模型（yolov8x-seg.pt）无法读取"
+                e, bird_model_path, "鸟类检测模型（bird-seg.pt）无法读取"
             ) from e
         self.bird_model.to(device)
 
@@ -2477,7 +2477,7 @@ class BirdAndEyeDetector:
 def process_folder(
     input_folder: str,
     output_folder: str,
-    bird_model_path: str = str(_BIRDY_ROOT / "models" / "yolov8x-seg.pt"),
+    bird_model_path: str = str(_BIRDY_ROOT / "models" / "bird-seg.pt"),
     eye_model_path: str = str(_BIRDY_ROOT / "models" / "birdeye.pt"),
     species_model_path: str = _SPECIES_MODEL_PATH,
     bird_info_path: str = _BIRD_INFO_PATH,
@@ -2651,7 +2651,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--bird-model", type=str,
-        default=str(_BIRDY_ROOT / "models" / "yolov8x-seg.pt"),
+        default=str(_BIRDY_ROOT / "models" / "bird-seg.pt"),
         help="鸟类检测模型路径",
     )
     parser.add_argument(

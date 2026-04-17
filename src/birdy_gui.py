@@ -5,7 +5,7 @@
 支持：参数配置、进度显示、文件夹选择、处理监控
 
 作者: brigchen@gmail.com
-版权说明: 基于开源协议，请勿商用
+版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 
 import sys
@@ -1862,7 +1862,7 @@ class BirdDetectionGUI(QMainWindow):
         brand_layout.addWidget(copyright_label)
         
         # 开源声明
-        license_label = QLabel("基于开源协议，请勿商用")
+        license_label = QLabel("基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途")
         license_label.setAlignment(Qt.AlignCenter)
         license_label.setStyleSheet("color: #999999; font-size: 9pt;")
         brand_layout.addWidget(license_label)

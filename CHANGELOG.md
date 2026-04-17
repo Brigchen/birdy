@@ -1,5 +1,15 @@
 # 🐦 鸟类检测Skill - 更新日志
 
+## v2.0.2 (2026-04-17)
+
+### 产品定位、许可与模型命名
+
+- README 介绍重写：定位为拍鸟场景下的海量相片自动化整理与归档工具，并按连拍筛选、检测、识别归档、地理写入、水印与报告等流程组织核心能力。
+- 许可说明统一为：仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途。
+- 鸟体检测权重文件名由 **yolov8x-seg.pt** 更名为 **bird-seg.pt**，代码默认路径、CLI 默认参数与文档已同步更新。
+
+---
+
 ## v2.0.1 (2026-04-17)
 
 ### 模型与仓库元数据
@@ -118,7 +128,7 @@
 
 ### 模型路径与报错说明
 
-- **`BirdAndEyeDetector` 默认权重路径**：统一到项目根 **`models/`**（与 `src/` 同级）。从项目根执行 `python src/birdy_gui.py` 或 `start_gui.bat` 时会正确加载 `models/yolov8x-seg.pt` 等，避免误读错误/空文件导致 `PytorchStreamReader … zip … central directory` 一类错误。
+- **`BirdAndEyeDetector` 默认权重路径**：统一到项目根 **`models/`**（与 `src/` 同级）。从项目根执行 `python src/birdy_gui.py` 或 `start_gui.bat` 时会正确加载 `models/bird-seg.pt` 等，避免误读错误/空文件导致 `PytorchStreamReader … zip … central directory` 一类错误。
 - **加载失败提示**：对 YOLO 与 `torch.load` 物种权重捕获上述 zip/损坏类异常，抛出带中文说明的 `RuntimeError`（含绝对路径与排查建议）。
 
 ---
@@ -247,7 +257,7 @@ from html_report_generator import generate_html_report
 
 ```python
 # 模型文件在 models/
-models/yolov8x-seg.pt
+models/bird-seg.pt
 models/birdeye.pt
 models/birdiden_v1.pth
 models/bird_info.json

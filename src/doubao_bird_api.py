@@ -12,7 +12,7 @@
 - 返回格式与本地模型兼容，并含 subject_type、archive_root_cn、archive_tag_cn（豆包）
 
 作者: brigchen@gmail.com
-版权说明: 基于开源协议，请勿商用
+版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 
 import os
