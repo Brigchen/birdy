@@ -29,15 +29,17 @@
 
 ### GitHub 源码包与本地模型
 
-从 GitHub 克隆或下载的压缩包**不包含**下列**大体积**本地推理权重（受分发方式限制，需自备或向作者索取）：
+从 GitHub 克隆或下载的压缩包**不包含**下列**大体积**本地推理权重（受分发方式限制，需自备或向作者索取）。为便于自备或自训，下面给出与当前代码兼容的最低规格：
 
-| 文件 | 用途 |
-|------|------|
-| `bird-seg.pt` | 鸟体检测与分割 |
-| `birdeye.pt` | 鸟眼检测（可选） |
-| `birdiden_v1.pth` | 本地物种识别（ResNet 权重；旧文件名 `model20240824.pth` 已弃用） |
+| 文件 | 用途 | 兼容规格（最低要求） |
+|------|------|------|
+| `bird-seg.pt` | 鸟体检测与分割 | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供 `boxes.xyxy / boxes.conf / boxes.cls`。建议训练为单类 bird（或以 bird 为主类）的检测/分割模型。 |
+| `birdeye.pt` | 鸟眼检测（可选） | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。 |
+| `birdiden_v1.pth` | 本地物种识别（ResNet 权重） | **PyTorch `state_dict`**，网络结构需与代码一致：`torchvision.models.resnet34(weights=None)`，并使用 `fc.weight` 维度定义类别数（代码会据此自动构建 `Linear(512, num_classes)`）。输入预处理固定为 `Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
 
 **`models/bird_info.json`** 为与上述权重配套的物种索引与名称映射表，**体积较小，应随源码一并纳入版本库**；仓库 **`.gitignore` 中不忽略**该文件，克隆后正常情况下应已存在于 `models/`。若你自行搭建仓库时缺失，可与 **`birdiden_v1.pth`** 成套向作者索取。
+
+`bird_info.json` 与 `birdiden_v1.pth` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致（至少不小于输出类别数），并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
 
 将三个权重文件放入项目根目录下的 **`models/`**（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
 
