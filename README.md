@@ -63,6 +63,7 @@
 |------|------|
 | **鸟体检测** | YOLOv8 分割，支持置信度与面积过滤、可选鸟眼辅助 |
 | **物种识别** | 本地 ResNet 或 **百度** / **火山方舟豆包** 视觉 API；豆包支持 **`doubao_api_config.json` 多模型轮换** 与按模型日 token 统计 |
+| **物种名称规范与检索** | 基于 `bird_classification.json` 整理出的 `data/species/bird_species_list.csv`（中文名 / 英文名 / 学名对照），用于名称不一致时的统一规范与快速检索 |
 | **连拍筛选** | 时间聚类 + 清晰度（可结合鸟 ROI）；**`burst_keep_ratio` + `burst_keep_min`**；非连拍单张可在开启鸟检时按策略丢弃 |
 | **地理信息** | EXIF GPS、**高德** / 其它地理编码（`src/amap_api_config.json` + `geocoding_config.py`） |
 | **报告** | 连拍报告、物种识别报告；GUI 含 **ETA** 与各阶段耗时估算 |
@@ -150,7 +151,7 @@ birdy-skill/
 ├── version-info.json             # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
 ├── models/                    # 模型文件目录（见上文模型规格表）
-├── data/                      # 地理与物种数据
+├── data/                      # 地理与物种数据（含 bird_species_list.csv 名称对照表）
 ├── resources/                 # logo 等静态资源
 ├── test/                      # 测试脚本与样例
 └── src/
