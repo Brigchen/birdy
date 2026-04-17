@@ -758,7 +758,12 @@ class BirdDetectionGUI(QMainWindow):
             info = Path(__file__).resolve().parent.parent / "skill-info.json"
             if info.exists():
                 with open(info, "r", encoding="utf-8") as f:
-                    return str(json.load(f).get("version", "2.0.0"))
+                    d = json.load(f)
+                v = str(d.get("version", "2.0.0"))
+                rd = str(d.get("release_date", "") or "").strip()
+                if rd:
+                    return f"{v}（{rd}）"
+                return v
         except Exception:
             pass
         return "2.0.0"

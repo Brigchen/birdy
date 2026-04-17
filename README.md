@@ -2,7 +2,8 @@
 
 **Birdy** 是一套面向观鸟与生态摄影的桌面工具：鸟体检测与分割、鸟眼检测、可选物种识别（本地模型或云端 API）、连拍智能筛选、GPS/地名写入与 HTML 报告。提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式。
 
-> **版本**：以项目根目录 **`skill-info.json`** 中的 `version` 与 `release_date` 为准（当前文档编写时对应 **2.0.0 稳定版**）。  
+> **当前发布版本**：**2.0.0**（稳定版）  
+> **版本发布日期**：**2026-04-17**（与根目录 **`skill-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；**Ultralytics YOLOv8** 为 **AGPL-3.0**，商用请自行评估。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
@@ -183,4 +184,4 @@ birdy-skill/
 
 ---
 
-*README 随功能迭代更新；具体版本号请以 **`skill-info.json`** 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.0**，发布日期 **2026-04-17**；之后请以根目录 **`skill-info.json`** 中的 `version` 与 `release_date` 为准。*

@@ -15,10 +15,26 @@ import argparse
 import traceback
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 
 # 添加当前目录到路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
+def _load_skill_info_meta() -> Tuple[str, str]:
+    """从项目根目录 skill-info.json 读取版本号与发布日期。"""
+    root = Path(__file__).resolve().parent.parent
+    info_path = root / "skill-info.json"
+    version, release_date = "2.0.0", ""
+    try:
+        if info_path.is_file():
+            with open(info_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            version = str(data.get("version", version))
+            release_date = str(data.get("release_date", "") or "")
+    except Exception:
+        pass
+    return version, release_date
 
 from burst_grouping import process_folder, get_kept_images
 from html_report_generator import generate_html_report
@@ -38,7 +54,10 @@ class BirdDetectionCLI:
         print("\n" + "="*70)
         print("     Bird Detection Skill - Command Line Interface")
         print("="*70)
-        print(f"     Version: 2.0.0")
+        ver, rdate = _load_skill_info_meta()
+        print(f"     Version: {ver}")
+        if rdate:
+            print(f"     Release date: {rdate}")
         print(f"     Python: {sys.version.split()[0]}")
         print("="*70 + "\n")
     
