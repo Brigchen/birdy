@@ -755,7 +755,7 @@ class BirdDetectionGUI(QMainWindow):
     @staticmethod
     def _load_skill_version() -> str:
         try:
-            info = Path(__file__).resolve().parent.parent / "skill-info.json"
+            info = Path(__file__).resolve().parent.parent / "version-info.json"
             if info.exists():
                 with open(info, "r", encoding="utf-8") as f:
                     d = json.load(f)

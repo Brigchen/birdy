@@ -13,7 +13,7 @@
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
 > **当前发布版本**：**2.0.2**（稳定版）  
-> **版本发布日期**：**2026-04-17**（与根目录 **`skill-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
+> **版本发布日期**：**2026-04-17**（与根目录 **`version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
@@ -147,7 +147,7 @@ birdy-skill/
 ├── README.md                 # 本文件
 ├── 安装说明.md               # 中文安装与分发
 ├── requirements.txt
-├── skill-info.json           # 版本与变更摘要
+├── version-info.json             # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
 ├── models/                    # 模型文件目录（见上文模型规格表）
 ├── data/                      # 地理与物种数据
@@ -195,4 +195,4 @@ birdy-skill/
 
 ---
 
-*README 随功能迭代更新。当前文档对应 **2.0.2**，发布日期 **2026-04-17**；之后请以根目录 **`skill-info.json`** 中的 `version` 与 `release_date` 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.2**，发布日期 **2026-04-17**；之后请以根目录 **`version-info.json`** 中的 `version` 与 `release_date` 为准。*

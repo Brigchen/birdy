@@ -22,9 +22,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def _load_skill_info_meta() -> Tuple[str, str]:
-    """从项目根目录 skill-info.json 读取版本号与发布日期。"""
+    """从项目根目录 version-info.json 读取版本号与发布日期。"""
     root = Path(__file__).resolve().parent.parent
-    info_path = root / "skill-info.json"
+    info_path = root / "version-info.json"
     version, release_date = "2.0.0", ""
     try:
         if info_path.is_file():

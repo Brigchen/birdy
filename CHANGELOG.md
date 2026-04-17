@@ -21,7 +21,7 @@
 
 ### 稳定版发布
 
-- 阶段性功能迭代收敛，发布 **2.0.0** 作为当前稳定基线版本；**GitHub 公开发布日期：2026-04-17**（与 `skill-info.json` 的 `release_date` 一致）。
+- 阶段性功能迭代收敛，发布 **2.0.0** 作为当前稳定基线版本；**GitHub 公开发布日期：2026-04-17**（与 `version-info.json` 的 `release_date` 一致）。
 
 ### 物种识别与地理约束
 
@@ -159,7 +159,7 @@
 ### 品牌与界面（GUI）
 
 - **产品名称**：中文「鸟图智慧仓储」，英文「Birdy」；窗口标题栏显示 **Birdy**。
-- **固定顶栏**：顶部白底品牌栏展示 Logo、中英文名称与版本号（版本读取 `skill-info.json`），与下方功能区分离，**不参与左右侧滚动**。
+- **固定顶栏**：顶部白底品牌栏展示 Logo、中英文名称与版本号（版本读取 `version-info.json`），与下方功能区分离，**不参与左右侧滚动**。
 - **图标**：窗口与 Windows 任务栏图标优先使用 `resources/birdy_logo_128.png`，其次 `birdy_logo_640.png` / `logo.png`；无文件时沿用内置矢量回退绘制。
 - **Banner Logo**：优先 `resources/birdy_logo_640.png`，其次 `birdy_logo_128.png` / `logo.png`。
 - 右侧底部重复大图 Logo 已移除（改由顶栏统一展示）。
@@ -226,7 +226,7 @@
   - 更新所有路径引用到新结构
   - 添加 CLI 版本使用说明
   - 更新文件结构和API示例
-- **skill-info.json**
+- **version-info.json**
   - 版本号升级到 1.1.1
   - 更新发布日期到 2026-03-19
   - 添加 v1.1.1 的变更日志
@@ -291,7 +291,7 @@ birdy-skill-1.1.1/
 ```
 ├── requirements.txt           🔧 PyQt6→PyQt5，移除timm
 ├── skill.md                  🔧 更新路径和版本
-├── skill-info.json           🔧 版本号→1.1.1
+├── version-info.json             🔧 版本号→1.1.1
 └── CHANGELOG.md              🔧 添加v1.1.1日志
 ```
 
