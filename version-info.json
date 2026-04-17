@@ -42,7 +42,7 @@
       "鸟体检测权重文件名由 yolov8x-seg.pt 更名为 bird-seg.pt，代码与文档同步"
     ],
     "2.0.1": [
-      "本地物种权重文件更名为 birdiden_v1.pth（原 model20240824.pth），代码与文档同步",
+      "本地物种分类使用 bird-iden.pth 与 bird_info.json 配套（ResNet34 权重 + 索引表）",
       "明确 models/bird_info.json 应纳入版本控制；.gitignore 说明更新，避免误忽略 bird_info"
     ],
     "2.0.0": [

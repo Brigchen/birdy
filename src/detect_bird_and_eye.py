@@ -1307,7 +1307,7 @@ def geo_refine_species(
 # 物种识别模块（ResNet34 + bird_info.json，10964 类）
 # ─────────────────────────────────────────────────────────────
 _BIRDY_ROOT = _PROJECT_ROOT
-_SPECIES_MODEL_PATH = str(_BIRDY_ROOT / "models" / "birdiden_v1.pth")
+_SPECIES_MODEL_PATH = str(_BIRDY_ROOT / "models" / "bird-iden.pth")
 _BIRD_INFO_PATH = str(_BIRDY_ROOT / "models" / "bird_info.json")
 _DEFAULT_BIRD_YOLO = str(_BIRDY_ROOT / "models" / "bird-seg.pt")
 _DEFAULT_EYE_YOLO = str(_BIRDY_ROOT / "models" / "birdeye.pt")
@@ -1376,7 +1376,7 @@ class BirdSpeciesClassifier:
                 state_dict = torch.load(model_path, map_location=self.device)
         except Exception as e:
             raise _runtime_error_bad_torch_file(
-                e, model_path, "物种分类权重（birdiden_v1.pth）无法读取"
+                e, model_path, "物种分类权重（bird-iden.pth）无法读取"
             ) from e
         self.num_classes = state_dict["fc.weight"].shape[0]  # 从权重直接获取实际类别数
 

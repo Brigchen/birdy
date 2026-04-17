@@ -254,7 +254,7 @@ from html_report_generator import generate_html_report
 # 模型文件在 models/
 models/bird-seg.pt
 models/birdeye.pt
-models/birdiden_v1.pth
+models/bird-iden.pth
 models/bird_info.json
 ```
 

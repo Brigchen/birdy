@@ -4,16 +4,16 @@
 
 围绕“海量相片自动化整理与归档”这一目标，核心功能包括：
 
-1. **连拍自动筛选**：按拍摄时间自动聚类连拍序列，结合清晰度与鸟体信息进行智能保留，先把可用照片快速筛出来。  
-2. **鸟体检测与分割**：批量定位鸟体目标，支持置信度/面积过滤，为后续裁剪、分类与归档提供结构化结果。  
-3. **物种自动识别与分级归档**：支持本地模型与豆包视觉 API 两套识别路径，按目/科/属/种自动整理输出目录。  
-4. **地理信息写入与反查**：支持 GPS EXIF 批量写入与地名编码，为归档检索和水印文案提供位置数据。  
+1. **连拍自动筛选**：按拍摄时间自动聚类连拍序列，结合清晰度与鸟体信息进行智能保留，先把可用照片快速筛出来。
+2. **鸟体检测与分割**：批量定位鸟体目标，支持置信度/面积过滤，为后续裁剪、分类与归档提供结构化结果。
+3. **物种自动识别与分级归档**：支持本地模型与豆包视觉 API 两套识别路径，按目/科/属/种自动整理输出目录。
+4. **地理信息写入与反查**：支持 GPS EXIF 批量写入与地名编码，为归档检索和水印文案提供位置数据。
 5. **水印图批量生成与报告输出**：可批量生成带时间/地点/物种等信息的水印成片，并输出处理报告，便于分享与追溯。
 
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
 > **当前发布版本**：**2.0.2**（稳定版）  
-> **版本发布日期**：**2026-04-17**（与根目录 **`version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
+> **版本发布日期**：**2026-04-17**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
@@ -31,27 +31,28 @@
 
 从 GitHub 克隆或下载的压缩包**不包含**下列**大体积**本地推理权重（受分发方式限制，需自备或向作者索取）。为便于自备或自训，下面给出与当前代码兼容的最低规格：
 
-| 文件 | 用途 | 兼容规格（最低要求） |
-|------|------|------|
-| `bird-seg.pt` | 鸟体检测与分割 | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供 `boxes.xyxy / boxes.conf / boxes.cls`。建议训练为单类 bird（或以 bird 为主类）的检测/分割模型。 |
-| `birdeye.pt` | 鸟眼检测（可选） | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。 |
-| `birdiden_v1.pth` | 本地物种识别（ResNet 权重） | **PyTorch `state_dict`**，网络结构需与代码一致：`torchvision.models.resnet34(weights=None)`，并使用 `fc.weight` 维度定义类别数（代码会据此自动构建 `Linear(512, num_classes)`）。输入预处理固定为 `Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
 
-**`models/bird_info.json`** 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与 **`birdiden_v1.pth`** 成套向作者索取。
+| 文件                | 用途                | 兼容规格（最低要求）                                                                                                                                                                                               |
+| ----------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bird-seg.pt`     | 鸟体检测与分割           | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供 `boxes.xyxy / boxes.conf / boxes.cls`。建议训练为单类 bird（或以 bird 为主类）的检测/分割模型。                                    |
+| `birdeye.pt`      | 鸟眼检测（可选）          | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。                                                                 |
+| `bird-iden.pth` | 本地物种识别（ResNet 权重） | **PyTorch `state_dict`**，网络结构需与代码一致：`torchvision.models.resnet34(weights=None)`，并使用 `fc.weight` 维度定义类别数（代码会据此自动构建 `Linear(512, num_classes)`）。输入预处理固定为 `Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
 
-`bird_info.json` 与 `birdiden_v1.pth` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致（至少不小于输出类别数），并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
 
-将三个权重文件放入项目根目录下的 **`models/`**（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
+`**models/bird_info.json**` 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与 `**bird-iden.pth**` 成套向作者索取。
+
+`bird_info.json` 与 `bird-iden.pth` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致（至少不小于输出类别数），并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
+
+将三个权重文件放入项目根目录下的 `**models/**`（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
 
 ### 建议申请的 API Key（均为常见「按量 / 试用」档，个人学习可视为低成本或免费额度）
 
 在仅使用本地模型、且不写入 GPS、不做地名反查时，可以不配置任何云端 Key。若你希望**批量写入 GPS、地名反查、水印中的地理位置**，或**在本地物种识别不满意时改用云端视觉识别**，建议提前申请：
 
-1. **高德开放平台 Web 服务 Key**（[https://lbs.amap.com/](https://lbs.amap.com/)）  
-   用于：批量地理编码（地名 → 坐标）、配合 EXIF 的 GPS 写入，以及水印生成时的城市/地点等地理文案。将 Key 填入 `src/amap_api_config.json`（GUI 内也可打开该文件）。
-
-2. **火山引擎方舟「豆包」视觉模型接入**（[https://www.volcengine.com/ark/](https://www.volcengine.com/ark/)）  
-   用于：在 **`doubao_api_config.json`** 中配置后，通过豆包视觉 API 做鸟类及相关主体的识别；适合本地 ResNet 结果不理想、或需要更广物种覆盖时的补充方案。具体字段说明见下文「配置说明」表。
+1. **高德开放平台 Web 服务 Key**（[https://lbs.amap.com/](https://lbs.amap.com/)）
+  用于：批量地理编码（地名 → 坐标）、配合 EXIF 的 GPS 写入，以及水印生成时的城市/地点等地理文案。将 Key 填入 `src/amap_api_config.json`（GUI 内也可打开该文件）。
+2. **火山引擎方舟「豆包」视觉模型接入**（[https://www.volcengine.com/ark/](https://www.volcengine.com/ark/)）
+  用于：在 `**doubao_api_config.json`** 中配置后，通过豆包视觉 API 做鸟类及相关主体的识别；适合本地 ResNet 结果不理想、或需要更广物种覆盖时的补充方案。具体字段说明见下文「配置说明」表。
 
 两项均请在各平台控制台完成实名/应用创建后获取密钥；请妥善保管真实 Key，避免泄露。
 
@@ -59,14 +60,16 @@
 
 ## 功能概览
 
-| 模块 | 说明 |
-|------|------|
-| **鸟体检测** | YOLOv8 分割，支持置信度与面积过滤、可选鸟眼辅助 |
-| **物种识别** | 本地 ResNet 或 **百度** / **火山方舟豆包** 视觉 API；豆包支持 **`doubao_api_config.json` 多模型轮换** 与按模型日 token 统计 |
+
+| 模块            | 说明                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| **鸟体检测**      | YOLOv8 分割，支持置信度与面积过滤、可选鸟眼辅助                                                                                  |
+| **物种识别**      | 本地 ResNet 或 **百度** / **火山方舟豆包** 视觉 API；豆包支持 `**doubao_api_config.json` 多模型轮换** 与按模型日 token 统计                |
 | **物种名称规范与检索** | 基于 `bird_classification.json` 整理出的 `data/species/bird_species_list.csv`（中文名 / 英文名 / 学名对照），用于名称不一致时的统一规范与快速检索 |
-| **连拍筛选** | 时间聚类 + 清晰度（可结合鸟 ROI）；**`burst_keep_ratio` + `burst_keep_min`**；非连拍单张可在开启鸟检时按策略丢弃 |
-| **地理信息** | EXIF GPS、**高德** / 其它地理编码（`src/amap_api_config.json` + `geocoding_config.py`） |
-| **报告** | 连拍报告、物种识别报告；GUI 含 **ETA** 与各阶段耗时估算 |
+| **连拍筛选**      | 时间聚类 + 清晰度（可结合鸟 ROI）；`**burst_keep_ratio` + `burst_keep_min`**；非连拍单张可在开启鸟检时按策略丢弃                             |
+| **地理信息**      | EXIF GPS、**高德** / 其它地理编码（`src/amap_api_config.json` + `geocoding_config.py`）                                 |
+| **报告**        | 连拍报告、物种识别报告；GUI 含 **ETA** 与各阶段耗时估算                                                                           |
+
 
 ---
 
@@ -74,7 +77,7 @@
 
 - **Python 3.8+**（建议 3.10～3.12；3.13 请以本机实测为准）  
 - **PyTorch** + **CUDA**（可选，用于 GPU 加速）  
-- 依赖见 **`requirements.txt`**；详细步骤见 **`安装说明.md`**（中文）
+- 依赖见 `**requirements.txt`**；详细步骤见 `**安装说明.md**`（中文）
 
 ---
 
@@ -96,13 +99,15 @@ GPU 用户建议先到 [pytorch.org](https://pytorch.org) 安装匹配 CUDA 的 
 
 ### 2. 模型文件
 
-将以下文件放在 **`models/`**（与 `src/` 同级；其中 `.pt` / `birdiden_v1.pth` 体积大，通常需单独拷贝或网盘分发）：
+将以下文件放在 `**models/**`（与 `src/` 同级；其中 `.pt` / `bird-iden.pth` 体积大，通常需单独拷贝或网盘分发）：
 
-| 文件 | 用途 |
-|------|------|
-| `bird-seg.pt` | 鸟体检测 |
-| `birdiden_v1.pth` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
-| `birdeye.pt` | 鸟眼检测（可选） |
+
+| 文件                                   | 用途               |
+| ------------------------------------ | ---------------- |
+| `bird-seg.pt`                        | 鸟体检测             |
+| `bird-iden.pth` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
+| `birdeye.pt`                         | 鸟眼检测（可选）         |
+
 
 ### 3. 启动 GUI
 
@@ -130,14 +135,16 @@ python src/birdy_cli.py --help
 
 ## 配置说明
 
-| 路径 | 说明 |
-|------|------|
-| **`src/doubao_api_config.json`** | 豆包：`api_key`、`api_base`、`models` 列表、`daily_token_limit_per_model`、`token_switch_ratio`、非鸟归档标签等 |
-| **`src/amap_api_config.json`** | 高德 Web Key（GUI「打开配置文件」） |
-| **`src/geocoding_config.py`** | 地理编码回退与开关 |
-| **`src/gui_config.json`** | GUI 保存的参数（运行后生成） |
 
-豆包用量统计默认写入运行目录下的 **`doubao_api_usage.json`**（可按配置调整路径）。
+| 路径                               | 说明                                                                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `**src/doubao_api_config.json**` | 豆包：`api_key`、`api_base`、`models` 列表、`daily_token_limit_per_model`、`token_switch_ratio`、非鸟归档标签等 |
+| `**src/amap_api_config.json**`   | 高德 Web Key（GUI「打开配置文件」）                                                                        |
+| `**src/geocoding_config.py**`    | 地理编码回退与开关                                                                                      |
+| `**src/gui_config.json**`        | GUI 保存的参数（运行后生成）                                                                               |
+
+
+豆包用量统计默认写入运行目录下的 `**doubao_api_usage.json**`（可按配置调整路径）。
 
 ---
 
@@ -167,10 +174,10 @@ birdy-skill/
 
 ## 连拍与输出目录
 
-- 勾选连拍且启用筛选时，保留图片写入 **`{输出目录}/Screened_images/`**，后续物种识别默认使用该目录。  
-- **`burst_keep_ratio`**：每组保留比例（如 `0.2` 约等于五选一）。  
-- **`burst_keep_min`**：每组至少保留张数（与比例取较大值，且不超过组大小）。  
-- CLI 中 **`--keep-top-n`** 已弃用，语义等同 **`--burst-keep-min`**。
+- 勾选连拍且启用筛选时，保留图片写入 `**{输出目录}/Screened_images/**`，后续物种识别默认使用该目录。  
+- `**burst_keep_ratio**`：每组保留比例（如 `0.2` 约等于五选一）。  
+- `**burst_keep_min**`：每组至少保留张数（与比例取较大值，且不超过组大小）。  
+- CLI 中 `**--keep-top-n**` 已弃用，语义等同 `**--burst-keep-min**`。
 
 ---
 
@@ -191,9 +198,9 @@ birdy-skill/
 
 ## 相关文档
 
-- **`安装说明.md`** — 安装、GPU、配置模板、分发清单、常见问题  
-- **`CHANGELOG.md`** — 版本变更记录  
+- `**安装说明.md**` — 安装、GPU、配置模板、分发清单、常见问题  
+- `**CHANGELOG.md**` — 版本变更记录
 
 ---
 
-*README 随功能迭代更新。当前文档对应 **2.0.2**，发布日期 **2026-04-17**；之后请以根目录 **`version-info.json`** 中的 `version` 与 `release_date` 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.2**，发布日期 **2026-04-17**；之后请以根目录 `**version-info.json*`* 中的 `version` 与 `release_date` 为准。*

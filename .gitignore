@@ -50,7 +50,7 @@ src/models/*.mlmodel
 /*.pth
 /*.onnx
 
-# models/bird_info.json：物种索引元数据（与 birdiden_v1.pth 配对），应纳入版本控制，勿添加任何忽略规则。
+# models/bird_info.json：物种索引元数据（与 bird-iden.pth 配对），应纳入版本控制，勿添加任何忽略规则。
 
 # --- API 密钥与本地配置（公开仓库勿提交）---
 src/doubao_api_config.json
