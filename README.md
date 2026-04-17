@@ -10,6 +10,38 @@
 
 ---
 
+## 使用须知（下载包、模型与 API）
+
+### RAW 格式
+
+当前版本**暂不支持 RAW**（如 `.cr2`、`.nef`、`.arw` 等）。请先将照片导出为 **JPEG / PNG** 等常见格式再处理。仓库内与 `rawpy` 相关的说明属于历史或预留能力，**不作为正式承诺**；后续若开放 RAW 支持会在本 README 与 `CHANGELOG.md` 中单独说明。
+
+### GitHub 源码包与本地模型
+
+从 GitHub 克隆或下载的压缩包**不包含**下列本地推理权重（体积大、且受分发方式限制）：
+
+| 文件 | 用途 |
+|------|------|
+| `yolov8x-seg.pt` | 鸟体检测与分割 |
+| `birdeye.pt` | 鸟眼检测（可选） |
+| `model20240824.pth`（及配套的 `bird_info.json`） | 本地物种识别 |
+
+需要使用时请将上述文件放入项目根目录下的 **`models/`** 文件夹（与 `src/` 同级），路径与程序默认加载逻辑一致。若你手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
+
+### 建议申请的 API Key（均为常见「按量 / 试用」档，个人学习可视为低成本或免费额度）
+
+在仅使用本地模型、且不写入 GPS、不做地名反查时，可以不配置任何云端 Key。若你希望**批量写入 GPS、地名反查、水印中的地理位置**，或**在本地物种识别不满意时改用云端视觉识别**，建议提前申请：
+
+1. **高德开放平台 Web 服务 Key**（[https://lbs.amap.com/](https://lbs.amap.com/)）  
+   用于：批量地理编码（地名 → 坐标）、配合 EXIF 的 GPS 写入，以及水印生成时的城市/地点等地理文案。将 Key 填入 `src/amap_api_config.json`（GUI 内也可打开该文件）。
+
+2. **火山引擎方舟「豆包」视觉模型接入**（[https://www.volcengine.com/ark/](https://www.volcengine.com/ark/)）  
+   用于：在 **`doubao_api_config.json`** 中配置后，通过豆包视觉 API 做鸟类及相关主体的识别；适合本地 ResNet 结果不理想、或需要更广物种覆盖时的补充方案。具体字段说明见下文「配置说明」表。
+
+两项均请在各平台控制台完成实名/应用创建后获取密钥；**切勿**将带真实 Key 的 JSON 提交到公开仓库。
+
+---
+
 ## 功能概览
 
 | 模块 | 说明 |
@@ -136,7 +168,7 @@ birdy-skill/
   title={Birdy: Bird Detection and Species Identification Tool},
   author={Chen, Brig},
   year={2024},
-  url={https://github.com/brigchen-yi/Birdy}
+  url={https://github.com/Brigchen/birdy}
 }
 ```
 
