@@ -50,8 +50,7 @@ src/models/*.mlmodel
 /*.pth
 /*.onnx
 
-# bird_info.json 通常较小，可纳入版本控制；若需忽略可取消下一行注释
-# models/bird_info.json
+# models/bird_info.json：物种索引元数据（与 birdiden_v1.pth 配对），应纳入版本控制，勿添加任何忽略规则。
 
 # --- API 密钥与本地配置（公开仓库勿提交）---
 src/doubao_api_config.json

@@ -1,5 +1,14 @@
 # 🐦 鸟类检测Skill - 更新日志
 
+## v2.0.1 (2026-04-17)
+
+### 模型与仓库元数据
+
+- 本地物种分类权重文件由 **`model20240824.pth`** 重命名为 **`birdiden_v1.pth`**，代码、CLI 默认值与文档已同步更新。
+- 明确 **`models/bird_info.json`** 为应纳入版本控制的索引文件；**`.gitignore` 不再保留「可忽略 bird_info」类表述**，避免误配。
+
+---
+
 ## v2.0.0 (2026-04-17) 🎉
 
 ### 稳定版发布
@@ -240,7 +249,7 @@ from html_report_generator import generate_html_report
 # 模型文件在 models/
 models/yolov8x-seg.pt
 models/birdeye.pt
-models/model20240824.pth
+models/birdiden_v1.pth
 models/bird_info.json
 ```
 

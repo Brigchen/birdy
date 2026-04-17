@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -36,6 +36,10 @@
     "自动化脚本支持"
   ],
   "changelog": {
+    "2.0.1": [
+      "本地物种权重文件更名为 birdiden_v1.pth（原 model20240824.pth），代码与文档同步",
+      "明确 models/bird_info.json 应纳入版本控制；.gitignore 说明更新，避免误忽略 bird_info"
+    ],
     "2.0.0": [
       "发布稳定版 2.0.0（发布日期 2026-04-17）：阶段性功能迭代收敛，作为当前稳定基线",
       "本地物种识别地理约束强化：top10 地理筛选、名单外候选需置信度 > 0.75",

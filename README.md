@@ -2,7 +2,7 @@
 
 **Birdy** 是一套面向观鸟与生态摄影的桌面工具：鸟体检测与分割、鸟眼检测、可选物种识别（本地模型或云端 API）、连拍智能筛选、GPS/地名写入与 HTML 报告。提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式。
 
-> **当前发布版本**：**2.0.0**（稳定版）  
+> **当前发布版本**：**2.0.1**（稳定版）  
 > **版本发布日期**：**2026-04-17**（与根目录 **`skill-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；**Ultralytics YOLOv8** 为 **AGPL-3.0**，商用请自行评估。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
@@ -19,15 +19,17 @@
 
 ### GitHub 源码包与本地模型
 
-从 GitHub 克隆或下载的压缩包**不包含**下列本地推理权重（体积大、且受分发方式限制）：
+从 GitHub 克隆或下载的压缩包**不包含**下列**大体积**本地推理权重（受分发方式限制，需自备或向作者索取）：
 
 | 文件 | 用途 |
 |------|------|
 | `yolov8x-seg.pt` | 鸟体检测与分割 |
 | `birdeye.pt` | 鸟眼检测（可选） |
-| `model20240824.pth`（及配套的 `bird_info.json`） | 本地物种识别 |
+| `birdiden_v1.pth` | 本地物种识别（ResNet 权重；旧文件名 `model20240824.pth` 已弃用） |
 
-需要使用时请将上述文件放入项目根目录下的 **`models/`** 文件夹（与 `src/` 同级），路径与程序默认加载逻辑一致。若你手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
+**`models/bird_info.json`** 为与上述权重配套的物种索引与名称映射表，**体积较小，应随源码一并纳入版本库**；仓库 **`.gitignore` 中不忽略**该文件，克隆后正常情况下应已存在于 `models/`。若你自行搭建仓库时缺失，可与 **`birdiden_v1.pth`** 成套向作者索取。
+
+将三个权重文件放入项目根目录下的 **`models/`**（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
 
 ### 建议申请的 API Key（均为常见「按量 / 试用」档，个人学习可视为低成本或免费额度）
 
@@ -81,12 +83,12 @@ GPU 用户建议先到 [pytorch.org](https://pytorch.org) 安装匹配 CUDA 的 
 
 ### 2. 模型文件
 
-将以下文件放在 **`models/`**（与 `src/` 同级；体积大，通常需单独拷贝或网盘分发）：
+将以下文件放在 **`models/`**（与 `src/` 同级；其中 `.pt` / `birdiden_v1.pth` 体积大，通常需单独拷贝或网盘分发；**`bird_info.json` 建议随仓库版本管理**）：
 
 | 文件 | 用途 |
 |------|------|
 | `yolov8x-seg.pt` | 鸟体检测 |
-| `model20240824.pth` + `bird_info.json` | 本地物种分类 |
+| `birdiden_v1.pth` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
 | `birdeye.pt` | 鸟眼检测（可选） |
 
 ### 3. 启动 GUI
@@ -136,7 +138,7 @@ birdy-skill/
 ├── requirements.txt
 ├── skill-info.json           # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
-├── models/                    # 权重与 bird_info.json（需自备）
+├── models/                    # 大权重需自备；bird_info.json 随仓库跟踪
 ├── data/                      # 地理与物种数据
 ├── resources/                 # logo 等静态资源
 ├── test/                      # 测试脚本与样例
@@ -184,4 +186,4 @@ birdy-skill/
 
 ---
 
-*README 随功能迭代更新。当前文档对应 **2.0.0**，发布日期 **2026-04-17**；之后请以根目录 **`skill-info.json`** 中的 `version` 与 `release_date` 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.1**，发布日期 **2026-04-17**；之后请以根目录 **`skill-info.json`** 中的 `version` 与 `release_date` 为准。*
