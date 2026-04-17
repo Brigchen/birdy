@@ -17,7 +17,7 @@
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
-克隆仓库后若缺少 `src/doubao_api_config.json` 或 `src/amap_api_config.json`，**无需手动新建**：首次在 GUI 中点击打开对应配置、或运行 CLI/GPS 相关流程时，程序会在 `src/` 下**自动生成**带完整字段、`api_key` 为空的 JSON 模板（逻辑见 `src/api_config_defaults.py`）。公开推送前请使用根目录 **`.gitignore`**，避免将密钥与权重提交到 Git。
+克隆仓库后若缺少 `src/doubao_api_config.json` 或 `src/amap_api_config.json`，**无需手动新建**：首次在 GUI 中点击打开对应配置、或运行 CLI/GPS 相关流程时，程序会在 `src/` 下**自动生成**带完整字段、`api_key` 为空的 JSON 模板（逻辑见 `src/api_config_defaults.py`）。
 
 ---
 
@@ -37,7 +37,7 @@
 | `birdeye.pt` | 鸟眼检测（可选） | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。 |
 | `birdiden_v1.pth` | 本地物种识别（ResNet 权重） | **PyTorch `state_dict`**，网络结构需与代码一致：`torchvision.models.resnet34(weights=None)`，并使用 `fc.weight` 维度定义类别数（代码会据此自动构建 `Linear(512, num_classes)`）。输入预处理固定为 `Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
 
-**`models/bird_info.json`** 为与上述权重配套的物种索引与名称映射表，**体积较小，应随源码一并纳入版本库**；仓库 **`.gitignore` 中不忽略**该文件，克隆后正常情况下应已存在于 `models/`。若你自行搭建仓库时缺失，可与 **`birdiden_v1.pth`** 成套向作者索取。
+**`models/bird_info.json`** 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与 **`birdiden_v1.pth`** 成套向作者索取。
 
 `bird_info.json` 与 `birdiden_v1.pth` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致（至少不小于输出类别数），并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
 
@@ -53,7 +53,7 @@
 2. **火山引擎方舟「豆包」视觉模型接入**（[https://www.volcengine.com/ark/](https://www.volcengine.com/ark/)）  
    用于：在 **`doubao_api_config.json`** 中配置后，通过豆包视觉 API 做鸟类及相关主体的识别；适合本地 ResNet 结果不理想、或需要更广物种覆盖时的补充方案。具体字段说明见下文「配置说明」表。
 
-两项均请在各平台控制台完成实名/应用创建后获取密钥；**切勿**将带真实 Key 的 JSON 提交到公开仓库。
+两项均请在各平台控制台完成实名/应用创建后获取密钥；请妥善保管真实 Key，避免泄露。
 
 ---
 
@@ -95,7 +95,7 @@ GPU 用户建议先到 [pytorch.org](https://pytorch.org) 安装匹配 CUDA 的 
 
 ### 2. 模型文件
 
-将以下文件放在 **`models/`**（与 `src/` 同级；其中 `.pt` / `birdiden_v1.pth` 体积大，通常需单独拷贝或网盘分发；**`bird_info.json` 建议随仓库版本管理**）：
+将以下文件放在 **`models/`**（与 `src/` 同级；其中 `.pt` / `birdiden_v1.pth` 体积大，通常需单独拷贝或网盘分发）：
 
 | 文件 | 用途 |
 |------|------|
@@ -149,7 +149,7 @@ birdy-skill/
 ├── requirements.txt
 ├── skill-info.json           # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
-├── models/                    # 大权重需自备；bird_info.json 随仓库跟踪
+├── models/                    # 模型文件目录（见上文模型规格表）
 ├── data/                      # 地理与物种数据
 ├── resources/                 # logo 等静态资源
 ├── test/                      # 测试脚本与样例
