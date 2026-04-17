@@ -162,13 +162,13 @@ birdy-skill/
 
 ## 引用
 
-若本工作对您的研究有帮助，可引用：
+若本工作对您的研究有帮助，可引用。英文 **title** 与中文产品名「**鸟图智慧仓储**」含义相近：面向鸟类相片的**自动化处理流水线**（检测、识别等），并写明基于拍摄时间戳的**连拍分组与智能筛选**。
 
 ```bibtex
-@misc{birdy2024,
-  title={Birdy: Bird Detection and Species Identification Tool},
+@misc{birdy2026,
+  title={Birdy: Intelligent Automation for Bird Photographs--Detection, Species Identification, and Temporal Burst-Sequence Smart Filtering},
   author={Chen, Brig},
-  year={2024},
+  year={2026},
   url={https://github.com/Brigchen/birdy}
 }
 ```
