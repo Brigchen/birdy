@@ -144,7 +144,6 @@ python src/birdy_cli.py --help
 birdy-skill/
 ├── README.md                 # 本文件
 ├── 安装说明.md               # 中文安装与分发
-├── SKILL.md                  # Cursor Agent Skill 说明
 ├── requirements.txt
 ├── skill-info.json           # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
@@ -190,8 +189,6 @@ birdy-skill/
 ## 相关文档
 
 - **`安装说明.md`** — 安装、GPU、配置模板、分发清单、常见问题  
-- **`SKILL.md`** — 供 Cursor Agent 调用的技能说明  
-- **`SKILL_README.md`** — 技能包结构与字段说明  
 - **`CHANGELOG.md`** — 版本变更记录  
 
 ---
