@@ -571,6 +571,14 @@ def write_gps_exif(image_path: str, latitude: float, longitude: float, altitude:
 
     try:
         image_path = Path(image_path)
+        if image_path.suffix.lower() not in (".jpg", ".jpeg"):
+            if verbose:
+                print(
+                    "[SKIP] GPS EXIF 当前仅支持写入 JPEG 文件: {}".format(
+                        image_path.name
+                    )
+                )
+            return False
         
         # 确定 GPS 方向
         gps_latitude_ref = "N" if latitude >= 0 else "S"
@@ -623,7 +631,9 @@ def write_gps_exif(image_path: str, latitude: float, longitude: float, altitude:
 
 def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, altitude: Optional[float] = None, max_workers: int = None) -> int:
     """
-    批量将 GPS 坐标写入文件夹中所有图片的 EXIF
+    批量将 GPS 坐标写入文件夹中所有 JPEG 的 EXIF（递归子目录）。
+
+    典型用法：连拍筛选后仅对 ``Screened_images`` 中的副本写入 GPS。
     
     Args:
         image_folder: 图片文件夹路径
@@ -640,11 +650,14 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
         print(f"错误: 文件夹不存在: {image_folder}")
         return 0
     
-    # 支持的图片格式
-    image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff"}
-    
-    image_files = [f for f in folder.iterdir() 
-                   if f.suffix.lower() in image_extensions and f.is_file()]
+    # 仅 JPEG（与 piexif 写入方式一致；RAW 应在入库前转为 .jpg）
+    image_extensions = {".jpg", ".jpeg"}
+
+    image_files = [
+        f
+        for f in folder.rglob("*")
+        if f.is_file() and f.suffix.lower() in image_extensions
+    ]
     
     if not image_files:
         print(f"警告: 文件夹中没有发现图片文件: {image_folder}")

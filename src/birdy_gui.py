@@ -18,6 +18,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, List, Any, Tuple
+from dataclasses import replace
 
 try:
     from PyQt5.QtWidgets import (
@@ -26,10 +27,10 @@ try:
         QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QTabWidget,
         QGroupBox, QFormLayout, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialog, QDialogButtonBox, QRadioButton, QScrollArea, QFrame,
-        QSizePolicy,
+        QSizePolicy, QSlider, QShortcut,
     )
     from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
-    from PyQt5.QtGui import QColor, QTextCursor, QIcon, QPalette, QDesktopServices
+    from PyQt5.QtGui import QColor, QTextCursor, QIcon, QPalette, QDesktopServices, QKeySequence
 except ImportError:
     print("错误: 未安装PyQt5。请运行: pip install PyQt5")
     sys.exit(1)
@@ -37,7 +38,7 @@ except ImportError:
 # 添加当前目录到路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from burst_grouping import process_folder, get_kept_images
+from burst_grouping import process_folder, get_kept_images, screened_paths_for_kept_images
 from html_report_generator import generate_html_report
 from geo_encoder import batch_write_gps_exif, geocode_location
 from detect_bird_and_eye import BirdAndEyeDetector
@@ -49,6 +50,7 @@ from watermark_generator import (
     generate_watermarks,
     render_watermark_for_image,
 )
+from image_io import all_supported_extensions, file_filter_all_images
 
 
 def _open_local_file(path: str) -> None:
@@ -78,12 +80,12 @@ def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, f
     do_crop = config.get("enable_crop", False)
     use_local = config.get("use_local_model", True)
     phases: List[Tuple[str, float]] = []
-    if config.get("enable_gps_write"):
-        phases.append(("gps", max(3.0, n * 0.35)))
     if burst_on:
         phases.append(("burst", max(18.0, n * 2.8)))
         if config.get("generate_burst_report", True):
             phases.append(("burst_report", max(10.0, min(120.0, 15.0 + n * 0.12))))
+    if config.get("enable_gps_write"):
+        phases.append(("gps", max(4.0, min(120.0, 6.0 + n * 0.08))))
     if do_species or do_crop:
         per = 5.0 if use_local else 14.0
         phases.append(("species", max(25.0, n * per)))
@@ -93,20 +95,20 @@ def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, f
 
 
 def _collect_image_paths_under(root: str) -> List[str]:
-    """递归收集 root 下 jpg/jpeg/png 路径（去重）。"""
-    import fnmatch
+    """递归收集 root 下常见位图与 RAW 路径（去重）。"""
     import os
+
     if not root or not os.path.isdir(root):
         return []
-    patterns = ("*.jpg", "*.jpeg", "*.png")
+    exts = all_supported_extensions()
     out: List[str] = []
-    for pattern in patterns:
-        for walk_root, _dirs, files in os.walk(root):
-            for file in files:
-                if fnmatch.fnmatch(file.lower(), pattern.lower()):
-                    p = os.path.join(walk_root, file)
-                    if p not in out:
-                        out.append(p)
+    for walk_root, _dirs, files in os.walk(root):
+        for file in files:
+            suf = Path(file).suffix.lower()
+            if suf in exts:
+                p = os.path.join(walk_root, file)
+                if p not in out:
+                    out.append(p)
     return out
 
 
@@ -155,12 +157,12 @@ class WorkerThread(QThread):
                 "watermark": 0.10,
             }
             enabled_phases: List[str] = []
-            if config.get("enable_gps_write"):
-                enabled_phases.append("gps")
             if burst_on:
                 enabled_phases.append("burst")
                 if config.get("generate_burst_report", True):
                     enabled_phases.append("burst_report")
+            if config.get("enable_gps_write"):
+                enabled_phases.append("gps")
             if config.get("enable_species_detection", True) or config.get(
                 "enable_crop", False
             ):
@@ -204,31 +206,11 @@ class WorkerThread(QThread):
                 }
             )
 
-            # 第一步：GPS写入
-            if config.get('enable_gps_write'):
-                current_step += 1
-                self.status_updated.emit(f"[步骤 {current_step}/{total_steps}] 写入GPS EXIF...")
-                _emit_phase_progress("gps", 0, 1)
-                self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "gps"})
-                
-                try:
-                    gps_count = batch_write_gps_exif(
-                        image_folder=config['image_folder'],
-                        latitude=config['gps_latitude'],
-                        longitude=config['gps_longitude'],
-                        altitude=config.get('gps_altitude', 0)
-                    )
-                    self.status_updated.emit(f"✓ 成功写入 {gps_count} 张图片的 GPS")
-                    results['gps_written'] = gps_count
-                except Exception as e:
-                    self.error_occurred.emit(f"GPS写入失败: {str(e)}")
-                    results['gps_written'] = 0
-                _emit_phase_progress("gps", 1, 1)
-                self.eta_checkpoint.emit({"kind": "phase_done", "phase": "gps"})
-            
+            # GPS 在连拍筛选并复制到 Screened_images 之后再写入（见 burst 分支内）
+
             if not self.is_running:
                 return
-            
+
             screened_dir = os.path.join(config["output_folder"], "Screened_images")
 
             if burst_on:
@@ -284,6 +266,33 @@ class WorkerThread(QThread):
                     traceback.print_exc()
                 _emit_phase_progress("burst", 1, 1)
                 self.eta_checkpoint.emit({"kind": "phase_done", "phase": "burst"})
+
+                if not self.is_running:
+                    return
+
+                if config.get("enable_gps_write"):
+                    current_step += 1
+                    self.status_updated.emit(
+                        f"[步骤 {current_step}/{total_steps}] 向筛选副本（Screened_images）写入 GPS EXIF…"
+                    )
+                    _emit_phase_progress("gps", 0, 1)
+                    self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "gps"})
+                    try:
+                        gps_count = batch_write_gps_exif(
+                            image_folder=screened_dir,
+                            latitude=config["gps_latitude"],
+                            longitude=config["gps_longitude"],
+                            altitude=config.get("gps_altitude", 0),
+                        )
+                        self.status_updated.emit(
+                            f"✓ 已为 Screened_images 中 {gps_count} 张 JPEG 写入 GPS"
+                        )
+                        results["gps_written"] = gps_count
+                    except Exception as e:
+                        self.error_occurred.emit(f"GPS 写入失败: {str(e)}")
+                        results["gps_written"] = 0
+                    _emit_phase_progress("gps", 1, 1)
+                    self.eta_checkpoint.emit({"kind": "phase_done", "phase": "gps"})
 
                 if not self.is_running:
                     return
@@ -348,6 +357,36 @@ class WorkerThread(QThread):
                     "已跳过连拍检测，物种等后续步骤将使用输出文件夹下的 Screened_images"
                 )
 
+            if config.get("enable_gps_write") and not burst_on:
+                if os.path.isdir(screened_dir):
+                    current_step += 1
+                    self.status_updated.emit(
+                        f"[步骤 {current_step}/{total_steps}] 向 Screened_images 内 JPEG 写入 GPS EXIF…"
+                    )
+                    _emit_phase_progress("gps", 0, 1)
+                    self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "gps"})
+                    try:
+                        gps_count = batch_write_gps_exif(
+                            image_folder=screened_dir,
+                            latitude=config["gps_latitude"],
+                            longitude=config["gps_longitude"],
+                            altitude=config.get("gps_altitude", 0),
+                        )
+                        self.status_updated.emit(
+                            f"✓ 已为 Screened_images 中 {gps_count} 张 JPEG 写入 GPS"
+                        )
+                        results["gps_written"] = gps_count
+                    except Exception as e:
+                        self.error_occurred.emit(f"GPS 写入失败: {str(e)}")
+                        results["gps_written"] = 0
+                    _emit_phase_progress("gps", 1, 1)
+                    self.eta_checkpoint.emit({"kind": "phase_done", "phase": "gps"})
+                else:
+                    self.status_updated.emit(
+                        "GPS：未找到 Screened_images 目录，已跳过（无连拍筛选时请先准备该目录）。"
+                    )
+                    results["gps_written"] = 0
+
             # 下一步：物种识别 / 裁剪或原图归档
             do_species = config.get('enable_species_detection', True)
             do_crop = config.get('enable_crop', False)
@@ -396,19 +435,30 @@ class WorkerThread(QThread):
                     )
                     
                     # 连拍成功后仅处理筛选保留的图片；连拍失败则回退为扫描整个输入目录
-                    import fnmatch
-                    
                     output_root = config['crop_output_folder']
-                    image_patterns = ('*.jpg', '*.jpeg', '*.png')
-                    
+                    _img_exts = all_supported_extensions()
+
                     if burst_filter_applied:
-                        image_files = [
-                            p for p in get_kept_images(results)
-                            if os.path.isfile(p)
-                        ]
-                        self.status_updated.emit(
-                            f"物种识别/归档输入为连拍筛选保留的 {len(image_files)} 张（非全部原始图）"
+                        image_files = screened_paths_for_kept_images(
+                            results,
+                            config["image_folder"],
+                            screened_dir,
                         )
+                        if not image_files:
+                            self.status_updated.emit(
+                                "⚠ 未在 Screened_images 中找到与筛选保留对应的文件，"
+                                "物种步骤将回退为原库路径。"
+                            )
+                            image_files = [
+                                p
+                                for p in get_kept_images(results)
+                                if os.path.isfile(p)
+                            ]
+                        else:
+                            self.status_updated.emit(
+                                f"物种识别/归档使用 Screened_images 共 {len(image_files)} 张"
+                                "（与连拍筛选副本一致，可读取已写入的 GPS 以启用地理约束）"
+                            )
                     elif not burst_on:
                         image_files = _collect_image_paths_under(screened_dir)
                         if not image_files:
@@ -426,13 +476,12 @@ class WorkerThread(QThread):
                     else:
                         image_folder = config['image_folder']
                         image_files = []
-                        for pattern in image_patterns:
-                            for root, dirs, files in os.walk(image_folder):
-                                for file in files:
-                                    if fnmatch.fnmatch(file.lower(), pattern.lower()):
-                                        image_path = os.path.join(root, file)
-                                        if image_path not in image_files:
-                                            image_files.append(image_path)
+                        for root, dirs, files in os.walk(image_folder):
+                            for file in files:
+                                if Path(file).suffix.lower() in _img_exts:
+                                    image_path = os.path.join(root, file)
+                                    if image_path not in image_files:
+                                        image_files.append(image_path)
                         image_files = list(set(image_files))
                         self.status_updated.emit(
                             "物种识别/归档：连拍步骤未成功完成，扫描全部输入图片"
@@ -677,6 +726,12 @@ class WorkerThread(QThread):
                         enable_camera_params=bool(config.get("wm_enable_camera", True)),
                         logo_path=str(config.get("wm_logo_path", "") or ""),
                         logo_width_ratio=float(config.get("wm_logo_width_ratio", 0.30)),
+                        enable_tone_adjust=bool(
+                            config.get("wm_enable_tone_adjust", False)
+                        ),
+                        tone_shadow_lift=int(config.get("wm_tone_shadow_lift", 0)),
+                        tone_exposure=int(config.get("wm_tone_exposure", 0)),
+                        tone_contrast=int(config.get("wm_tone_contrast", 0)),
                     )
                     wm_result = generate_watermarks(
                         source_folder=source_folder,
@@ -710,7 +765,60 @@ class WorkerThread(QThread):
         self.is_running = False
 
 
+class WatermarkBatchThread(QThread):
+    """在后台线程运行批量水印，避免阻塞 GUI。"""
 
+    progress = pyqtSignal(int, int)  # done, total
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+
+    def __init__(
+        self,
+        source_folder: str,
+        output_folder: str,
+        options: WatermarkOptions,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._source_folder = source_folder
+        self._output_folder = output_folder
+        self._options = options
+        self._last_log_pct = -1
+
+    def run(self) -> None:
+        self._last_log_pct = -1
+
+        def _cb(d: Dict) -> None:
+            k = d.get("kind")
+            tot = max(1, int(d.get("total", 1)))
+            if k == "start":
+                self.log_line.emit(f"水印批量：开始，共 {tot} 张…")
+                self.progress.emit(0, tot)
+            elif k == "tick":
+                done = int(d.get("done", 0))
+                self.progress.emit(done, tot)
+                pct = min(100, (100 * done) // tot)
+                if pct >= self._last_log_pct + 5 or done >= tot:
+                    self.log_line.emit(f"水印批量：进度 {done}/{tot}（{pct}%）")
+                    self._last_log_pct = pct
+            elif k == "done":
+                self.progress.emit(tot, tot)
+
+        try:
+            r = generate_watermarks(
+                source_folder=self._source_folder,
+                output_folder=self._output_folder,
+                options=self._options,
+                prefer_folder_name_as_species=True,
+                progress_callback=_cb,
+            )
+            self.log_line.emit(
+                f"水印批量：结束，成功 {r.get('ok', 0)}，失败 {r.get('fail', 0)}。"
+            )
+            self.finished_ok.emit(r)
+        except Exception as e:
+            self.failed.emit(str(e))
 
 
 class BirdDetectionGUI(QMainWindow):
@@ -730,6 +838,7 @@ class BirdDetectionGUI(QMainWindow):
         
         # 初始化变量
         self.worker_thread: Optional[WorkerThread] = None
+        self._wm_batch_thread: Optional[WatermarkBatchThread] = None
         self.config: Dict = self._get_default_config()
         self._process_start_monotonic: Optional[float] = None
         self._process_time_timer = QTimer(self)
@@ -1102,6 +1211,10 @@ class BirdDetectionGUI(QMainWindow):
             'wm_enable_species': True,
             'wm_enable_camera': True,
             'wm_logo_width_ratio': 0.30,
+            'wm_enable_tone_adjust': False,
+            'wm_tone_shadow_lift': 0,
+            'wm_tone_exposure': 0,
+            'wm_tone_contrast': 0,
         }
     
     def _init_ui(self):
@@ -1246,7 +1359,11 @@ class BirdDetectionGUI(QMainWindow):
         gps_write_row = QHBoxLayout()
         self.gps_write_checkbox = QCheckBox("写入GPS到Exif")
         self.gps_write_checkbox.setChecked(self.config['enable_gps_write'])
-        self.gps_write_checkbox.setToolTip("是否将GPS坐标写入图片的Exif信息中")
+        self.gps_write_checkbox.setToolTip(
+            "在连拍筛选结束并将保留图复制到输出目录下的 Screened_images 之后，\n"
+            "再仅对这些副本中的 JPEG 写入 GPS；不会改写入库前的原始文件夹。\n"
+            "RAW 在复制时会先转为经生态向优化的 JPEG，再写入 GPS。"
+        )
         self.gps_write_checkbox.stateChanged.connect(self._on_gps_write_changed)
         gps_write_row.addWidget(self.gps_write_checkbox)
         gps_write_row.addStretch()
@@ -1552,13 +1669,103 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_camera_checkbox.setChecked(self.config.get("wm_enable_camera", True))
         wm_layout.addRow("", self.wm_camera_checkbox)
 
+        self.wm_tone_enable_checkbox = QCheckBox("水印前批量图像增强（暗部 / 曝光 / 对比度）")
+        self.wm_tone_enable_checkbox.setChecked(
+            self.config.get("wm_enable_tone_adjust", False)
+        )
+        self.wm_tone_enable_checkbox.setToolTip(
+            "开启后：批量水印与预览会先对原图做增强，再加水印边框与文字。"
+        )
+        wm_layout.addRow("", self.wm_tone_enable_checkbox)
+
+        def _tone_row(label: str, slider: QSlider, val_label: QLabel) -> QWidget:
+            row = QWidget()
+            hl = QHBoxLayout(row)
+            hl.setContentsMargins(0, 0, 0, 0)
+            hl.addWidget(QLabel(label))
+            hl.addWidget(slider, 1)
+            hl.addWidget(val_label)
+            return row
+
+        self.wm_tone_shadow_slider = QSlider(Qt.Horizontal)
+        self.wm_tone_shadow_slider.setRange(0, 100)
+        self.wm_tone_shadow_slider.setValue(
+            int(self.config.get("wm_tone_shadow_lift", 0))
+        )
+        self.wm_tone_shadow_val = QLabel()
+        self.wm_tone_shadow_val.setMinimumWidth(36)
+        self.wm_tone_shadow_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+        def _upd_sh(v: int) -> None:
+            self.wm_tone_shadow_val.setText(str(v))
+
+        self.wm_tone_shadow_slider.valueChanged.connect(_upd_sh)
+        _upd_sh(self.wm_tone_shadow_slider.value())
+        wm_layout.addRow(
+            "",
+            _tone_row("暗部提亮", self.wm_tone_shadow_slider, self.wm_tone_shadow_val),
+        )
+
+        self.wm_tone_exposure_slider = QSlider(Qt.Horizontal)
+        self.wm_tone_exposure_slider.setRange(-100, 100)
+        self.wm_tone_exposure_slider.setValue(
+            int(self.config.get("wm_tone_exposure", 0))
+        )
+        self.wm_tone_exposure_slider.setTickPosition(QSlider.TicksBelow)
+        self.wm_tone_exposure_slider.setTickInterval(50)
+        self.wm_tone_exposure_val = QLabel()
+        self.wm_tone_exposure_val.setMinimumWidth(36)
+        self.wm_tone_exposure_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+        def _upd_exp(v: int) -> None:
+            self.wm_tone_exposure_val.setText(str(v))
+
+        self.wm_tone_exposure_slider.valueChanged.connect(_upd_exp)
+        _upd_exp(self.wm_tone_exposure_slider.value())
+        wm_layout.addRow(
+            "",
+            _tone_row("曝光", self.wm_tone_exposure_slider, self.wm_tone_exposure_val),
+        )
+
+        self.wm_tone_contrast_slider = QSlider(Qt.Horizontal)
+        self.wm_tone_contrast_slider.setRange(-100, 100)
+        self.wm_tone_contrast_slider.setValue(
+            int(self.config.get("wm_tone_contrast", 0))
+        )
+        self.wm_tone_contrast_slider.setTickPosition(QSlider.TicksBelow)
+        self.wm_tone_contrast_slider.setTickInterval(50)
+        self.wm_tone_contrast_val = QLabel()
+        self.wm_tone_contrast_val.setMinimumWidth(36)
+        self.wm_tone_contrast_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+        def _upd_ct(v: int) -> None:
+            self.wm_tone_contrast_val.setText(str(v))
+
+        self.wm_tone_contrast_slider.valueChanged.connect(_upd_ct)
+        _upd_ct(self.wm_tone_contrast_slider.value())
+        wm_layout.addRow(
+            "",
+            _tone_row("对比度", self.wm_tone_contrast_slider, self.wm_tone_contrast_val),
+        )
+
+        def _sync_wm_tone_widgets_en(checked: bool) -> None:
+            for w in (
+                self.wm_tone_shadow_slider,
+                self.wm_tone_exposure_slider,
+                self.wm_tone_contrast_slider,
+            ):
+                w.setEnabled(checked)
+
+        self.wm_tone_enable_checkbox.toggled.connect(_sync_wm_tone_widgets_en)
+        _sync_wm_tone_widgets_en(self.wm_tone_enable_checkbox.isChecked())
+
         wm_preview_row = QHBoxLayout()
         wm_preview_btn = QPushButton("预览一张效果")
         wm_preview_btn.clicked.connect(self._preview_watermark_one)
         wm_preview_row.addWidget(wm_preview_btn)
-        wm_run_btn = QPushButton("批量水印生成")
-        wm_run_btn.clicked.connect(self._run_watermark_batch)
-        wm_preview_row.addWidget(wm_run_btn)
+        self.wm_run_btn = QPushButton("批量水印生成")
+        self.wm_run_btn.clicked.connect(self._run_watermark_batch)
+        wm_preview_row.addWidget(self.wm_run_btn)
         wm_preview_row.addStretch(1)
         wm_layout.addRow("", wm_preview_row)
 
@@ -1907,7 +2114,7 @@ class BirdDetectionGUI(QMainWindow):
             self,
             "选择签名 Logo",
             "",
-            "Image Files (*.png *.jpg *.jpeg *.webp *.bmp)",
+            file_filter_all_images(),
         )
         if file_path:
             self.wm_logo_input.setText(file_path)
@@ -1927,6 +2134,10 @@ class BirdDetectionGUI(QMainWindow):
             enable_camera_params=self.wm_camera_checkbox.isChecked(),
             logo_path=self.wm_logo_input.text().strip(),
             logo_width_ratio=float(self.wm_logo_width_ratio_input.value()),
+            enable_tone_adjust=self.wm_tone_enable_checkbox.isChecked(),
+            tone_shadow_lift=int(self.wm_tone_shadow_slider.value()),
+            tone_exposure=int(self.wm_tone_exposure_slider.value()),
+            tone_contrast=int(self.wm_tone_contrast_slider.value()),
         )
 
     def _resolve_watermark_source_folder(self) -> str:
@@ -1941,6 +2152,9 @@ class BirdDetectionGUI(QMainWindow):
 
     def _run_watermark_batch(self):
         """仅执行批量水印生成（不触发完整主流程）。"""
+        if self._wm_batch_thread is not None and self._wm_batch_thread.isRunning():
+            QMessageBox.information(self, "提示", "批量水印正在运行中，请稍候。")
+            return
         source_folder = self._resolve_watermark_source_folder()
         if not source_folder or not os.path.isdir(source_folder):
             QMessageBox.warning(
@@ -1956,28 +2170,57 @@ class BirdDetectionGUI(QMainWindow):
             self.wm_output_folder_input.setText(output_folder)
         try:
             Path(output_folder).mkdir(parents=True, exist_ok=True)
-            options = self._build_watermark_options()
-            wm_result = generate_watermarks(
-                source_folder=source_folder,
-                output_folder=output_folder,
-                options=options,
-                prefer_folder_name_as_species=True,
-            )
+        except Exception as e:
+            QMessageBox.critical(self, "水印生成失败", f"无法创建输出目录：{e}")
+            return
+
+        options = self._build_watermark_options()
+        self._sync_config_from_ui()
+        self._save_config()
+
+        self.wm_run_btn.setEnabled(False)
+        self.progress_bar.setValue(0)
+        self.add_log("已启动后台批量水印线程…")
+        print("已启动后台批量水印线程…")
+
+        th = WatermarkBatchThread(source_folder, output_folder, options, self)
+        self._wm_batch_thread = th
+
+        def _on_prog(done: int, total: int) -> None:
+            pct = int(100 * min(done, total) / max(1, total))
+            self.progress_bar.setValue(pct)
+
+        def _on_log(msg: str) -> None:
+            self.add_log(msg)
+            print(msg)
+
+        def _on_ok(r: Dict) -> None:
+            self.wm_run_btn.setEnabled(True)
+            self.progress_bar.setValue(100)
             QMessageBox.information(
                 self,
                 "水印生成完成",
-                f"总计 {wm_result['total']}，成功 {wm_result['ok']}，失败 {wm_result['fail']}\n输出目录：{output_folder}",
+                f"总计 {r.get('total', 0)}，成功 {r.get('ok', 0)}，失败 {r.get('fail', 0)}\n"
+                f"输出目录：{output_folder}",
             )
             try:
                 self._sync_config_from_ui()
                 self._save_config()
             except Exception as e:
                 print(f"水印完成后保存配置失败: {e}")
-        except Exception as e:
-            QMessageBox.critical(self, "水印生成失败", str(e))
+
+        def _on_fail(msg: str) -> None:
+            self.wm_run_btn.setEnabled(True)
+            QMessageBox.critical(self, "水印生成失败", msg)
+
+        th.progress.connect(_on_prog)
+        th.log_line.connect(_on_log)
+        th.finished_ok.connect(_on_ok)
+        th.failed.connect(_on_fail)
+        th.start()
 
     def _preview_watermark_one(self):
-        """按当前水印配置预览一张效果图。"""
+        """按当前水印配置预览一张效果图；可在对话框内用滑条微调色调并写回主界面。"""
         source_folder = self._resolve_watermark_source_folder()
         if not source_folder or not os.path.isdir(source_folder):
             QMessageBox.warning(
@@ -1986,43 +2229,126 @@ class BirdDetectionGUI(QMainWindow):
             return
 
         imgs = collect_images_recursive(source_folder)
-        preview_path = imgs[0] if imgs else ""
-        if not preview_path:
+        paths_all: List[str] = list(imgs)
+        if not paths_all:
             fp, _ = QFileDialog.getOpenFileName(
                 self,
                 "选择一张用于预览的图片",
                 source_folder,
-                "Image Files (*.jpg *.jpeg *.png *.webp *.bmp *.tif *.tiff)",
+                file_filter_all_images(),
             )
-            preview_path = fp
-        if not preview_path:
-            return
+            if not fp:
+                return
+            paths_all = [fp]
 
-        options = self._build_watermark_options()
-        out_img = render_watermark_for_image(
-            image_path=preview_path,
-            source_folder=source_folder,
-            options=options,
-            prefer_folder_name_as_species=True,
-        )
-        if out_img is None:
-            QMessageBox.warning(self, "提示", "预览失败：无法读取图片。")
-            return
+        nav_state: Dict[str, Any] = {"paths": paths_all, "idx": 0}
+
+        def _current_path() -> str:
+            ps = nav_state["paths"]
+            i = int(nav_state["idx"])
+            return str(ps[i])
 
         from PyQt5.QtGui import QImage, QPixmap
 
-        arr = np.array(out_img.convert("RGB"))
-        h, w, _ = arr.shape
-        qimg = QImage(arr.data, w, h, 3 * w, QImage.Format_RGB888).copy()
-        pix = QPixmap.fromImage(qimg)
+        def _options_for_preview(
+            tone_on: bool, sh: int, exp: int, ctr: int
+        ) -> WatermarkOptions:
+            base = self._build_watermark_options()
+            return replace(
+                base,
+                enable_tone_adjust=tone_on,
+                tone_shadow_lift=int(sh),
+                tone_exposure=int(exp),
+                tone_contrast=int(ctr),
+            )
+
+        def _render_to_pixmap(opts: WatermarkOptions) -> Optional[QPixmap]:
+            out_img = render_watermark_for_image(
+                image_path=_current_path(),
+                source_folder=source_folder,
+                options=opts,
+                prefer_folder_name_as_species=True,
+            )
+            if out_img is None:
+                return None
+            arr = np.array(out_img.convert("RGB"))
+            h, w, _ = arr.shape
+            qimg = QImage(arr.data, w, h, 3 * w, QImage.Format_RGB888).copy()
+            return QPixmap.fromImage(qimg)
 
         dlg = QDialog(self)
-        dlg.setWindowTitle("水印预览")
-        dlg.resize(980, 720)
+        dlg.setWindowTitle("水印与色调预览")
+        dlg.resize(1000, 780)
         v = QVBoxLayout(dlg)
-        info = QLabel(f"预览文件：{os.path.basename(preview_path)}")
+        info = QLabel()
         info.setWordWrap(True)
         v.addWidget(info)
+
+        nav_row = QHBoxLayout()
+        prev_im_btn = QPushButton("上一张")
+        next_im_btn = QPushButton("下一张")
+        prev_im_btn.setToolTip("上一张 (←)")
+        next_im_btn.setToolTip("下一张 (→)")
+        nav_pos_label = QLabel()
+        nav_pos_label.setMinimumWidth(80)
+        nav_pos_label.setAlignment(Qt.AlignCenter)
+        nav_row.addWidget(prev_im_btn)
+        nav_row.addStretch(1)
+        nav_row.addWidget(nav_pos_label)
+        nav_row.addStretch(1)
+        nav_row.addWidget(next_im_btn)
+        v.addLayout(nav_row)
+
+        tone_cb = QCheckBox("水印前启用图像增强（与主界面选项一致，可在此微调）")
+        tone_cb.setChecked(self.wm_tone_enable_checkbox.isChecked())
+        v.addWidget(tone_cb)
+
+        def _mini_tone_row(label: str, slider: QSlider, val_lb: QLabel) -> QWidget:
+            row = QWidget()
+            hl = QHBoxLayout(row)
+            hl.setContentsMargins(0, 0, 0, 0)
+            hl.addWidget(QLabel(label))
+            hl.addWidget(slider, 1)
+            hl.addWidget(val_lb)
+            return row
+
+        d_sh = QSlider(Qt.Horizontal)
+        d_sh.setRange(0, 100)
+        d_sh.setValue(int(self.wm_tone_shadow_slider.value()))
+        d_sh_l = QLabel()
+        d_sh_l.setMinimumWidth(36)
+        d_sh_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        d_sh.valueChanged.connect(lambda x: d_sh_l.setText(str(int(x))))
+        d_sh_l.setText(str(d_sh.value()))
+        v.addWidget(_mini_tone_row("暗部提亮", d_sh, d_sh_l))
+
+        d_exp = QSlider(Qt.Horizontal)
+        d_exp.setRange(-100, 100)
+        d_exp.setValue(int(self.wm_tone_exposure_slider.value()))
+        d_exp_l = QLabel()
+        d_exp_l.setMinimumWidth(36)
+        d_exp_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        d_exp.valueChanged.connect(lambda x: d_exp_l.setText(str(int(x))))
+        d_exp_l.setText(str(d_exp.value()))
+        v.addWidget(_mini_tone_row("曝光", d_exp, d_exp_l))
+
+        d_ct = QSlider(Qt.Horizontal)
+        d_ct.setRange(-100, 100)
+        d_ct.setValue(int(self.wm_tone_contrast_slider.value()))
+        d_ct_l = QLabel()
+        d_ct_l.setMinimumWidth(36)
+        d_ct_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        d_ct.valueChanged.connect(lambda x: d_ct_l.setText(str(int(x))))
+        d_ct_l.setText(str(d_ct.value()))
+
+        def _sync_d_tone_en(checked: bool) -> None:
+            for w in (d_sh, d_exp, d_ct):
+                w.setEnabled(checked)
+
+        tone_cb.toggled.connect(_sync_d_tone_en)
+        _sync_d_tone_en(tone_cb.isChecked())
+        v.addWidget(_mini_tone_row("对比度", d_ct, d_ct_l))
+
         tools = QHBoxLayout()
         zoom_out_btn = QPushButton("缩小")
         zoom_in_btn = QPushButton("放大")
@@ -2041,8 +2367,12 @@ class BirdDetectionGUI(QMainWindow):
         img_lb = QLabel()
         img_lb.setAlignment(Qt.AlignCenter)
         zoom_state = {"scale": 1.0}
+        pix_state: Dict[str, Any] = {"pix": None}
 
         def _apply_scaled():
+            pix = pix_state.get("pix")
+            if pix is None or pix.isNull():
+                return
             scale = max(0.1, float(zoom_state["scale"]))
             nw = max(1, int(pix.width() * scale))
             nh = max(1, int(pix.height() * scale))
@@ -2051,6 +2381,9 @@ class BirdDetectionGUI(QMainWindow):
             )
 
         def _fit_to_view():
+            pix = pix_state.get("pix")
+            if pix is None or pix.isNull():
+                return
             vw = max(1, sc.viewport().width() - 16)
             vh = max(1, sc.viewport().height() - 16)
             sx = vw / max(1, pix.width())
@@ -2058,11 +2391,76 @@ class BirdDetectionGUI(QMainWindow):
             zoom_state["scale"] = min(sx, sy, 1.0)
             _apply_scaled()
 
+        debounce = QTimer(dlg)
+        debounce.setSingleShot(True)
+        debounce.setInterval(140)
+
+        def _do_refresh():
+            opts = _options_for_preview(
+                tone_cb.isChecked(),
+                d_sh.value(),
+                d_exp.value(),
+                d_ct.value(),
+            )
+            pm = _render_to_pixmap(opts)
+            if pm is None:
+                return
+            pix_state["pix"] = pm
+            _apply_scaled()
+
+        def _schedule_refresh():
+            debounce.stop()
+            debounce.start()
+
+        debounce.timeout.connect(_do_refresh)
+        for s in (d_sh, d_exp, d_ct):
+            s.valueChanged.connect(lambda _v, __f=_schedule_refresh: __f())
+        tone_cb.toggled.connect(lambda _c, __f=_schedule_refresh: __f())
+
+        def _update_nav_ui() -> None:
+            n = len(nav_state["paths"])
+            i = int(nav_state["idx"])
+            prev_im_btn.setEnabled(n > 1 and i > 0)
+            next_im_btn.setEnabled(n > 1 and i < n - 1)
+            nav_pos_label.setText(f"{i + 1} / {n}")
+            cur = _current_path()
+            info.setText(
+                f"预览文件（{i + 1}/{n}）：{os.path.basename(cur)}\n"
+                "拖动下方滑条可实时预览色调；点「确定」将当前色调写回主界面并用于后续批量水印。"
+            )
+
+        def _step_image(delta: int) -> None:
+            n = len(nav_state["paths"])
+            if n <= 1:
+                return
+            ni = max(0, min(n - 1, int(nav_state["idx"]) + int(delta)))
+            if ni == int(nav_state["idx"]):
+                return
+            nav_state["idx"] = ni
+            zoom_state["scale"] = 1.0
+            debounce.stop()
+            _update_nav_ui()
+            _do_refresh()
+            QTimer.singleShot(0, _fit_to_view)
+
+        prev_im_btn.clicked.connect(lambda: _step_image(-1))
+        next_im_btn.clicked.connect(lambda: _step_image(1))
+        _sc_prev = QShortcut(QKeySequence(Qt.Key_Left), dlg)
+        _sc_prev.activated.connect(lambda: _step_image(-1))
+        _sc_next = QShortcut(QKeySequence(Qt.Key_Right), dlg)
+        _sc_next.activated.connect(lambda: _step_image(1))
+
         zoom_in_btn.clicked.connect(
-            lambda: (zoom_state.__setitem__("scale", zoom_state["scale"] * 1.15), _apply_scaled())
+            lambda: (
+                zoom_state.__setitem__("scale", zoom_state["scale"] * 1.15),
+                _apply_scaled(),
+            )
         )
         zoom_out_btn.clicked.connect(
-            lambda: (zoom_state.__setitem__("scale", zoom_state["scale"] / 1.15), _apply_scaled())
+            lambda: (
+                zoom_state.__setitem__("scale", zoom_state["scale"] / 1.15),
+                _apply_scaled(),
+            )
         )
         fit_btn.clicked.connect(_fit_to_view)
         one_btn.clicked.connect(
@@ -2071,13 +2469,26 @@ class BirdDetectionGUI(QMainWindow):
         hv.addWidget(img_lb)
         sc.setWidget(holder)
         v.addWidget(sc, 1)
-        btns = QDialogButtonBox(QDialogButtonBox.Close)
-        btns.rejected.connect(dlg.reject)
+
+        btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         btns.accepted.connect(dlg.accept)
-        btns.button(QDialogButtonBox.Close).clicked.connect(dlg.reject)
+        btns.rejected.connect(dlg.reject)
         v.addWidget(btns)
+
+        _update_nav_ui()
+        _do_refresh()
         QTimer.singleShot(0, _fit_to_view)
-        dlg.exec_()
+
+        if dlg.exec_() == QDialog.Accepted:
+            self.wm_tone_enable_checkbox.setChecked(tone_cb.isChecked())
+            self.wm_tone_shadow_slider.setValue(int(d_sh.value()))
+            self.wm_tone_exposure_slider.setValue(int(d_exp.value()))
+            self.wm_tone_contrast_slider.setValue(int(d_ct.value()))
+            try:
+                self._sync_config_from_ui()
+                self._save_config()
+            except Exception as e:
+                print(f"预览确定后保存配置失败: {e}")
     
     def _on_location_text_changed(self, text):
         """地址文本改变时的处理"""
@@ -2575,6 +2986,12 @@ class BirdDetectionGUI(QMainWindow):
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
         )
+        self.config["wm_enable_tone_adjust"] = (
+            self.wm_tone_enable_checkbox.isChecked()
+        )
+        self.config["wm_tone_shadow_lift"] = int(self.wm_tone_shadow_slider.value())
+        self.config["wm_tone_exposure"] = int(self.wm_tone_exposure_slider.value())
+        self.config["wm_tone_contrast"] = int(self.wm_tone_contrast_slider.value())
         self.config["use_local_model"] = self.local_model_radio.isChecked()
         self.config["species_conf_threshold_enabled"] = (
             self.min_species_threshold_enable_checkbox.isChecked()
@@ -2670,6 +3087,24 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get('wm_logo_width_ratio', 0.30))
         )
+        self.wm_tone_enable_checkbox.setChecked(
+            self.config.get("wm_enable_tone_adjust", False)
+        )
+        self.wm_tone_shadow_slider.setValue(
+            int(self.config.get("wm_tone_shadow_lift", 0))
+        )
+        self.wm_tone_exposure_slider.setValue(
+            int(self.config.get("wm_tone_exposure", 0))
+        )
+        self.wm_tone_contrast_slider.setValue(
+            int(self.config.get("wm_tone_contrast", 0))
+        )
+        for w in (
+            self.wm_tone_shadow_slider,
+            self.wm_tone_exposure_slider,
+            self.wm_tone_contrast_slider,
+        ):
+            w.setEnabled(self.wm_tone_enable_checkbox.isChecked())
         
         # 物种识别配置
         use_local = self.config.get('use_local_model', True)
@@ -2709,6 +3144,18 @@ class BirdDetectionGUI(QMainWindow):
                 self.worker_thread.wait()
                 self._process_time_timer.stop()
                 self._process_start_monotonic = None
+        if self._wm_batch_thread is not None and self._wm_batch_thread.isRunning():
+            reply = QMessageBox.question(
+                self,
+                "确认关闭",
+                "批量水印仍在后台运行，关闭窗口将中止该任务。确定要关闭吗？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
+            self._wm_batch_thread.wait()
         try:
             self._sync_config_from_ui()
             self._save_config()

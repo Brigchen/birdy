@@ -36,11 +36,16 @@ def _load_skill_info_meta() -> Tuple[str, str]:
         pass
     return version, release_date
 
-from burst_grouping import process_folder, get_kept_images
+from burst_grouping import (
+    process_folder,
+    get_kept_images,
+    screened_paths_for_kept_images,
+)
 from html_report_generator import generate_html_report
 from geo_encoder import batch_write_gps_exif, geocode_location
 from detect_bird_and_eye import BirdAndEyeDetector
 from api_config_defaults import ensure_doubao_api_config_file
+from image_io import all_supported_extensions
 
 
 class BirdDetectionCLI:
@@ -385,31 +390,13 @@ class BirdDetectionCLI:
         
         print(f"[步骤 {current_step + 1}/{total_steps}] 开始处理...")
         print("-" * 70)
-        
-        # 第一步：GPS写入
-        if self.config['enable_gps_write']:
-            current_step += 1
-            print(f"\n[步骤 {current_step}/{total_steps}] 写入GPS EXIF...")
-            
-            try:
-                gps_count = batch_write_gps_exif(
-                    image_folder=self.config['image_folder'],
-                    latitude=self.config['gps_latitude'],
-                    longitude=self.config['gps_longitude'],
-                    altitude=self.config.get('gps_altitude', 0)
-                )
-                print(f"    [+] 成功写入 {gps_count} 张图片的 GPS")
-                results['gps_written'] = gps_count
-            except Exception as e:
-                print(f"    [!] GPS写入失败: {e}")
-                results['gps_written'] = 0
-        
-        # 第二步：连拍识别和筛选
+
+        # 第一步：连拍识别和筛选（末尾复制至 Screened_images；RAW 在此转为 JPEG）
         current_step += 1
         print(f"\n[步骤 {current_step}/{total_steps}] 连拍识别与筛选...")
         burst_filter_applied = False
+        screened_dir = os.path.join(self.config["output_folder"], "Screened_images")
         try:
-            screened_dir = os.path.join(self.config['output_folder'], 'Screened_images')
             burst_result = process_folder(
                 image_folder=self.config['image_folder'],
                 time_threshold=self.config['time_threshold'],
@@ -441,7 +428,25 @@ class BirdDetectionCLI:
             results['total_images'] = 0
             results['kept_images'] = 0
             results['discarded_images'] = 0
-        
+
+        if self.config["enable_gps_write"]:
+            current_step += 1
+            print(
+                f"\n[步骤 {current_step}/{total_steps}] 向筛选副本（Screened_images）写入 GPS EXIF..."
+            )
+            try:
+                gps_count = batch_write_gps_exif(
+                    image_folder=screened_dir,
+                    latitude=self.config["gps_latitude"],
+                    longitude=self.config["gps_longitude"],
+                    altitude=self.config.get("gps_altitude", 0),
+                )
+                print(f"    [+] 已为 Screened_images 中 {gps_count} 张 JPEG 写入 GPS")
+                results["gps_written"] = gps_count
+            except Exception as e:
+                print(f"    [!] GPS 写入失败: {e}")
+                results["gps_written"] = 0
+
         # 第三步：生成报告
         if self.config['generate_burst_report']:
             current_step += 1
@@ -509,27 +514,35 @@ class BirdDetectionCLI:
                 )
                 
                 output_root = self.config['crop_output_folder']
-                import fnmatch
-                
+
                 if burst_filter_applied:
-                    image_files = [
-                        p for p in get_kept_images(results)
-                        if os.path.isfile(p)
-                    ]
-                    print(
-                        f"    [+] 物种识别/归档仅处理连拍筛选保留的 {len(image_files)} 张"
+                    image_files = screened_paths_for_kept_images(
+                        results,
+                        self.config["image_folder"],
+                        screened_dir,
                     )
+                    if not image_files:
+                        print(
+                            "    [!] Screened_images 中未找到筛选副本，回退为原库路径"
+                        )
+                        image_files = [
+                            p for p in get_kept_images(results) if os.path.isfile(p)
+                        ]
+                    else:
+                        print(
+                            f"    [+] 物种识别/归档使用 Screened_images 共 {len(image_files)} 张"
+                            "（可读 GPS EXIF 以启用地理约束）"
+                        )
                 else:
                     image_folder = self.config['image_folder']
-                    image_patterns = ['*.jpg', '*.jpeg', '*.png']
+                    _exts = all_supported_extensions()
                     image_files = []
-                    for pattern in image_patterns:
-                        for root, dirs, files in os.walk(image_folder):
-                            for file in files:
-                                if fnmatch.fnmatch(file.lower(), pattern.lower()):
-                                    image_path = os.path.join(root, file)
-                                    if image_path not in image_files:
-                                        image_files.append(image_path)
+                    for root, dirs, files in os.walk(image_folder):
+                        for file in files:
+                            if Path(file).suffix.lower() in _exts:
+                                image_path = os.path.join(root, file)
+                                if image_path not in image_files:
+                                    image_files.append(image_path)
                     image_files = list(set(image_files))
                     print(
                         f"    [+] 连拍步骤未完成，扫描输入目录共 {len(image_files)} 张"

@@ -10,7 +10,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
 
-from PIL import Image, ImageDraw, ImageFont, ImageStat
+from PIL import Image, ImageDraw, ImageFont, ImageStat, ImageEnhance
+
+from image_io import all_supported_extensions, open_pil_rgb
+
+try:
+    import cv2
+    import numpy as np
+except Exception:  # pragma: no cover
+    cv2 = None  # type: ignore
+    np = None  # type: ignore
 
 try:
     import piexif
@@ -39,17 +48,19 @@ class WatermarkOptions:
     enable_camera_params: bool = True
     logo_path: str = ""
     logo_width_ratio: float = 0.30
+    # 水印前批量色调：先对原图做处理再套边框与文字
+    enable_tone_adjust: bool = False
+    tone_shadow_lift: int = 0  # 0–100，LAB 通道 CLAHE 提亮暗部
+    tone_exposure: int = 0  # -100–100，约 0.5–1.5 倍亮度（0 为原图）
+    tone_contrast: int = 0  # -100–100，约 0.5–1.5 倍对比度（0 为原图）
 
 
 def _safe_open_image(path: str) -> Optional[Image.Image]:
-    try:
-        return Image.open(path).convert("RGB")
-    except Exception:
-        return None
+    return open_pil_rgb(path, raw_half_size=False)
 
 
 def _collect_images_recursive(root: str) -> List[str]:
-    exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+    exts = all_supported_extensions()
     out: List[str] = []
     for p in Path(root).rglob("*"):
         if p.is_file() and p.suffix.lower() in exts:
@@ -60,6 +71,47 @@ def _collect_images_recursive(root: str) -> List[str]:
 def collect_images_recursive(root: str) -> List[str]:
     """公开：递归收集图片路径。"""
     return _collect_images_recursive(root)
+
+
+def apply_watermark_tone_preproc(
+    img: Image.Image, options: WatermarkOptions
+) -> Image.Image:
+    """
+    水印前的批量图像增强：暗部（CLAHE）、曝光、对比度。
+    与 GUI 预览、批量生成共用同一套参数。
+    """
+    if not options.enable_tone_adjust:
+        return img
+    sh = max(0, min(100, int(options.tone_shadow_lift)))
+    exp = max(-100, min(100, int(options.tone_exposure)))
+    ctr = max(-100, min(100, int(options.tone_contrast)))
+    if sh == 0 and exp == 0 and ctr == 0:
+        return img
+
+    out = img.convert("RGB")
+
+    if sh > 0 and cv2 is not None and np is not None:
+        try:
+            arr = np.asarray(out, dtype=np.uint8)
+            bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+            lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+            l_ch, a_ch, b_ch = cv2.split(lab)
+            clip = float(1.0 + (sh / 100.0) * 8.0)
+            clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(8, 8))
+            l2 = clahe.apply(l_ch)
+            merged = cv2.merge((l2, a_ch, b_ch))
+            rgb = cv2.cvtColor(cv2.cvtColor(merged, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
+            out = Image.fromarray(rgb)
+        except Exception:
+            pass
+
+    if exp != 0:
+        bf = max(0.35, min(2.2, 1.0 + exp / 200.0))
+        out = ImageEnhance.Brightness(out).enhance(bf)
+    if ctr != 0:
+        cf = max(0.35, min(2.2, 1.0 + ctr / 200.0))
+        out = ImageEnhance.Contrast(out).enhance(cf)
+    return out
 
 
 def _get_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -377,6 +429,7 @@ def generate_watermarks(
                 except Exception:
                     pass
             continue
+        img = apply_watermark_tone_preproc(img, options)
         try:
             loc = ""
             if options.enable_location:
@@ -447,6 +500,7 @@ def render_watermark_for_image(
     img = _safe_open_image(image_path)
     if img is None:
         return None
+    img = apply_watermark_tone_preproc(img, options)
 
     logo_img = None
     if options.logo_path and os.path.isfile(options.logo_path):

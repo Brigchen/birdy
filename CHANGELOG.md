@@ -1,5 +1,29 @@
 # 🐦 鸟类检测Skill - 更新日志
 
+## v2.0.3 (2026-04-17)
+
+### GPS 与连拍筛选
+
+- **GPS 写入时机调整**：仅在连拍筛选完成并将保留图复制到输出目录下的 **`Screened_images`** 之后，再对该目录（含子目录）内的 **JPEG** 递归写入 GPS；**不再**对原始输入目录批量写 EXIF。
+- **物种与地理约束**：连拍流程成功后，物种/归档阶段默认使用 **`screened_paths_for_kept_images`** 解析出的 **Screened 副本路径**（与复制规则一致，含 RAW→同路径 `.jpg`），使 `detect()` 内 `gps_to_location_meta` 能读到刚写入的 GPS；若副本缺失则回退为原 `get_kept_images` 路径。界面省市仍可作为无 GPS 时的手工地理参考。
+
+### RAW 与图像管线
+
+- 新增 **`src/image_io.py`**：集中常见相机 RAW 扩展名与 `rawpy` 解码；水印打开、连拍鸟检/对焦/鸟眼等统一经 `imread_bgr` / `open_pil_rgb`。
+- 新增 **`src/ecology_jpeg_develop.py`**：筛选复制 RAW 时做生态向显影（整体明暗、CLAHE、暗部提亮、自适应降噪与锐化）再导出 JPEG。
+- **`requirements.txt`**：将 **rawpy** 列为正式依赖。
+
+### 水印与 GUI
+
+- 独立「批量水印生成」改为 **后台线程**，接进度与日志，避免界面卡死。
+- 水印前可选 **色调调整**（暗部提亮、曝光、对比度），预览对话框支持滑条实时刷新、**上一张/下一张**、确定后写回配置。
+
+### 其它
+
+- **`geo_encoder`**：`batch_write_gps_exif` 改为 `rglob` 递归；`write_gps_exif` 对非 JPEG 直接跳过，避免格式误写。
+
+---
+
 ## v2.0.2 (2026-04-17)
 
 ### 产品定位与许可说明

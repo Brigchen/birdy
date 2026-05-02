@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+from image_io import all_supported_extensions, imread_bgr
+
 # 尝试导入配置文件
 try:
     from burst_config import (
@@ -123,28 +125,52 @@ def read_exif_time(image_path: str) -> Optional[datetime]:
     """
     try:
         from PIL import Image
-        from PIL.ExifTags import TAGS
-        
+
         with Image.open(image_path) as img:
             exif = img._getexif()
-            if not exif:
-                return None
-            
-            # 查找时间标签
-            tag_map = {v: k for k, v in TAGS.items()}
-            
-            # 尝试多个时间标签
-            time_tags = [306, 36867, 36868]  # DateTimeOriginal, DateTimeDigitized
-            for tag_id in time_tags:
-                if tag_id in exif:
-                    dt_str = exif.get(tag_id)
-                    if dt_str:
-                        # 格式: "2024:03:15 14:30:45"
-                        return datetime.strptime(dt_str, "%Y:%m:%d %H:%M:%S")
-            
-            return None
-    except Exception as e:
-        return None
+            if exif:
+                time_tags = (36867, 36868, 306)  # DateTimeOriginal, DateTimeDigitized, DateTime
+                for tag_id in time_tags:
+                    if tag_id in exif:
+                        dt_str = exif.get(tag_id)
+                        if dt_str:
+                            if isinstance(dt_str, bytes):
+                                dt_str = dt_str.decode("utf-8", errors="ignore")
+                            s = str(dt_str).strip()
+                            if len(s) >= 19:
+                                return datetime.strptime(s[:19], "%Y:%m:%d %H:%M:%S")
+    except Exception:
+        pass
+
+    try:
+        import piexif
+
+        exif = piexif.load(image_path)
+        exif_ifd = exif.get("Exif", {})
+        for key in (piexif.ExifIFD.DateTimeOriginal, piexif.ExifIFD.DateTimeDigitized):
+            raw_v = exif_ifd.get(key)
+            if raw_v:
+                s = (
+                    raw_v.decode("utf-8", errors="ignore")
+                    if isinstance(raw_v, bytes)
+                    else str(raw_v)
+                ).strip()
+                if len(s) >= 19:
+                    return datetime.strptime(s[:19], "%Y:%m:%d %H:%M:%S")
+        zeroth = exif.get("0th", {})
+        raw_v = zeroth.get(piexif.ImageIFD.DateTime)
+        if raw_v:
+            s = (
+                raw_v.decode("utf-8", errors="ignore")
+                if isinstance(raw_v, bytes)
+                else str(raw_v)
+            ).strip()
+            if len(s) >= 19:
+                return datetime.strptime(s[:19], "%Y:%m:%d %H:%M:%S")
+    except Exception:
+        pass
+
+    return None
 
 
 def _expand_bbox_xyxy(
@@ -322,7 +348,7 @@ def calculate_focus_score(
     mode = (str(_mode or "hybrid")).strip().lower()
 
     try:
-        img = cv2.imread(image_path)
+        img = imread_bgr(image_path, raw_half_size=True)
         if img is None:
             return 0.0
         h, w = img.shape[:2]
@@ -434,8 +460,8 @@ def group_images_by_time(
     """
     folder = Path(image_folder)
     
-    # 支持的图片格式
-    extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
+    # 支持的图片格式（含常见 RAW，需安装 rawpy 才能解码）
+    extensions = set(all_supported_extensions())
     
     # 获取所有图片文件
     image_files = [
@@ -581,7 +607,7 @@ def _attach_eyes_to_birds(img_info: ImageInfo, eye_model, conf: Optional[float] 
         return
 
     try:
-        img = cv2.imread(img_info.path)
+        img = imread_bgr(img_info.path, raw_half_size=True)
         if img is None:
             return
         ih, iw = img.shape[:2]
@@ -650,7 +676,11 @@ def _detect_birds_yolo(img_info: ImageInfo, model, conf: Optional[float] = None)
     img_info.birds.clear()
     img_info.bird_area = 0.0
     try:
-        results = model(img_info.path, conf=conf, verbose=False)
+        img_bgr = imread_bgr(img_info.path, raw_half_size=True)
+        if img_bgr is None:
+            print(f"      鸟体检测跳过：无法读取 {Path(img_info.path).name}")
+            return
+        results = model(img_bgr, conf=conf, verbose=False)
         for result in results:
             boxes = result.boxes
             if boxes is None or len(boxes) == 0:
@@ -1115,6 +1145,42 @@ def process_folder(
     return all_results
 
 
+def screened_paths_for_kept_images(
+    result: Dict,
+    image_folder: str,
+    screened_dir: str,
+) -> List[str]:
+    """
+    将 get_kept_images 返回的「原库绝对路径」映射为 copy_kept_images_to_screened
+    写入后的路径（与复制逻辑一致：RAW → 同相对路径下 .jpg）。
+
+    物种阶段应使用本列表，以便读取 Screened_images 中已写入的 GPS EXIF，
+    从而启用基于坐标的地理约束；仅返回磁盘上存在的路径。
+    """
+    from image_io import is_raw_path
+
+    image_folder = os.path.abspath(image_folder)
+    screened_dir = os.path.abspath(screened_dir)
+    out: List[str] = []
+    for src in get_kept_images(result):
+        abs_p = os.path.abspath(src)
+        try:
+            rel = os.path.relpath(abs_p, image_folder)
+        except ValueError:
+            rel = os.path.basename(abs_p)
+        rel = rel.replace("\\", "/")
+        dest = os.path.join(screened_dir, rel)
+        if is_raw_path(abs_p):
+            cand = os.path.splitext(dest)[0] + ".jpg"
+        else:
+            cand = dest
+        if os.path.isfile(cand):
+            out.append(cand)
+        elif is_raw_path(abs_p) and os.path.isfile(dest):
+            out.append(dest)
+    return out
+
+
 def get_kept_images(result: Dict) -> List[str]:
     """
     从处理结果中获取保留的图片路径
@@ -1149,8 +1215,12 @@ def copy_kept_images_to_screened(
     """
     将连拍筛选保留的图片复制到 screened_dir（通常为 输出目录/Screened_images），
     尽量保持相对 image_folder 的子目录结构以避免重名覆盖。
-    返回成功复制的文件数。
+    RAW：解码后经生态向显影导出为同路径名的 .jpg（便于后续 GPS EXIF）。
+    返回成功处理的文件数（含 RAW→JPEG）。
     """
+    from ecology_jpeg_develop import develop_bgr_ecology_wildlife
+    from image_io import is_raw_path, read_raw_bgr
+
     image_folder = os.path.abspath(image_folder)
     os.makedirs(screened_dir, exist_ok=True)
     n = 0
@@ -1165,7 +1235,25 @@ def copy_kept_images_to_screened(
         dest_dir = os.path.dirname(dest)
         if dest_dir:
             os.makedirs(dest_dir, exist_ok=True)
-        shutil.copy2(abs_p, dest)
+        if is_raw_path(abs_p):
+            try:
+                bgr = read_raw_bgr(abs_p, half_size=False)
+                bgr = develop_bgr_ecology_wildlife(bgr)
+                dest_jpg = os.path.splitext(dest)[0] + ".jpg"
+                ok = cv2.imwrite(
+                    dest_jpg,
+                    bgr,
+                    [int(cv2.IMWRITE_JPEG_QUALITY), 93],
+                )
+                if not ok:
+                    raise OSError("cv2.imwrite 返回 False")
+            except Exception as e:
+                print(
+                    f"  RAW 导出 JPEG 失败 ({os.path.basename(abs_p)}): {e}，已回退为原文件复制。"
+                )
+                shutil.copy2(abs_p, dest)
+        else:
+            shutil.copy2(abs_p, dest)
         n += 1
     return n
 

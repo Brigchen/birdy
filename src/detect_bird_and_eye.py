@@ -25,12 +25,10 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Union, Optional
 from ultralytics import YOLO
 
-# 尝试导入rawpy用于RAW文件处理
-try:
-    import rawpy
-    _RAWPY_AVAILABLE = True
-except ImportError:
-    _RAWPY_AVAILABLE = False
+from image_io import all_supported_extensions, is_raw_path, rawpy_available, read_raw_bgr
+
+_RAWPY_AVAILABLE = rawpy_available()
+if not _RAWPY_AVAILABLE:
     print("警告: rawpy未安装，RAW文件处理功能受限。安装命令: pip install rawpy")
 
 # 地理编码模块（地名 → GPS 坐标 → EXIF）
@@ -1561,8 +1559,7 @@ class BirdAndEyeDetector:
     @staticmethod
     def is_raw_file(file_path: str) -> bool:
         """检查文件是否为RAW格式"""
-        raw_extensions = {'.cr2', '.cr3', '.nef', '.arw', '.dng', '.orf', '.raf', '.pef', '.rw2'}
-        return Path(file_path).suffix.lower() in raw_extensions
+        return is_raw_path(file_path)
 
     @staticmethod
     def read_raw_thumbnail(file_path: str) -> np.ndarray:
@@ -1577,32 +1574,8 @@ class BirdAndEyeDetector:
         """
         if not _RAWPY_AVAILABLE:
             raise RuntimeError("rawpy未安装，无法处理RAW文件。请运行: pip install rawpy")
-
         try:
-            with rawpy.imread(file_path) as raw:
-                # 尝试获取内置缩略图
-                try:
-                    thumb = raw.extract_thumb()
-                    if thumb.format == rawpy.ThumbFormat.JPEG:
-                        # 解码JPEG缩略图
-                        img_array = np.frombuffer(thumb.data, dtype=np.uint8)
-                        image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                        if image is not None:
-                            return image
-                except Exception as e:
-                    print(f"  无法提取缩略图: {e}，尝试使用RAW数据")
-
-                # 如果没有缩略图或提取失败，使用postprocess生成预览图（较低质量，较快）
-                rgb = raw.postprocess(
-                    half_size=True,  # 一半尺寸，加快处理
-                    use_camera_wb=True,  # 使用相机白平衡
-                    no_auto_bright=True,  # 不自动调整亮度
-                    output_bps=8,  # 8位输出
-                )
-                # RGB转BGR
-                image = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-                return image
-
+            return read_raw_bgr(file_path, half_size=True)
         except Exception as e:
             raise RuntimeError(f"无法读取RAW文件 {file_path}: {e}")
 
@@ -2546,11 +2519,7 @@ def process_folder(
         min_species_accept_confidence=species_conf,
     )
 
-    # 支持的图片格式（包括RAW格式）
-    image_extensions = {
-        ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp",
-        ".cr2", ".cr3", ".nef", ".arw", ".dng", ".orf", ".raf", ".pef", ".rw2"
-    }
+    image_extensions = set(all_supported_extensions())
 
     # 获取所有图片文件
     image_files = [
