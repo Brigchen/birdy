@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-04-17",
+  "release_date": "2026-05-02",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
