@@ -66,6 +66,7 @@ doubao_api_usage.json
 # GUI 保存的界面参数
 src/gui_config.json
 src/gui_config-*.json
+src/burst_webp_dialog_state.json
 
 # --- 本地测试数据与输出 ---
 test_images/

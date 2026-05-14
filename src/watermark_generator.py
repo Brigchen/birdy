@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-图片水印生成模块（Leica 风格边框 + 底栏文字 + 图内签名 Logo）
+图片水印生成：外框模式（Leica 风格边框 + 底栏文字 + 图内签名），
+或 inline 模式（无外框，图内中下方「签名 | 竖线 | 物种/城市地点」两行标签）。
 """
 
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, Literal, Optional, Callable
 
-from PIL import Image, ImageDraw, ImageFont, ImageStat, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageStat
 
 from image_io import all_supported_extensions, open_pil_rgb
+
+from watermark_enhance import apply_auto_enhance_pil, load_overrides_json
 
 try:
     import cv2
@@ -38,6 +41,9 @@ except Exception:  # pragma: no cover
     locate_city = None  # type: ignore
 
 
+WatermarkStyle = Literal["frame", "inline"]
+
+
 @dataclass
 class WatermarkOptions:
     enable_location: bool = True
@@ -48,11 +54,11 @@ class WatermarkOptions:
     enable_camera_params: bool = True
     logo_path: str = ""
     logo_width_ratio: float = 0.30
-    # 水印前批量色调：先对原图做处理再套边框与文字
-    enable_tone_adjust: bool = False
-    tone_shadow_lift: int = 0  # 0–100，LAB 通道 CLAHE 提亮暗部
-    tone_exposure: int = 0  # -100–100，约 0.5–1.5 倍亮度（0 为原图）
-    tone_contrast: int = 0  # -100–100，约 0.5–1.5 倍对比度（0 为原图）
+    # frame：外框 + 底栏文字 + 图内签名；inline：无外框，图内「签名 | 竖线 | 物种/城市地点」两行标签
+    watermark_style: WatermarkStyle = "frame"
+    # 水印前自动生态显影（与 RAW 入库显影同源逻辑）；逐张微调见 enhance_overrides_path
+    enable_auto_enhance: bool = True
+    enhance_overrides_path: str = ""  # 临时 JSON，含 by_relpath → strength / exposure_fine
 
 
 def _safe_open_image(path: str) -> Optional[Image.Image]:
@@ -73,45 +79,31 @@ def collect_images_recursive(root: str) -> List[str]:
     return _collect_images_recursive(root)
 
 
-def apply_watermark_tone_preproc(
-    img: Image.Image, options: WatermarkOptions
+def apply_watermark_photo_pipeline(
+    img: Image.Image,
+    options: WatermarkOptions,
+    src_abs_path: str,
+    source_folder: str,
+    overrides_by_rel: Optional[Dict[str, dict]] = None,
 ) -> Image.Image:
     """
-    水印前的批量图像增强：暗部（CLAHE）、曝光、对比度。
-    与 GUI 预览、批量生成共用同一套参数。
+    水印前：可选自动生态显影 + 逐张 overrides（strength / exposure_fine）。
     """
-    if not options.enable_tone_adjust:
+    if not getattr(options, "enable_auto_enhance", True):
         return img
-    sh = max(0, min(100, int(options.tone_shadow_lift)))
-    exp = max(-100, min(100, int(options.tone_exposure)))
-    ctr = max(-100, min(100, int(options.tone_contrast)))
-    if sh == 0 and exp == 0 and ctr == 0:
+    try:
+        from watermark_enhance import rel_key
+    except Exception:
         return img
 
-    out = img.convert("RGB")
-
-    if sh > 0 and cv2 is not None and np is not None:
-        try:
-            arr = np.asarray(out, dtype=np.uint8)
-            bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
-            lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-            l_ch, a_ch, b_ch = cv2.split(lab)
-            clip = float(1.0 + (sh / 100.0) * 8.0)
-            clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(8, 8))
-            l2 = clahe.apply(l_ch)
-            merged = cv2.merge((l2, a_ch, b_ch))
-            rgb = cv2.cvtColor(cv2.cvtColor(merged, cv2.COLOR_LAB2BGR), cv2.COLOR_BGR2RGB)
-            out = Image.fromarray(rgb)
-        except Exception:
-            pass
-
-    if exp != 0:
-        bf = max(0.35, min(2.2, 1.0 + exp / 200.0))
-        out = ImageEnhance.Brightness(out).enhance(bf)
-    if ctr != 0:
-        cf = max(0.35, min(2.2, 1.0 + ctr / 200.0))
-        out = ImageEnhance.Contrast(out).enhance(cf)
-    return out
+    rel = rel_key(src_abs_path, source_folder)
+    ov: dict = {}
+    if overrides_by_rel and rel in overrides_by_rel:
+        ov = dict(overrides_by_rel[rel])
+    try:
+        return apply_auto_enhance_pil(img, ov)
+    except Exception:
+        return img
 
 
 def _get_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -215,6 +207,48 @@ def _city_from_gps(path: str) -> str:
         return city or prov
     except Exception:
         return ""
+
+
+def _inline_place_line(img_path: str, options: WatermarkOptions) -> str:
+    """inline 模式底行：城市（GPS）+ 地点（人工优先与 GPS 组合）。"""
+    if not options.enable_location:
+        return ""
+    manual = (options.location_text or "").strip()
+    city = ""
+    if options.use_gps_city:
+        city = (_city_from_gps(img_path) or "").strip()
+    if manual and city:
+        return f"{city} {manual}"
+    if manual:
+        return manual
+    return city
+
+
+def _text_pixel_width(draw: ImageDraw.ImageDraw, text: str, font) -> int:
+    b = draw.textbbox((0, 0), text, font=font)
+    return max(0, b[2] - b[0])
+
+
+def _truncate_line_to_width(
+    draw: ImageDraw.ImageDraw, text: str, font, max_w: int
+) -> str:
+    s = (text or "").strip()
+    if not s or max_w <= 1:
+        return s
+    ell = "…"
+    if _text_pixel_width(draw, s, font) <= max_w:
+        return s
+    lo, hi = 0, len(s)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        trial = s[:mid] + ell
+        if _text_pixel_width(draw, trial, font) <= max_w:
+            lo = mid
+        else:
+            hi = mid - 1
+    if lo <= 0:
+        return ell
+    return s[:lo] + ell
 
 
 def _species_from_path(img_path: str, source_root: str) -> str:
@@ -390,6 +424,223 @@ def _compose_leica_style(
     return canvas
 
 
+def _norm_watermark_style(options: WatermarkOptions) -> WatermarkStyle:
+    s = getattr(options, "watermark_style", "frame") or "frame"
+    if s not in ("frame", "inline"):
+        return "frame"
+    return s  # type: ignore[return-value]
+
+
+def _inline_text_line_height(draw: ImageDraw.ImageDraw, font) -> int:
+    """与标签所用字体一致的单行视觉高度（中文+拉丁混排参考）。"""
+    bbox = draw.textbbox((0, 0), "国AgyM", font=font)
+    return max(1, bbox[3] - bbox[1])
+
+
+def _inline_font_for_ref_height(
+    ref_h: int, two_lines: bool
+) -> tuple:
+    """
+    在竖条标签区按 ref_h（与签名 Logo 实际高度同量级）选最大可用字号。
+    两行时满足 2*line_h + gap <= ref_h；单行时 line_h <= ref_h。
+    """
+    ref_h = max(12, int(ref_h))
+    gap = max(2, int(ref_h * 0.12))
+    measure = ImageDraw.Draw(Image.new("RGB", (max(64, ref_h * 8), ref_h * 4)))
+
+    def fits(fs: int) -> bool:
+        font = _get_font(fs)
+        lh = _inline_text_line_height(measure, font)
+        if two_lines:
+            return 2 * lh + gap <= ref_h
+        return lh <= ref_h
+
+    hi = min(320, max(24, ref_h * 5))
+    best = 8
+    for fs in range(hi, 7, -1):
+        if fits(fs):
+            best = fs
+            break
+    font = _get_font(best)
+    line_h = _inline_text_line_height(measure, font)
+    return font, line_h, gap
+
+
+def _fg_rgb_for_bottom_overlay(img_rgb: Image.Image, y0: int, y1: int) -> tuple:
+    """根据图像底部一带亮度选择前景色（与图内签名剪影规则一致）。"""
+    w, h = img_rgb.size
+    y0 = max(0, min(h - 1, y0))
+    y1 = max(y0 + 1, min(h, y1))
+    crop = img_rgb.crop((0, y0, w, y1)).convert("L")
+    try:
+        luma = float(ImageStat.Stat(crop).mean[0])
+    except Exception:
+        luma = 128.0
+    if luma >= 200.0:
+        return (22, 22, 22)
+    return (255, 255, 255)
+
+
+def _compose_inline_signature_label(
+    img: Image.Image,
+    logo: Optional[Image.Image],
+    species_line: str,
+    place_line: str,
+    logo_width_ratio: float,
+) -> Image.Image:
+    """
+    无外框：图内中下方 [签名 | 竖线 | 标签]；标签两行：物种、城市+地点。
+    竖线与文字颜色与签名水印（剪影上色）一致。
+    """
+    img_rgb = img.convert("RGB")
+    w, h = img_rgb.size
+    sp = (species_line or "").strip()
+    pl = (place_line or "").strip()
+    if logo is None and not sp and not pl:
+        return img_rgb.copy()
+
+    base = img_rgb.convert("RGBA")
+    margin = max(8, int(h * 0.02))
+    ratio = min(0.8, max(0.05, float(logo_width_ratio)))
+    # 与外框模式图内签名同一套目标框
+    area_w = max(40, int(w * ratio))
+    area_h = max(28, int(h * 0.16))
+
+    lg: Optional[Image.Image] = None
+    lw, lh = 0, 0
+    if logo is not None:
+        lg = _fit_logo(logo.convert("RGBA"), area_w, area_h)
+        lw, lh = lg.size
+
+    # 标签字号：以签名实际高度（或同框外推高度）为标尺，随图宽与 logo_width_ratio 成比例
+    ref_h = lh if lg else min(area_h, max(28, int(round(area_w * 0.52))))
+    two_text_rows = bool(sp and pl)
+    will_draw_text = bool(sp or pl)
+    if will_draw_text:
+        font, line_h, line_gap = _inline_font_for_ref_height(ref_h, two_text_rows)
+    else:
+        font = _get_font(12)
+        measure_tmp = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+        line_h = _inline_text_line_height(measure_tmp, font)
+        line_gap = max(2, int(line_h * 0.14))
+
+    measure = ImageDraw.Draw(Image.new("RGB", (max(128, w // 2), 256)))
+    max_text_w = max(96, int(w * max(0.28, min(0.52, float(ratio) + 0.12))))
+    sp_d = _truncate_line_to_width(measure, sp, font, max_text_w) if sp else ""
+    pl_d = _truncate_line_to_width(measure, pl, font, max_text_w) if pl else ""
+    tw = max(
+        _text_pixel_width(measure, sp_d, font) if sp_d else 0,
+        _text_pixel_width(measure, pl_d, font) if pl_d else 0,
+        1 if (sp_d or pl_d) else 0,
+    )
+
+    has_text = bool(sp_d or pl_d)
+    if has_text:
+        nrows = (1 if sp_d else 0) + (1 if pl_d else 0)
+        if nrows >= 2:
+            text_h = line_h + line_gap + line_h
+        else:
+            text_h = line_h
+    else:
+        text_h = 0
+
+    gap = max(6, int(w * 0.014))
+    sep_draw_w = 2  # 竖分隔线线宽（与文字同色）
+
+    if lg and has_text:
+        total_w = lw + gap + sep_draw_w + gap + tw
+    elif lg:
+        total_w = lw
+    elif has_text:
+        total_w = tw
+    else:
+        total_w = 0
+
+    block_h = max(lh, text_h, line_h)
+    y_bottom = h - margin
+    y_top = max(0, y_bottom - block_h)
+    x0 = max(0, (w - total_w) // 2)
+
+    fg = _fg_rgb_for_bottom_overlay(img_rgb, max(0, y_top - margin), h)
+
+    overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    dr = ImageDraw.Draw(overlay)
+    rgba_text = fg + (255,)
+
+    cx = x0
+    ly = y_top + max(0, (block_h - lh) // 2) if lg else 0
+    if lg:
+        logo_rgba = lg.convert("RGBA")
+        alpha = logo_rgba.split()[-1]
+        alpha = alpha.point(lambda p: int(p * 0.92))
+        fg_layer = Image.new("RGBA", lg.size, fg + (0,))
+        fg_layer.putalpha(alpha)
+        overlay.alpha_composite(fg_layer, (cx, ly))
+        cx += lw + gap
+
+    if lg and has_text:
+        sep_x = cx + sep_draw_w // 2
+        sep_y0 = y_top + max(2, int(block_h * 0.08))
+        sep_y1 = y_bottom - max(2, int(block_h * 0.08))
+        dr.line([(sep_x, sep_y0), (sep_x, sep_y1)], fill=rgba_text, width=sep_draw_w)
+        cx += sep_draw_w + gap
+
+    if has_text:
+        tx = cx
+        ty = y_top + max(0, (block_h - text_h) // 2)
+        if sp_d:
+            dr.text((tx, ty), sp_d, fill=rgba_text, font=font)
+            ty += line_h + (line_gap if pl_d else 0)
+        if pl_d:
+            dr.text((tx, ty), pl_d, fill=rgba_text, font=font)
+
+    out = Image.alpha_composite(base, overlay)
+    return out.convert("RGB")
+
+
+def _finalize_watermarked_image(
+    img: Image.Image,
+    img_path: str,
+    source_folder: str,
+    options: WatermarkOptions,
+    prefer_folder_name_as_species: bool,
+    logo_img: Optional[Image.Image],
+    species_or_theme_override: str = "",
+) -> Image.Image:
+    """按选项合成最终水印图（外框模式或图内签名+标签模式）。"""
+    style = _norm_watermark_style(options)
+    loc = ""
+    if options.enable_location:
+        if options.location_text.strip():
+            loc = options.location_text.strip()
+        elif options.use_gps_city:
+            loc = _city_from_gps(img_path)
+    dt = _extract_exif_datetime(img_path) if options.enable_date else ""
+    ovr = (species_or_theme_override or "").strip()
+    species = ""
+    if options.enable_species:
+        if ovr:
+            species = ovr
+        elif prefer_folder_name_as_species:
+            species = _species_from_path(img_path, source_folder)
+    cam = _extract_exif_camera_params(img_path) if options.enable_camera_params else ""
+
+    if style == "inline":
+        sp_line = species if options.enable_species else ""
+        pl = _inline_place_line(img_path, options) if options.enable_location else ""
+        return _compose_inline_signature_label(
+            img, logo_img, sp_line, pl, options.logo_width_ratio
+        )
+
+    left_fields = [x for x in (species, loc, dt) if x]
+    right_fields = [x for x in (cam,) if x]
+    left = "  |  ".join(left_fields) if left_fields else "Birdy"
+    right = "  |  ".join(right_fields)
+    return _compose_leica_style(
+        img, left, right, logo_img, options.logo_width_ratio
+    )
+
+
 def generate_watermarks(
     source_folder: str,
     output_folder: str,
@@ -408,6 +659,12 @@ def generate_watermarks(
             logo_img = Image.open(options.logo_path).convert("RGBA")
         except Exception:
             logo_img = None
+
+    ov_map: Dict[str, dict] = {}
+    if getattr(options, "enable_auto_enhance", True) and getattr(
+        options, "enhance_overrides_path", ""
+    ):
+        ov_map = load_overrides_json(str(options.enhance_overrides_path))
 
     ok = 0
     fail = 0
@@ -429,29 +686,17 @@ def generate_watermarks(
                 except Exception:
                     pass
             continue
-        img = apply_watermark_tone_preproc(img, options)
+        img = apply_watermark_photo_pipeline(
+            img, options, img_path, source_folder, ov_map
+        )
         try:
-            loc = ""
-            if options.enable_location:
-                if options.location_text.strip():
-                    loc = options.location_text.strip()
-                elif options.use_gps_city:
-                    loc = _city_from_gps(img_path)
-            dt = _extract_exif_datetime(img_path) if options.enable_date else ""
-            species = (
-                _species_from_path(img_path, source_folder)
-                if (options.enable_species and prefer_folder_name_as_species)
-                else ""
-            )
-            cam = _extract_exif_camera_params(img_path) if options.enable_camera_params else ""
-
-            left_fields = [x for x in (species, loc, dt) if x]
-            right_fields = [x for x in (cam,) if x]
-            left = "  |  ".join(left_fields) if left_fields else "Birdy"
-            right = "  |  ".join(right_fields)
-
-            out = _compose_leica_style(
-                img, left, right, logo_img, options.logo_width_ratio
+            out = _finalize_watermarked_image(
+                img,
+                img_path,
+                source_folder,
+                options,
+                prefer_folder_name_as_species,
+                logo_img,
             )
 
             # 不再按原目录层级保存，统一直接输出到目标目录根下
@@ -500,7 +745,14 @@ def render_watermark_for_image(
     img = _safe_open_image(image_path)
     if img is None:
         return None
-    img = apply_watermark_tone_preproc(img, options)
+    ov_map: Dict[str, dict] = {}
+    if getattr(options, "enable_auto_enhance", True) and getattr(
+        options, "enhance_overrides_path", ""
+    ):
+        ov_map = load_overrides_json(str(options.enhance_overrides_path))
+    img = apply_watermark_photo_pipeline(
+        img, options, image_path, source_folder, ov_map
+    )
 
     logo_img = None
     if options.logo_path and os.path.isfile(options.logo_path):
@@ -509,25 +761,56 @@ def render_watermark_for_image(
         except Exception:
             logo_img = None
 
-    loc = ""
-    if options.enable_location:
-        if options.location_text.strip():
-            loc = options.location_text.strip()
-        elif options.use_gps_city:
-            loc = _city_from_gps(image_path)
-    dt = _extract_exif_datetime(image_path) if options.enable_date else ""
-    species = (
-        _species_from_path(image_path, source_folder)
-        if (options.enable_species and prefer_folder_name_as_species)
-        else ""
+    return _finalize_watermarked_image(
+        img,
+        image_path,
+        source_folder,
+        options,
+        prefer_folder_name_as_species,
+        logo_img,
     )
-    cam = _extract_exif_camera_params(image_path) if options.enable_camera_params else ""
 
-    left_fields = [x for x in (species, loc, dt) if x]
-    right_fields = [x for x in (cam,) if x]
-    left = "  |  ".join(left_fields) if left_fields else "Birdy"
-    right = "  |  ".join(right_fields)
-    return _compose_leica_style(img, left, right, logo_img, options.logo_width_ratio)
+
+def render_watermark_on_pil_image(
+    img: Image.Image,
+    image_path: str,
+    source_folder: str,
+    options: WatermarkOptions,
+    prefer_folder_name_as_species: bool = True,
+    species_or_theme_override: str = "",
+) -> Optional[Image.Image]:
+    """
+    对已解码的 RGB 图像叠加水印（如动图各帧），不再次读盘解码。
+    不执行水印前自动显影（调用方若已做显影/调色，请通过本函数避免重复处理）。
+
+    species_or_theme_override：非空时用作物种/左侧主题文案（动图等无法从目录推断物种时使用）。
+    """
+    if img is None:
+        return None
+    base = img.convert("RGB")
+    opts = replace(
+        options,
+        enable_auto_enhance=False,
+        enhance_overrides_path="",
+    )
+    logo_img = None
+    if opts.logo_path and os.path.isfile(opts.logo_path):
+        try:
+            logo_img = Image.open(opts.logo_path).convert("RGBA")
+        except Exception:
+            logo_img = None
+    try:
+        return _finalize_watermarked_image(
+            base,
+            image_path,
+            source_folder,
+            opts,
+            prefer_folder_name_as_species,
+            logo_img,
+            species_or_theme_override,
+        )
+    except Exception:
+        return None
 
 
 def choose_default_watermark_source(

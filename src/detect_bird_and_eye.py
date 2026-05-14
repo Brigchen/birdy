@@ -8,7 +8,7 @@
    - 豆包API：在线识别 - 准确率更高、支持全球物种
 5. 结合地理位置辅助优化物种识别结果
 6. 从 bird_classification.json 补全四级中文分类（目/科/属/种）
-7. 裁剪图按「目_科_属_种_省_市_序号」命名，保存至「目/科/属/种」目录结构
+7. 裁剪图：逐实例保存（文件名含 inst01…）；多体时另存一张合图于「顶一物种」对应目/科/属/种目录
 
 支持 RAW 格式文件，使用内置缩略图进行检测
 支持混合识别：本地模型与豆包API切换或自动回退
@@ -1092,11 +1092,66 @@ def _resolve_province_species_set(province: str) -> Optional[set]:
     return None
 
 
-# 不在当前地理名单（省/中国分布索引）内时，仅当置信度严格高于该值才保留
+# 不在当前地理名单（省/中国分布索引）内时，仅当置信度严格高于该值才保留（豆包等非本地路径）
 _GEO_OUTSIDE_LIST_CONF: float = 0.75
+
+# 本地模型：名单外候选须 **>** 该置信度才保留（加强非分布区认定门槛）
+_LOCAL_GEO_OUTSIDE_CONF: float = 0.8
+
+# 本地模型：若模型 top10 中无任何当前地理名单物种，且顶一置信度 **<** 该值 → 直接未知
+_LOCAL_GEO_UNKNOWN_IF_TOP1_BELOW: float = 0.8
 
 # 参与地理筛选与「地理符合」判定的模型候选数量上限
 _GEO_CANDIDATE_TOP_N: int = 10
+
+
+def _geo_effective_mode_and_list(
+    province: Optional[str], geo_mode: str
+) -> Tuple[str, Optional[set]]:
+    """
+    与 geo_refine_species 中一致的 effective_mode 与地理名单集合。
+    effective_mode 为 none 或 geo_list 为空时，后者为 None。
+    """
+    if geo_mode == "auto":
+        effective_mode = "province" if province else "china"
+    else:
+        effective_mode = geo_mode
+    if effective_mode == "none":
+        return effective_mode, None
+    geo_list: Optional[set] = None
+    if province:
+        geo_list = _resolve_province_species_set(province)
+    if not geo_list and effective_mode in ("china", "province"):
+        geo_list = _load_china_species_indices()
+    return effective_mode, geo_list
+
+
+def _local_model_geo_forced_unknown(
+    candidates: List[Dict],
+    province: Optional[str],
+    geo_mode: str,
+) -> bool:
+    """
+    本地识别：模型 top10 中若没有任何物种落在当前地理名单内，
+    且顶一置信度 < _LOCAL_GEO_UNKNOWN_IF_TOP1_BELOW，则应判为未知。
+    """
+    if not candidates:
+        return False
+    effective_mode, geo_list = _geo_effective_mode_and_list(province, geo_mode)
+    if effective_mode == "none" or not geo_list:
+        return False
+    head = candidates[: min(_GEO_CANDIDATE_TOP_N, len(candidates))]
+
+    def _in_geo(c: Dict) -> bool:
+        idx = c.get("index")
+        if idx is None or idx == -1:
+            return False
+        return idx in geo_list
+
+    if any(_in_geo(c) for c in head):
+        return False
+    top1 = float(candidates[0].get("confidence") or 0)
+    return top1 < _LOCAL_GEO_UNKNOWN_IF_TOP1_BELOW
 
 
 def _geo_top5_promote_by_province(
@@ -1190,6 +1245,7 @@ def geo_refine_species(
     city: Optional[str],
     geo_mode: str = "china",
     species_conf_threshold: Optional[float] = None,
+    outside_list_conf: Optional[float] = None,
 ) -> List[Dict]:
     """
     利用地理位置对物种候选列表进行过滤与重排序。
@@ -1203,16 +1259,17 @@ def geo_refine_species(
                                    "china"  → 默认，对中国分布索引中的类略提高排序权重
                                    "auto"   → 有 GPS 时同 province，无 GPS 时同 china
                                    "none"   → 不做地理加权
-        species_conf_threshold:  候选置信度下限（GUI「未知种类阈值」启用时传入）。
-                                   为 None 时不做 top10 置信度初筛，仅按地理规则筛选。
+        species_conf_threshold:  已忽略（保留仅为兼容旧调用）。不在此做 top10 置信度初筛；
+                                   GUI 阈值在 BirdAndEyeDetector.detect 内于地理 refine 之后对顶一判定。
+        outside_list_conf:       名单外候选须 **>** 该置信度才保留；None 时用全局
+                                   _GEO_OUTSIDE_LIST_CONF（默认 0.75）。本地模型可传 0.8 加强约束。
 
     Returns:
         过滤 + 重排后的候选列表
         - 附加 geo_location 字段（若有省市信息）
-        - 仅取模型置信度前 _GEO_CANDIDATE_TOP_N 名参与地理规则
-        - 名单内（当前省或中国分布索引）：若 species_conf_threshold 为 None 则全部参与地理；
-          否则须置信度 ≥ species_conf_threshold
-        - 名单外：须置信度 > _GEO_OUTSIDE_LIST_CONF（默认 0.75）才保留
+        - 仅取模型置信度前 _GEO_CANDIDATE_TOP_N 名参与地理规则（不做置信度初筛）
+        - 名单内（当前省或中国分布索引）：全部参与地理筛选与重排
+        - 名单外：须置信度 > outside_list_conf（未指定时默认 0.75）才保留
         - 若前 N 名中存在「名单内」物种，则结果仅保留名单内候选（否则保留上一步通过阈值的全部）
         - china/province 模式：对结果略提高「在中国分布索引」内的排序权重
     """
@@ -1229,30 +1286,15 @@ def geo_refine_species(
         if geo_loc:
             c["geo_location"] = geo_loc
 
-    effective_mode = geo_mode
-    if geo_mode == "auto":
-        effective_mode = "province" if province else "china"
+    effective_mode, geo_list = _geo_effective_mode_and_list(province, geo_mode)
 
-    # ── 仅取 top-N；可选：再按 GUI「未知种类阈值」初筛 ─────────
+    # ── 仅取 top-N 参与地理规则（本地/豆包均不做 top10 置信度初筛）──
     head_n = original_candidates[: min(_GEO_CANDIDATE_TOP_N, len(original_candidates))]
-    if species_conf_threshold is None:
-        filtered = list(head_n)
-    else:
-        thr = float(species_conf_threshold)
-        filtered = [
-            c for c in head_n
-            if float(c.get("confidence") or 0) >= thr
-        ]
+    filtered = list(head_n)
 
     if effective_mode == "none" or not filtered:
         return filtered
 
-    # ── 当前地理「名单」：有省且能解析省级索引则用省；否则用中国并集 ──
-    geo_list: Optional[set] = None
-    if province:
-        geo_list = _resolve_province_species_set(province)
-    if not geo_list and effective_mode in ("china", "province"):
-        geo_list = _load_china_species_indices()
     if not geo_list:
         return filtered
 
@@ -1262,7 +1304,11 @@ def geo_refine_species(
             return False
         return idx in geo_list
 
-    thr_hi = float(_GEO_OUTSIDE_LIST_CONF)
+    thr_hi = (
+        float(outside_list_conf)
+        if outside_list_conf is not None
+        else float(_GEO_OUTSIDE_LIST_CONF)
+    )
     allowed: List[Dict] = []
     for c in filtered:
         cf = float(c.get("confidence") or 0)
@@ -1439,6 +1485,195 @@ class BirdSpeciesClassifier:
         return results
 
 
+# ── 裁剪辅助：逐鸟扩框、多体合图宽高比与 EXIF 写入 ─────────────────
+_CROP_ASPECT_MIN_W_H = 9.0 / 16.0
+_CROP_ASPECT_MAX_W_H = 16.0 / 9.0
+
+
+def _bird_expanded_bbox(
+    bird: Dict, img_w: int, img_h: int, margin_ratio: float
+) -> Tuple[int, int, int, int]:
+    x1, y1, x2, y2 = bird["bbox"]
+    bw = x2 - x1
+    bh = y2 - y1
+    mx = int(bw * margin_ratio)
+    my = int(bh * margin_ratio)
+    ex1 = max(0, x1 - mx)
+    ey1 = max(0, y1 - my)
+    ex2 = min(img_w, x2 + mx)
+    ey2 = min(img_h, y2 + my)
+    return ex1, ey1, ex2, ey2
+
+
+def _bird_taxonomy_for_crop(bird: Dict) -> Tuple[str, str, str, Dict, bool]:
+    """返回 (key, sci_name, cname, clf, non_bird_dir)。"""
+    sp_list = bird.get("species", [])
+    clf = bird.get("classification", {})
+    if sp_list:
+        top = sp_list[0]
+        if (
+            top.get("api_source") == "doubao"
+            and top.get("subject_type") not in (None, "", "bird")
+        ):
+            root = (top.get("archive_root_cn") or "其它").strip()
+            tag = (top.get("archive_tag_cn") or "未分类").strip()
+            key = f"__nb__|{root}|{tag}"
+            sci = ""
+            cname = (top.get("chinese_name") or tag).strip() or "未知"
+            if not clf:
+                clf = {
+                    "order_cn": root,
+                    "family_cn": tag,
+                    "genus_cn": "—",
+                    "species_cn": cname,
+                }
+            return key, sci, cname, clf, True
+        sci = top.get("scientific_name", "").strip()
+        cname = top.get("chinese_name", "未知")
+        key = sci if sci else cname
+        return key, sci, cname, clf, False
+    key = "未知物种"
+    cname = "未知"
+    sci = ""
+    if not clf:
+        clf = dict(UNKNOWN_SPECIES_CLASSIFICATION)
+    return key, sci, cname, clf, False
+
+
+def _union_boxes_margin_aspect(
+    boxes: List[Tuple[int, int, int, int]],
+    img_w: int,
+    img_h: int,
+) -> Optional[Tuple[int, int, int, int]]:
+    """各实例扩边框并集 → 四周各加 ≥1/5 宽高边距 → 宽高比落在 [9:16, 16:9]（宽/高）→ 裁入图像。"""
+    if not boxes:
+        return None
+    x1 = min(b[0] for b in boxes)
+    y1 = min(b[1] for b in boxes)
+    x2 = max(b[2] for b in boxes)
+    y2 = max(b[3] for b in boxes)
+    W = float(x2 - x1)
+    H = float(y2 - y1)
+    if W <= 0 or H <= 0:
+        return None
+    px = W / 5.0
+    py = H / 5.0
+    fx1 = float(x1 - px)
+    fy1 = float(y1 - py)
+    fx2 = float(x2 + px)
+    fy2 = float(y2 + py)
+    W = fx2 - fx1
+    H = fy2 - fy1
+    ar = W / H if H > 0 else _CROP_ASPECT_MAX_W_H
+    cx = (fx1 + fx2) * 0.5
+    cy = (fy1 + fy2) * 0.5
+    if ar > _CROP_ASPECT_MAX_W_H:
+        new_h = W / _CROP_ASPECT_MAX_W_H
+        fy1 = cy - new_h * 0.5
+        fy2 = cy + new_h * 0.5
+    elif ar < _CROP_ASPECT_MIN_W_H:
+        new_w = H * _CROP_ASPECT_MIN_W_H
+        fx1 = cx - new_w * 0.5
+        fx2 = cx + new_w * 0.5
+    ix1 = int(max(0, min(img_w - 1, np.floor(fx1))))
+    iy1 = int(max(0, min(img_h - 1, np.floor(fy1))))
+    ix2 = int(max(ix1 + 1, min(img_w, np.ceil(fx2))))
+    iy2 = int(max(iy1 + 1, min(img_h, np.ceil(fy2))))
+    if ix2 <= ix1 or iy2 <= iy1:
+        return None
+    return ix1, iy1, ix2, iy2
+
+
+def _write_crop_jpeg_with_exif(
+    crop_bgr: np.ndarray, out_path: str, source_path: str
+) -> None:
+    cv2.imwrite(out_path, crop_bgr, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    if not source_path:
+        return
+    try:
+        import piexif
+        from PIL import Image as PIL_Image
+
+        try:
+            exif_dict = piexif.load(source_path)
+            if "0th" in exif_dict:
+                exif_dict["GPS"] = exif_dict.get("GPS", {})
+                if 271 in exif_dict["0th"]:
+                    exif_dict["0th"][271] = b"BirdDetection-Cropped"
+            exif_bytes = piexif.dump(exif_dict)
+            crop_pil = PIL_Image.open(out_path)
+            crop_pil.save(out_path, "JPEG", exif=exif_bytes, quality=95)
+        except Exception:
+            pass
+    except ImportError:
+        pass
+
+
+def _save_dir_for_top_species_across_birds(
+    birds: List[Dict],
+    output_dir: str,
+    min_species_accept_confidence: Optional[float],
+) -> str:
+    """
+    与 copy_original_by_top_species 一致：在 birds 中所有 species 条目里取置信度最高的一条，
+    据此得到 目/科/属/种（或豆包非鸟两级、未知）保存子目录路径。
+    """
+    best_conf = -1.0
+    best_sp: Optional[Dict] = None
+    for bird in birds:
+        for sp in bird.get("species") or []:
+            c = float(sp.get("confidence") or 0)
+            if c > best_conf:
+                best_conf = c
+                best_sp = sp
+
+    non_bird = (
+        best_sp is not None
+        and best_sp.get("api_source") == "doubao"
+        and best_sp.get("subject_type") not in (None, "", "bird")
+    )
+
+    if non_bird:
+        order_cn = (best_sp.get("archive_root_cn") or "其它").strip()
+        family_cn = (best_sp.get("archive_tag_cn") or "未分类").strip()
+        return os.path.join(
+            output_dir,
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+        )
+    if best_sp is None or (
+        min_species_accept_confidence is not None
+        and best_conf < float(min_species_accept_confidence)
+    ):
+        clf = dict(UNKNOWN_SPECIES_CLASSIFICATION)
+        order_cn = clf.get("order_cn", "") or "未知目"
+        family_cn = clf.get("family_cn", "") or "未知科"
+        genus_cn = clf.get("genus_cn", "") or "未知属"
+        species_cn = clf.get("species_cn", "") or "未知"
+        return os.path.join(
+            output_dir,
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+            sanitize_filename(genus_cn),
+            sanitize_filename(species_cn),
+        )
+    clf = lookup_classification(
+        best_sp.get("chinese_name", ""),
+        best_sp.get("scientific_name", ""),
+    )
+    order_cn = clf.get("order_cn", "") or "未知目"
+    family_cn = clf.get("family_cn", "") or "未知科"
+    genus_cn = clf.get("genus_cn", "") or "未知属"
+    species_cn = clf.get("species_cn", "") or "未知"
+    return os.path.join(
+        output_dir,
+        sanitize_filename(order_cn),
+        sanitize_filename(family_cn),
+        sanitize_filename(genus_cn),
+        sanitize_filename(species_cn),
+    )
+
+
 class BirdAndEyeDetector:
     def __init__(
         self,
@@ -1474,8 +1709,9 @@ class BirdAndEyeDetector:
             species_conf:       已弃用别名：与 min_species_accept_confidence 同步（保留仅为兼容旧调用）
             doubao_config:       豆包API配置 {"api_key": ...}
             use_local_model:    是否默认使用本地模型（True）或豆包API（False）
-            min_species_accept_confidence: 未知种类阈值（0~1），与 GUI 一致；None 表示不启用：
-                不对 top10 做置信度初筛，且不因顶一低于阈值清空结果（仅地理规则 + 名单外>0.75）。
+            min_species_accept_confidence: 未知种类阈值（0~1），与 GUI 一致；None 表示不启用。
+                不在 geo_refine 中做 top10 初筛；启用时仅在地理 refine 之后对**顶一**判定，低于则未知。
+                豆包：地理规则 + 名单外>0.75。本地：名单外>0.8；top10 无地理名单命中且顶一<0.8 则未知。
         """
         self.bird_conf = bird_conf
         self.eye_conf = eye_conf
@@ -1670,6 +1906,34 @@ class BirdAndEyeDetector:
 
         return eyes
 
+    def _species_clear_if_top1_below_gui_threshold(
+        self,
+        species_preds: List[Dict],
+        species_debug: Dict[str, Union[str, int, float, bool, None]],
+        skip_low_clear: bool,
+    ) -> List[Dict]:
+        """
+        在地理 refine（含本地加强：名单外>0.8、top10 无本地且顶一<0.8 等）之后执行。
+
+        若 GUI 已启用「未知种类阈值」（min_species_accept_confidence 非 None），
+        则对**当前顶一候选**再判一次：低于该阈值则清空物种并记 unknown_reason。
+        与地理名单/名单外置信门槛独立叠加，不因本地加强规则而跳过。
+        """
+        if (
+            species_preds
+            and not skip_low_clear
+            and self.min_species_accept_confidence is not None
+            and float(species_preds[0].get("confidence") or 0)
+            < float(self.min_species_accept_confidence)
+        ):
+            species_debug["unknown_reason"] = (
+                f"top1_conf_below_min_accept"
+                f" ({float(species_preds[0].get('confidence') or 0):.3f}"
+                f" < {float(self.min_species_accept_confidence):.3f})"
+            )
+            return []
+        return species_preds
+
     def detect(
         self,
         image_path: str,
@@ -1826,12 +2090,28 @@ class BirdAndEyeDetector:
                     )
                 
                 if species_preds:
-                    # 地理约束 + 置信度过滤（默认中国范围）
-                    species_preds = geo_refine_species(
-                        species_preds, province, city,
-                        geo_mode=self.geo_mode,
-                        species_conf_threshold=self.min_species_accept_confidence,
-                    )
+                    # 本地模型：top10 无地理名单命中且顶一 <0.8 → 直接未知；名单外保留阈值 0.8
+                    use_local_strict_geo = method.startswith("本地模型")
+                    if use_local_strict_geo and _local_model_geo_forced_unknown(
+                        species_preds, province, self.geo_mode
+                    ):
+                        species_debug["unknown_reason"] = (
+                            "local_top10_no_geo_species_top1_below_0_8"
+                        )
+                        species_preds = []
+                    if species_preds:
+                        species_preds = geo_refine_species(
+                            species_preds,
+                            province,
+                            city,
+                            geo_mode=self.geo_mode,
+                            species_conf_threshold=None,
+                            outside_list_conf=(
+                                _LOCAL_GEO_OUTSIDE_CONF
+                                if use_local_strict_geo
+                                else None
+                            ),
+                        )
                     species_debug["post_geo_count"] = len(species_preds)
                     if species_preds:
                         species_debug["post_geo_top1_name"] = (
@@ -1849,19 +2129,10 @@ class BirdAndEyeDetector:
                         and top0.get("api_source") == "doubao"
                         and top0.get("subject_type") not in (None, "", "bird")
                     )
-                    if (
-                        species_preds
-                        and not skip_low_clear
-                        and self.min_species_accept_confidence is not None
-                        and float(species_preds[0].get("confidence") or 0)
-                        < float(self.min_species_accept_confidence)
-                    ):
-                        species_debug["unknown_reason"] = (
-                            f"top1_conf_below_min_accept"
-                            f" ({float(species_preds[0].get('confidence') or 0):.3f}"
-                            f" < {float(self.min_species_accept_confidence):.3f})"
-                        )
-                        species_preds = []
+                    # GUI 未知种类阈值：在地理规则（含本地加强）之后对顶一再判，与 0.75/0.8 地理门槛叠加
+                    species_preds = self._species_clear_if_top1_below_gui_threshold(
+                        species_preds, species_debug, skip_low_clear
+                    )
                 else:
                     species_debug["post_geo_count"] = 0
 
@@ -1881,15 +2152,9 @@ class BirdAndEyeDetector:
                         if int(species_debug["raw_candidate_count"]) == 0:
                             species_debug["unknown_reason"] = "no_model_candidates"
                         elif int(species_debug["post_geo_count"]) == 0:
-                            if self.min_species_accept_confidence is not None:
-                                species_debug["unknown_reason"] = (
-                                    "all_candidates_filtered_below_unknown_kind_threshold"
-                                    f" (< {float(self.min_species_accept_confidence):.3f})"
-                                )
-                            else:
-                                species_debug["unknown_reason"] = (
-                                    "all_candidates_removed_by_geo_rules"
-                                )
+                            species_debug["unknown_reason"] = (
+                                "all_candidates_removed_by_geo_rules"
+                            )
                         else:
                             species_debug["unknown_reason"] = "all_candidates_filtered_after_geo_refine"
                     print(
@@ -2140,129 +2405,57 @@ class BirdAndEyeDetector:
         """
         根据鸟体检测框裁剪原图，按分类层级保存。
 
-        目录结构：<output_dir>/<目>/<科>/<属>/<种>/
-        文件命名：<目>_<科>_<属>_<种>_<省>_<市>_<序号>.jpg
+        （1）**按实例**：每只鸟单独一张扩边裁剪图（仍用 margin_ratio），不按物种 key 合并。
+        （2）**多体合图**：若一图内鸟数 ≥2，另导出一张包含全部个体的裁剪图：
+            先对各实例扩边框取并集，再在四周各加不少于并集宽高 **1/5** 的边距，
+            必要时继续扩边使宽高比落在 **[9:16, 16:9]**（宽/高）内，最后裁入图像边界；
+            与 ``copy_original_by_top_species`` 相同，保存在**全图置信度最高物种**对应的目/科/属/种目录下。
 
-        裁剪规则：
-        - 在每只鸟的检测框四周扩展 margin_ratio 倍框尺寸的边距
-        - 同一物种的所有扩展框取并集（最小外接矩形），裁剪为一张图
+        单实例目录：<output_dir>/<目>/<科>/<属>/<种>/（豆包非鸟为两级目录）
+        单实例命名：在原有字段中加入 ``inst01``、``inst02``… 区分实例。
 
         Args:
             image:       原始 BGR 图像（未标注）
             birds:       detect() 返回的鸟列表，含 bbox / species / classification 字段
             output_dir:  裁剪根目录（目/科/属/种 自动在此下创建）
-            source_path: 原图路径，用于提取拍摄时间（EXIF）
+            source_path: 原图路径，用于复制 EXIF
             counter:     全局编号计数器 {"n": int}，跨图片累计；None 则单张从 1 开始
             margin_ratio: 边距倍率，默认 1.0
             province:    省名（来自 GPS 定位，可 None）
             city:        市名（来自 GPS 定位，可 None）
 
         Returns:
-            保存的裁剪图路径列表
+            保存的裁剪图路径列表（先逐实例，再可能追加一张合图）
         """
-        from datetime import datetime as _dt
-
         os.makedirs(output_dir, exist_ok=True)
 
         if counter is None:
             counter = {"n": 0}
 
-        # ── 获取拍摄时间 ─────────────────────────────────────────
-        photo_time = _dt.now().strftime("%Y%m%d_%H%M%S")
-        if source_path:
-            try:
-                from PIL import Image as _PIL_Image
-                with _PIL_Image.open(source_path) as _im:
-                    exif = _im._getexif() or {}
-                    dt_str = exif.get(36867) or exif.get(306, "")
-                    if dt_str:
-                        photo_time = dt_str.replace(":", "").replace(" ", "_")[:15]
-            except Exception:
-                pass
+        if not birds:
+            return []
 
         img_h, img_w = image.shape[:2]
-
-        # ── 按物种分组（key = 学名或中文名）──────────────────────
-        species_groups: Dict[str, Dict] = {}
-
-        for bird in birds:
-            x1, y1, x2, y2 = bird["bbox"]
-            bw = x2 - x1
-            bh = y2 - y1
-            mx = int(bw * margin_ratio)
-            my = int(bh * margin_ratio)
-            ex1 = max(0, x1 - mx);  ey1 = max(0, y1 - my)
-            ex2 = min(img_w, x2 + mx); ey2 = min(img_h, y2 + my)
-
-            sp_list = bird.get("species", [])
-            clf     = bird.get("classification", {})
-
-            if sp_list:
-                top = sp_list[0]
-                if (
-                    top.get("api_source") == "doubao"
-                    and top.get("subject_type") not in (None, "", "bird")
-                ):
-                    root = (top.get("archive_root_cn") or "其它").strip()
-                    tag = (top.get("archive_tag_cn") or "未分类").strip()
-                    key = f"__nb__|{root}|{tag}"
-                    sci = ""
-                    cname = (top.get("chinese_name") or tag).strip() or "未知"
-                    if not clf:
-                        clf = {
-                            "order_cn": root,
-                            "family_cn": tag,
-                            "genus_cn": "—",
-                            "species_cn": cname,
-                        }
-                else:
-                    sci = top.get("scientific_name", "").strip()
-                    cname = top.get("chinese_name", "未知")
-                    key = sci if sci else cname
-            else:
-                key   = "未知物种"
-                cname = "未知"
-                sci   = ""
-                if not clf:
-                    clf = dict(UNKNOWN_SPECIES_CLASSIFICATION)
-
-            if key not in species_groups:
-                species_groups[key] = {
-                    "scientific_name": sci,
-                    "chinese_name":    cname,
-                    "classification":  clf,
-                    "boxes": [],
-                }
-            species_groups[key]["boxes"].append((ex1, ey1, ex2, ey2))
-
-        # ── 每物种裁剪一张图 ──────────────────────────────────────
         saved_paths: List[str] = []
 
-        for key, grp in species_groups.items():
-            sci_name = grp["scientific_name"]
-            cname    = grp["chinese_name"]
-            clf      = grp["classification"]
-            boxes    = grp["boxes"]
+        prov_part = sanitize_filename(province) if province else "未知省"
+        city_part = sanitize_filename(city) if city else "未知市"
 
-            # 合并扩展框 → 最小外接矩形
-            cx1 = max(0,     min(b[0] for b in boxes))
-            cy1 = max(0,     min(b[1] for b in boxes))
-            cx2 = min(img_w, max(b[2] for b in boxes))
-            cy2 = min(img_h, max(b[3] for b in boxes))
-
-            if cx2 <= cx1 or cy2 <= cy1:
+        for inst_i, bird in enumerate(birds):
+            ex1, ey1, ex2, ey2 = _bird_expanded_bbox(
+                bird, img_w, img_h, margin_ratio
+            )
+            if ex2 <= ex1 or ey2 <= ey1:
                 continue
 
-            crop = image[cy1:cy2, cx1:cx2].copy()
+            crop = image[ey1:ey2, ex1:ex2].copy()
+            _key, sci_name, cname, clf, non_bird_dir = _bird_taxonomy_for_crop(bird)
 
-            # ── 四级分类名（优先用 classification，否则退化）──────
-            order_cn  = clf.get("order_cn",  "") or "未知目"
+            order_cn = clf.get("order_cn", "") or "未知目"
             family_cn = clf.get("family_cn", "") or "未知科"
-            genus_cn  = clf.get("genus_cn",  "") or "未知属"
+            genus_cn = clf.get("genus_cn", "") or "未知属"
             species_cn = clf.get("species_cn", "") or cname or "未知"
 
-            # 豆包非鸟：<root>/<人像|其它动物|其它>/<子标签>/（两级 + 扁平文件名）
-            non_bird_dir = key.startswith("__nb__|")
             if non_bird_dir:
                 save_dir = os.path.join(
                     output_dir,
@@ -2281,14 +2474,13 @@ class BirdAndEyeDetector:
 
             counter["n"] += 1
             seq = str(counter["n"]).zfill(5)
-
-            prov_part = sanitize_filename(province) if province else "未知省"
-            city_part = sanitize_filename(city)     if city     else "未知市"
+            inst_tag = f"inst{inst_i + 1:02d}"
 
             if non_bird_dir:
                 fname_parts = [
                     sanitize_filename(order_cn),
                     sanitize_filename(family_cn),
+                    inst_tag,
                     prov_part,
                     city_part,
                     seq,
@@ -2299,6 +2491,7 @@ class BirdAndEyeDetector:
                     sanitize_filename(family_cn),
                     sanitize_filename(genus_cn),
                     sanitize_filename(species_cn),
+                    inst_tag,
                     prov_part,
                     city_part,
                     seq,
@@ -2306,50 +2499,41 @@ class BirdAndEyeDetector:
             filename = "_".join(fname_parts) + ".jpg"
             out_path = os.path.join(save_dir, filename)
 
-            # ── 保存裁剪图 ──────────────────────────────────────────
-            # 先用OpenCV保存，再用PIL保留EXIF
-            cv2.imwrite(out_path, crop, [cv2.IMWRITE_JPEG_QUALITY, 95])
-            
-            # 如果有原图路径，尝试复制EXIF信息到裁剪图
-            if source_path:
-                try:
-                    import piexif
-                    from PIL import Image as PIL_Image
-                    
-                    # 读取原图EXIF
-                    try:
-                        original_img = PIL_Image.open(source_path)
-                        exif_dict = piexif.load(source_path)
-                        
-                        # 修改部分EXIF信息
-                        if "0th" in exif_dict:
-                            # 更新拍摄地点信息
-                            exif_dict["GPS"] = exif_dict.get("GPS", {})
-                            
-                            # 添加裁剪标记
-                            if 271 in exif_dict["0th"]:  # Make
-                                exif_dict["0th"][271] = b"BirdDetection-Cropped"
-                        
-                        # 序列化EXIF
-                        exif_bytes = piexif.dump(exif_dict)
-                        
-                        # 用PIL打开、修改EXIF、保存
-                        crop_pil = PIL_Image.open(out_path)
-                        crop_pil.save(out_path, "JPEG", exif=exif_bytes, quality=95)
-                        
-                    except Exception as e:
-                        # 如果提取EXIF失败，仅保留基本信息
-                        pass
-                        
-                except ImportError:
-                    # 如果没有piexif，直接保存
-                    pass
-            
+            _write_crop_jpeg_with_exif(crop, out_path, source_path)
             saved_paths.append(out_path)
-            print(f"  裁剪保存: {filename}")
+            print(f"  裁剪保存(实例): {filename}")
             print(f"    路径: {save_dir}")
-            print(f"    坐标: [{cx1},{cy1},{cx2},{cy2}]  尺寸: {cx2-cx1}×{cy2-cy1}px")
+            print(f"    坐标: [{ex1},{ey1},{ex2},{ey2}]  尺寸: {ex2-ex1}×{ey2-ey1}px")
             print(f"    物种: {species_cn}（{sci_name}）  位置: {prov_part}{city_part}")
+
+        if len(birds) >= 2:
+            boxes: List[Tuple[int, int, int, int]] = []
+            for bird in birds:
+                bb = _bird_expanded_bbox(bird, img_w, img_h, margin_ratio)
+                if bb[2] > bb[0] and bb[3] > bb[1]:
+                    boxes.append(bb)
+            if len(boxes) >= 2:
+                ur = _union_boxes_margin_aspect(boxes, img_w, img_h)
+                if ur:
+                    ux1, uy1, ux2, uy2 = ur
+                    crop_all = image[uy1:uy2, ux1:ux2].copy()
+                    union_dir = _save_dir_for_top_species_across_birds(
+                        birds, output_dir, self.min_species_accept_confidence
+                    )
+                    os.makedirs(union_dir, exist_ok=True)
+                    counter["n"] += 1
+                    seq = str(counter["n"]).zfill(5)
+                    stem = Path(source_path).stem if source_path else "frame"
+                    fn = f"{sanitize_filename(stem)}_{seq}_all.jpg"
+                    out_union = os.path.join(union_dir, fn)
+                    _write_crop_jpeg_with_exif(crop_all, out_union, source_path)
+                    saved_paths.append(out_union)
+                    print(f"  裁剪保存(多体合图): {fn}")
+                    print(f"    路径: {union_dir}")
+                    print(
+                        f"    坐标: [{ux1},{uy1},{ux2},{uy2}]  "
+                        f"尺寸: {ux2-ux1}×{uy2-uy1}px"
+                    )
 
         return saved_paths
 
@@ -2376,61 +2560,9 @@ class BirdAndEyeDetector:
 
         os.makedirs(output_dir, exist_ok=True)
 
-        best_conf = -1.0
-        best_sp: Optional[Dict] = None
-        for bird in birds:
-            for sp in bird.get("species") or []:
-                c = float(sp.get("confidence") or 0)
-                if c > best_conf:
-                    best_conf = c
-                    best_sp = sp
-
-        non_bird = (
-            best_sp is not None
-            and best_sp.get("api_source") == "doubao"
-            and best_sp.get("subject_type") not in (None, "", "bird")
+        save_dir = _save_dir_for_top_species_across_birds(
+            birds, output_dir, self.min_species_accept_confidence
         )
-
-        if non_bird:
-            order_cn = (best_sp.get("archive_root_cn") or "其它").strip()
-            family_cn = (best_sp.get("archive_tag_cn") or "未分类").strip()
-            save_dir = os.path.join(
-                output_dir,
-                sanitize_filename(order_cn),
-                sanitize_filename(family_cn),
-            )
-        elif best_sp is None or (
-            self.min_species_accept_confidence is not None
-            and best_conf < float(self.min_species_accept_confidence)
-        ):
-            clf = dict(UNKNOWN_SPECIES_CLASSIFICATION)
-            order_cn = clf.get("order_cn", "") or "未知目"
-            family_cn = clf.get("family_cn", "") or "未知科"
-            genus_cn = clf.get("genus_cn", "") or "未知属"
-            species_cn = clf.get("species_cn", "") or "未知"
-            save_dir = os.path.join(
-                output_dir,
-                sanitize_filename(order_cn),
-                sanitize_filename(family_cn),
-                sanitize_filename(genus_cn),
-                sanitize_filename(species_cn),
-            )
-        else:
-            clf = lookup_classification(
-                best_sp.get("chinese_name", ""),
-                best_sp.get("scientific_name", ""),
-            )
-            order_cn = clf.get("order_cn", "") or "未知目"
-            family_cn = clf.get("family_cn", "") or "未知科"
-            genus_cn = clf.get("genus_cn", "") or "未知属"
-            species_cn = clf.get("species_cn", "") or "未知"
-            save_dir = os.path.join(
-                output_dir,
-                sanitize_filename(order_cn),
-                sanitize_filename(family_cn),
-                sanitize_filename(genus_cn),
-                sanitize_filename(species_cn),
-            )
         os.makedirs(save_dir, exist_ok=True)
 
         counter["n"] += 1
