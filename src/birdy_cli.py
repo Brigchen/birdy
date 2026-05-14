@@ -25,7 +25,7 @@ def _load_skill_info_meta() -> Tuple[str, str]:
     """从项目根目录 version-info.json 读取版本号与发布日期。"""
     root = Path(__file__).resolve().parent.parent
     info_path = root / "version-info.json"
-    version, release_date = "2.0.0", ""
+    version, release_date = "2.0.6", ""
     try:
         if info_path.is_file():
             with open(info_path, "r", encoding="utf-8") as f:
@@ -251,7 +251,7 @@ class BirdDetectionCLI:
             type=float,
             default=None,
             dest='species_conf',
-            help='未知种类阈值（0~1），与 GUI「未知种类阈值」及 detect_bird_and_eye.py --species-conf 一致',
+            help='未知种类阈值（0~1）：与 GUI 一致，仅在地理 refine 之后对顶一判定；不做 top10 初筛',
         )
         parser.add_argument(
             '--min-species-conf',

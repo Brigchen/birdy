@@ -51,6 +51,13 @@ from watermark_generator import (
     render_watermark_for_image,
 )
 from image_io import all_supported_extensions, file_filter_all_images
+from watermark_enhance import (
+    override_store_path,
+    save_overrides_json,
+    load_overrides_json,
+    rel_key,
+)
+from burst_webp_dialog import open_burst_webp_dialog
 
 
 def _open_local_file(path: str) -> None:
@@ -110,6 +117,38 @@ def _collect_image_paths_under(root: str) -> List[str]:
                 if p not in out:
                     out.append(p)
     return out
+
+
+def _session_slug_from_image_folder(image_folder: str) -> str:
+    """
+    由「原始相片目录」最后一段文件夹名生成会话标签，用于
+    screened_<slug> / classification_<slug> 子目录名。
+    """
+    p = (image_folder or "").strip()
+    if not p:
+        return "session"
+    base = os.path.basename(os.path.normpath(p))
+    if not base or base in (".", ".."):
+        return "session"
+    bad = '<>:"/\\|?*'
+    parts = []
+    for ch in base:
+        if ch in bad or ord(ch) < 32:
+            parts.append("_")
+        elif ch.isspace():
+            parts.append("_")
+        else:
+            parts.append(ch)
+    s = "".join(parts).strip("._") or "session"
+    return s
+
+
+def _reports_dir_from_config(config: Dict) -> str:
+    """HTML 报告目录：若配置了 reports_output_folder 则用之，否则 output_folder/reports。"""
+    r = (config.get("reports_output_folder") or "").strip()
+    if r:
+        return r
+    return os.path.join((config.get("output_folder") or "./outputs").strip(), "reports")
 
 
 class WorkerThread(QThread):
@@ -313,9 +352,7 @@ class WorkerThread(QThread):
                             config["output_folder"], "burst_analysis.json"
                         )
                         if os.path.exists(json_report_file):
-                            reports_dir = os.path.join(
-                                config["output_folder"], "reports"
-                            )
+                            reports_dir = _reports_dir_from_config(config)
                             os.makedirs(reports_dir, exist_ok=True)
 
                             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -598,8 +635,7 @@ class WorkerThread(QThread):
                     # 生成物种识别报告
                     if config.get('generate_species_report', True):
                         try:
-                            # 确保outputs\reports目录存在
-                            reports_dir = os.path.join(config['output_folder'], 'reports')
+                            reports_dir = _reports_dir_from_config(config)
                             os.makedirs(reports_dir, exist_ok=True)
                             
                             # 生成带时间戳的中文报告名称
@@ -717,6 +753,10 @@ class WorkerThread(QThread):
                         config.get("watermark_output_folder", "").strip()
                         or os.path.join(config.get("output_folder", "./outputs"), "watermarked")
                     )
+                    _wm_auto = bool(config.get("wm_enable_auto_enhance", True))
+                    _wm_st = str(config.get("wm_watermark_style", "frame") or "frame")
+                    if _wm_st not in ("frame", "inline"):
+                        _wm_st = "frame"
                     wopt = WatermarkOptions(
                         enable_location=bool(config.get("wm_enable_location", True)),
                         location_text=str(config.get("wm_location_text", "") or ""),
@@ -726,12 +766,13 @@ class WorkerThread(QThread):
                         enable_camera_params=bool(config.get("wm_enable_camera", True)),
                         logo_path=str(config.get("wm_logo_path", "") or ""),
                         logo_width_ratio=float(config.get("wm_logo_width_ratio", 0.30)),
-                        enable_tone_adjust=bool(
-                            config.get("wm_enable_tone_adjust", False)
+                        watermark_style=_wm_st,  # type: ignore[arg-type]
+                        enable_auto_enhance=_wm_auto,
+                        enhance_overrides_path=(
+                            override_store_path(source_folder)
+                            if _wm_auto
+                            else ""
                         ),
-                        tone_shadow_lift=int(config.get("wm_tone_shadow_lift", 0)),
-                        tone_exposure=int(config.get("wm_tone_exposure", 0)),
-                        tone_contrast=int(config.get("wm_tone_contrast", 0)),
                     )
                     wm_result = generate_watermarks(
                         source_folder=source_folder,
@@ -868,14 +909,14 @@ class BirdDetectionGUI(QMainWindow):
             if info.exists():
                 with open(info, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                v = str(d.get("version", "2.0.0"))
+                v = str(d.get("version", "2.0.6"))
                 rd = str(d.get("release_date", "") or "").strip()
                 if rd:
                     return f"{v}（{rd}）"
                 return v
         except Exception:
             pass
-        return "2.0.0"
+        return "2.0.6"
 
     @staticmethod
     def _primary_screen_dpr() -> float:
@@ -1170,6 +1211,7 @@ class BirdDetectionGUI(QMainWindow):
         """获取默认配置"""
         return {
             'image_folder': '',
+            'output_root_folder': '',
             'output_folder': './outputs',
             'crop_output_folder': './crops',
             'enable_gps_write': True,
@@ -1196,7 +1238,7 @@ class BirdDetectionGUI(QMainWindow):
             'use_local_model': True,  # 默认使用本地模型
             'enable_doubao_api': False,  # 默认不启用豆包API
             'doubao_api_key': '',
-            # 未知种类阈值：仅当 species_conf_threshold_enabled 为 True 时生效
+            # 未知种类阈值：仅当 species_conf_threshold_enabled 为 True 时在地理后判顶一生效
             'species_conf_threshold_enabled': False,
             'min_species_accept_confidence': 0.5,
             # 水印生成
@@ -1211,10 +1253,8 @@ class BirdDetectionGUI(QMainWindow):
             'wm_enable_species': True,
             'wm_enable_camera': True,
             'wm_logo_width_ratio': 0.30,
-            'wm_enable_tone_adjust': False,
-            'wm_tone_shadow_lift': 0,
-            'wm_tone_exposure': 0,
-            'wm_tone_contrast': 0,
+            'wm_enable_auto_enhance': True,
+            'wm_watermark_style': 'frame',
         }
     
     def _init_ui(self):
@@ -1326,7 +1366,28 @@ class BirdDetectionGUI(QMainWindow):
         folder_row.addWidget(folder_btn)
         folder_layout.addRow("图片文件夹:", folder_row)
         
-        # 输出文件夹
+        # 输出根目录（固定本机路径；与相片文件夹名自动生成 screened_* / classification_* / reports）
+        output_root_row = QHBoxLayout()
+        self.output_root_input = QLineEdit()
+        self.output_root_input.setText(self.config.get("output_root_folder", ""))
+        self.output_root_input.setPlaceholderText("例如 D:/birdy/output（留空则使用下方手动路径）")
+        output_root_btn = QPushButton("浏览...")
+        output_root_btn.clicked.connect(lambda: self._select_folder("output_root_folder"))
+        output_root_row.addWidget(self.output_root_input, 1)
+        output_root_row.addWidget(output_root_btn)
+        folder_layout.addRow("输出根目录:", output_root_row)
+
+        self.derived_paths_label = QLabel("")
+        self.derived_paths_label.setWordWrap(True)
+        self.derived_paths_label.setStyleSheet("color: #555555; font-size: 9pt;")
+        self.derived_paths_label.setVisible(False)
+        folder_layout.addRow("自动生成:", self.derived_paths_label)
+
+        # 手动路径（仅当输出根目录为空时使用）
+        self._legacy_paths_container = QWidget()
+        legacy_form = QFormLayout()
+        legacy_form.setSpacing(8)
+        legacy_form.setContentsMargins(0, 0, 0, 0)
         output_row = QHBoxLayout()
         self.output_folder_input = QLineEdit()
         self.output_folder_input.setText(self.config['output_folder'])
@@ -1334,9 +1395,7 @@ class BirdDetectionGUI(QMainWindow):
         output_btn.clicked.connect(lambda: self._select_folder('output_folder'))
         output_row.addWidget(self.output_folder_input, 1)
         output_row.addWidget(output_btn)
-        folder_layout.addRow("输出文件夹:", output_row)
-        
-        # 分类归档文件夹（物种目录输出根路径）
+        legacy_form.addRow("输出文件夹:", output_row)
         crop_row = QHBoxLayout()
         self.crop_folder_input = QLineEdit()
         self.crop_folder_input.setText(self.config['crop_output_folder'])
@@ -1344,7 +1403,14 @@ class BirdDetectionGUI(QMainWindow):
         crop_btn.clicked.connect(lambda: self._select_folder('crop_output_folder'))
         crop_row.addWidget(self.crop_folder_input, 1)
         crop_row.addWidget(crop_btn)
-        folder_layout.addRow("分类归档文件夹:", crop_row)
+        legacy_form.addRow("分类归档文件夹:", crop_row)
+        self._legacy_paths_container.setLayout(legacy_form)
+        folder_layout.addRow(self._legacy_paths_container)
+
+        self._refresh_derived_paths_display()
+        self.output_root_input.textChanged.connect(
+            lambda _t: self._refresh_derived_paths_display()
+        )
         
         folder_group.setLayout(folder_layout)
         layout.addWidget(folder_card)
@@ -1545,11 +1611,13 @@ class BirdDetectionGUI(QMainWindow):
             self.min_species_threshold_enable_checkbox.isChecked()
         )
         self.min_species_conf_input.setToolTip(
-            "勾选「启用」后：低于该值的候选不会进入地理筛选；顶一低于该值也会视为未知。\n"
-            "不勾选：不对 top10 做该阈值筛选，仅按地理名单与名单外>0.75 规则处理。"
+            "勾选「启用」后：在地理规则（含名单外 0.75/0.8 等）完成之后，若**顶一**置信度仍低于设定值，则归为未知。\n"
+            "本地与豆包均**不在**进入地理前对 top10 做阈值初筛。\n"
+            "豆包：名单外须置信度>0.75 才参与地理筛选的后续分支。\n"
+            "本地：名单外须>0.8；若模型 top10 中无任何当前地理名单物种且顶一<0.8，直接判未知。"
         )
         self.min_species_threshold_enable_checkbox.setToolTip(
-            "默认关闭：不限制 top10 置信度，直接按地理规则选种。"
+            "默认关闭：不做地理后的顶一置信度下限。本地模型下仍会应用加强的地理规则（见阈值旁说明）。"
         )
         self.min_species_threshold_enable_checkbox.toggled.connect(
             self.min_species_conf_input.setEnabled
@@ -1640,6 +1708,18 @@ class BirdDetectionGUI(QMainWindow):
         )
         wm_layout.addRow("Logo 宽度占比:", self.wm_logo_width_ratio_input)
 
+        self.wm_style_combo = QComboBox()
+        self.wm_style_combo.addItem("外框 + 底栏文字 + 图内签名", "frame")
+        self.wm_style_combo.addItem("无外框 · 图内签名 + 竖线标签", "inline")
+        _ws = str(self.config.get("wm_watermark_style", "frame") or "frame")
+        self.wm_style_combo.setCurrentIndex(1 if _ws == "inline" else 0)
+        self.wm_style_combo.setToolTip(
+            "外框模式：白边灰线 + 底部栏（物种/地点/日期 | 相机）+ 图底中间签名。\n"
+            "无外框模式：不扩画布；图内中下方为「签名 | 竖线 | 两行标签」"
+            "（上：物种；下：GPS 城市 + 人工地点），颜色与签名剪影一致。"
+        )
+        wm_layout.addRow("水印布局:", self.wm_style_combo)
+
         self.wm_location_checkbox = QCheckBox("显示地理位置")
         self.wm_location_checkbox.setChecked(self.config.get("wm_enable_location", True))
         wm_layout.addRow("", self.wm_location_checkbox)
@@ -1669,95 +1749,15 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_camera_checkbox.setChecked(self.config.get("wm_enable_camera", True))
         wm_layout.addRow("", self.wm_camera_checkbox)
 
-        self.wm_tone_enable_checkbox = QCheckBox("水印前批量图像增强（暗部 / 曝光 / 对比度）")
-        self.wm_tone_enable_checkbox.setChecked(
-            self.config.get("wm_enable_tone_adjust", False)
+        self.wm_auto_enhance_checkbox = QCheckBox("水印前自动生态显影（与 RAW 入库显影同源，可按张微调）")
+        self.wm_auto_enhance_checkbox.setChecked(
+            self.config.get("wm_enable_auto_enhance", True)
         )
-        self.wm_tone_enable_checkbox.setToolTip(
-            "开启后：批量水印与预览会先对原图做增强，再加水印边框与文字。"
+        self.wm_auto_enhance_checkbox.setToolTip(
+            "对每张图自动做曝光与局部明暗优化；在「预览一张」里可按张调节强度与曝光微调，"
+            "参数写入系统临时目录下的 JSON，批量生成时自动套用。"
         )
-        wm_layout.addRow("", self.wm_tone_enable_checkbox)
-
-        def _tone_row(label: str, slider: QSlider, val_label: QLabel) -> QWidget:
-            row = QWidget()
-            hl = QHBoxLayout(row)
-            hl.setContentsMargins(0, 0, 0, 0)
-            hl.addWidget(QLabel(label))
-            hl.addWidget(slider, 1)
-            hl.addWidget(val_label)
-            return row
-
-        self.wm_tone_shadow_slider = QSlider(Qt.Horizontal)
-        self.wm_tone_shadow_slider.setRange(0, 100)
-        self.wm_tone_shadow_slider.setValue(
-            int(self.config.get("wm_tone_shadow_lift", 0))
-        )
-        self.wm_tone_shadow_val = QLabel()
-        self.wm_tone_shadow_val.setMinimumWidth(36)
-        self.wm_tone_shadow_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-
-        def _upd_sh(v: int) -> None:
-            self.wm_tone_shadow_val.setText(str(v))
-
-        self.wm_tone_shadow_slider.valueChanged.connect(_upd_sh)
-        _upd_sh(self.wm_tone_shadow_slider.value())
-        wm_layout.addRow(
-            "",
-            _tone_row("暗部提亮", self.wm_tone_shadow_slider, self.wm_tone_shadow_val),
-        )
-
-        self.wm_tone_exposure_slider = QSlider(Qt.Horizontal)
-        self.wm_tone_exposure_slider.setRange(-100, 100)
-        self.wm_tone_exposure_slider.setValue(
-            int(self.config.get("wm_tone_exposure", 0))
-        )
-        self.wm_tone_exposure_slider.setTickPosition(QSlider.TicksBelow)
-        self.wm_tone_exposure_slider.setTickInterval(50)
-        self.wm_tone_exposure_val = QLabel()
-        self.wm_tone_exposure_val.setMinimumWidth(36)
-        self.wm_tone_exposure_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-
-        def _upd_exp(v: int) -> None:
-            self.wm_tone_exposure_val.setText(str(v))
-
-        self.wm_tone_exposure_slider.valueChanged.connect(_upd_exp)
-        _upd_exp(self.wm_tone_exposure_slider.value())
-        wm_layout.addRow(
-            "",
-            _tone_row("曝光", self.wm_tone_exposure_slider, self.wm_tone_exposure_val),
-        )
-
-        self.wm_tone_contrast_slider = QSlider(Qt.Horizontal)
-        self.wm_tone_contrast_slider.setRange(-100, 100)
-        self.wm_tone_contrast_slider.setValue(
-            int(self.config.get("wm_tone_contrast", 0))
-        )
-        self.wm_tone_contrast_slider.setTickPosition(QSlider.TicksBelow)
-        self.wm_tone_contrast_slider.setTickInterval(50)
-        self.wm_tone_contrast_val = QLabel()
-        self.wm_tone_contrast_val.setMinimumWidth(36)
-        self.wm_tone_contrast_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-
-        def _upd_ct(v: int) -> None:
-            self.wm_tone_contrast_val.setText(str(v))
-
-        self.wm_tone_contrast_slider.valueChanged.connect(_upd_ct)
-        _upd_ct(self.wm_tone_contrast_slider.value())
-        wm_layout.addRow(
-            "",
-            _tone_row("对比度", self.wm_tone_contrast_slider, self.wm_tone_contrast_val),
-        )
-
-        def _sync_wm_tone_widgets_en(checked: bool) -> None:
-            for w in (
-                self.wm_tone_shadow_slider,
-                self.wm_tone_exposure_slider,
-                self.wm_tone_contrast_slider,
-            ):
-                w.setEnabled(checked)
-
-        self.wm_tone_enable_checkbox.toggled.connect(_sync_wm_tone_widgets_en)
-        _sync_wm_tone_widgets_en(self.wm_tone_enable_checkbox.isChecked())
+        wm_layout.addRow("", self.wm_auto_enhance_checkbox)
 
         wm_preview_row = QHBoxLayout()
         wm_preview_btn = QPushButton("预览一张效果")
@@ -1766,6 +1766,13 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_run_btn = QPushButton("批量水印生成")
         self.wm_run_btn.clicked.connect(self._run_watermark_batch)
         wm_preview_row.addWidget(self.wm_run_btn)
+        wm_burst_btn = QPushButton("动图生成")
+        wm_burst_btn.setToolTip(
+            "将连拍合成为 WebP 动图或 MP4 视频（白平衡、显影、对齐与裁剪），"
+            "帧间隔默认按拍照时间推断；不支持动图 WebP 的 App 可选用 MP4 导出。"
+        )
+        wm_burst_btn.clicked.connect(self._open_burst_webp_dialog)
+        wm_preview_row.addWidget(wm_burst_btn)
         wm_preview_row.addStretch(1)
         wm_layout.addRow("", wm_preview_row)
 
@@ -1833,7 +1840,10 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(btn_card)
         
         # 底部信息
-        info_label = QLabel("💡 提示：选择图片文件夹后点击'开始处理'")
+        info_label = QLabel(
+            "💡 提示：设置「输出根目录」后每次只需换「图片文件夹」；"
+            "或留空根目录并手动指定输出与分类路径。"
+        )
         info_label.setStyleSheet("color: #666666; font-size: 10pt; margin-top: 4px;")
         layout.addWidget(info_label)
         
@@ -2081,6 +2091,37 @@ class BirdDetectionGUI(QMainWindow):
         scroll.setWidget(panel)
         return scroll
     
+    def _refresh_derived_paths_display(self) -> None:
+        """根据输出根目录 + 相片文件夹更新「自动生成」说明与手动路径区域显隐。"""
+        if not hasattr(self, "output_root_input"):
+            return
+        root = self.output_root_input.text().strip()
+        img = self.image_folder_input.text().strip()
+        if root:
+            self._legacy_paths_container.setVisible(False)
+            self.derived_paths_label.setVisible(True)
+            if not img:
+                self.derived_paths_label.setText(
+                    "已设置输出根目录。请选择「图片文件夹」后，将按该文件夹名自动生成：\n"
+                    "· <根>/screened_<文件夹名>/  （内含 Screened_images/、burst_analysis.json）\n"
+                    "· <根>/classification_<文件夹名>/  （物种归档）\n"
+                    "· <根>/reports/  （连拍与物种 HTML 报告）"
+                )
+            else:
+                slug = _session_slug_from_image_folder(img)
+                o = os.path.join(root, f"screened_{slug}")
+                c = os.path.join(root, f"classification_{slug}")
+                r = os.path.join(root, "reports")
+                self.derived_paths_label.setText(
+                    f"会话标签「{slug}」：\n"
+                    f"· {o}\n"
+                    f"· {c}\n"
+                    f"· {r}"
+                )
+        else:
+            self._legacy_paths_container.setVisible(True)
+            self.derived_paths_label.setVisible(False)
+    
     def _select_folder(self, field_name: str):
         """选择文件夹"""
         folder = QFileDialog.getExistingDirectory(
@@ -2090,6 +2131,11 @@ class BirdDetectionGUI(QMainWindow):
             if field_name == 'image_folder':
                 self.config['image_folder'] = folder
                 self.image_folder_input.setText(folder)
+                self._refresh_derived_paths_display()
+            elif field_name == 'output_root_folder':
+                self.config['output_root_folder'] = folder
+                self.output_root_input.setText(folder)
+                self._refresh_derived_paths_display()
             elif field_name == 'output_folder':
                 self.config['output_folder'] = folder
                 self.output_folder_input.setText(folder)
@@ -2125,6 +2171,13 @@ class BirdDetectionGUI(QMainWindow):
                 print(f"保存 Logo 路径失败: {e}")
 
     def _build_watermark_options(self) -> WatermarkOptions:
+        src = self._resolve_watermark_source_folder()
+        auto_on = self.wm_auto_enhance_checkbox.isChecked()
+        _style = (
+            "inline"
+            if self.wm_style_combo.currentIndex() == 1
+            else "frame"
+        )
         return WatermarkOptions(
             enable_location=self.wm_location_checkbox.isChecked(),
             location_text=self.wm_location_text_input.text().strip(),
@@ -2134,10 +2187,11 @@ class BirdDetectionGUI(QMainWindow):
             enable_camera_params=self.wm_camera_checkbox.isChecked(),
             logo_path=self.wm_logo_input.text().strip(),
             logo_width_ratio=float(self.wm_logo_width_ratio_input.value()),
-            enable_tone_adjust=self.wm_tone_enable_checkbox.isChecked(),
-            tone_shadow_lift=int(self.wm_tone_shadow_slider.value()),
-            tone_exposure=int(self.wm_tone_exposure_slider.value()),
-            tone_contrast=int(self.wm_tone_contrast_slider.value()),
+            watermark_style=_style,
+            enable_auto_enhance=auto_on,
+            enhance_overrides_path=(
+                override_store_path(src) if auto_on and src else ""
+            ),
         )
 
     def _resolve_watermark_source_folder(self) -> str:
@@ -2149,6 +2203,60 @@ class BirdDetectionGUI(QMainWindow):
                 output_folder=self.output_folder_input.text().strip(),
             )
         return source_folder
+
+    def _open_burst_webp_dialog(self) -> None:
+        """连拍 → WebP / MP4（弹窗内选图、调参与预览）。"""
+        # 「添加图片」起始目录用原始相片文件夹，不用水印默认目录（可能指向 ROI/Screened）。
+        img_dir = self.image_folder_input.text().strip()
+        print(
+            f"[Birdy 动图GUI] 主界面：打开动图对话框，相片文件夹={img_dir or '(空)'}",
+            flush=True,
+        )
+        try:
+            open_burst_webp_dialog(self, default_dir=img_dir or "")
+        except Exception as e:
+            traceback.print_exc()
+            QMessageBox.critical(
+                self,
+                "动图",
+                f"打开连拍动图窗口失败：\n{e}",
+            )
+
+    def get_burst_webp_bird_detector(self):
+        """
+        懒加载仅鸟类检测（无物种/鸟眼），供动图弹窗推断首张裁剪中心。
+        失败时缓存 False，避免重复加载。
+        使用线程锁：动图首张鸟检在后台线程调用本方法时，避免与预览线程双开竞态。
+        """
+        lock = getattr(self, "_burst_webp_detector_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._burst_webp_detector_lock = lock
+        with lock:
+            d = getattr(self, "_burst_webp_bird_detector", None)
+            if d is False:
+                print(
+                    "[Birdy 动图GUI] 鸟检测器不可用（此前加载失败，动图首张将用几何中心）。",
+                    flush=True,
+                )
+                return None
+            if d is not None:
+                return d
+            print(
+                "[Birdy 动图GUI] 鸟检测器首次加载（仅鸟体 YOLO，无物种/鸟眼，可能卡顿数秒）…",
+                flush=True,
+            )
+            try:
+                self._burst_webp_bird_detector = BirdAndEyeDetector(
+                    enable_species=False,
+                    enable_eye=False,
+                )
+            except Exception as e:
+                print(f"[Birdy 动图GUI] 鸟检测器加载失败：{e}", flush=True)
+                self._burst_webp_bird_detector = False
+                return None
+            print("[Birdy 动图GUI] 鸟检测器加载成功。", flush=True)
+            return self._burst_webp_bird_detector
 
     def _run_watermark_batch(self):
         """仅执行批量水印生成（不触发完整主流程）。"""
@@ -2220,7 +2328,7 @@ class BirdDetectionGUI(QMainWindow):
         th.start()
 
     def _preview_watermark_one(self):
-        """按当前水印配置预览一张效果图；可在对话框内用滑条微调色调并写回主界面。"""
+        """预览水印效果；支持逐张自动显影强度与曝光微调，参数写入临时 JSON。"""
         source_folder = self._resolve_watermark_source_folder()
         if not source_folder or not os.path.isdir(source_folder):
             QMessageBox.warning(
@@ -2242,6 +2350,8 @@ class BirdDetectionGUI(QMainWindow):
             paths_all = [fp]
 
         nav_state: Dict[str, Any] = {"paths": paths_all, "idx": 0}
+        ov_path = override_store_path(source_folder)
+        by_rel: Dict[str, dict] = dict(load_overrides_json(ov_path))
 
         def _current_path() -> str:
             ps = nav_state["paths"]
@@ -2250,16 +2360,12 @@ class BirdDetectionGUI(QMainWindow):
 
         from PyQt5.QtGui import QImage, QPixmap
 
-        def _options_for_preview(
-            tone_on: bool, sh: int, exp: int, ctr: int
-        ) -> WatermarkOptions:
+        def _options_for_preview(auto_on: bool) -> WatermarkOptions:
             base = self._build_watermark_options()
             return replace(
                 base,
-                enable_tone_adjust=tone_on,
-                tone_shadow_lift=int(sh),
-                tone_exposure=int(exp),
-                tone_contrast=int(ctr),
+                enable_auto_enhance=bool(auto_on),
+                enhance_overrides_path=(ov_path if auto_on else ""),
             )
 
         def _render_to_pixmap(opts: WatermarkOptions) -> Optional[QPixmap]:
@@ -2277,7 +2383,7 @@ class BirdDetectionGUI(QMainWindow):
             return QPixmap.fromImage(qimg)
 
         dlg = QDialog(self)
-        dlg.setWindowTitle("水印与色调预览")
+        dlg.setWindowTitle("水印与自动显影预览")
         dlg.resize(1000, 780)
         v = QVBoxLayout(dlg)
         info = QLabel()
@@ -2299,11 +2405,11 @@ class BirdDetectionGUI(QMainWindow):
         nav_row.addWidget(next_im_btn)
         v.addLayout(nav_row)
 
-        tone_cb = QCheckBox("水印前启用图像增强（与主界面选项一致，可在此微调）")
-        tone_cb.setChecked(self.wm_tone_enable_checkbox.isChecked())
-        v.addWidget(tone_cb)
+        auto_cb = QCheckBox("水印前自动生态显影（与主界面一致）")
+        auto_cb.setChecked(self.wm_auto_enhance_checkbox.isChecked())
+        v.addWidget(auto_cb)
 
-        def _mini_tone_row(label: str, slider: QSlider, val_lb: QLabel) -> QWidget:
+        def _mini_row(label: str, slider: QSlider, val_lb: QLabel) -> QWidget:
             row = QWidget()
             hl = QHBoxLayout(row)
             hl.setContentsMargins(0, 0, 0, 0)
@@ -2312,42 +2418,63 @@ class BirdDetectionGUI(QMainWindow):
             hl.addWidget(val_lb)
             return row
 
-        d_sh = QSlider(Qt.Horizontal)
-        d_sh.setRange(0, 100)
-        d_sh.setValue(int(self.wm_tone_shadow_slider.value()))
-        d_sh_l = QLabel()
-        d_sh_l.setMinimumWidth(36)
-        d_sh_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        d_sh.valueChanged.connect(lambda x: d_sh_l.setText(str(int(x))))
-        d_sh_l.setText(str(d_sh.value()))
-        v.addWidget(_mini_tone_row("暗部提亮", d_sh, d_sh_l))
+        d_strength = QSlider(Qt.Horizontal)
+        d_strength.setRange(0, 100)
+        d_strength.setToolTip("自动显影结果与原图的混合比例（100 为完全采用自动结果）")
+        d_st_l = QLabel()
+        d_st_l.setMinimumWidth(40)
+        d_st_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        d_strength.valueChanged.connect(lambda x: d_st_l.setText(f"{int(x)}%"))
+        v.addWidget(_mini_row("自动强度", d_strength, d_st_l))
 
         d_exp = QSlider(Qt.Horizontal)
-        d_exp.setRange(-100, 100)
-        d_exp.setValue(int(self.wm_tone_exposure_slider.value()))
+        d_exp.setRange(-50, 50)
+        d_exp.setToolTip("在自动结果上的曝光微调（约 ±1/4 档）")
         d_exp_l = QLabel()
-        d_exp_l.setMinimumWidth(36)
+        d_exp_l.setMinimumWidth(40)
         d_exp_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         d_exp.valueChanged.connect(lambda x: d_exp_l.setText(str(int(x))))
-        d_exp_l.setText(str(d_exp.value()))
-        v.addWidget(_mini_tone_row("曝光", d_exp, d_exp_l))
+        v.addWidget(_mini_row("曝光微调", d_exp, d_exp_l))
 
-        d_ct = QSlider(Qt.Horizontal)
-        d_ct.setRange(-100, 100)
-        d_ct.setValue(int(self.wm_tone_contrast_slider.value()))
-        d_ct_l = QLabel()
-        d_ct_l.setMinimumWidth(36)
-        d_ct_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        d_ct.valueChanged.connect(lambda x: d_ct_l.setText(str(int(x))))
-        d_ct_l.setText(str(d_ct.value()))
+        reset_btn = QPushButton("本张恢复自动默认")
+        reset_btn.setToolTip("清除本张在临时 JSON 中的记录，恢复为默认自动显影")
 
-        def _sync_d_tone_en(checked: bool) -> None:
-            for w in (d_sh, d_exp, d_ct):
+        def _ov_from_sliders() -> dict:
+            st = max(0.0, min(1.0, float(d_strength.value()) / 100.0))
+            ef = max(-0.22, min(0.22, (float(d_exp.value()) / 50.0) * 0.22))
+            return {"strength": st, "exposure_fine": ef}
+
+        def _persist_current() -> None:
+            r = rel_key(_current_path(), source_folder)
+            by_rel[r] = _ov_from_sliders()
+            save_overrides_json(ov_path, source_folder, by_rel)
+
+        def _load_sliders_for_current() -> None:
+            r = rel_key(_current_path(), source_folder)
+            ov = by_rel.get(r)
+            if ov:
+                s = float(ov.get("strength", 1.0))
+                ef = float(ov.get("exposure_fine", 0.0))
+            else:
+                s, ef = 1.0, 0.0
+            d_strength.setValue(int(round(max(0.0, min(1.0, s)) * 100.0)))
+            ui_e = int(round((ef / 0.22) * 50.0)) if abs(ef) > 1e-6 else 0
+            d_exp.setValue(max(-50, min(50, ui_e)))
+            d_st_l.setText(f"{d_strength.value()}%")
+            d_exp_l.setText(str(d_exp.value()))
+
+        def _sync_enh_widgets(checked: bool) -> None:
+            for w in (d_strength, d_exp, reset_btn):
                 w.setEnabled(checked)
 
-        tone_cb.toggled.connect(_sync_d_tone_en)
-        _sync_d_tone_en(tone_cb.isChecked())
-        v.addWidget(_mini_tone_row("对比度", d_ct, d_ct_l))
+        row_reset = QHBoxLayout()
+        row_reset.addWidget(reset_btn)
+        row_reset.addStretch(1)
+        v.addLayout(row_reset)
+
+        _load_sliders_for_current()
+        auto_cb.toggled.connect(_sync_enh_widgets)
+        _sync_enh_widgets(auto_cb.isChecked())
 
         tools = QHBoxLayout()
         zoom_out_btn = QPushButton("缩小")
@@ -2396,12 +2523,9 @@ class BirdDetectionGUI(QMainWindow):
         debounce.setInterval(140)
 
         def _do_refresh():
-            opts = _options_for_preview(
-                tone_cb.isChecked(),
-                d_sh.value(),
-                d_exp.value(),
-                d_ct.value(),
-            )
+            if auto_cb.isChecked():
+                _persist_current()
+            opts = _options_for_preview(auto_cb.isChecked())
             pm = _render_to_pixmap(opts)
             if pm is None:
                 return
@@ -2413,9 +2537,21 @@ class BirdDetectionGUI(QMainWindow):
             debounce.start()
 
         debounce.timeout.connect(_do_refresh)
-        for s in (d_sh, d_exp, d_ct):
+        for s in (d_strength, d_exp):
             s.valueChanged.connect(lambda _v, __f=_schedule_refresh: __f())
-        tone_cb.toggled.connect(lambda _c, __f=_schedule_refresh: __f())
+        auto_cb.toggled.connect(lambda _c, __f=_schedule_refresh: __f())
+
+        def _reset_current_default() -> None:
+            r = rel_key(_current_path(), source_folder)
+            by_rel.pop(r, None)
+            save_overrides_json(ov_path, source_folder, by_rel)
+            d_strength.setValue(100)
+            d_exp.setValue(0)
+            d_st_l.setText(f"{d_strength.value()}%")
+            d_exp_l.setText(str(d_exp.value()))
+            _schedule_refresh()
+
+        reset_btn.clicked.connect(_reset_current_default)
 
         def _update_nav_ui() -> None:
             n = len(nav_state["paths"])
@@ -2426,7 +2562,8 @@ class BirdDetectionGUI(QMainWindow):
             cur = _current_path()
             info.setText(
                 f"预览文件（{i + 1}/{n}）：{os.path.basename(cur)}\n"
-                "拖动下方滑条可实时预览色调；点「确定」将当前色调写回主界面并用于后续批量水印。"
+                "自动显影与 RAW 入库显影同源；滑条调节会写入临时 JSON（按相对路径），"
+                "切换图片前会自动保存当前张；「确定」写回主界面开关。"
             )
 
         def _step_image(delta: int) -> None:
@@ -2436,7 +2573,10 @@ class BirdDetectionGUI(QMainWindow):
             ni = max(0, min(n - 1, int(nav_state["idx"]) + int(delta)))
             if ni == int(nav_state["idx"]):
                 return
+            if auto_cb.isChecked():
+                _persist_current()
             nav_state["idx"] = ni
+            _load_sliders_for_current()
             zoom_state["scale"] = 1.0
             debounce.stop()
             _update_nav_ui()
@@ -2479,11 +2619,11 @@ class BirdDetectionGUI(QMainWindow):
         _do_refresh()
         QTimer.singleShot(0, _fit_to_view)
 
-        if dlg.exec_() == QDialog.Accepted:
-            self.wm_tone_enable_checkbox.setChecked(tone_cb.isChecked())
-            self.wm_tone_shadow_slider.setValue(int(d_sh.value()))
-            self.wm_tone_exposure_slider.setValue(int(d_exp.value()))
-            self.wm_tone_contrast_slider.setValue(int(d_ct.value()))
+        rc = dlg.exec_()
+        if auto_cb.isChecked():
+            _persist_current()
+        if rc == QDialog.Accepted:
+            self.wm_auto_enhance_checkbox.setChecked(auto_cb.isChecked())
             try:
                 self._sync_config_from_ui()
                 self._save_config()
@@ -2733,6 +2873,14 @@ class BirdDetectionGUI(QMainWindow):
         """开始处理"""
         self._sync_config_from_ui()
         output_folder = self.config["output_folder"].strip()
+        if not output_folder or not self.config.get("crop_output_folder", "").strip():
+            QMessageBox.warning(
+                self,
+                "提示",
+                "请填写「输出根目录」（推荐），或在留空根目录时填写「输出文件夹」与「分类归档文件夹」。",
+            )
+            self._save_config()
+            return
         burst_on = self.config["enable_burst_detection"]
         need_species_or_crop = (
             self.config["enable_species_detection"] or self.config["enable_crop"]
@@ -2779,6 +2927,7 @@ class BirdDetectionGUI(QMainWindow):
         # 创建输出文件夹
         Path(self.config['output_folder']).mkdir(parents=True, exist_ok=True)
         Path(self.config['crop_output_folder']).mkdir(parents=True, exist_ok=True)
+        Path(_reports_dir_from_config(self.config)).mkdir(parents=True, exist_ok=True)
         if self.config['watermark_output_folder']:
             Path(self.config['watermark_output_folder']).mkdir(parents=True, exist_ok=True)
         
@@ -2928,8 +3077,20 @@ class BirdDetectionGUI(QMainWindow):
     def _sync_config_from_ui(self) -> None:
         """把当前界面上的选项全部写回 self.config（与「开始处理」写入项保持一致）。"""
         self.config["image_folder"] = self.image_folder_input.text().strip()
-        self.config["output_folder"] = self.output_folder_input.text().strip()
-        self.config["crop_output_folder"] = self.crop_folder_input.text().strip()
+        root = self.output_root_input.text().strip()
+        self.config["output_root_folder"] = root
+        img = self.config["image_folder"]
+        if root:
+            slug = _session_slug_from_image_folder(img)
+            self.config["output_folder"] = os.path.join(root, f"screened_{slug}")
+            self.config["crop_output_folder"] = os.path.join(
+                root, f"classification_{slug}"
+            )
+            self.config["reports_output_folder"] = os.path.join(root, "reports")
+        else:
+            self.config["output_folder"] = self.output_folder_input.text().strip()
+            self.config["crop_output_folder"] = self.crop_folder_input.text().strip()
+            self.config.pop("reports_output_folder", None)
         self.config["enable_gps_write"] = self.gps_write_checkbox.isChecked()
         self.config["location_name"] = self.location_input.text().strip()
         try:
@@ -2986,12 +3147,14 @@ class BirdDetectionGUI(QMainWindow):
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
         )
-        self.config["wm_enable_tone_adjust"] = (
-            self.wm_tone_enable_checkbox.isChecked()
+        self.config["wm_enable_auto_enhance"] = (
+            self.wm_auto_enhance_checkbox.isChecked()
         )
-        self.config["wm_tone_shadow_lift"] = int(self.wm_tone_shadow_slider.value())
-        self.config["wm_tone_exposure"] = int(self.wm_tone_exposure_slider.value())
-        self.config["wm_tone_contrast"] = int(self.wm_tone_contrast_slider.value())
+        self.config["wm_watermark_style"] = (
+            "inline"
+            if self.wm_style_combo.currentIndex() == 1
+            else "frame"
+        )
         self.config["use_local_model"] = self.local_model_radio.isChecked()
         self.config["species_conf_threshold_enabled"] = (
             self.min_species_threshold_enable_checkbox.isChecked()
@@ -3017,6 +3180,8 @@ class BirdDetectionGUI(QMainWindow):
                 with open(config_file, 'r', encoding='utf-8') as f:
                     saved_config = json.load(f)
                     self.config.update(saved_config)
+                    if "wm_enable_auto_enhance" not in saved_config:
+                        self.config["wm_enable_auto_enhance"] = True
                     if 'burst_keep_min' not in saved_config and 'keep_top_n' in saved_config:
                         self.config['burst_keep_min'] = saved_config['keep_top_n']
                     if 'burst_keep_ratio' not in saved_config:
@@ -3029,6 +3194,8 @@ class BirdDetectionGUI(QMainWindow):
                         )
                     if 'species_conf_threshold_enabled' not in saved_config:
                         self.config['species_conf_threshold_enabled'] = False
+                    if "output_root_folder" not in saved_config:
+                        self.config["output_root_folder"] = ""
                     self._update_ui_from_config()
             except Exception as e:
                 print(f"加载配置失败: {e}")
@@ -3036,8 +3203,10 @@ class BirdDetectionGUI(QMainWindow):
     def _update_ui_from_config(self):
         """从配置更新UI"""
         self.image_folder_input.setText(self.config.get('image_folder', ''))
+        self.output_root_input.setText(self.config.get("output_root_folder", ""))
         self.output_folder_input.setText(self.config.get('output_folder', ''))
         self.crop_folder_input.setText(self.config.get('crop_output_folder', ''))
+        self._refresh_derived_paths_display()
         self.gps_write_checkbox.setChecked(self.config.get('enable_gps_write', True))
         self.lat_input.setText(str(self.config.get('gps_latitude', 31.2304)))
         self.lon_input.setText(str(self.config.get('gps_longitude', 121.4737)))
@@ -3087,25 +3256,13 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get('wm_logo_width_ratio', 0.30))
         )
-        self.wm_tone_enable_checkbox.setChecked(
-            self.config.get("wm_enable_tone_adjust", False)
+        _wst = str(self.config.get("wm_watermark_style", "frame") or "frame")
+        _wi = self.wm_style_combo.findData(_wst)
+        self.wm_style_combo.setCurrentIndex(_wi if _wi >= 0 else 0)
+        self.wm_auto_enhance_checkbox.setChecked(
+            self.config.get("wm_enable_auto_enhance", True)
         )
-        self.wm_tone_shadow_slider.setValue(
-            int(self.config.get("wm_tone_shadow_lift", 0))
-        )
-        self.wm_tone_exposure_slider.setValue(
-            int(self.config.get("wm_tone_exposure", 0))
-        )
-        self.wm_tone_contrast_slider.setValue(
-            int(self.config.get("wm_tone_contrast", 0))
-        )
-        for w in (
-            self.wm_tone_shadow_slider,
-            self.wm_tone_exposure_slider,
-            self.wm_tone_contrast_slider,
-        ):
-            w.setEnabled(self.wm_tone_enable_checkbox.isChecked())
-        
+
         # 物种识别配置
         use_local = self.config.get('use_local_model', True)
         self.local_model_radio.setChecked(use_local)

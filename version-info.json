@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.3",
+  "version": "2.0.6",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-05-02",
+  "release_date": "2026-05-07",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -33,9 +33,25 @@
     "可视化报告生成",
     "豆包API集成",
     "批量处理支持",
-    "自动化脚本支持"
+    "自动化脚本支持",
+    "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.6": [
+      "GUI：输出根目录 + 相片文件夹名自动生成 screened_<会话>/、classification_<会话>/、reports/；留空根目录时保留双路径手动模式",
+      "连拍动图 ROI：链式与首张择优、重锚与突跳抑制、自适应 reproj、对齐调试与终端日志；预览/导出线程 OpenMP 与 QueuedConnection 稳定性",
+      "动图：WebP/MP4 与 ROI 对齐、预览等延续 2.0.5 能力，见 CHANGELOG"
+    ],
+    "2.0.5": [
+      "连拍动图：导出格式可选 WebP 动图或 MP4 视频（OpenCV mp4v），便于不支持动图 WebP 的 App 播放",
+      "连拍对齐：手动 ROI 虚线矩形 + ROI 内 ORB/SIFT/BRISK 与 2D 刚体估计，整图平移微旋转、非 ROI 常量留白；未设 ROI 时仍走边带 ECC",
+      "动图对话框：标题「连拍 → WebP / MP4」；状态 JSON 记录 export_format；主界面「动图生成」说明同步"
+    ],
+    "2.0.4": [
+      "水印：移除批量「暗部/曝光/对比度」滑条；改为与 RAW 生态显影同源的自动显影（develop 栈），默认开启",
+      "水印：新增 watermark_enhance，预览支持逐张「自动强度」「曝光微调」，参数写入系统临时目录 overrides.json（按输入目录哈希分桶），批量生成自动套用",
+      "GUI 配置键 wm_enable_auto_enhance 替代 wm_enable_tone_adjust；加载旧配置时若无新键则默认启用自动显影"
+    ],
     "2.0.3": [
       "GPS：改为连拍筛选并复制到 Screened_images 之后，仅对副本中 JPEG 递归写入 EXIF；原相片目录不再被批量改写",
       "RAW：连拍保留复制时全分辨率解码并经 ecology 显影栈导出为 JPEG；依赖 rawpy（requirements 已列入）",
