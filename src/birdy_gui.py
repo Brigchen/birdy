@@ -26,8 +26,9 @@ try:
         QLabel, QLineEdit, QPushButton, QTextEdit, QProgressBar, QFileDialog,
         QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox, QTabWidget,
         QGroupBox, QFormLayout, QMessageBox, QTableWidget, QTableWidgetItem,
-        QDialog, QDialogButtonBox, QRadioButton, QScrollArea, QFrame,
-        QSizePolicy, QSlider, QShortcut,
+        QDialog, QDialogButtonBox, QRadioButton, QButtonGroup, QScrollArea, QFrame,
+        QCompleter,
+        QSizePolicy, QSlider, QShortcut, QProgressDialog,
     )
     from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
     from PyQt5.QtGui import QColor, QTextCursor, QIcon, QPalette, QDesktopServices, QKeySequence
@@ -41,8 +42,37 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from burst_grouping import process_folder, get_kept_images, screened_paths_for_kept_images
 from html_report_generator import generate_html_report
 from geo_encoder import batch_write_gps_exif, geocode_location
-from detect_bird_and_eye import BirdAndEyeDetector
+from detect_bird_and_eye import (
+    BirdAndEyeDetector,
+    LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_RESNET34,
+    SPECIES_GEO_MODE_AUTO,
+    SPECIES_GEO_MODE_CHINA,
+    SPECIES_GEO_MODE_NONE,
+    SPECIES_GEO_MODE_PROVINCE,
+    normalize_local_species_model,
+    normalize_species_geo_mode,
+)
 from api_config_defaults import ensure_doubao_api_config_file, ensure_amap_api_config_file
+from record_submit import export_from_classification
+from record_submit.record_portals import (
+    CHINA_BIRD_RECORD_HOME_URL,
+    EBIRD_IMPORT_URL,
+)
+from gpx_track import (
+    batch_write_gps_from_gpx,
+    generate_track_maps,
+    show_track_map_preview,
+    merge_gpx_files,
+)
+from gpx_track.timezone_util import (
+    DEFAULT_EXIF_TZ,
+    DEFAULT_GPX_TZ,
+    normalize_tz_name,
+    read_combo_timezone,
+    set_combo_timezone,
+    timezone_combo_entries,
+)
 from watermark_generator import (
     WatermarkOptions,
     choose_default_watermark_source,
@@ -98,7 +128,58 @@ def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, f
         phases.append(("species", max(25.0, n * per)))
     if config.get("enable_watermark_generation", False):
         phases.append(("watermark", max(12.0, n * 0.8)))
+    if config.get("enable_record_export_auto", False) and (
+        config.get("enable_species_detection", True)
+        or config.get("enable_crop", False)
+    ):
+        phases.append(("record_export", 8.0))
+    if config.get("enable_track_map_auto", False):
+        phases.append(("track_map", 15.0))
     return phases
+
+
+def _record_export_dirs_from_config(config: Dict) -> Tuple[str, str]:
+    """从配置解析分类归档目录与观鸟记录导出目录。"""
+    classification = (
+        config.get("record_export_classification_folder", "") or ""
+    ).strip()
+    if not classification:
+        classification = (config.get("crop_output_folder", "") or "").strip()
+    out = (config.get("record_export_output_folder", "") or "").strip()
+    if not out:
+        root = (config.get("output_root_folder", "") or "").strip()
+        reports = (config.get("reports_output_folder", "") or "").strip()
+        if root:
+            out = os.path.join(root, "reports", "record_export")
+        elif reports:
+            out = os.path.join(reports, "record_export")
+        else:
+            out = os.path.join(
+                os.path.dirname(classification or "."), "record_export"
+            )
+    return classification, out
+
+
+def _record_export_kwargs(config: Dict) -> Dict:
+    """观鸟记录导出：批次去重与 GPX/空间聚类参数。"""
+    gpx_path = (config.get("gpx_file_path") or "").strip()
+    prefer = config.get("record_export_prefer_spatial_gps")
+    if prefer is None:
+        prefer = config.get("gps_write_mode") == "gpx" and bool(gpx_path)
+    else:
+        prefer = bool(prefer)
+    return {
+        "count_individuals": bool(
+            config.get("record_export_count_individuals", True)
+        ),
+        "prefer_spatial_gps": prefer,
+        "spatial_threshold_km": float(
+            config.get("record_export_spatial_km", 0.1) or 0.1
+        ),
+        "time_threshold_minutes": float(
+            config.get("record_export_time_minutes", 30) or 30
+        ),
+    }
 
 
 def _collect_image_paths_under(root: str) -> List[str]:
@@ -151,6 +232,39 @@ def _reports_dir_from_config(config: Dict) -> str:
     return os.path.join((config.get("output_folder") or "./outputs").strip(), "reports")
 
 
+def _main_flow_write_gps(config: Dict, screened_dir: str) -> Tuple[int, str]:
+    """
+    主流程 GPS 写入（二选一）。
+    返回 (写入张数, 模式说明)。
+    """
+    mode = config.get("gps_write_mode", "fixed")
+    if mode == "gpx":
+        gpx = (config.get("gpx_file_path") or "").strip()
+        if not gpx or not os.path.isfile(gpx):
+            raise FileNotFoundError(
+                "主流程已选「GPX 按拍摄时间」，但未配置有效 GPX 文件。"
+            )
+        stats = batch_write_gps_from_gpx(
+            screened_dir,
+            gpx,
+            exif_tz=normalize_tz_name(config.get("gpx_match_exif_tz", DEFAULT_EXIF_TZ)),
+            gpx_tz=normalize_tz_name(config.get("gpx_match_gpx_tz", DEFAULT_GPX_TZ)),
+        )
+        n = int(stats.get("written", 0))
+        detail = (
+            f"GPX 时间匹配：JPEG {stats.get('total', 0)} 张，"
+            f"匹配 {stats.get('matched', 0)} 张，写入 {n} 张"
+        )
+        return n, detail
+    gps_count = batch_write_gps_exif(
+        image_folder=screened_dir,
+        latitude=config["gps_latitude"],
+        longitude=config["gps_longitude"],
+        altitude=config.get("gps_altitude", 0),
+    )
+    return int(gps_count), "指定地点统一经纬度"
+
+
 class WorkerThread(QThread):
     """后台工作线程 - 处理图片分析"""
     
@@ -183,6 +297,13 @@ class WorkerThread(QThread):
                 total_steps += 1
             if config.get("enable_watermark_generation", False):
                 total_steps += 1
+            if config.get("enable_record_export_auto", False) and (
+                config.get("enable_species_detection", True)
+                or config.get("enable_crop", False)
+            ):
+                total_steps += 1
+            if config.get("enable_track_map_auto", False):
+                total_steps += 1
             if total_steps < 1:
                 total_steps = 1
             current_step = 0
@@ -194,6 +315,8 @@ class WorkerThread(QThread):
                 "burst_report": 0.07,
                 "species": 0.35,
                 "watermark": 0.10,
+                "record_export": 0.06,
+                "track_map": 0.08,
             }
             enabled_phases: List[str] = []
             if burst_on:
@@ -208,6 +331,13 @@ class WorkerThread(QThread):
                 enabled_phases.append("species")
             if config.get("enable_watermark_generation", False):
                 enabled_phases.append("watermark")
+            if config.get("enable_record_export_auto", False) and (
+                config.get("enable_species_detection", True)
+                or config.get("enable_crop", False)
+            ):
+                enabled_phases.append("record_export")
+            if config.get("enable_track_map_auto", False):
+                enabled_phases.append("track_map")
             if not enabled_phases:
                 enabled_phases = ["species"]
 
@@ -311,20 +441,23 @@ class WorkerThread(QThread):
 
                 if config.get("enable_gps_write"):
                     current_step += 1
+                    gps_mode = config.get("gps_write_mode", "fixed")
+                    mode_cn = (
+                        "GPX 时间匹配"
+                        if gps_mode == "gpx"
+                        else "指定地点"
+                    )
                     self.status_updated.emit(
-                        f"[步骤 {current_step}/{total_steps}] 向筛选副本（Screened_images）写入 GPS EXIF…"
+                        f"[步骤 {current_step}/{total_steps}] 向 Screened_images 写入 GPS（{mode_cn}）…"
                     )
                     _emit_phase_progress("gps", 0, 1)
                     self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "gps"})
                     try:
-                        gps_count = batch_write_gps_exif(
-                            image_folder=screened_dir,
-                            latitude=config["gps_latitude"],
-                            longitude=config["gps_longitude"],
-                            altitude=config.get("gps_altitude", 0),
+                        gps_count, gps_detail = _main_flow_write_gps(
+                            config, screened_dir
                         )
                         self.status_updated.emit(
-                            f"✓ 已为 Screened_images 中 {gps_count} 张 JPEG 写入 GPS"
+                            f"✓ GPS 已写入 Screened_images：{gps_detail}"
                         )
                         results["gps_written"] = gps_count
                     except Exception as e:
@@ -397,20 +530,23 @@ class WorkerThread(QThread):
             if config.get("enable_gps_write") and not burst_on:
                 if os.path.isdir(screened_dir):
                     current_step += 1
+                    gps_mode = config.get("gps_write_mode", "fixed")
+                    mode_cn = (
+                        "GPX 时间匹配"
+                        if gps_mode == "gpx"
+                        else "指定地点"
+                    )
                     self.status_updated.emit(
-                        f"[步骤 {current_step}/{total_steps}] 向 Screened_images 内 JPEG 写入 GPS EXIF…"
+                        f"[步骤 {current_step}/{total_steps}] 向 Screened_images 写入 GPS（{mode_cn}）…"
                     )
                     _emit_phase_progress("gps", 0, 1)
                     self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "gps"})
                     try:
-                        gps_count = batch_write_gps_exif(
-                            image_folder=screened_dir,
-                            latitude=config["gps_latitude"],
-                            longitude=config["gps_longitude"],
-                            altitude=config.get("gps_altitude", 0),
+                        gps_count, gps_detail = _main_flow_write_gps(
+                            config, screened_dir
                         )
                         self.status_updated.emit(
-                            f"✓ 已为 Screened_images 中 {gps_count} 张 JPEG 写入 GPS"
+                            f"✓ GPS 已写入 Screened_images：{gps_detail}"
                         )
                         results["gps_written"] = gps_count
                     except Exception as e:
@@ -467,7 +603,13 @@ class WorkerThread(QThread):
                     detector = BirdAndEyeDetector(
                         enable_species=do_species,
                         use_local_model=config.get('use_local_model', True),
+                        local_species_model=config.get(
+                            'local_species_model', LOCAL_SPECIES_MODEL_RESNET34
+                        ),
                         doubao_config=doubao_config,
+                        geo_mode=normalize_species_geo_mode(
+                            config.get('species_geo_mode', SPECIES_GEO_MODE_AUTO)
+                        ),
                         min_species_accept_confidence=min_species_thr,
                     )
                     
@@ -733,6 +875,102 @@ class WorkerThread(QThread):
                 _emit_phase_progress("species", 1, 1)
                 self.eta_checkpoint.emit({"kind": "phase_done", "phase": "species"})
 
+            if config.get("enable_record_export_auto", False):
+                current_step += 1
+                self.status_updated.emit(
+                    f"[步骤 {current_step}/{total_steps}] 导出观鸟记录（eBird / 观鸟记录中心）..."
+                )
+                _emit_phase_progress("record_export", 0, 1)
+                self.eta_checkpoint.emit(
+                    {"kind": "phase_begin", "phase": "record_export"}
+                )
+                try:
+                    class_root, out_dir = _record_export_dirs_from_config(config)
+                    if class_root and os.path.isdir(class_root):
+                        written = export_from_classification(
+                            class_root,
+                            out_dir,
+                            write_ebird_csv=bool(
+                                config.get("record_export_ebird", True)
+                            ),
+                            write_china_bird_record_xls=bool(
+                                config.get("record_export_birdreport", True)
+                            ),
+                            ebird_country=str(
+                                config.get("record_export_ebird_country", "CN")
+                                or "CN"
+                            ),
+                            ebird_state=str(
+                                config.get("record_export_ebird_state", "CN-FJ")
+                                or "CN-FJ"
+                            ),
+                            **_record_export_kwargs(config),
+                        )
+                        for _k, _p in written.items():
+                            self.status_updated.emit(
+                                f"  ✓ {_k}: {os.path.basename(_p)}"
+                            )
+                        self.status_updated.emit(
+                            "  提示：请在导出文件中核对并自行修改数量后再上传各平台。"
+                        )
+                        results["record_export"] = written
+                    else:
+                        self.status_updated.emit(
+                            "⚠ 跳过观鸟记录自动导出：分类归档目录不存在或为空"
+                        )
+                except Exception as e:
+                    self.error_occurred.emit(f"观鸟记录导出失败: {str(e)}")
+                _emit_phase_progress("record_export", 1, 1)
+                self.eta_checkpoint.emit(
+                    {"kind": "phase_done", "phase": "record_export"}
+                )
+
+            if config.get("enable_track_map_auto", False):
+                current_step += 1
+                self.status_updated.emit(
+                    f"[步骤 {current_step}/{total_steps}] 生成轨迹图..."
+                )
+                _emit_phase_progress("track_map", 0, 1)
+                self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "track_map"})
+                try:
+                    reports_dir = _reports_dir_from_config(config)
+                    photo_folder = config.get("crop_output_folder", "").strip()
+                    if config.get("track_map_photo_source") == "screened":
+                        photo_folder = os.path.join(
+                            config.get("output_folder", ""), "Screened_images"
+                        )
+                    gpx = (config.get("gpx_file_path") or "").strip()
+                    written = generate_track_maps(
+                        reports_dir=reports_dir,
+                        gpx_path=gpx or None,
+                        photo_folder=photo_folder,
+                        use_gpx_track=bool(config.get("track_map_use_gpx", True)),
+                        use_exif_gps=bool(config.get("track_map_use_exif", True)),
+                        radius_km=float(config.get("track_map_radius_km", 1.0)),
+                        include_elevation=bool(
+                            config.get("track_map_include_elevation", True)
+                        ),
+                        basemap_style=str(
+                            config.get("track_map_basemap_style", "digital")
+                        ),
+                        exif_tz=normalize_tz_name(
+                            config.get("gpx_match_exif_tz")
+                            or config.get("track_map_exif_tz", DEFAULT_EXIF_TZ)
+                        ),
+                        gpx_tz=normalize_tz_name(
+                            config.get("gpx_match_gpx_tz")
+                            or config.get("track_map_gpx_tz", DEFAULT_GPX_TZ)
+                        ),
+                        preview_only=False,
+                    )
+                    for k, p in written.items():
+                        self.status_updated.emit(f"  ✓ {k}: {os.path.basename(p)}")
+                    results["track_map"] = written
+                except Exception as e:
+                    self.error_occurred.emit(f"轨迹图生成失败: {str(e)}")
+                _emit_phase_progress("track_map", 1, 1)
+                self.eta_checkpoint.emit({"kind": "phase_done", "phase": "track_map"})
+
             # 水印生成
             if config.get("enable_watermark_generation", False):
                 current_step += 1
@@ -862,6 +1100,104 @@ class WatermarkBatchThread(QThread):
             self.failed.emit(str(e))
 
 
+class TrackMapThread(QThread):
+    """子进程生成轨迹图，避免 matplotlib 与 Qt 同线程死锁。"""
+
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+
+    def __init__(self, kwargs: Dict[str, Any], parent=None):
+        super().__init__(parent)
+        self._kwargs = dict(kwargs)
+
+    @staticmethod
+    def _subprocess_popen_kwargs() -> Dict[str, Any]:
+        """Windows 下隐藏控制台窗口，避免「闪一下像退出」。"""
+        import subprocess as sp
+
+        kw: Dict[str, Any] = {}
+        if sys.platform == "win32":
+            kw["creationflags"] = getattr(sp, "CREATE_NO_WINDOW", 0)
+        return kw
+
+    def run(self) -> None:
+        import json
+        import subprocess
+        import tempfile
+        import time
+
+        self.log_line.emit("轨迹图：已启动生成子进程…")
+        src_dir = Path(__file__).resolve().parent
+        try:
+            with tempfile.TemporaryDirectory(prefix="birdy_trackmap_") as td:
+                kin = Path(td) / "kwargs.json"
+                kout = Path(td) / "result.json"
+                kin.write_text(
+                    json.dumps(self._kwargs, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                cmd = [
+                    sys.executable,
+                    "-m",
+                    "gpx_track.generate_worker",
+                    str(kin),
+                    str(kout),
+                ]
+                env = os.environ.copy()
+                env["PYTHONPATH"] = str(src_dir) + os.pathsep + env.get(
+                    "PYTHONPATH", ""
+                )
+                popen_kw = self._subprocess_popen_kwargs()
+                proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    cwd=str(src_dir),
+                    env=env,
+                    **popen_kw,
+                )
+                last_ping = time.monotonic()
+                while proc.poll() is None:
+                    now = time.monotonic()
+                    if now - last_ping >= 3.0:
+                        self.log_line.emit(
+                            "轨迹图：仍在生成中（匹配 GPX、下载底图、绘制 PNG）…"
+                        )
+                        last_ping = now
+                    time.sleep(0.25)
+                stdout, stderr = proc.communicate(timeout=30)
+                if proc.returncode != 0:
+                    err_body = (stderr or stdout or "").strip()
+                    if kout.is_file():
+                        try:
+                            payload = json.loads(kout.read_text(encoding="utf-8"))
+                            if payload.get("error"):
+                                err_body = str(payload["error"]).strip()
+                        except Exception:
+                            pass
+                    self.failed.emit(
+                        err_body or f"子进程退出码 {proc.returncode}"
+                    )
+                    return
+                if not kout.is_file():
+                    self.failed.emit("轨迹图子进程未生成结果文件")
+                    return
+                written = json.loads(kout.read_text(encoding="utf-8"))
+                if written.get("error"):
+                    self.failed.emit(str(written["error"]))
+                    return
+                self.log_line.emit("轨迹图：子进程绘制完成，正在载入结果…")
+                self.finished_ok.emit(written)
+        except subprocess.TimeoutExpired:
+            self.failed.emit("轨迹图生成超时（超过 10 分钟）")
+        except Exception as e:
+            self.failed.emit(f"{e}\n{traceback.format_exc()}")
+
+
 class BirdDetectionGUI(QMainWindow):
     """鸟图智慧仓储 (Birdy) GUI 主程序"""
 
@@ -880,6 +1216,8 @@ class BirdDetectionGUI(QMainWindow):
         # 初始化变量
         self.worker_thread: Optional[WorkerThread] = None
         self._wm_batch_thread: Optional[WatermarkBatchThread] = None
+        self._track_map_thread: Optional[TrackMapThread] = None
+        self._track_map_progress: Optional[QProgressDialog] = None
         self.config: Dict = self._get_default_config()
         self._process_start_monotonic: Optional[float] = None
         self._process_time_timer = QTimer(self)
@@ -1232,10 +1570,12 @@ class BirdDetectionGUI(QMainWindow):
             'generate_burst_report': True,
             'enable_species_detection': True,
             'enable_crop': True,
-            'use_geo_constraint': True,
             'generate_species_report': True,
             # 物种识别模式配置
             'use_local_model': True,  # 默认使用本地模型
+            'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
+            # 地理约束：基准测试 ResNet34 在 auto/china/province 下约 87.7% top1（浦口集）
+            'species_geo_mode': SPECIES_GEO_MODE_AUTO,
             'enable_doubao_api': False,  # 默认不启用豆包API
             'doubao_api_key': '',
             # 未知种类阈值：仅当 species_conf_threshold_enabled 为 True 时在地理后判顶一生效
@@ -1255,6 +1595,37 @@ class BirdDetectionGUI(QMainWindow):
             'wm_logo_width_ratio': 0.30,
             'wm_enable_auto_enhance': True,
             'wm_watermark_style': 'frame',
+            # 观鸟记录导出（主流程自动导出默认关闭）
+            'enable_record_export_auto': False,
+            'record_export_classification_folder': '',
+            'record_export_output_folder': '',
+            'record_export_ebird': True,
+            'record_export_birdreport': True,
+            'record_export_ebird_country': 'CN',
+            'record_export_ebird_state': 'CN-FJ',
+            'record_export_count_individuals': True,
+            'record_export_spatial_km': 0.1,
+            'record_export_time_minutes': 30.0,
+            # 可折叠区块默认展开
+            'ui_section_expanded_geo': True,
+            'ui_section_expanded_burst': True,
+            'ui_section_expanded_species': True,
+            'ui_section_expanded_watermark': False,
+            'ui_section_expanded_export': True,
+            # GPX / 轨迹图
+            'gpx_file_path': '',
+            'gpx_apply_to_screened': True,
+            'enable_track_map_auto': False,
+            'track_map_use_gpx': True,
+            'track_map_use_exif': True,
+            'track_map_photo_source': 'classification',
+            'track_map_radius_km': 1.0,
+            'track_map_include_elevation': True,
+            'track_map_basemap_style': 'digital',
+            'gps_write_mode': 'fixed',
+            'gpx_match_exif_tz': DEFAULT_EXIF_TZ,
+            'gpx_match_gpx_tz': DEFAULT_GPX_TZ,
+            'ui_section_expanded_track_map': False,
         }
     
     def _init_ui(self):
@@ -1415,32 +1786,69 @@ class BirdDetectionGUI(QMainWindow):
         folder_group.setLayout(folder_layout)
         layout.addWidget(folder_card)
         
-        # ═════ 地理位置设置 ═════
-        geo_card, geo_group = self._create_card("🌍 地理位置")
+        # ═════ 地理位置（可收起；主流程勾选在标题栏）═════
+        self.gps_write_checkbox = QCheckBox("主流程写入GPS")
+        self.gps_write_checkbox.setChecked(self.config["enable_gps_write"])
+        self.gps_write_checkbox.setToolTip(
+            "勾选后，连拍筛选完成时按下方「写入方式」自动写入 Screened_images：\n"
+            "指定地点统一经纬度，或按 GPX 与 EXIF 时间匹配插值写入。"
+        )
+        self.gps_write_checkbox.stateChanged.connect(self._on_gps_write_changed)
+        self._style_flow_header_checkbox(self.gps_write_checkbox)
+
+        geo_card, geo_group = self._create_collapsible_card(
+            "🌍 地理位置",
+            "geo",
+            header_widgets=[self.gps_write_checkbox],
+        )
         geo_layout = QFormLayout()
         geo_layout.setSpacing(8)
         geo_layout.setContentsMargins(12, 10, 12, 12)
-        
-        # GPS写入Exif开关
-        gps_write_row = QHBoxLayout()
-        self.gps_write_checkbox = QCheckBox("写入GPS到Exif")
-        self.gps_write_checkbox.setChecked(self.config['enable_gps_write'])
-        self.gps_write_checkbox.setToolTip(
-            "在连拍筛选结束并将保留图复制到输出目录下的 Screened_images 之后，\n"
-            "再仅对这些副本中的 JPEG 写入 GPS；不会改写入库前的原始文件夹。\n"
-            "RAW 在复制时会先转为经生态向优化的 JPEG，再写入 GPS。"
+
+        geo_gps_hint = QLabel(
+            "GPS 写入二选一（勾选「主流程写入GPS」后自动执行）："
+            "指定地点统一经纬度，或 GPX 按拍摄时间匹配。"
+            "下方「按 GPX 时间批量写入」可随时单独对任意文件夹执行。"
         )
-        self.gps_write_checkbox.stateChanged.connect(self._on_gps_write_changed)
-        gps_write_row.addWidget(self.gps_write_checkbox)
-        gps_write_row.addStretch()
+        geo_gps_hint.setWordWrap(True)
+        geo_gps_hint.setStyleSheet("color: #555; font-size: 9pt;")
+        geo_layout.addRow(geo_gps_hint)
+
+        self.gps_write_mode_group = QButtonGroup(self)
+        mode_row = QHBoxLayout()
+        self.gps_mode_fixed_radio = QRadioButton("指定地点统一写入")
+        self.gps_mode_gpx_radio = QRadioButton("GPX 按拍摄时间匹配")
+        self.gps_write_mode_group.addButton(self.gps_mode_fixed_radio, 0)
+        self.gps_write_mode_group.addButton(self.gps_mode_gpx_radio, 1)
+        _gps_mode = self.config.get("gps_write_mode", "fixed")
+        if _gps_mode == "gpx":
+            self.gps_mode_gpx_radio.setChecked(True)
+        else:
+            self.gps_mode_fixed_radio.setChecked(True)
+        self.gps_mode_fixed_radio.setToolTip(
+            "主流程：向 Screened_images 写入上方查询/填写的统一经纬度。"
+        )
+        self.gps_mode_gpx_radio.setToolTip(
+            "主流程：按 GPX 轨迹与 EXIF 拍摄时间（见下方时区）插值后写入 GPS。"
+        )
+        self.gps_write_mode_group.buttonClicked.connect(
+            self._on_gps_write_mode_changed
+        )
+        mode_row.addWidget(self.gps_mode_fixed_radio)
+        mode_row.addWidget(self.gps_mode_gpx_radio)
+        mode_row.addStretch(1)
+        geo_layout.addRow("写入方式:", mode_row)
+
+        amap_row = QHBoxLayout()
         amap_cfg_label = QLabel("高德API:")
         amap_cfg_label.setToolTip("地名转坐标优先走高德；密钥在 amap_api_config.json 中配置")
-        gps_write_row.addWidget(amap_cfg_label)
+        amap_row.addWidget(amap_cfg_label)
         amap_cfg_btn = QPushButton("打开配置文件")
         amap_cfg_btn.setToolTip("编辑 amap_api_config.json，填写 api_key（与豆包配置方式相同）")
         amap_cfg_btn.clicked.connect(self._open_amap_config_file)
-        gps_write_row.addWidget(amap_cfg_btn)
-        geo_layout.addRow("GPS写入:", gps_write_row)
+        amap_row.addWidget(amap_cfg_btn)
+        amap_row.addStretch()
+        geo_layout.addRow("", amap_row)
         
         # 地址输入和查询
         location_row = QHBoxLayout()
@@ -1450,10 +1858,10 @@ class BirdDetectionGUI(QMainWindow):
         self.location_input.editingFinished.connect(self._query_location_gps)
         location_row.addWidget(self.location_input, 1)
         
-        query_btn = QPushButton("查询")
-        query_btn.clicked.connect(self._query_location_gps)
-        query_btn.setToolTip("点击查询GPS坐标")
-        location_row.addWidget(query_btn)
+        self.location_query_btn = QPushButton("查询")
+        self.location_query_btn.clicked.connect(self._query_location_gps)
+        self.location_query_btn.setToolTip("点击查询GPS坐标")
+        location_row.addWidget(self.location_query_btn)
         geo_layout.addRow("地址:", location_row)
         
         # 纬度
@@ -1475,12 +1883,93 @@ class BirdDetectionGUI(QMainWindow):
         self.province_city_display.setReadOnly(True)
         self.province_city_display.setPlaceholderText("查询后自动显示省市")
         geo_layout.addRow("省市:", self.province_city_display)
+
+        self.gps_gpx_group = QGroupBox("GPX 轨迹与时间（主流程 GPX 模式 / 下方独立按钮）")
+        gpx_form = QFormLayout()
+        gpx_form.setSpacing(8)
+
+        gpx_row = QHBoxLayout()
+        self.gpx_file_input = QLineEdit()
+        self.gpx_file_input.setText(self.config.get("gpx_file_path", ""))
+        self.gpx_file_input.setPlaceholderText("选择 .gpx 轨迹文件（手表/手机导出）")
+        gpx_browse = QPushButton("浏览 GPX...")
+        gpx_browse.clicked.connect(self._select_gpx_file)
+        gpx_merge_btn = QPushButton("合并 GPX...")
+        gpx_merge_btn.setToolTip("选择多个 GPX 合并为一个文件")
+        gpx_merge_btn.clicked.connect(self._merge_gpx_files_dialog)
+        gpx_row.addWidget(self.gpx_file_input, 1)
+        gpx_row.addWidget(gpx_browse)
+        gpx_row.addWidget(gpx_merge_btn)
+        gpx_form.addRow("GPX 轨迹:", gpx_row)
+
+        self.gpx_match_exif_tz_combo = self._create_timezone_combo(
+            self._config_gpx_match_exif_tz()
+        )
+        self.gpx_match_exif_tz_combo.setToolTip(
+            "EXIF DateTimeOriginal 所对应的 IANA 时区（可输入搜索，如 Asia/Shanghai）。\n"
+            "与 GPX 时区一起换算到 UTC 后再匹配。"
+        )
+        gpx_form.addRow("EXIF 时区:", self.gpx_match_exif_tz_combo)
+
+        self.gpx_match_gpx_tz_combo = self._create_timezone_combo(
+            self._config_gpx_match_gpx_tz()
+        )
+        self.gpx_match_gpx_tz_combo.setToolTip(
+            "GPX <time> 所对应的 IANA 时区（默认 UTC）。"
+        )
+        gpx_form.addRow("GPX 时区:", self.gpx_match_gpx_tz_combo)
+
+        self.gpx_apply_screened_checkbox = QCheckBox(
+            "写入到输出目录 Screened_images（否则写入图片文件夹）"
+        )
+        self.gpx_apply_screened_checkbox.setChecked(
+            self.config.get("gpx_apply_to_screened", True)
+        )
+        gpx_form.addRow("", self.gpx_apply_screened_checkbox)
+
+        self.gpx_apply_btn = QPushButton("按 GPX 时间批量写入照片 GPS")
+        self.gpx_apply_btn.setToolTip(
+            "不依赖「开始处理」：对所选文件夹按 GPX 与 EXIF 时间（上方时区）\n"
+            "插值经纬度并写入 JPEG，用于补写或处理其他目录。"
+        )
+        self.gpx_apply_btn.clicked.connect(self._apply_gpx_gps_to_photos)
+        gpx_form.addRow("", self.gpx_apply_btn)
+
+        self.gps_gpx_group.setLayout(gpx_form)
+        geo_layout.addRow(self.gps_gpx_group)
+
+        self._on_gps_write_mode_changed()
         
         geo_group.setLayout(geo_layout)
         layout.addWidget(geo_card)
         
-        # ═════ 连拍处理设置 ═════
-        process_card, process_group = self._create_card("📷 连拍处理")
+        # ═════ 连拍处理（可收起；主流程勾选在标题栏）═════
+        self.enable_burst_detection_checkbox = QCheckBox("连拍检测")
+        self.enable_burst_detection_checkbox.setToolTip(
+            "勾选：对「图片文件夹」做连拍分组与筛选，并写入 Screened_images。\n"
+            "不勾选：跳过连拍，后续从已有 Screened_images 读取。"
+        )
+        self.enable_burst_detection_checkbox.setChecked(
+            self.config.get("enable_burst_detection", True)
+        )
+        self.enable_burst_detection_checkbox.toggled.connect(
+            self._on_burst_detection_toggled
+        )
+        self.generate_burst_report_checkbox = QCheckBox("连拍报告")
+        self.generate_burst_report_checkbox.setChecked(
+            self.config.get("generate_burst_report", True)
+        )
+        self._style_flow_header_checkbox(self.enable_burst_detection_checkbox)
+        self._style_flow_header_checkbox(self.generate_burst_report_checkbox)
+
+        process_card, process_group = self._create_collapsible_card(
+            "📷 连拍处理",
+            "burst",
+            header_widgets=[
+                self.enable_burst_detection_checkbox,
+                self.generate_burst_report_checkbox,
+            ],
+        )
         process_layout = QFormLayout()
         process_layout.setSpacing(8)
         process_layout.setContentsMargins(12, 10, 12, 12)
@@ -1515,20 +2004,6 @@ class BirdDetectionGUI(QMainWindow):
         )
         process_layout.addRow("连拍最少保留:", self.burst_keep_min_input)
         
-        # 连拍检测（关闭则跳过连拍，直接用输出目录下 Screened_images）
-        self.enable_burst_detection_checkbox = QCheckBox("连拍检测")
-        self.enable_burst_detection_checkbox.setToolTip(
-            "勾选：对「图片文件夹」做连拍分组与筛选，并写入输出目录下的 Screened_images。\n"
-            "不勾选：跳过连拍，物种识别等步骤仅从「输出文件夹」下的 Screened_images 读取已筛选照片。"
-        )
-        self.enable_burst_detection_checkbox.setChecked(
-            self.config.get("enable_burst_detection", True)
-        )
-        self.enable_burst_detection_checkbox.toggled.connect(
-            self._on_burst_detection_toggled
-        )
-        process_layout.addRow("", self.enable_burst_detection_checkbox)
-        
         # 启用鸟体检测
         self.use_bird_detection_checkbox = QCheckBox("启用鸟体检测")
         self.use_bird_detection_checkbox.setChecked(self.config['use_bird_detection'])
@@ -1549,11 +2024,6 @@ class BirdDetectionGUI(QMainWindow):
         self.use_fast_mode_checkbox.setChecked(self.config['use_fast_mode'])
         process_layout.addRow("", self.use_fast_mode_checkbox)
         
-        # 生成连拍报告
-        self.generate_burst_report_checkbox = QCheckBox("生成连拍报告")
-        self.generate_burst_report_checkbox.setChecked(self.config.get('generate_burst_report', True))
-        process_layout.addRow("", self.generate_burst_report_checkbox)
-        
         process_group.setLayout(process_layout)
         layout.addWidget(process_card)
         self._on_burst_detection_toggled(
@@ -1561,8 +2031,33 @@ class BirdDetectionGUI(QMainWindow):
         )
         self._on_bird_detection_toggled(self.use_bird_detection_checkbox.isChecked())
         
-        # ═════ 物种识别设置 ═════
-        species_card, species_group = self._create_card("🦅 物种识别")
+        # ═════ 物种识别（可收起；主流程勾选在标题栏）═════
+        self.enable_species_checkbox = QCheckBox("物种识别")
+        self.enable_species_checkbox.setChecked(
+            self.config.get("enable_species_detection", True)
+        )
+        self.enable_crop_checkbox = QCheckBox("裁剪归档")
+        self.enable_crop_checkbox.setToolTip(
+            "关闭时：不裁剪；原图按顶一物种复制到分类归档目录。"
+        )
+        self.enable_crop_checkbox.setChecked(self.config.get("enable_crop", True))
+        self.generate_species_report_checkbox = QCheckBox("识别报告")
+        self.generate_species_report_checkbox.setChecked(
+            self.config.get("generate_species_report", True)
+        )
+        self._style_flow_header_checkbox(self.enable_species_checkbox)
+        self._style_flow_header_checkbox(self.enable_crop_checkbox)
+        self._style_flow_header_checkbox(self.generate_species_report_checkbox)
+
+        species_card, species_group = self._create_collapsible_card(
+            "🦅 物种识别",
+            "species",
+            header_widgets=[
+                self.enable_species_checkbox,
+                self.enable_crop_checkbox,
+                self.generate_species_report_checkbox,
+            ],
+        )
         species_layout = QFormLayout()
         species_layout.setSpacing(8)
         species_layout.setContentsMargins(12, 10, 12, 12)
@@ -1584,6 +2079,49 @@ class BirdDetectionGUI(QMainWindow):
         model_layout.addWidget(self.doubao_model_radio)
         
         species_layout.addRow("物种识别模式:", model_layout)
+
+        self.local_species_model_combo = QComboBox()
+        self.local_species_model_combo.addItem(
+            "ResNet34（推荐，浦口基准约 87.7%）",
+            LOCAL_SPECIES_MODEL_RESNET34,
+        )
+        self.local_species_model_combo.addItem(
+            "EfficientNet-B0（SuperBirdID birdid2024，约 65%）",
+            LOCAL_SPECIES_MODEL_EFFICIENTNET,
+        )
+        self.local_species_model_combo.setToolTip(
+            "仅在选择「本地模型」时生效。\n"
+            "推荐 ResNet34（浦口基准约 88%）；EfficientNet 为 SuperBirdID JIT 权重，"
+            "须使用 BGR+T=0.6 推理（已内置）。\n"
+            "权重：models/bird_iden_efficient_b0.pt（与 birdid2024 解密文件相同）。"
+        )
+        self.local_species_model_combo.currentIndexChanged.connect(
+            self._on_local_species_model_changed
+        )
+        species_layout.addRow("本地物种模型:", self.local_species_model_combo)
+
+        self.species_geo_mode_combo = QComboBox()
+        self.species_geo_mode_combo.addItem(
+            "自动（有 GPS/省份用省名单，否则全国）", SPECIES_GEO_MODE_AUTO
+        )
+        self.species_geo_mode_combo.addItem(
+            "全国名单", SPECIES_GEO_MODE_CHINA
+        )
+        self.species_geo_mode_combo.addItem(
+            "仅省份名单（无省信息时回退全国）", SPECIES_GEO_MODE_PROVINCE
+        )
+        self.species_geo_mode_combo.addItem(
+            "不限制地理", SPECIES_GEO_MODE_NONE
+        )
+        self.species_geo_mode_combo.setToolTip(
+            "在模型 top10 候选上按地理名单筛选。\n"
+            "浦口测试集：自动/全国/省份约 87.7% top1；不限制约 75.1%。\n"
+            "省份来自照片 EXIF GPS 或左侧「地理位置」中的省/市。"
+        )
+        self.species_geo_mode_combo.currentIndexChanged.connect(
+            self._on_species_geo_mode_changed
+        )
+        species_layout.addRow("地理约束:", self.species_geo_mode_combo)
         
         # 豆包API配置文件链接
         config_layout = QHBoxLayout()
@@ -1611,13 +2149,13 @@ class BirdDetectionGUI(QMainWindow):
             self.min_species_threshold_enable_checkbox.isChecked()
         )
         self.min_species_conf_input.setToolTip(
-            "勾选「启用」后：在地理规则（含名单外 0.75/0.8 等）完成之后，若**顶一**置信度仍低于设定值，则归为未知。\n"
-            "本地与豆包均**不在**进入地理前对 top10 做阈值初筛。\n"
-            "豆包：名单外须置信度>0.75 才参与地理筛选的后续分支。\n"
-            "本地：名单外须>0.8；若模型 top10 中无任何当前地理名单物种且顶一<0.8，直接判未知。"
+            "勾选「启用」后：在地理规则完成之后，若**顶一**置信度仍低于设定值，则归为未知。\n"
+            "浦口 ResNet34 基准：启用 ≥0.5 阈值会使 top1 准确率降至约 65%，建议保持关闭。\n"
+            "本地仍会应用名单外 0.8 等地理规则；豆包名单外须 >0.75。"
         )
         self.min_species_threshold_enable_checkbox.setToolTip(
-            "默认关闭：不做地理后的顶一置信度下限。本地模型下仍会应用加强的地理规则（见阈值旁说明）。"
+            "默认关闭（推荐）：浦口测试集 ResNet34 在关闭时约 87.7% top1；"
+            "开启后置信度门槛会显著增加「未知种类」并降低准确率。"
         )
         self.min_species_threshold_enable_checkbox.toggled.connect(
             self.min_species_conf_input.setEnabled
@@ -1626,43 +2164,29 @@ class BirdDetectionGUI(QMainWindow):
         min_species_row.addWidget(self.min_species_conf_input)
         min_species_row.addStretch()
         species_layout.addRow("未知种类阈值(可选):", min_species_row)
-
-        # 物种识别与裁剪拆分为两项
-        self.enable_species_checkbox = QCheckBox(
-            "启用物种识别（地理限制 ）"
-        )
-        self.enable_species_checkbox.setChecked(
-            self.config.get('enable_species_detection', True)
-        )
-        species_layout.addRow("", self.enable_species_checkbox)
-
-        self.enable_crop_checkbox = QCheckBox("启用按鸟体裁剪输出")
-        self.enable_crop_checkbox.setToolTip(
-            "关闭时：不裁剪；将整张原图复制到「分类归档文件夹」下，"
-            "按置信度最高的物种归入 目/科/属/种 目录（<70% 归入未知）。"
-        )
-        self.enable_crop_checkbox.setChecked(self.config.get('enable_crop', True))
-        species_layout.addRow("", self.enable_crop_checkbox)
-        
-        # 生成物种识别报告
-        self.generate_species_report_checkbox = QCheckBox("生成物种识别报告")
-        self.generate_species_report_checkbox.setChecked(self.config.get('generate_species_report', True))
-        species_layout.addRow("", self.generate_species_report_checkbox)
         
         species_group.setLayout(species_layout)
         layout.addWidget(species_card)
 
-        # ═════ 水印生成设置 ═════
-        wm_card, wm_group = self._create_card("🖼 水印生成")
-        wm_layout = QFormLayout()
-        wm_layout.setSpacing(8)
-        wm_layout.setContentsMargins(12, 10, 12, 12)
-
-        self.enable_watermark_checkbox = QCheckBox("启用水印生成")
+        # ═════ 水印生成（可收起；主流程勾选在标题栏）═════
+        self.enable_watermark_checkbox = QCheckBox("主流程水印")
         self.enable_watermark_checkbox.setChecked(
             self.config.get("enable_watermark_generation", False)
         )
-        wm_layout.addRow("", self.enable_watermark_checkbox)
+        self.enable_watermark_checkbox.setToolTip(
+            "勾选后，「开始处理」流程末尾自动生成水印。\n"
+            "与卡片内「预览」「单独批量水印生成」无关。"
+        )
+        self._style_flow_header_checkbox(self.enable_watermark_checkbox)
+
+        wm_card, wm_group = self._create_collapsible_card(
+            "🖼 水印生成",
+            "watermark",
+            header_widgets=[self.enable_watermark_checkbox],
+        )
+        wm_layout = QFormLayout()
+        wm_layout.setSpacing(8)
+        wm_layout.setContentsMargins(12, 10, 12, 12)
 
         wm_in_row = QHBoxLayout()
         self.wm_input_folder_input = QLineEdit()
@@ -1763,7 +2287,11 @@ class BirdDetectionGUI(QMainWindow):
         wm_preview_btn = QPushButton("预览一张效果")
         wm_preview_btn.clicked.connect(self._preview_watermark_one)
         wm_preview_row.addWidget(wm_preview_btn)
-        self.wm_run_btn = QPushButton("批量水印生成")
+        self.wm_run_btn = QPushButton("单独批量水印生成")
+        self.wm_run_btn.setToolTip(
+            "仅在本卡片内批量生成水印，不运行「开始处理」主流程；"
+            "与上方「主流程自动水印」无关。"
+        )
         self.wm_run_btn.clicked.connect(self._run_watermark_batch)
         wm_preview_row.addWidget(self.wm_run_btn)
         wm_burst_btn = QPushButton("动图生成")
@@ -1778,6 +2306,255 @@ class BirdDetectionGUI(QMainWindow):
 
         wm_group.setLayout(wm_layout)
         layout.addWidget(wm_card)
+
+        # ═════ 轨迹图生成（可收起，默认收起；主流程勾选在标题栏）═════
+        self.enable_track_map_auto_checkbox = QCheckBox("主流程轨迹图")
+        self.enable_track_map_auto_checkbox.setChecked(
+            self.config.get("enable_track_map_auto", False)
+        )
+        self.enable_track_map_auto_checkbox.setToolTip(
+            "勾选后，「开始处理」在物种归档后生成轨迹 PNG 至 reports。\n"
+            "与下方「预览」「单独生成」无关。"
+        )
+        self._style_flow_header_checkbox(self.enable_track_map_auto_checkbox)
+
+        track_card, track_group = self._create_collapsible_card(
+            "🗺 轨迹图生成",
+            "track_map",
+            expanded=False,
+            header_widgets=[self.enable_track_map_auto_checkbox],
+        )
+        track_layout = QFormLayout()
+        track_layout.setSpacing(8)
+        track_layout.setContentsMargins(12, 10, 12, 12)
+
+        track_hint = QLabel(
+            "生成观鸟行迹与物种分布图（PNG，便于分享）。鸟图来源默认「分类归档」；"
+            "同物种在设定半径内只显示一张，上方标注物种名。预览标注前 20 张鸟图；"
+            "保存 PNG 为 1440×2560（2K 竖屏）像素。"
+        )
+        track_hint.setWordWrap(True)
+        track_hint.setStyleSheet("color: #555; font-size: 9pt;")
+        track_layout.addRow(track_hint)
+
+        self.track_map_use_gpx_checkbox = QCheckBox("使用 GPX 轨迹（未选则仅用照片 EXIF GPS）")
+        self.track_map_use_gpx_checkbox.setChecked(
+            self.config.get("track_map_use_gpx", True)
+        )
+        track_layout.addRow("", self.track_map_use_gpx_checkbox)
+
+        track_tz_hint = QLabel(
+            "使用 GPX 时，照片与轨迹的时间对齐规则见「地理位置」卡片中的 EXIF/GPX 时区设置。"
+        )
+        track_tz_hint.setWordWrap(True)
+        track_tz_hint.setStyleSheet("color: #666; font-size: 9pt;")
+        track_layout.addRow(track_tz_hint)
+
+        self.track_map_use_exif_checkbox = QCheckBox("补充使用照片 EXIF 中的 GPS")
+        self.track_map_use_exif_checkbox.setChecked(
+            self.config.get("track_map_use_exif", True)
+        )
+        self.track_map_use_exif_checkbox.setToolTip(
+            "仅在不使用 GPX 轨迹时生效。\n"
+            "使用 GPX 时：仅绘制与 GPX 时间在 30 分钟内匹配的照片，其余不标注。"
+        )
+        track_layout.addRow("", self.track_map_use_exif_checkbox)
+
+        self.track_map_source_combo = QComboBox()
+        self.track_map_source_combo.addItem("分类归档（物种目录）", "classification")
+        self.track_map_source_combo.addItem("Screened_images 筛选图", "screened")
+        _tsrc = self.config.get("track_map_photo_source", "classification")
+        _tsi = self.track_map_source_combo.findData(_tsrc)
+        self.track_map_source_combo.setCurrentIndex(_tsi if _tsi >= 0 else 0)
+        track_layout.addRow("鸟图来源:", self.track_map_source_combo)
+
+        self.track_map_radius_input = QDoubleSpinBox()
+        self.track_map_radius_input.setRange(0.1, 100.0)
+        self.track_map_radius_input.setDecimals(1)
+        self.track_map_radius_input.setSuffix(" km")
+        self.track_map_radius_input.setValue(
+            float(self.config.get("track_map_radius_km", 1.0))
+        )
+        self.track_map_radius_input.setToolTip(
+            "同物种在此半径内只保留一张代表图（先出现的优先）"
+        )
+        track_layout.addRow("物种去重半径:", self.track_map_radius_input)
+
+        self.track_map_basemap_combo = QComboBox()
+        self.track_map_basemap_combo.addItem("高德·数字地图", "digital")
+        self.track_map_basemap_combo.addItem("高德·卫星影像", "satellite")
+        _bm = self.config.get("track_map_basemap_style", "digital")
+        _bmi = self.track_map_basemap_combo.findData(_bm)
+        self.track_map_basemap_combo.setCurrentIndex(_bmi if _bmi >= 0 else 0)
+        self.track_map_basemap_combo.setToolTip(
+            "轨迹图底图使用高德地图瓦片（与「地理位置」中 amap_api_config.json 的 api_key 相同）。\n"
+            "生成时需联网；未配置 Key 或加载失败时退回经纬度网格。"
+        )
+        track_layout.addRow("底图类型:", self.track_map_basemap_combo)
+
+        self.track_map_elevation_checkbox = QCheckBox("同时生成海拔-距离剖面图")
+        self.track_map_elevation_checkbox.setChecked(
+            self.config.get("track_map_include_elevation", True)
+        )
+        track_layout.addRow("", self.track_map_elevation_checkbox)
+
+        track_btn_row = QHBoxLayout()
+        self.track_preview_btn = QPushButton("预览轨迹图")
+        self.track_preview_btn.clicked.connect(
+            lambda: self._run_track_map_generation(preview=True)
+        )
+        self.track_save_btn = QPushButton("单独生成并保存 PNG")
+        self.track_save_btn.clicked.connect(
+            lambda: self._run_track_map_generation(preview=False)
+        )
+        track_btn_row.addWidget(self.track_preview_btn)
+        track_btn_row.addWidget(self.track_save_btn)
+        track_btn_row.addStretch(1)
+        track_layout.addRow("", track_btn_row)
+
+        track_group.setLayout(track_layout)
+        layout.addWidget(track_card)
+
+        # ═════ 观鸟记录导出（可收起；主流程勾选在标题栏）═════
+        self.enable_record_export_auto_checkbox = QCheckBox("主流程导出")
+        self.enable_record_export_auto_checkbox.setChecked(
+            self.config.get("enable_record_export_auto", False)
+        )
+        self.enable_record_export_auto_checkbox.setToolTip(
+            "勾选后，「开始处理」在物种归档后自动导出 eBird CSV / 观鸟记录中心鸟种导入 Excel。\n"
+            "与下方「单独导出观鸟记录」无关。"
+        )
+        self._style_flow_header_checkbox(self.enable_record_export_auto_checkbox)
+
+        export_card, export_group = self._create_collapsible_card(
+            "📤 观鸟记录导出",
+            "export",
+            header_widgets=[self.enable_record_export_auto_checkbox],
+        )
+        export_layout = QFormLayout()
+        export_layout.setSpacing(8)
+        export_layout.setContentsMargins(12, 10, 12, 12)
+
+        export_hint = QLabel(
+            "eBird：按 data/species/ebird_checklist_format_template.xls 布局导出 Checklist Format .csv。"
+            "中国观鸟记录中心：鸟种导入.xls（中文名、数量）。\n"
+            "eBird 不提供公开观测上传 API；导入时选择「Checklist Format」并上传 .csv。\n"
+            "数量：有精确 GPS/GPX 时，0.1 km 内视为同一批个体；否则 30 分钟内视为同一批；"
+            "每批只取该批只数最多的一张再累加。可关闭「按批次累计只数」则每物种计 1。\n"
+            "导出后请自行核对数量与地点再上传。"
+        )
+        export_hint.setWordWrap(True)
+        export_hint.setStyleSheet("color: #555555; font-size: 9pt;")
+        export_layout.addRow(export_hint)
+
+        class_row = QHBoxLayout()
+        self.record_export_class_input = QLineEdit()
+        self.record_export_class_input.setPlaceholderText(
+            "默认使用上方「分类归档」路径（完成物种识别后可用）"
+        )
+        class_btn = QPushButton("浏览...")
+        class_btn.clicked.connect(
+            lambda: self._select_folder_into("record_export_classification_folder")
+        )
+        class_row.addWidget(self.record_export_class_input, 1)
+        class_row.addWidget(class_btn)
+        export_layout.addRow("分类归档目录:", class_row)
+
+        out_row = QHBoxLayout()
+        self.record_export_out_input = QLineEdit()
+        self.record_export_out_input.setPlaceholderText(
+            "留空则导出到 <输出根>/reports/record_export"
+        )
+        out_btn = QPushButton("浏览...")
+        out_btn.clicked.connect(
+            lambda: self._select_folder_into("record_export_output_folder")
+        )
+        out_row.addWidget(self.record_export_out_input, 1)
+        out_row.addWidget(out_btn)
+        export_layout.addRow("导出目录:", out_row)
+
+        self.record_export_ebird_checkbox = QCheckBox(
+            "eBird Checklist Format（.csv）"
+        )
+        self.record_export_ebird_checkbox.setChecked(
+            self.config.get("record_export_ebird", True)
+        )
+        self.record_export_ebird_checkbox.setToolTip(
+            "按 ebird_checklist_format_template.xls 布局导出逗号分隔 .csv；"
+            "每文件一个 checklist（列 C）。网站导入时选 Checklist Format。"
+        )
+        export_layout.addRow("", self.record_export_ebird_checkbox)
+
+        self.record_export_birdreport_checkbox = QCheckBox(
+            "中国观鸟记录中心（鸟种导入.xls，官方两列模版）"
+        )
+        self.record_export_birdreport_checkbox.setChecked(
+            self.config.get("record_export_birdreport", True)
+        )
+        export_layout.addRow("", self.record_export_birdreport_checkbox)
+
+        self.record_export_country_input = QLineEdit()
+        self.record_export_country_input.setText(
+            self.config.get("record_export_ebird_country", "CN")
+        )
+        self.record_export_country_input.setMaxLength(8)
+        export_layout.addRow("eBird 国家代码:", self.record_export_country_input)
+
+        self.record_export_state_input = QLineEdit()
+        self.record_export_state_input.setText(
+            self.config.get("record_export_ebird_state", "CN-FJ")
+        )
+        self.record_export_state_input.setMaxLength(16)
+        export_layout.addRow("eBird 省/州代码:", self.record_export_state_input)
+
+        self.record_export_count_individuals_checkbox = QCheckBox(
+            "按批次累计只数"
+        )
+        self.record_export_count_individuals_checkbox.setChecked(
+            self.config.get("record_export_count_individuals", True)
+        )
+        self.record_export_count_individuals_checkbox.setToolTip(
+            "勾选：先按 0.1 km（精确 GPS/GPX）或 30 分钟（地名统写）合并为同一批个体，"
+            "每批取只数最多的一张再累加。\n"
+            "取消：每个 checklist 内该物种只计 1 只（仅记录出现）。"
+        )
+        export_layout.addRow("数量统计:", self.record_export_count_individuals_checkbox)
+
+        portal_row = QHBoxLayout()
+        self.record_export_ebird_portal_btn = QPushButton("打开 eBird 导入页")
+        self.record_export_ebird_portal_btn.setToolTip(EBIRD_IMPORT_URL)
+        self.record_export_ebird_portal_btn.clicked.connect(
+            lambda: self._open_record_portal_url(EBIRD_IMPORT_URL)
+        )
+        self.record_export_china_portal_btn = QPushButton("打开中国观鸟记录中心")
+        self.record_export_china_portal_btn.setToolTip(CHINA_BIRD_RECORD_HOME_URL)
+        self.record_export_china_portal_btn.clicked.connect(
+            lambda: self._open_record_portal_url(CHINA_BIRD_RECORD_HOME_URL)
+        )
+        portal_row.addWidget(self.record_export_ebird_portal_btn)
+        portal_row.addWidget(self.record_export_china_portal_btn)
+        portal_row.addStretch(1)
+        export_layout.addRow("上传入口:", portal_row)
+
+        export_btn_row = QHBoxLayout()
+        self.record_export_btn = QPushButton("单独导出观鸟记录")
+        self.record_export_btn.setToolTip(
+            "仅执行观鸟记录导出，不运行连拍/物种等主流程；"
+            "与上方「主流程自动导出」无关。"
+        )
+        self.record_export_btn.clicked.connect(self._run_record_export)
+        export_btn_row.addWidget(self.record_export_btn)
+        export_btn_row.addStretch(1)
+        export_layout.addRow("", export_btn_row)
+
+        export_group.setLayout(export_layout)
+        layout.addWidget(export_card)
+        self.crop_folder_input.textChanged.connect(
+            lambda _t: self._refresh_record_export_classification_default()
+        )
+        self.output_root_input.textChanged.connect(
+            lambda _t: self._refresh_record_export_classification_default()
+        )
         
         # ═════ 操作按钮区 ═════
         btn_card, btn_group = self._create_card("操作")
@@ -1899,15 +2676,570 @@ class BirdDetectionGUI(QMainWindow):
         card.setLayout(card_layout)
         return card, content_widget
 
-    
+    @staticmethod
+    def _section_arrow_text(expanded: bool) -> str:
+        return "▼" if expanded else "▶"
+
+    @staticmethod
+    def _style_flow_header_checkbox(cb: QCheckBox) -> None:
+        """标题栏主流程勾选：紧凑样式，悬停显示完整说明。"""
+        cb.setStyleSheet(
+            "QCheckBox { font-size: 9pt; color: #2E6B4A; font-weight: 600; "
+            "spacing: 4px; padding: 0 4px; }"
+            "QCheckBox::indicator { width: 14px; height: 14px; }"
+        )
+
+    def _create_collapsible_card(
+        self,
+        title: str,
+        section_id: str,
+        expanded: Optional[bool] = None,
+        header_widgets: Optional[List[QWidget]] = None,
+    ) -> tuple:
+        """
+        可收起卡片：标题栏左侧 ▶/▼ + 标题，右侧可放主流程 QCheckBox（无需展开即可查看是否参与处理）。
+        """
+        if expanded is None:
+            expanded = bool(
+                self.config.get(f"ui_section_expanded_{section_id}", True)
+            )
+
+        outer = QWidget()
+        outer.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        outer.setStyleSheet(
+            "QWidget#collapsibleCard { background-color: #FFFFFF; border-radius: 8px; }"
+        )
+        outer.setObjectName("collapsibleCard")
+        outer_layout = QVBoxLayout(outer)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
+
+        header_bar = QWidget()
+        header_bar.setStyleSheet(
+            "background-color: #FFFFFF; border-top-left-radius: 8px; "
+            "border-top-right-radius: 8px; border-bottom: 1px solid #F0F0F0;"
+        )
+        header_hl = QHBoxLayout(header_bar)
+        header_hl.setContentsMargins(4, 6, 10, 6)
+        header_hl.setSpacing(6)
+
+        toggle_btn = QPushButton(self._section_arrow_text(expanded))
+        toggle_btn.setCheckable(True)
+        toggle_btn.setChecked(expanded)
+        toggle_btn.setFixedWidth(32)
+        toggle_btn.setFlat(True)
+        toggle_btn.setCursor(Qt.PointingHandCursor)
+        toggle_btn.setStyleSheet(
+            "QPushButton { border: none; font-size: 11pt; font-weight: bold; "
+            "background: transparent; color: #333; }"
+            "QPushButton:hover { background-color: #F0F0F0; border-radius: 4px; }"
+        )
+
+        title_lbl = QLabel(title)
+        title_lbl.setStyleSheet(
+            "font-weight: bold; font-size: 11pt; color: #333333; background: transparent;"
+        )
+        title_lbl.setCursor(Qt.PointingHandCursor)
+
+        header_hl.addWidget(toggle_btn, 0)
+        header_hl.addWidget(title_lbl, 0)
+        header_hl.addStretch(1)
+        if header_widgets:
+            sep = QLabel("|")
+            sep.setStyleSheet("color: #CCC; font-size: 9pt;")
+            header_hl.addWidget(sep, 0)
+            for w in header_widgets:
+                header_hl.addWidget(w, 0)
+
+        body_shell = QWidget()
+        body_shell.setStyleSheet("background-color: #FFFFFF;")
+        body_shell.setVisible(expanded)
+        body_layout = QVBoxLayout(body_shell)
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSpacing(0)
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: #FFFFFF;")
+        body_layout.addWidget(content_widget)
+
+        def _on_toggle(checked: bool) -> None:
+            body_shell.setVisible(checked)
+            toggle_btn.setText(self._section_arrow_text(checked))
+            self.config[f"ui_section_expanded_{section_id}"] = checked
+
+        def _title_clicked(_event) -> None:
+            toggle_btn.toggle()
+
+        toggle_btn.toggled.connect(_on_toggle)
+        title_lbl.mousePressEvent = _title_clicked  # type: ignore[method-assign]
+
+        outer_layout.addWidget(header_bar)
+        outer_layout.addWidget(body_shell)
+        if not hasattr(self, "_collapsible_sections"):
+            self._collapsible_sections = {}
+        self._collapsible_sections[section_id] = (toggle_btn, title, body_shell)
+        return outer, content_widget
+
+    def _apply_collapsible_sections_from_config(self) -> None:
+        sections = getattr(self, "_collapsible_sections", None)
+        if not sections:
+            return
+        for sid, (toggle_btn, _title, body) in sections.items():
+            expanded = bool(self.config.get(f"ui_section_expanded_{sid}", True))
+            toggle_btn.blockSignals(True)
+            toggle_btn.setChecked(expanded)
+            toggle_btn.setText(self._section_arrow_text(expanded))
+            body.setVisible(expanded)
+            toggle_btn.blockSignals(False)
+
+    def _effective_classification_folder(self) -> str:
+        """当前有效的分类归档路径（与主流程一致）。"""
+        manual = self.record_export_class_input.text().strip()
+        if manual:
+            return manual
+        return self.crop_folder_input.text().strip()
+
+    def _default_record_export_output_dir(self) -> str:
+        _sync = {
+            "record_export_output_folder": self.record_export_out_input.text().strip(),
+            "output_root_folder": self.output_root_input.text().strip(),
+            "reports_output_folder": self.config.get("reports_output_folder", ""),
+            "crop_output_folder": self.crop_folder_input.text().strip(),
+        }
+        return _record_export_dirs_from_config(_sync)[1]
+
+    def _refresh_record_export_classification_default(self) -> None:
+        """分类路径未手填时，随归档目录联动显示占位提示（不覆盖用户输入）。"""
+        if self.record_export_class_input.text().strip():
+            return
+        crop = self.crop_folder_input.text().strip()
+        if crop:
+            self.record_export_class_input.setPlaceholderText(crop)
+
+    def _select_folder_into(self, field_name: str) -> None:
+        folder = QFileDialog.getExistingDirectory(self, "选择文件夹")
+        if not folder:
+            return
+        if field_name == "record_export_classification_folder":
+            self.record_export_class_input.setText(folder)
+            self.config["record_export_classification_folder"] = folder
+        elif field_name == "record_export_output_folder":
+            self.record_export_out_input.setText(folder)
+            self.config["record_export_output_folder"] = folder
+
+    def _run_record_export(self) -> None:
+        classification_root = self._effective_classification_folder()
+        if not classification_root or not os.path.isdir(classification_root):
+            QMessageBox.warning(
+                self,
+                "无法导出",
+                "请指定有效的「分类归档」目录（先完成物种识别归档，或在本卡片中浏览选择）。",
+            )
+            return
+        if not self.record_export_ebird_checkbox.isChecked() and not (
+            self.record_export_birdreport_checkbox.isChecked()
+        ):
+            QMessageBox.warning(
+                self, "无法导出", "请至少勾选一种导出格式（eBird 或观鸟记录中心）。"
+            )
+            return
+        out_dir = self._default_record_export_output_dir()
+        try:
+            self._sync_config_from_ui()
+            written = export_from_classification(
+                classification_root,
+                out_dir,
+                write_ebird_csv=self.record_export_ebird_checkbox.isChecked(),
+                write_china_bird_record_xls=self.record_export_birdreport_checkbox.isChecked(),
+                ebird_country=self.record_export_country_input.text().strip() or "CN",
+                ebird_state=self.record_export_state_input.text().strip() or "CN-FJ",
+                **_record_export_kwargs(self.config),
+            )
+        except Exception as e:
+            QMessageBox.critical(self, "导出失败", f"{e}")
+            self.add_log(f"观鸟记录导出失败: {e}")
+            return
+        lines = [f"导出目录: {os.path.abspath(out_dir)}"]
+        for k, v in written.items():
+            lines.append(f"  · {k}: {v}")
+        lines.append(
+            "文件名含日期、时间、坐标（英文）及导出时刻 expHHMMSS，避免覆盖未上传记录。"
+            "eBird 用 .csv 上传；中国观鸟记录中心用 china_bird_record/*.xls。"
+        )
+        self.add_log("观鸟记录已导出:\n" + "\n".join(lines))
+        QMessageBox.information(self, "导出完成", "\n".join(lines))
+
+    def _select_gpx_file(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self, "选择 GPX 轨迹文件", "", "GPX files (*.gpx);;All files (*)"
+        )
+        if path:
+            self.gpx_file_input.setText(path)
+            self.config["gpx_file_path"] = path
+
+    def _merge_gpx_files_dialog(self) -> None:
+        paths, _ = QFileDialog.getOpenFileNames(
+            self, "选择要合并的 GPX 文件", "", "GPX files (*.gpx);;All files (*)"
+        )
+        if not paths:
+            return
+        out_path, _ = QFileDialog.getSaveFileName(
+            self, "保存合并后的 GPX", "merged_track.gpx", "GPX files (*.gpx)"
+        )
+        if not out_path:
+            return
+        try:
+            merged = merge_gpx_files(paths, out_path)
+            self.gpx_file_input.setText(merged)
+            self.config["gpx_file_path"] = merged
+            QMessageBox.information(self, "合并完成", f"已保存:\n{merged}")
+        except Exception as e:
+            QMessageBox.critical(self, "合并失败", str(e))
+
+    def _gpx_target_photo_folder(self) -> str:
+        if self.gpx_apply_screened_checkbox.isChecked():
+            out = self.output_folder_input.text().strip() or self.config.get(
+                "output_folder", ""
+            )
+            if out:
+                return os.path.join(out, "Screened_images")
+        return self.image_folder_input.text().strip()
+
+    def _apply_gpx_gps_to_photos(self) -> None:
+        gpx = self.gpx_file_input.text().strip()
+        if not gpx or not os.path.isfile(gpx):
+            QMessageBox.warning(self, "提示", "请先选择有效的 GPX 文件。")
+            return
+        folder = self._gpx_target_photo_folder()
+        if not folder or not os.path.isdir(folder):
+            QMessageBox.warning(
+                self,
+                "提示",
+                "目标照片目录不存在。请设置图片文件夹或输出目录下的 Screened_images。",
+            )
+            return
+        try:
+            stats = batch_write_gps_from_gpx(
+                folder,
+                gpx,
+                exif_tz=self._gpx_match_exif_tz(),
+                gpx_tz=self._gpx_match_gpx_tz(),
+            )
+            msg = (
+                f"目录: {folder}\n"
+                f"JPEG 总数: {stats['total']}\n"
+                f"时间匹配: {stats['matched']}\n"
+                f"成功写入 GPS: {stats['written']}"
+            )
+            self.add_log("GPX→EXIF GPS:\n" + msg)
+            QMessageBox.information(self, "写入完成", msg)
+        except Exception as e:
+            QMessageBox.critical(self, "写入失败", str(e))
+
+    def _track_map_photo_folder(self) -> str:
+        src = self.track_map_source_combo.currentData()
+        if src == "screened":
+            out = self.output_folder_input.text().strip() or self.config.get(
+                "output_folder", ""
+            )
+            return os.path.join(out, "Screened_images") if out else ""
+        return self.crop_folder_input.text().strip() or self.config.get(
+            "crop_output_folder", ""
+        )
+
+    def _track_map_busy(self) -> bool:
+        th = self._track_map_thread
+        return th is not None and th.isRunning()
+
+    def _set_track_map_busy(self, busy: bool, *, preview: bool) -> None:
+        self.track_preview_btn.setEnabled(not busy)
+        self.track_save_btn.setEnabled(not busy)
+        if busy:
+            self.track_preview_btn.setText(
+                "预览生成中…" if preview else "预览轨迹图"
+            )
+            self.track_save_btn.setText(
+                "保存生成中…" if not preview else "单独生成并保存 PNG"
+            )
+            self.progress_bar.setRange(0, 0)
+            self.progress_bar.setFormat("轨迹图生成中…")
+        else:
+            self.track_preview_btn.setText("预览轨迹图")
+            self.track_save_btn.setText("单独生成并保存 PNG")
+            self.progress_bar.setRange(0, 100)
+            self.progress_bar.setFormat("%p%")
+
+    def _finish_track_map_progress_dialog(self) -> None:
+        dlg = self._track_map_progress
+        if dlg is not None:
+            dlg.close()
+            dlg.deleteLater()
+        self._track_map_progress = None
+        QApplication.restoreOverrideCursor()
+
+    def _on_track_map_finished(self, written: Dict[str, str], preview: bool) -> None:
+        main_png = written.get("track_png", "")
+        lines = [f"已保存至 reports 目录:", main_png]
+        bm = written.get("map_basemap", "")
+        if bm == "no_key":
+            lines.append(
+                "未配置高德 API Key，请在「地理位置」→「打开配置文件」填写 amap_api_config.json"
+            )
+        elif bm == "fallback":
+            lines.append("高德底图未加载（请检查网络与 API Key 权限）")
+        elif bm == "ok":
+            style = self.track_map_basemap_combo.currentText()
+            lines.append(f"已叠加底图: {style}")
+        if written.get("elevation_png"):
+            lines.append(written["elevation_png"])
+        align_desc = written.get("time_align_desc")
+        if align_desc:
+            lines.append(f"时间匹配：{align_desc}")
+        exif_pos = written.get("map_pos_exif_gps")
+        if exif_pos:
+            lines.append(f"地图坐标：{exif_pos} 张使用 EXIF GPS（与 GPX 插值一致时）")
+        sk = written.get("skipped_time_mismatch")
+        if sk and int(sk) > 0:
+            lines.append(
+                f"未绘制 {sk} 张：与 GPX 时间差超过 30 分钟或无拍摄时间"
+            )
+        trunc = written.get("markers_truncated")
+        if trunc and int(trunc) > 0:
+            lines.append(
+                f"导出标注已达上限，另有 {trunc} 个物种点未绘制（可缩小去重半径或分批导出）"
+            )
+        self.add_log("\n".join(lines))
+        if preview and main_png and os.path.isfile(main_png):
+            map_title = written.get("map_title", "")
+            if map_title:
+                self.add_log(f"地图标题：{map_title}")
+            QTimer.singleShot(
+                0,
+                lambda p=main_png: show_track_map_preview(
+                    self,
+                    p,
+                    window_title="观鸟地图预览",
+                ),
+            )
+        else:
+            QMessageBox.information(self, "完成", "\n".join(lines))
+
+    def _run_track_map_generation(self, preview: bool = False) -> None:
+        if self._track_map_busy():
+            QMessageBox.information(
+                self,
+                "请稍候",
+                "轨迹图正在生成中，请等待当前任务完成。",
+            )
+            return
+
+        self._sync_config_from_ui()
+        photo_folder = self._track_map_photo_folder()
+        if not photo_folder or not os.path.isdir(photo_folder):
+            QMessageBox.warning(
+                self,
+                "提示",
+                "鸟图目录无效。请完成物种归档或选择 Screened_images，并确认路径。",
+            )
+            return
+        gpx = self.gpx_file_input.text().strip()
+        use_gpx = self.track_map_use_gpx_checkbox.isChecked()
+        if use_gpx and (not gpx or not os.path.isfile(gpx)):
+            QMessageBox.warning(
+                self, "提示", "已勾选使用 GPX，但未选择有效 GPX 文件。"
+            )
+            return
+
+        reports_dir = _reports_dir_from_config(self.config)
+        kwargs: Dict[str, Any] = dict(
+            reports_dir=reports_dir,
+            gpx_path=gpx if use_gpx else None,
+            photo_folder=photo_folder,
+            use_gpx_track=use_gpx,
+            use_exif_gps=self.track_map_use_exif_checkbox.isChecked(),
+            radius_km=float(self.track_map_radius_input.value()),
+            include_elevation=self.track_map_elevation_checkbox.isChecked(),
+            basemap_style=str(
+                self.track_map_basemap_combo.currentData() or "digital"
+            ),
+            preview_only=preview,
+            preview_max_photos=20,
+            location_name=self.location_input.text().strip(),
+            province=self.config.get("province", ""),
+            city=self.config.get("city", ""),
+            exif_tz=self._gpx_match_exif_tz(),
+            gpx_tz=self._gpx_match_gpx_tz(),
+        )
+
+        label = "预览" if preview else "保存"
+        busy_msg = (
+            f"轨迹图{label}：正在启动…（底图下载与绘制可能需 30–90 秒，请勿关闭窗口）"
+        )
+        self.add_log(busy_msg)
+        self.update_status(busy_msg)
+        print(busy_msg)
+
+        self._set_track_map_busy(True, preview=preview)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
+        dlg = QProgressDialog(
+            busy_msg + "\n\n正在准备…",
+            None,
+            0,
+            0,
+            self,
+        )
+        dlg.setWindowTitle("预览轨迹图" if preview else "生成轨迹图 PNG")
+        dlg.setWindowModality(Qt.ApplicationModal)
+        dlg.setMinimumDuration(0)
+        dlg.setAutoClose(False)
+        dlg.setAutoReset(False)
+        dlg.setCancelButton(None)
+        dlg.setMinimumWidth(420)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        for _ in range(3):
+            QApplication.processEvents()
+        self._track_map_progress = dlg
+
+        th = TrackMapThread(kwargs, self)
+        self._track_map_thread = th
+
+        def _on_log(msg: str) -> None:
+            self.add_log(msg)
+            self.update_status(msg)
+            print(msg)
+            prog = self._track_map_progress
+            if prog is not None:
+                prog.setLabelText(msg)
+                QApplication.processEvents()
+
+        self._track_map_last_preview = preview
+        self._track_map_pending_ok: Optional[Dict[str, str]] = None
+        self._track_map_pending_err: Optional[str] = None
+
+        def _on_ok(written: Dict[str, str]) -> None:
+            self._track_map_pending_ok = written
+
+        def _on_fail(msg: str) -> None:
+            self._track_map_pending_err = msg
+
+        def _always_unbusy() -> None:
+            self._finish_track_map_progress_dialog()
+            self._set_track_map_busy(False, preview=self._track_map_last_preview)
+            ok = self._track_map_pending_ok
+            err = self._track_map_pending_err
+            self._track_map_pending_ok = None
+            self._track_map_pending_err = None
+            try:
+                if ok is not None:
+                    self.progress_bar.setValue(100)
+                    self.update_status("轨迹图生成完成")
+                    self._on_track_map_finished(ok, self._track_map_last_preview)
+                elif err is not None:
+                    self.progress_bar.setValue(0)
+                    self.update_status("轨迹图生成失败")
+                    self.add_log(f"轨迹图生成失败: {err}")
+                    QMessageBox.critical(
+                        self,
+                        "生成失败",
+                        err[:8000] if len(err) > 8000 else err,
+                    )
+            except Exception as exc:
+                tb = traceback.format_exc()
+                self.add_log(f"轨迹图完成回调异常: {exc}\n{tb}")
+                QMessageBox.critical(
+                    self,
+                    "错误",
+                    f"轨迹图结果处理失败:\n{exc}",
+                )
+
+        th.log_line.connect(_on_log)
+        th.finished_ok.connect(_on_ok)
+        th.failed.connect(_on_fail)
+        th.finished.connect(_always_unbusy)
+        th.finished.connect(th.deleteLater)
+        th.start()
+
     def _on_model_mode_changed(self, index: int):
         """模型模式切换"""
         self.config['use_local_model'] = (index == 0)
+        self._update_local_species_model_combo_enabled()
+
+    def _on_local_species_model_changed(self, _index: int = 0) -> None:
+        kind = self.local_species_model_combo.currentData()
+        if kind:
+            self.config['local_species_model'] = normalize_local_species_model(kind)
+
+    def _on_species_geo_mode_changed(self, _index: int = 0) -> None:
+        mode = self.species_geo_mode_combo.currentData()
+        if mode:
+            self.config['species_geo_mode'] = normalize_species_geo_mode(mode)
+
+    def _update_local_species_model_combo_enabled(self) -> None:
+        enabled = self.local_model_radio.isChecked()
+        self.local_species_model_combo.setEnabled(enabled)
     
+    def _create_timezone_combo(self, saved_tz: str) -> QComboBox:
+        combo = QComboBox()
+        combo.setEditable(True)
+        combo.setInsertPolicy(QComboBox.NoInsert)
+        combo.setMinimumContentsLength(32)
+        for label, tzid in timezone_combo_entries():
+            combo.addItem(label, tzid)
+        names = [combo.itemText(i) for i in range(combo.count())]
+        completer = QCompleter(names, combo)
+        completer.setFilterMode(Qt.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        combo.setCompleter(completer)
+        set_combo_timezone(combo, saved_tz)
+        return combo
+
+    def _config_gpx_match_exif_tz(self) -> str:
+        return normalize_tz_name(
+            self.config.get("gpx_match_exif_tz")
+            or self.config.get("track_map_exif_tz")
+            or DEFAULT_EXIF_TZ
+        )
+
+    def _config_gpx_match_gpx_tz(self) -> str:
+        return normalize_tz_name(
+            self.config.get("gpx_match_gpx_tz")
+            or self.config.get("track_map_gpx_tz")
+            or DEFAULT_GPX_TZ
+        )
+
+    def _gpx_match_exif_tz(self) -> str:
+        return read_combo_timezone(self.gpx_match_exif_tz_combo)
+
+    def _gpx_match_gpx_tz(self) -> str:
+        return read_combo_timezone(self.gpx_match_gpx_tz_combo)
+
+    def _on_gps_write_mode_changed(self, *_args) -> None:
+        """主流程 GPS 二选一：切换时启用/禁用对应表单项。"""
+        use_fixed = self.gps_mode_fixed_radio.isChecked()
+        self.config["gps_write_mode"] = "fixed" if use_fixed else "gpx"
+        for w in (
+            self.location_input,
+            self.lat_input,
+            self.lon_input,
+            self.province_city_display,
+            self.location_query_btn,
+        ):
+            w.setEnabled(use_fixed)
+
     def _on_gps_write_changed(self, state: int):
-        """GPS写入开关状态变化"""
-        self.config['enable_gps_write'] = (state == Qt.Checked)
+        """GPS 写入开关状态变化"""
+        self.config["enable_gps_write"] = state == Qt.Checked
     
+    def _open_record_portal_url(self, url: str) -> None:
+        """在系统浏览器打开观鸟记录上传/说明页面。"""
+        u = (url or "").strip()
+        if not u:
+            return
+        if not QDesktopServices.openUrl(QUrl(u)):
+            QMessageBox.warning(self, "提示", f"无法打开链接：\n{u}")
+
     def _open_config_file(self):
         """打开豆包API配置文件"""
         src_dir = Path(__file__).resolve().parent
@@ -2917,12 +4249,30 @@ class BirdDetectionGUI(QMainWindow):
             )
         self.config["_eta_image_estimate"] = n_eta
 
-        lat, lon = self._get_gps_coords()
-        if lat is None:
-            self._save_config()
-            return  # _get_gps_coords 已弹出警告
-        self.config["gps_latitude"] = lat
-        self.config["gps_longitude"] = lon
+        if self.config.get("enable_gps_write"):
+            if self.config.get("gps_write_mode", "fixed") == "gpx":
+                gpx = (self.config.get("gpx_file_path") or "").strip()
+                if not gpx or not os.path.isfile(gpx):
+                    QMessageBox.warning(
+                        self,
+                        "提示",
+                        "主流程 GPS 已选「GPX 按拍摄时间」，请先选择有效 GPX 文件。",
+                    )
+                    self._save_config()
+                    return
+            else:
+                lat, lon = self._get_gps_coords()
+                if lat is None:
+                    self._save_config()
+                    return
+                self.config["gps_latitude"] = lat
+                self.config["gps_longitude"] = lon
+        else:
+            try:
+                self.config["gps_latitude"] = float(self.lat_input.text().strip())
+                self.config["gps_longitude"] = float(self.lon_input.text().strip())
+            except ValueError:
+                pass
         
         # 创建输出文件夹
         Path(self.config['output_folder']).mkdir(parents=True, exist_ok=True)
@@ -3156,13 +4506,71 @@ class BirdDetectionGUI(QMainWindow):
             else "frame"
         )
         self.config["use_local_model"] = self.local_model_radio.isChecked()
+        _lsm = self.local_species_model_combo.currentData()
+        if _lsm:
+            self.config["local_species_model"] = _lsm
         self.config["species_conf_threshold_enabled"] = (
             self.min_species_threshold_enable_checkbox.isChecked()
         )
         self.config["min_species_accept_confidence"] = float(
             self.min_species_conf_input.value()
         )
-    
+        _geo = self.species_geo_mode_combo.currentData()
+        if _geo:
+            self.config["species_geo_mode"] = normalize_species_geo_mode(_geo)
+        self.config["enable_record_export_auto"] = (
+            self.enable_record_export_auto_checkbox.isChecked()
+        )
+        self.config["record_export_classification_folder"] = (
+            self.record_export_class_input.text().strip()
+        )
+        self.config["record_export_output_folder"] = (
+            self.record_export_out_input.text().strip()
+        )
+        self.config["record_export_ebird"] = (
+            self.record_export_ebird_checkbox.isChecked()
+        )
+        self.config["record_export_birdreport"] = (
+            self.record_export_birdreport_checkbox.isChecked()
+        )
+        self.config["record_export_count_individuals"] = (
+            self.record_export_count_individuals_checkbox.isChecked()
+        )
+        self.config["record_export_ebird_country"] = (
+            self.record_export_country_input.text().strip() or "CN"
+        )
+        self.config["record_export_ebird_state"] = (
+            self.record_export_state_input.text().strip() or "CN-FJ"
+        )
+        self.config["gpx_file_path"] = self.gpx_file_input.text().strip()
+        self.config["gpx_apply_to_screened"] = (
+            self.gpx_apply_screened_checkbox.isChecked()
+        )
+        self.config["enable_track_map_auto"] = (
+            self.enable_track_map_auto_checkbox.isChecked()
+        )
+        self.config["track_map_use_gpx"] = self.track_map_use_gpx_checkbox.isChecked()
+        self.config["track_map_use_exif"] = (
+            self.track_map_use_exif_checkbox.isChecked()
+        )
+        _ts = self.track_map_source_combo.currentData()
+        if _ts:
+            self.config["track_map_photo_source"] = _ts
+        self.config["track_map_radius_km"] = float(
+            self.track_map_radius_input.value()
+        )
+        self.config["track_map_include_elevation"] = (
+            self.track_map_elevation_checkbox.isChecked()
+        )
+        _bm = self.track_map_basemap_combo.currentData()
+        if _bm:
+            self.config["track_map_basemap_style"] = _bm
+        self.config["gpx_match_exif_tz"] = self._gpx_match_exif_tz()
+        self.config["gpx_match_gpx_tz"] = self._gpx_match_gpx_tz()
+        self.config["gps_write_mode"] = (
+            "gpx" if self.gps_mode_gpx_radio.isChecked() else "fixed"
+        )
+
     def _save_config(self):
         """保存配置到文件"""
         config_file = Path(__file__).parent / 'gui_config.json'
@@ -3188,12 +4596,27 @@ class BirdDetectionGUI(QMainWindow):
                         self.config['burst_keep_ratio'] = 0.2
                     if 'use_local_model' not in saved_config:
                         self.config['use_local_model'] = True
+                    if 'local_species_model' not in saved_config:
+                        self.config['local_species_model'] = LOCAL_SPECIES_MODEL_RESNET34
+                    else:
+                        self.config['local_species_model'] = normalize_local_species_model(
+                            self.config['local_species_model']
+                        )
                     if 'enable_species_detection' not in saved_config:
                         self.config['enable_species_detection'] = self.config.get(
                             'enable_crop', True
                         )
                     if 'species_conf_threshold_enabled' not in saved_config:
                         self.config['species_conf_threshold_enabled'] = False
+                    if 'species_geo_mode' not in saved_config:
+                        if saved_config.get('use_geo_constraint') is False:
+                            self.config['species_geo_mode'] = SPECIES_GEO_MODE_NONE
+                        else:
+                            self.config['species_geo_mode'] = SPECIES_GEO_MODE_AUTO
+                    else:
+                        self.config['species_geo_mode'] = normalize_species_geo_mode(
+                            self.config['species_geo_mode']
+                        )
                     if "output_root_folder" not in saved_config:
                         self.config["output_root_folder"] = ""
                     self._update_ui_from_config()
@@ -3267,6 +4690,13 @@ class BirdDetectionGUI(QMainWindow):
         use_local = self.config.get('use_local_model', True)
         self.local_model_radio.setChecked(use_local)
         self.doubao_model_radio.setChecked(not use_local)
+        _lsm = normalize_local_species_model(
+            self.config.get('local_species_model', LOCAL_SPECIES_MODEL_RESNET34)
+        )
+        self.config['local_species_model'] = _lsm
+        _li = self.local_species_model_combo.findData(_lsm)
+        self.local_species_model_combo.setCurrentIndex(_li if _li >= 0 else 0)
+        self._update_local_species_model_combo_enabled()
         self.min_species_threshold_enable_checkbox.setChecked(
             self.config.get('species_conf_threshold_enabled', False)
         )
@@ -3276,7 +4706,78 @@ class BirdDetectionGUI(QMainWindow):
         self.min_species_conf_input.setValue(
             float(self.config.get('min_species_accept_confidence', 0.5))
         )
-        
+        _geo = normalize_species_geo_mode(
+            self.config.get('species_geo_mode', SPECIES_GEO_MODE_AUTO)
+        )
+        self.config['species_geo_mode'] = _geo
+        _gi = self.species_geo_mode_combo.findData(_geo)
+        self.species_geo_mode_combo.setCurrentIndex(_gi if _gi >= 0 else 0)
+
+        self.enable_record_export_auto_checkbox.setChecked(
+            self.config.get("enable_record_export_auto", False)
+        )
+        self.record_export_class_input.setText(
+            self.config.get("record_export_classification_folder", "")
+        )
+        self.record_export_out_input.setText(
+            self.config.get("record_export_output_folder", "")
+        )
+        self.record_export_ebird_checkbox.setChecked(
+            self.config.get("record_export_ebird", True)
+        )
+        self.record_export_birdreport_checkbox.setChecked(
+            self.config.get("record_export_birdreport", True)
+        )
+        self.record_export_country_input.setText(
+            self.config.get("record_export_ebird_country", "CN")
+        )
+        self.record_export_state_input.setText(
+            self.config.get("record_export_ebird_state", "CN-FJ")
+        )
+        self.record_export_count_individuals_checkbox.setChecked(
+            self.config.get("record_export_count_individuals", True)
+        )
+        self._refresh_record_export_classification_default()
+        self._apply_collapsible_sections_from_config()
+
+        self.gpx_file_input.setText(self.config.get("gpx_file_path", ""))
+        self.gpx_apply_screened_checkbox.setChecked(
+            self.config.get("gpx_apply_to_screened", True)
+        )
+        self.enable_track_map_auto_checkbox.setChecked(
+            self.config.get("enable_track_map_auto", False)
+        )
+        self.track_map_use_gpx_checkbox.setChecked(
+            self.config.get("track_map_use_gpx", True)
+        )
+        self.track_map_use_exif_checkbox.setChecked(
+            self.config.get("track_map_use_exif", True)
+        )
+        _tsrc = self.config.get("track_map_photo_source", "classification")
+        _tsi = self.track_map_source_combo.findData(_tsrc)
+        self.track_map_source_combo.setCurrentIndex(_tsi if _tsi >= 0 else 0)
+        self.track_map_radius_input.setValue(
+            float(self.config.get("track_map_radius_km", 1.0))
+        )
+        self.track_map_elevation_checkbox.setChecked(
+            self.config.get("track_map_include_elevation", True)
+        )
+        _bm = self.config.get("track_map_basemap_style", "digital")
+        _bmi = self.track_map_basemap_combo.findData(_bm)
+        self.track_map_basemap_combo.setCurrentIndex(_bmi if _bmi >= 0 else 0)
+        set_combo_timezone(
+            self.gpx_match_exif_tz_combo, self._config_gpx_match_exif_tz()
+        )
+        set_combo_timezone(
+            self.gpx_match_gpx_tz_combo, self._config_gpx_match_gpx_tz()
+        )
+        _gps_mode = self.config.get("gps_write_mode", "fixed")
+        if _gps_mode == "gpx":
+            self.gps_mode_gpx_radio.setChecked(True)
+        else:
+            self.gps_mode_fixed_radio.setChecked(True)
+        self._on_gps_write_mode_changed()
+
         # 更新地理位置相关UI
         self.location_input.setText(self.config.get('location_name', ''))
         province = self.config.get('province', '')

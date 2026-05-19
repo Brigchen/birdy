@@ -43,7 +43,13 @@ from burst_grouping import (
 )
 from html_report_generator import generate_html_report
 from geo_encoder import batch_write_gps_exif, geocode_location
-from detect_bird_and_eye import BirdAndEyeDetector
+from detect_bird_and_eye import (
+    BirdAndEyeDetector,
+    LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_RESNET34,
+    local_species_model_label,
+    normalize_local_species_model,
+)
 from api_config_defaults import ensure_doubao_api_config_file
 from image_io import all_supported_extensions
 
@@ -104,6 +110,7 @@ class BirdDetectionCLI:
             'generate_species_report': True,
             # 物种识别模式配置
             'use_local_model': True,
+            'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
             # 本地模型最低接受置信度（低于此值视为未知种类）
             'min_species_accept_confidence': 0.5,
         }
@@ -247,6 +254,12 @@ class BirdDetectionCLI:
         parser.add_argument('--api-mode', type=str, choices=['local', 'baidu', 'doubao'],
                           help='物种识别API模式: local(本地), baidu(Baidu), doubao(豆包)')
         parser.add_argument(
+            '--local-species-model',
+            type=str,
+            choices=[LOCAL_SPECIES_MODEL_RESNET34, LOCAL_SPECIES_MODEL_EFFICIENTNET],
+            help='本地物种骨干: resnet34 | efficientnet_b0',
+        )
+        parser.add_argument(
             '--species-conf',
             type=float,
             default=None,
@@ -330,6 +343,10 @@ class BirdDetectionCLI:
             elif args.api_mode == 'doubao':
                 self.config['use_local_model'] = False
                 self.config['enable_doubao_api'] = True
+        if args.local_species_model:
+            self.config['local_species_model'] = normalize_local_species_model(
+                args.local_species_model
+            )
         if args.min_species_accept_confidence is not None:
             self.config['min_species_accept_confidence'] = (
                 args.min_species_accept_confidence
@@ -363,6 +380,10 @@ class BirdDetectionCLI:
         )
         print(f"  识别模式:       {'本地' if self.config['use_local_model'] else 'API'}")
         if self.config['use_local_model']:
+            print(
+                f"  本地物种模型:   "
+                f"{local_species_model_label(self.config.get('local_species_model', LOCAL_SPECIES_MODEL_RESNET34))}"
+            )
             print(
                 f"  未知种类阈值:   {self.config.get('min_species_accept_confidence', 0.5):.2f} "
                 f"（低于此值视为未知，本参数对豆包API模式无效）"
@@ -507,6 +528,13 @@ class BirdDetectionCLI:
                 detector = BirdAndEyeDetector(
                     enable_species=do_species,
                     use_local_model=self.config.get('use_local_model', True),
+                    local_species_model=self.config.get(
+                        normalize_local_species_model(
+                            self.config.get(
+                                'local_species_model', LOCAL_SPECIES_MODEL_RESNET34
+                            )
+                        ),
+                    ),
                     doubao_config=doubao_config,
                     min_species_accept_confidence=self.config.get(
                         'min_species_accept_confidence', 0.5

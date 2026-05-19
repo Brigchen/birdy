@@ -21,7 +21,10 @@ if str(_SRC) not in sys.path:
 import cv2  # noqa: E402
 
 from detect_bird_and_eye import (  # noqa: E402
+    LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_RESNET34,
     BirdSpeciesClassifier,
+    resolve_local_species_model_path,
     _BIRD_INFO_PATH,
     _SPECIES_MODEL_PATH,
 )
@@ -38,8 +41,14 @@ def main() -> None:
     ap.add_argument("-k", type=int, default=5, help="输出 top-k 个候选（默认 5）")
     ap.add_argument(
         "--model",
-        default=_SPECIES_MODEL_PATH,
-        help=f"权重路径（默认: {_SPECIES_MODEL_PATH}）",
+        default=None,
+        help="权重路径（默认由 --backbone 解析）",
+    )
+    ap.add_argument(
+        "--backbone",
+        choices=[LOCAL_SPECIES_MODEL_RESNET34, LOCAL_SPECIES_MODEL_EFFICIENTNET],
+        default=LOCAL_SPECIES_MODEL_RESNET34,
+        help="本地骨干：resnet34 | efficientnet_b0",
     )
     ap.add_argument(
         "--bird-info",
@@ -53,7 +62,9 @@ def main() -> None:
         print(f"[错误] 找不到图片: {img_path}")
         sys.exit(1)
 
-    mp = Path(args.model).expanduser().resolve()
+    mp = Path(
+        args.model or resolve_local_species_model_path(args.backbone)
+    ).expanduser().resolve()
     bp = Path(args.bird_info).expanduser().resolve()
     if not mp.is_file():
         print(f"[错误] 找不到权重: {mp}")
@@ -80,7 +91,11 @@ def main() -> None:
     print("=" * 60)
 
     try:
-        clf = BirdSpeciesClassifier(model_path=str(mp), bird_info_path=str(bp))
+        clf = BirdSpeciesClassifier(
+            model_path=str(mp),
+            bird_info_path=str(bp),
+            local_species_model=args.backbone,
+        )
     except Exception as e:
         print(f"[错误] 分类器加载失败: {e}")
         sys.exit(1)

@@ -38,12 +38,13 @@
 | ----------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bird-seg.pt`     | 鸟体检测与分割           | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供 `boxes.xyxy / boxes.conf / boxes.cls`。建议训练为单类 bird（或以 bird 为主类）的检测/分割模型。                                    |
 | `birdeye.pt`      | 鸟眼检测（可选）          | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。                                                                 |
-| `bird-iden.pth` | 本地物种识别（ResNet 权重） | **PyTorch `state_dict`**，网络结构需与代码一致：`torchvision.models.resnet34(weights=None)`，并使用 `fc.weight` 维度定义类别数（代码会据此自动构建 `Linear(512, num_classes)`）。输入预处理固定为 `Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
+| `bird_iden_res34.pth` | 本地物种识别（ResNet34 权重） | **PyTorch `state_dict`**，`fc` 输入维 512 时构建 ResNet34。预处理：`Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
+| `bird_iden_efficient_b0.pt` | 本地物种识别（EfficientNet-B0） | **TorchScript**（`torch.jit.load`），与 `bird_info.json` 配套。 |
 
 
-`**models/bird_info.json**` 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与 `**bird-iden.pth**` 成套向作者索取。
+`**models/bird_info.json**` 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与本地物种权重成套向作者索取。
 
-`bird_info.json` 与 `bird-iden.pth` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致（至少不小于输出类别数），并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
+`bird_info.json` 与 `bird_iden_res34.pth` / `bird_iden_efficient_b0.pt` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致，并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
 
 将三个权重文件放入项目根目录下的 `**models/**`（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
 
@@ -102,13 +103,13 @@ GPU 用户建议先到 [pytorch.org](https://pytorch.org) 安装匹配 CUDA 的 
 
 ### 2. 模型文件
 
-将以下文件放在 `**models/**`（与 `src/` 同级；其中 `.pt` / `bird-iden.pth` 体积大，通常需单独拷贝或网盘分发）：
+将以下文件放在 `**models/**`（与 `src/` 同级；其中 `.pt` / `.pth` 体积大，通常需单独拷贝或网盘分发）：
 
 
 | 文件                                   | 用途               |
 | ------------------------------------ | ---------------- |
 | `bird-seg.pt`                        | 鸟体检测             |
-| `bird-iden.pth` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
+| `bird_iden_res34.pth` 或 `bird_iden_efficient_b0.pt` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
 | `birdeye.pt`                         | 鸟眼检测（可选）         |
 
 

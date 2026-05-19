@@ -3,8 +3,8 @@
 1. 读取图片 EXIF GPS，定位拍摄省市
 2. 使用 YOLOv8x-seg 检测鸟体
 3. （可选）使用 birdeye.pt 检测鸟眼
-4. 使用 ResNet34（本地）或豆包API 进行物种识别
-   - 本地模型：ResNet34（10964 类）- 快速、离线
+4. 使用 ResNet34 / EfficientNet-B0（本地）或豆包API 进行物种识别
+   - 本地模型：bird_iden_res34.pth、bird_iden_efficient_b0.pt - 快速、离线
    - 豆包API：在线识别 - 准确率更高、支持全球物种
 5. 结合地理位置辅助优化物种识别结果
 6. 从 bird_classification.json 补全四级中文分类（目/科/属/种）
@@ -1104,6 +1104,11 @@ _LOCAL_GEO_UNKNOWN_IF_TOP1_BELOW: float = 0.8
 # 参与地理筛选与「地理符合」判定的模型候选数量上限
 _GEO_CANDIDATE_TOP_N: int = 10
 
+SPECIES_GEO_MODE_AUTO = "auto"
+SPECIES_GEO_MODE_CHINA = "china"
+SPECIES_GEO_MODE_PROVINCE = "province"
+SPECIES_GEO_MODE_NONE = "none"
+
 
 def _geo_effective_mode_and_list(
     province: Optional[str], geo_mode: str
@@ -1243,7 +1248,7 @@ def geo_refine_species(
     candidates: List[Dict],
     province: Optional[str],
     city: Optional[str],
-    geo_mode: str = "china",
+    geo_mode: str = SPECIES_GEO_MODE_AUTO,
     species_conf_threshold: Optional[float] = None,
     outside_list_conf: Optional[float] = None,
 ) -> List[Dict]:
@@ -1348,13 +1353,91 @@ def geo_refine_species(
 
 
 # ─────────────────────────────────────────────────────────────
-# 物种识别模块（ResNet34 + bird_info.json，10964 类）
+# 物种识别模块（本地：ResNet / EfficientNet-B0 + bird_info.json）
 # ─────────────────────────────────────────────────────────────
 _BIRDY_ROOT = _PROJECT_ROOT
-_SPECIES_MODEL_PATH = str(_BIRDY_ROOT / "models" / "bird-iden.pth")
+_SPECIES_MODEL_RES34_PATH = str(_BIRDY_ROOT / "models" / "bird_iden_res34.pth")
+_SPECIES_MODEL_EFFICIENT_B0_PATH = str(
+    _BIRDY_ROOT / "models" / "bird_iden_efficient_b0.pt"
+)
+# SuperBirdID birdid2024 JIT：BGR ImageNet + softmax 温度（与 SuperBirdID API 一致）
+_EFFICIENTNET_BGR_MEAN = np.array([0.406, 0.456, 0.485], dtype=np.float32)
+_EFFICIENTNET_BGR_STD = np.array([0.225, 0.224, 0.229], dtype=np.float32)
+_EFFICIENTNET_SOFTMAX_TEMPERATURE = 0.6
+# 兼容旧代码/测试中的别名
+_SPECIES_MODEL_PATH = _SPECIES_MODEL_RES34_PATH
+_SPECIES_MODEL_RES50_PATH = _SPECIES_MODEL_RES34_PATH  # 已弃用，仅保留导入兼容
 _BIRD_INFO_PATH = str(_BIRDY_ROOT / "models" / "bird_info.json")
 _DEFAULT_BIRD_YOLO = str(_BIRDY_ROOT / "models" / "bird-seg.pt")
 _DEFAULT_EYE_YOLO = str(_BIRDY_ROOT / "models" / "birdeye.pt")
+
+# GUI / CLI 下拉：resnet34 → bird_iden_res34.pth；efficientnet_b0 → bird_iden_efficient_b0.pt
+LOCAL_SPECIES_MODEL_RESNET34 = "resnet34"
+LOCAL_SPECIES_MODEL_EFFICIENTNET = "efficientnet_b0"
+LOCAL_SPECIES_MODEL_RESNET = LOCAL_SPECIES_MODEL_RESNET34  # 旧常量名，值已为 resnet34
+_LOCAL_SPECIES_MODEL_CHOICES = (
+    LOCAL_SPECIES_MODEL_RESNET34,
+    LOCAL_SPECIES_MODEL_EFFICIENTNET,
+)
+
+
+def normalize_local_species_model(kind: Optional[str]) -> str:
+    """统一配置值；兼容旧版 gui_config 中的 resnet50。"""
+    k = (kind or LOCAL_SPECIES_MODEL_RESNET34).strip().lower()
+    if k in ("resnet50", "resnet34", LOCAL_SPECIES_MODEL_RESNET34):
+        return LOCAL_SPECIES_MODEL_RESNET34
+    if k == LOCAL_SPECIES_MODEL_EFFICIENTNET:
+        return LOCAL_SPECIES_MODEL_EFFICIENTNET
+    return LOCAL_SPECIES_MODEL_RESNET34
+
+
+def normalize_species_geo_mode(mode: Optional[str]) -> str:
+    """统一地理约束模式；兼容旧版 use_geo_constraint=false。"""
+    if mode is False:
+        return SPECIES_GEO_MODE_NONE
+    k = (str(mode) if mode is not None else SPECIES_GEO_MODE_AUTO).strip().lower()
+    if k in (
+        SPECIES_GEO_MODE_AUTO,
+        SPECIES_GEO_MODE_CHINA,
+        SPECIES_GEO_MODE_PROVINCE,
+        SPECIES_GEO_MODE_NONE,
+    ):
+        return k
+    return SPECIES_GEO_MODE_AUTO
+
+
+def resolve_local_species_model_path(kind: str = LOCAL_SPECIES_MODEL_RESNET34) -> str:
+    """按本地模型类型解析权重路径。"""
+    kind = normalize_local_species_model(kind)
+    if kind == LOCAL_SPECIES_MODEL_EFFICIENTNET:
+        return _SPECIES_MODEL_EFFICIENT_B0_PATH
+    p34 = _BIRDY_ROOT / "models" / "bird_iden_res34.pth"
+    if p34.is_file():
+        return str(p34)
+    # 迁移期：旧文件名
+    p50 = _BIRDY_ROOT / "models" / "bird_iden_res50.pth"
+    if p50.is_file():
+        return str(p50)
+    return _SPECIES_MODEL_RES34_PATH
+
+
+def infer_local_species_model_kind(model_path: str) -> str:
+    """根据权重文件名推断骨干类型。"""
+    name = Path(model_path).name.lower()
+    if name in (
+        "bird_iden_efficient_b0.pt",
+        "bird2024.pt",
+        "birdid2024.pt",
+    ):
+        return LOCAL_SPECIES_MODEL_EFFICIENTNET
+    return LOCAL_SPECIES_MODEL_RESNET34
+
+
+def local_species_model_label(kind: str) -> str:
+    kind = normalize_local_species_model(kind)
+    if kind == LOCAL_SPECIES_MODEL_EFFICIENTNET:
+        return "EfficientNet-B0（bird_iden_efficient_b0.pt）"
+    return "ResNet34（bird_iden_res34.pth）"
 
 # 低于接受阈值的识别结果按「未知」归入 未知目/未知科/未知属/未知
 UNKNOWN_SPECIES_CLASSIFICATION = {
@@ -1384,54 +1467,46 @@ def _runtime_error_bad_torch_file(err: Exception, path: str, title_cn: str) -> R
 
 class BirdSpeciesClassifier:
     """
-    基于 ResNet34 的鸟类物种分类器
-    直接加载 state_dict，无需 IPC 服务进程
+    本地鸟类物种分类器：ResNet34（bird_iden_res34.pth）或 EfficientNet-B0（bird_iden_efficient_b0.pt）。
     """
 
     def __init__(
         self,
-        model_path: str = _SPECIES_MODEL_PATH,
+        model_path: Optional[str] = None,
         bird_info_path: str = _BIRD_INFO_PATH,
         device: Optional[str] = None,
+        local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
     ):
         import torch
-        import torchvision.models as models
         import torchvision.transforms as transforms
+
+        local_species_model = normalize_local_species_model(local_species_model)
+        if local_species_model not in _LOCAL_SPECIES_MODEL_CHOICES:
+            raise ValueError(
+                f"local_species_model 须为 {_LOCAL_SPECIES_MODEL_CHOICES} 之一，"
+                f"收到: {local_species_model!r}"
+            )
+
+        self.local_species_model = local_species_model
+        self.model_path = model_path or resolve_local_species_model_path(local_species_model)
+        if model_path is not None:
+            self.local_species_model = infer_local_species_model_kind(self.model_path)
 
         self.device = torch.device(
             "cuda" if (device is None and torch.cuda.is_available()) else (device or "cpu")
         )
 
-        # 加载物种信息
         with open(bird_info_path, encoding="utf-8") as f:
             self.bird_info: List[List[str]] = json.load(f)
 
-        # 先加载 state_dict 获取实际输出类别数
-        try:
-            try:
-                state_dict = torch.load(
-                    model_path, map_location=self.device, weights_only=True
-                )
-            except TypeError:
-                # PyTorch < 2.0 无 weights_only
-                state_dict = torch.load(model_path, map_location=self.device)
-            except Exception:
-                # 部分旧 .pth 含非张量 pickle，weights_only=True 会失败
-                state_dict = torch.load(model_path, map_location=self.device)
-        except Exception as e:
-            raise _runtime_error_bad_torch_file(
-                e, model_path, "物种分类权重（bird-iden.pth）无法读取"
-            ) from e
-        self.num_classes = state_dict["fc.weight"].shape[0]  # 从权重直接获取实际类别数
+        self.model = None
+        self._jit_model = None
 
-        # 构建 ResNet34，fc 维度与权重一致
-        self.model = models.resnet34(weights=None)
-        self.model.fc = torch.nn.Linear(512, self.num_classes)
-        self.model.load_state_dict(state_dict)
-        self.model.to(self.device)
-        self.model.eval()
+        if self.local_species_model == LOCAL_SPECIES_MODEL_EFFICIENTNET:
+            self._load_efficientnet_b0_jit(self.model_path)
+        else:
+            self._load_resnet_state_dict(self.model_path)
 
-        # 标准 ImageNet 预处理
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize(256),
@@ -1441,7 +1516,75 @@ class BirdSpeciesClassifier:
                                   [0.229, 0.224, 0.225]),
         ])
 
-        print(f"物种分类器已加载: {self.num_classes} 类，设备: {self.device}")
+        print(
+            f"物种分类器已加载 ({local_species_model_label(self.local_species_model)}): "
+            f"{self.num_classes} 类，设备: {self.device}"
+        )
+
+    def _load_resnet_state_dict(self, model_path: str) -> None:
+        import torch
+        import torchvision.models as models
+
+        try:
+            try:
+                state_dict = torch.load(
+                    model_path, map_location=self.device, weights_only=True
+                )
+            except TypeError:
+                state_dict = torch.load(model_path, map_location=self.device)
+            except Exception:
+                state_dict = torch.load(model_path, map_location=self.device)
+        except Exception as e:
+            raise _runtime_error_bad_torch_file(
+                e, model_path, "物种分类权重（bird_iden_res34.pth）无法读取"
+            ) from e
+        self.num_classes = state_dict["fc.weight"].shape[0]
+        in_features = state_dict["fc.weight"].shape[1]
+        if in_features == 2048:
+            backbone = models.resnet50(weights=None)
+        else:
+            backbone = models.resnet34(weights=None)
+        backbone.fc = torch.nn.Linear(in_features, self.num_classes)
+        backbone.load_state_dict(state_dict)
+        backbone.to(self.device)
+        backbone.eval()
+        self.model = backbone
+
+    def _load_efficientnet_b0_jit(self, model_path: str) -> None:
+        import torch
+
+        try:
+            jit = torch.jit.load(model_path, map_location=self.device)
+        except Exception as e:
+            raise _runtime_error_bad_torch_file(
+                e, model_path, "物种分类权重（bird_iden_efficient_b0.pt）无法读取"
+            ) from e
+        jit.eval()
+        sd = jit.state_dict()
+        if "head.fc.weight" not in sd:
+            raise RuntimeError(
+                f"权重不像 EfficientNet-B0 TorchScript（缺少 head.fc.weight）: {model_path}"
+            )
+        self.num_classes = sd["head.fc.weight"].shape[0]
+        self._jit_model = jit
+
+    def _efficientnet_jit_tensor(self, img_bgr: np.ndarray):
+        """SuperBirdID 同款：224 LANCZOS + BGR ImageNet 归一化。"""
+        import torch
+        from PIL import Image
+
+        rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        pil = Image.fromarray(rgb).resize((224, 224), Image.LANCZOS)
+        bgr = cv2.cvtColor(np.array(pil), cv2.COLOR_RGB2BGR)
+        arr = bgr.astype(np.float32) / 255.0
+        arr = (arr - _EFFICIENTNET_BGR_MEAN) / _EFFICIENTNET_BGR_STD
+        return (
+            torch.from_numpy(arr)
+            .permute(2, 0, 1)
+            .unsqueeze(0)
+            .float()
+            .to(self.device)
+        )
 
     def predict(self, img_bgr: np.ndarray, top_k: int = 3) -> List[Dict]:
         """
@@ -1460,13 +1603,20 @@ class BirdSpeciesClassifier:
         if img_bgr is None or img_bgr.size == 0:
             return []
 
-        # BGR → RGB
-        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-        tensor = self.transform(img_rgb).unsqueeze(0).to(self.device)
-
         with torch.no_grad():
-            logits = self.model(tensor)
-            probs = torch.softmax(logits, dim=1)[0]
+            if self._jit_model is not None:
+                tensor = self._efficientnet_jit_tensor(img_bgr)
+                logits = self._jit_model(tensor)
+                if logits.dim() == 2:
+                    logits = logits[0]
+                probs = torch.nn.functional.softmax(
+                    logits / _EFFICIENTNET_SOFTMAX_TEMPERATURE, dim=0
+                )
+            else:
+                img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+                tensor = self.transform(img_rgb).unsqueeze(0).to(self.device)
+                logits = self.model(tensor)
+                probs = torch.softmax(logits, dim=1)[0]
 
         top_k = min(top_k, self.num_classes)
         values, indices = torch.topk(probs, top_k)
@@ -1679,14 +1829,15 @@ class BirdAndEyeDetector:
         self,
         bird_model_path: str = _DEFAULT_BIRD_YOLO,
         eye_model_path: str = _DEFAULT_EYE_YOLO,
-        species_model_path: str = _SPECIES_MODEL_PATH,
+        species_model_path: Optional[str] = None,
+        local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
         bird_info_path: str = _BIRD_INFO_PATH,
         bird_conf: float = 0.5,
         eye_conf: float = 0.25,
         device: str = None,
         enable_species: bool = True,
         enable_eye: bool = False,
-        geo_mode: str = "china",
+        geo_mode: str = SPECIES_GEO_MODE_AUTO,
         species_conf: Optional[float] = None,
         doubao_config: Optional[Dict] = None,
         use_local_model: bool = True,
@@ -1698,14 +1849,15 @@ class BirdAndEyeDetector:
         Args:
             bird_model_path:    鸟类检测模型路径（YOLOv8）
             eye_model_path:     鸟眼检测模型路径
-            species_model_path: 物种识别模型路径（ResNet34）
+            species_model_path: 物种识别模型路径（默认由 local_species_model 解析）
+            local_species_model: 本地骨干 resnet34 | efficientnet_b0（GUI 下拉）
             bird_info_path:     物种信息 JSON 路径
             bird_conf:          鸟类检测置信度阈值（默认 0.5）
             eye_conf:           鸟眼检测置信度阈值
             device:             运行设备 (cuda/cpu)
             enable_species:     是否启用物种识别（False 则跳过，加快速度）
             enable_eye:         是否启用鸟眼检测（默认 False，不影响主检测流程）
-            geo_mode:           地理约束模式："china"（默认）| "auto" | "none"
+            geo_mode:           地理约束模式："auto"（默认）| "china" | "province" | "none"
             species_conf:       已弃用别名：与 min_species_accept_confidence 同步（保留仅为兼容旧调用）
             doubao_config:       豆包API配置 {"api_key": ...}
             use_local_model:    是否默认使用本地模型（True）或豆包API（False）
@@ -1717,7 +1869,7 @@ class BirdAndEyeDetector:
         self.eye_conf = eye_conf
         self.enable_species = enable_species
         self.enable_eye = enable_eye
-        self.geo_mode = geo_mode
+        self.geo_mode = normalize_species_geo_mode(geo_mode)
         self.use_local_model = use_local_model
         if min_species_accept_confidence is None:
             self.min_species_accept_confidence = None
@@ -1764,11 +1916,17 @@ class BirdAndEyeDetector:
         if self.enable_species:
             try:
                 # 加载本地模型
+                _lsm = normalize_local_species_model(local_species_model)
+                _sp_path = species_model_path or resolve_local_species_model_path(_lsm)
                 self.species_classifier = BirdSpeciesClassifier(
-                    model_path=species_model_path,
+                    model_path=_sp_path,
                     bird_info_path=bird_info_path,
+                    local_species_model=_lsm,
                 )
-                print(f"✓ 本地物种分类器已加载")
+                print(
+                    f"✓ 本地物种分类器已加载: "
+                    f"{local_species_model_label(self.species_classifier.local_species_model)}"
+                )
             except Exception as e:
                 print(f"警告: 本地物种分类器加载失败: {e}")
                 self.species_classifier = None
@@ -2584,14 +2742,15 @@ def process_folder(
     output_folder: str,
     bird_model_path: str = str(_BIRDY_ROOT / "models" / "bird-seg.pt"),
     eye_model_path: str = str(_BIRDY_ROOT / "models" / "birdeye.pt"),
-    species_model_path: str = _SPECIES_MODEL_PATH,
+    species_model_path: Optional[str] = None,
+    local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
     bird_info_path: str = _BIRD_INFO_PATH,
     enable_species: bool = True,
     enable_eye: bool = False,
     crop_mode: bool = False,
     crop_dir: str = "",
     margin_ratio: float = 1.0,
-    geo_mode: str = "china",
+    geo_mode: str = SPECIES_GEO_MODE_AUTO,
     species_conf: float = 0.5,
     location: Optional[str] = None,
 ):
@@ -2610,7 +2769,7 @@ def process_folder(
         crop_mode:          是否同时生成裁剪图
         crop_dir:           裁剪图根目录（空则使用 output_folder/crops）
         margin_ratio:       裁剪边距倍率（默认 1.0 = 100%）
-        geo_mode:           地理约束模式："china"（默认）| "auto" | "none"
+        geo_mode:           地理约束模式："auto"（默认）| "china" | "province" | "none"
         species_conf:       未知种类阈值（与 GUI / --species-conf 一致，默认 0.5）
         location:           地理位置名称（如"杭州西湖"），若提供则自动写入GPS EXIF
     """
@@ -2644,6 +2803,7 @@ def process_folder(
         bird_model_path=bird_model_path,
         eye_model_path=eye_model_path,
         species_model_path=species_model_path,
+        local_species_model=local_species_model,
         bird_info_path=bird_info_path,
         enable_species=enable_species,
         enable_eye=enable_eye,
@@ -2762,8 +2922,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--species-model", type=str,
-        default=_SPECIES_MODEL_PATH,
-        help="物种识别模型路径（ResNet34）",
+        default=None,
+        help="物种识别模型路径（默认由 --local-species-model 选择 bird_iden_res34.pth 或 bird_iden_efficient_b0.pt）",
+    )
+    parser.add_argument(
+        "--local-species-model",
+        type=str,
+        default=LOCAL_SPECIES_MODEL_RESNET34,
+        choices=list(_LOCAL_SPECIES_MODEL_CHOICES),
+        help="本地物种骨干：resnet34（bird_iden_res34.pth）| efficientnet_b0（bird_iden_efficient_b0.pt）",
     )
     parser.add_argument(
         "--bird-info", type=str,
@@ -2843,6 +3010,7 @@ if __name__ == "__main__":
             bird_model_path=args.bird_model,
             eye_model_path=args.eye_model,
             species_model_path=args.species_model,
+            local_species_model=args.local_species_model,
             bird_info_path=args.bird_info,
             enable_species=enable_species,
             enable_eye=enable_eye,
@@ -2892,6 +3060,7 @@ if __name__ == "__main__":
             bird_model_path=args.bird_model,
             eye_model_path=args.eye_model,
             species_model_path=args.species_model,
+            local_species_model=args.local_species_model,
             bird_info_path=args.bird_info,
             enable_species=enable_species,
             enable_eye=enable_eye,
