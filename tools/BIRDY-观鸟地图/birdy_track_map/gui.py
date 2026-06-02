@@ -6,7 +6,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
@@ -18,19 +18,20 @@ from PyQt5.QtWidgets import (
     QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
-    QGroupBox,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
     QMainWindow,
     QMessageBox,
     QProgressDialog,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QTextEdit,
     QVBoxLayout,
     QWidget,
-    QListWidget,
 )
 
 from .config_io import load_config, save_config
@@ -54,14 +55,200 @@ from gpx_track.timezone_util import (  # noqa: E402
     timezone_combo_entries,
 )
 
-
 APP_TITLE = "BIRDY-观鸟地图"
+APP_NAME_CN = "观鸟地图"
+APP_NAME_EN = "BIRDY Track Map · 独立工具"
+
+APP_GLOBAL_STYLE = """
+    QMainWindow {
+        background-color: #F5F5F5;
+    }
+    QWidget {
+        font-family: 'Segoe UI', 'Microsoft YaHei UI', 'Arial', sans-serif;
+        font-size: 10pt;
+    }
+    QLabel {
+        color: #333333;
+    }
+    QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+        background-color: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        border-radius: 6px;
+        padding: 5px 10px;
+        color: #333333;
+        font-size: 10pt;
+        min-height: 1.1em;
+    }
+    QComboBox::drop-down {
+        border: none;
+        width: 22px;
+    }
+    QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+        border: 1px solid #2E8B57;
+    }
+    QListWidget {
+        background-color: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        border-radius: 6px;
+        padding: 4px;
+        font-size: 10pt;
+    }
+    QListWidget::item {
+        padding: 3px 6px;
+        border-radius: 4px;
+    }
+    QListWidget::item:selected {
+        background-color: #E8F5E9;
+        color: #1B5E20;
+    }
+    QPushButton {
+        background-color: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        border-radius: 6px;
+        padding: 6px 14px;
+        color: #333333;
+        font-weight: 500;
+        font-size: 10pt;
+        min-height: 1.2em;
+    }
+    QPushButton:hover:enabled {
+        background-color: #F0F0F0;
+        border: 1px solid #1E90FF;
+    }
+    QPushButton:pressed:enabled {
+        background-color: #E0E0E0;
+    }
+    QPushButton:disabled {
+        background-color: #F5F5F5;
+        color: #999999;
+        border: 1px solid #E0E0E0;
+    }
+    QCheckBox {
+        spacing: 6px;
+        font-size: 10pt;
+    }
+    QCheckBox::indicator {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #E0E0E0;
+        border-radius: 5px;
+        background-color: #FFFFFF;
+    }
+    QCheckBox::indicator:checked {
+        background-color: #2E8B57;
+        border: 2px solid #2E8B57;
+    }
+    QCheckBox::indicator:hover {
+        border: 2px solid #1E90FF;
+    }
+    QTextEdit {
+        background-color: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        border-radius: 6px;
+        padding: 6px;
+        font-family: 'Consolas', 'Courier New', 'Microsoft YaHei UI', monospace;
+        font-size: 9pt;
+    }
+    QScrollArea {
+        border: none;
+        background: transparent;
+    }
+    QScrollArea > QWidget > QWidget {
+        background: transparent;
+    }
+"""
+
+BTN_PRIMARY_STYLE = """
+    QPushButton {
+        background-color: #2E8B57;
+        color: white;
+        font-weight: bold;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 10pt;
+        border: none;
+    }
+    QPushButton:hover:enabled {
+        background-color: #277A4B;
+    }
+    QPushButton:pressed:enabled {
+        background-color: #226A3F;
+    }
+    QPushButton:disabled {
+        background-color: #BDC3C7;
+        color: #7F8C8D;
+    }
+"""
+
+BTN_SECONDARY_STYLE = """
+    QPushButton {
+        background-color: #FFFFFF;
+        color: #2E6B4A;
+        font-weight: bold;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 10pt;
+        border: 1px solid #2E8B57;
+    }
+    QPushButton:hover:enabled {
+        background-color: #E8F5E9;
+    }
+    QPushButton:pressed:enabled {
+        background-color: #D5EDDA;
+    }
+    QPushButton:disabled {
+        background-color: #F5F5F5;
+        color: #999999;
+        border: 1px solid #E0E0E0;
+    }
+"""
+
+
+def _hint_label(text: str) -> QLabel:
+    lb = QLabel(text)
+    lb.setWordWrap(True)
+    lb.setStyleSheet("color: #555555; font-size: 9pt;")
+    return lb
+
+
+def _create_card(title: str) -> Tuple[QWidget, QWidget]:
+    """与主程序 birdy_gui 一致的白色圆角卡片。"""
+    card = QWidget()
+    card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+    card.setStyleSheet(
+        "QWidget#birdyCard { background-color: #FFFFFF; border-radius: 8px; }"
+    )
+    card.setObjectName("birdyCard")
+    card_layout = QVBoxLayout(card)
+    card_layout.setContentsMargins(0, 0, 0, 0)
+    card_layout.setSpacing(0)
+
+    title_label = QLabel(title)
+    title_label.setStyleSheet(
+        "QLabel { background-color: #FFFFFF; color: #333333; font-weight: bold; "
+        "font-size: 11pt; padding: 6px 12px; border-top-left-radius: 8px; "
+        "border-top-right-radius: 8px; border-bottom: 1px solid #F0F0F0; }"
+    )
+    card_layout.addWidget(title_label)
+
+    content = QWidget()
+    content.setStyleSheet("background-color: #FFFFFF;")
+    card_layout.addWidget(content)
+    return card, content
+
+
+def _form_layout(content: QWidget) -> QFormLayout:
+    form = QFormLayout(content)
+    form.setSpacing(8)
+    form.setContentsMargins(12, 10, 12, 12)
+    return form
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(APP_TITLE)
+        self.setStyleSheet(APP_GLOBAL_STYLE)
         self._config = load_config()
         self._worker: Optional[TrackMapWorker] = None
         self._progress: Optional[QProgressDialog] = None
@@ -72,40 +259,80 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self._load_config_to_ui()
 
-    def _build_ui(self) -> None:
-        root = QWidget()
-        self.setCentralWidget(root)
-        split = QHBoxLayout(root)
-        split.setContentsMargins(8, 8, 8, 8)
-        split.setSpacing(10)
+    def _create_top_banner(self) -> QWidget:
+        banner = QWidget()
+        banner.setObjectName("birdyTopBanner")
+        banner.setStyleSheet(
+            "#birdyTopBanner { background-color: #FFFFFF; "
+            "border-bottom: 1px solid #E0E0E0; }"
+        )
+        row = QHBoxLayout(banner)
+        row.setContentsMargins(14, 8, 18, 8)
+        row.setSpacing(10)
 
-        left_scroll = QScrollArea()
-        left_scroll.setWidgetResizable(True)
-        left_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        left_scroll.setMinimumWidth(280)
-        left_inner = QWidget()
-        layout = QVBoxLayout(left_inner)
-        layout.setContentsMargins(4, 4, 8, 4)
-
-        header = QHBoxLayout()
+        logo_h = 56
+        logo_label = QLabel()
+        logo_label.setAlignment(Qt.AlignCenter)
         logo_path = find_window_icon()
         if logo_path is not None:
             pm = QPixmap(str(logo_path))
             if not pm.isNull():
-                logo = QLabel()
-                logo.setPixmap(
-                    pm.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                logo_label.setPixmap(
+                    pm.scaled(
+                        logo_h,
+                        logo_h,
+                        Qt.KeepAspectRatio,
+                        Qt.SmoothTransformation,
+                    )
                 )
-                header.addWidget(logo)
-        title = QLabel(
-            f"<b>{APP_TITLE}</b><br>"
-            "<span style='color:#666;font-size:11px'>观鸟行迹 PNG · GPX + 鸟图</span>"
-        )
-        header.addWidget(title, 1)
-        layout.addLayout(header)
+        logo_label.setFixedHeight(logo_h)
+        logo_label.setMinimumWidth(logo_h)
+        row.addWidget(logo_label, 0, Qt.AlignVCenter)
 
-        inp = QGroupBox("输入")
-        form = QFormLayout(inp)
+        text_col = QVBoxLayout()
+        text_col.setSpacing(2)
+        cn = QLabel(APP_NAME_CN)
+        cn.setStyleSheet(
+            "color: #2E3A3F; font-size: 14pt; font-weight: bold;"
+        )
+        text_col.addWidget(cn)
+        en = QLabel(APP_NAME_EN)
+        en.setStyleSheet("color: #5A6B73; font-size: 10pt;")
+        text_col.addWidget(en)
+        sub = QLabel("GPX + 鸟图 → 观鸟行迹 PNG · 经纬度网格底图")
+        sub.setStyleSheet("color: #7A8A92; font-size: 9pt;")
+        text_col.addWidget(sub)
+        row.addLayout(text_col)
+        row.addStretch(1)
+        return banner
+
+    def _build_ui(self) -> None:
+        central = QWidget()
+        outer = QVBoxLayout(central)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        outer.addWidget(self._create_top_banner())
+
+        body = QWidget()
+        body.setStyleSheet("background-color: #F5F5F5;")
+        body_layout = QHBoxLayout(body)
+        body_layout.setContentsMargins(12, 10, 12, 12)
+        body_layout.setSpacing(12)
+
+        left_scroll = QScrollArea()
+        left_scroll.setWidgetResizable(True)
+        left_scroll.setFrameShape(QFrame.NoFrame)
+        left_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        left_scroll.setMinimumWidth(320)
+        left_scroll.setMaximumWidth(420)
+
+        left_panel = QWidget()
+        layout = QVBoxLayout(left_panel)
+        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 8, 0)
+
+        inp_card, inp_body = _create_card("📁 输入数据")
+        form = _form_layout(inp_body)
         self.photo_folder_input = QLineEdit()
         self.photo_folder_input.setPlaceholderText("含鸟图的文件夹（分类归档或任意目录）")
         photo_row = QHBoxLayout()
@@ -119,7 +346,7 @@ class MainWindow(QMainWindow):
         self.gpx_list.setMaximumHeight(72)
         self.gpx_list.setToolTip("可添加多个 GPX（分段记录），按时间合并匹配")
         gpx_btn_row = QHBoxLayout()
-        gb = QPushButton("添加 GPX...")
+        gb = QPushButton("添加 GPX…")
         gb.clicked.connect(self._add_gpx_files)
         gr = QPushButton("移除")
         gr.clicked.connect(self._remove_selected_gpx)
@@ -133,17 +360,20 @@ class MainWindow(QMainWindow):
         self.use_exif_checkbox = QCheckBox("补充使用照片 EXIF 中的 GPS")
         form.addRow("", self.use_gpx_checkbox)
         form.addRow("", self.use_exif_checkbox)
-        layout.addWidget(inp)
+        layout.addWidget(inp_card)
 
-        title_grp = QGroupBox("地图标题（可选）")
-        tform = QFormLayout(title_grp)
+        title_card, title_body = _create_card("🏷 地图标题")
+        tform = _form_layout(title_body)
         self.location_input = QLineEdit()
-        self.location_input.setPlaceholderText("如：厦门大学翔安校区（留空则标题为「观鸟地图」）")
+        self.location_input.setPlaceholderText(
+            "如：厦门大学翔安校区（留空则标题为「观鸟记录」）"
+        )
         tform.addRow("地点名称:", self.location_input)
-        layout.addWidget(title_grp)
+        tform.addRow("", _hint_label("留空地点时仍显示日期与「观鸟记录」及签名 Logo。"))
+        layout.addWidget(title_card)
 
-        opt = QGroupBox("地图选项")
-        oform = QFormLayout(opt)
+        opt_card, opt_body = _create_card("🗺 地图选项")
+        oform = _form_layout(opt_body)
         self.radius_input = QDoubleSpinBox()
         self.radius_input.setRange(0.1, 100.0)
         self.radius_input.setDecimals(1)
@@ -168,10 +398,10 @@ class MainWindow(QMainWindow):
         self.logo_ratio_input.setDecimals(2)
         self.logo_ratio_input.setSingleStep(0.05)
         oform.addRow("Logo 宽度比例:", self.logo_ratio_input)
-        layout.addWidget(opt)
+        layout.addWidget(opt_card)
 
-        out = QGroupBox("输出")
-        oform2 = QFormLayout(out)
+        out_card, out_body = _create_card("💾 输出")
+        oform2 = _form_layout(out_body)
         self.output_folder_input = QLineEdit()
         out_row = QHBoxLayout()
         out_row.addWidget(self.output_folder_input, 1)
@@ -179,31 +409,58 @@ class MainWindow(QMainWindow):
         ob.clicked.connect(lambda: self._pick_dir(self.output_folder_input))
         out_row.addWidget(ob)
         oform2.addRow("保存目录:", out_row)
-        layout.addWidget(out)
+        layout.addWidget(out_card)
 
-        btn_row = QHBoxLayout()
+        btn_card, btn_body = _create_card("▶ 操作")
+        btn_layout = QHBoxLayout(btn_body)
+        btn_layout.setSpacing(12)
+        btn_layout.setContentsMargins(12, 10, 12, 12)
         self.preview_btn = QPushButton("预览")
+        self.preview_btn.setStyleSheet(BTN_SECONDARY_STYLE)
         self.preview_btn.clicked.connect(lambda: self._run(preview=True))
         self.save_btn = QPushButton("生成并保存 PNG")
+        self.save_btn.setStyleSheet(BTN_PRIMARY_STYLE)
         self.save_btn.clicked.connect(lambda: self._run(preview=False))
-        btn_row.addWidget(self.preview_btn)
-        btn_row.addWidget(self.save_btn)
-        layout.addLayout(btn_row)
+        btn_layout.addWidget(self.preview_btn, 1)
+        btn_layout.addWidget(self.save_btn, 2)
+        layout.addWidget(btn_card)
 
+        log_card, log_body = _create_card("📋 运行日志")
+        log_layout = QVBoxLayout(log_body)
+        log_layout.setContentsMargins(12, 8, 12, 12)
         self.log = QTextEdit()
         self.log.setReadOnly(True)
-        self.log.setMaximumHeight(120)
-        layout.addWidget(self.log)
+        self.log.setMinimumHeight(100)
+        self.log.setMaximumHeight(140)
+        log_layout.addWidget(self.log)
+        layout.addWidget(log_card)
+
+        hint = QLabel(
+            "💡 本工具使用经纬度网格底图，无需高德 API Key；"
+            "请自备 GPX 与鸟图目录。"
+        )
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color: #666666; font-size: 10pt; margin-top: 2px;")
+        layout.addWidget(hint)
+
+        watermark = QLabel("Birdy · 鸟图智慧仓储")
+        watermark.setStyleSheet("color: #E0E0E0; font-size: 9pt;")
+        watermark.setAlignment(Qt.AlignRight)
+        layout.addWidget(watermark)
+
         layout.addStretch(1)
+        left_scroll.setWidget(left_panel)
+        body_layout.addWidget(left_scroll, 0)
 
-        left_scroll.setWidget(left_inner)
-        split.addWidget(left_scroll, 1)
-
-        preview_wrap = QGroupBox("地图预览")
-        preview_layout = QVBoxLayout(preview_wrap)
+        preview_card, preview_body = _create_card("🗺 地图预览")
+        preview_layout = QVBoxLayout(preview_body)
+        preview_layout.setContentsMargins(8, 8, 8, 8)
         self.preview_panel = TrackMapPreviewPanel()
         preview_layout.addWidget(self.preview_panel)
-        split.addWidget(preview_wrap, 3)
+        body_layout.addWidget(preview_card, 1)
+
+        outer.addWidget(body, 1)
+        self.setCentralWidget(central)
 
     def _make_tz_combo(self) -> QComboBox:
         combo = QComboBox()
@@ -369,10 +626,14 @@ class MainWindow(QMainWindow):
         self.save_btn.setEnabled(False)
 
         dlg = QProgressDialog(msg, None, 0, 0, self)
-        dlg.setWindowTitle("观鸟地图")
+        dlg.setWindowTitle(APP_TITLE)
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.setMinimumDuration(0)
         dlg.setCancelButton(None)
+        dlg.setStyleSheet(
+            "QProgressDialog { font-size: 10pt; }"
+            "QLabel { font-size: 10pt; color: #333333; }"
+        )
         dlg.show()
         self._progress = dlg
 
@@ -419,6 +680,10 @@ class MainWindow(QMainWindow):
 
 
 def main() -> int:
+    from PyQt5.QtCore import Qt as _Qt
+
+    QApplication.setAttribute(_Qt.AA_EnableHighDpiScaling, True)
+    QApplication.setAttribute(_Qt.AA_UseHighDpiPixmaps, True)
     app = QApplication(sys.argv)
     app.setApplicationName(APP_TITLE)
     setup_import_paths()

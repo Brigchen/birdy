@@ -55,9 +55,9 @@ MAP_DISPLAY_TZ = ZoneInfo("Asia/Shanghai")
 EXPORT_WIDTH_PX = 1440
 EXPORT_HEIGHT_PX = 2560
 EXPORT_DPI = 120
-PREVIEW_WIDTH_PX = 2160
-PREVIEW_HEIGHT_PX = 3840
-PREVIEW_DPI = 120
+PREVIEW_WIDTH_PX = EXPORT_WIDTH_PX
+PREVIEW_HEIGHT_PX = EXPORT_HEIGHT_PX
+PREVIEW_DPI = EXPORT_DPI
 
 # 照片 EXIF 时刻与 GPX 时间轴相差超过此值（秒）则不绘制记录点
 DEFAULT_GPX_MATCH_MAX_DELTA_S = 30 * 60
@@ -70,6 +70,14 @@ PREVIEW_MAX_MARKERS = 40
 _MARKER_SIZE_SCALE = 4 / 3
 # 裁圆前取画面中心正方形边长 = min(宽,高) × 此比例（0.5 ≈ 2× 放大鸟体）
 _THUMB_CENTER_CROP_RATIO = 0.5
+# 物种名距地图左右边界至少为地图宽度的此比例
+_MAP_LABEL_X_MARGIN_FRAC = 1 / 50.0
+# 物种名字号 = 地图轴高度（像素）/ 此除数
+_MAP_SPECIES_LABEL_HEIGHT_DIV = 100.0
+# 鸟图直径 = 整图高度 × 此比例（预览/导出一致）
+_MAP_THUMB_HEIGHT_FRAC = 1 / 32.0
+# 海拔剖面鸟图相对地图略小（原 48/64 比例）
+_ELEV_THUMB_HEIGHT_FRAC = _MAP_THUMB_HEIGHT_FRAC * (48 / 64.0)
 
 # 海拔剖面（绿色主题）
 ELEV_LINE_COLOR = "#1B5E20"
@@ -86,6 +94,14 @@ ELEV_LABEL_COLOR = "#333333"
 
 def _up_marker_size(n: int | float) -> int:
     return max(1, round(float(n) * _MARKER_SIZE_SCALE))
+
+
+def _track_map_thumb_diameters(height_px: int) -> Tuple[int, int]:
+    """地图/海拔鸟图直径（px），相对整图高度固定比例，预览与导出一致。"""
+    h = max(1, int(height_px))
+    map_d = max(16, int(round(h * _MAP_THUMB_HEIGHT_FRAC)))
+    elev_d = max(12, int(round(h * _ELEV_THUMB_HEIGHT_FRAC)))
+    return map_d, elev_d
 
 
 _CJK_FONT_CONFIGURED = False
@@ -429,6 +445,15 @@ MAP_MARGIN_TITLE_Y = 1.0 / 35.0
 MAP_MARGIN_SUMMARY_X = 1.0 / 15.0
 # 海拔内嵌面板占用 map_ax 底部约 [0.03, 0.17]（transAxes）
 ELEV_PANEL_TOP_AXES = 0.17
+# 海拔外框内层绘图区 [left, bottom, width, height]
+_ELEV_INNER_RECT = (0.02, 0.12, 0.96, 0.80)
+# 海拔 data 区相对轨迹 x/y 范围的留白比例
+_ELEV_X_LEFT_FRAC = 0.0
+_ELEV_X_RIGHT_FRAC = 0.09
+_ELEV_Y_BOTTOM_FRAC = 0.04
+_ELEV_Y_TOP_FRAC = 0.18
+# 鸟种名距海拔绘图区边缘 ≥ 宽/高的 1/50
+_ELEV_LABEL_MARGIN_FRAC = 1 / 50.0
 SUMMARY_GAP_AXES = 0.014
 TITLE_GAP_AXES = 0.012
 
@@ -502,7 +527,9 @@ def _map_typography(ax) -> Dict[str, float]:
         "date_pt": _font_pt_for_line_height_px(ax_h_px / 50.0, dpi),
         "count_num_pt": _font_pt_for_line_height_px(ax_h_px / 16.0, dpi),
         "count_suffix_pt": _font_pt_for_line_height_px(ax_h_px / 80.0, dpi),
-        "species_pt": _font_pt_for_line_height_px(ax_h_px / 80.0, dpi),
+        "species_pt": _font_pt_for_line_height_px(
+            ax_h_px / _MAP_SPECIES_LABEL_HEIGHT_DIV, dpi
+        ),
         "attribution_pt": _font_pt_for_line_height_px(ax_h_px / 100.0, dpi),
         "elev_axis_pt": _font_pt_for_line_height_px(ax_h_px / 150.0, dpi),
         "elev_species_pt": _font_pt_for_line_height_px(ax_h_px / 160.0, dpi),
@@ -1142,6 +1169,52 @@ def _label_box_display(
     return (xd - w, yd - h * 0.5, xd, yd + h * 0.5)
 
 
+def _map_label_x_pad_data(ax) -> float:
+    """地图 x 方向内边距（数据坐标），约为可视宽度的 1/50。"""
+    x0, x1 = ax.get_xlim()
+    return max((x1 - x0) * _MAP_LABEL_X_MARGIN_FRAC, 1e-9)
+
+
+def _label_text_span_data(
+    ax,
+    dx: float,
+    dy: float,
+    name: str,
+    side: int,
+    off_x: float,
+    dy_off: float,
+    label_fs: float,
+) -> Tuple[float, float]:
+    """物种名在数据坐标下的左右边界（含 ha left/right）。"""
+    anchor_x, _ = _offset_points_to_data(ax, dx, dy, side * off_x, float(dy_off))
+    lw = _text_width_data(ax, name, label_fs)
+    if side > 0:
+        return anchor_x, anchor_x + lw
+    return anchor_x - lw, anchor_x
+
+
+def _label_x_margin_overflow(ax, left: float, right: float) -> float:
+    """超出左右 1/50 边距的数据坐标量，0 表示完全在内。"""
+    x0, x1 = ax.get_xlim()
+    pad = _map_label_x_pad_data(ax)
+    over = 0.0
+    if left < x0 + pad:
+        over += x0 + pad - left
+    if right > x1 - pad:
+        over += right - (x1 - pad)
+    return over
+
+
+def _species_label_base_off(
+    ax, dx: float, dy: float, r_thumb: float, label_fs: float, thumb_diameter: int
+) -> float:
+    edge_pt = _data_span_to_points(ax, dx, dy, r_thumb * 1.08)
+    return max(
+        thumb_diameter * 0.30,
+        edge_pt * 0.78 + max(2.0, label_fs * 0.12),
+    )
+
+
 def _layout_species_labels(
     ax,
     items: Sequence[BirdPhoto],
@@ -1158,7 +1231,6 @@ def _layout_species_labels(
         _circle_box_display(ax, displays[i][0], displays[i][1], r_thumb)
         for i in range(n)
     ]
-    x0, x1 = ax.get_xlim()
     order = sorted(
         range(n),
         key=lambda i: -sum(
@@ -1216,9 +1288,8 @@ def _layout_species_labels(
         name = items[idx].species_cn
         dx, dy = displays[idx]
         edge_pt = _data_span_to_points(ax, dx, dy, r_thumb * 1.08)
-        base_off = max(
-            thumb_diameter * 0.42,
-            edge_pt + max(5.0, label_fs * 0.28),
+        base_off = _species_label_base_off(
+            ax, dx, dy, r_thumb, label_fs, thumb_diameter
         )
         best_side, best_off_x, best_dy = 1, base_off, 0.0
         best_score = 1e18
@@ -1241,14 +1312,12 @@ def _layout_species_labels(
                     for lbox in placed:
                         if _rect_overlap_display(box, lbox, margin=2.0):
                             score += 90.0
-                    anchor_x, _ = _offset_points_to_data(
-                        ax, dx, dy, side * off_x, float(dy_off)
+                    xl, xr = _label_text_span_data(
+                        ax, dx, dy, name, side, off_x, float(dy_off), label_fs
                     )
-                    lw = _text_width_data(ax, name, label_fs)
-                    if side > 0 and anchor_x + lw > x1 - r_thumb * 0.1:
-                        score += 30.0
-                    if side < 0 and anchor_x - lw < x0 + r_thumb * 0.1:
-                        score += 30.0
+                    margin_over = _label_x_margin_overflow(ax, xl, xr)
+                    if margin_over > 0:
+                        score += 800.0 + margin_over * 120.0
                     score += mult * 0.8 + abs(dy_off) * 0.04
                     if score < best_score:
                         best_score = score
@@ -1271,6 +1340,43 @@ def _layout_species_labels(
             placed_labels.append(box)
         if max(_overlap_score(i, out) for i in range(n)) <= 0.05:
             break
+
+    for idx in range(n):
+        side, off_x, dy_off = out[idx]
+        name = items[idx].species_cn
+        dx, dy = displays[idx]
+        base_off = _species_label_base_off(
+            ax, dx, dy, r_thumb, label_fs, thumb_diameter
+        )
+        xl, xr = _label_text_span_data(
+            ax, dx, dy, name, side, off_x, dy_off, label_fs
+        )
+        if _label_x_margin_overflow(ax, xl, xr) <= 0:
+            continue
+        best = out[idx]
+        best_over = _label_x_margin_overflow(
+            ax,
+            *_label_text_span_data(
+                ax, dx, dy, name, best[0], best[1], best[2], label_fs
+            ),
+        )
+        for side in (-1, 1):
+            for mult in (1.0, 1.1, 1.22, 1.35):
+                off_x = base_off * mult
+                for dy_off in (0, 6, -6, 12, -12, 18, -18):
+                    xl, xr = _label_text_span_data(
+                        ax, dx, dy, name, side, off_x, dy_off, label_fs
+                    )
+                    over = _label_x_margin_overflow(ax, xl, xr)
+                    if over >= best_over:
+                        continue
+                    box = _label_box_for(idx, side, off_x, dy_off)
+                    if _rect_overlap_display(box, circle_boxes[idx], margin=2.0):
+                        continue
+                    best_over = over
+                    best = (side, off_x, dy_off)
+        out[idx] = best
+
     return out
 
 
@@ -1840,6 +1946,28 @@ def _offset_points_to_data(
     return float(off[0]), float(off[1])
 
 
+def _elev_plot_limits(
+    y_min: float, y_max: float, x_max: float
+) -> Tuple[float, float, float, float]:
+    """海拔内层 axes 的 x/y 范围：上宽下窄、右宽左紧。"""
+    x1 = max(float(x_max), 0.01)
+    y_rng = max(float(y_max) - float(y_min), 1e-6)
+    return (
+        -x1 * _ELEV_X_LEFT_FRAC,
+        x1 * (1.0 + _ELEV_X_RIGHT_FRAC),
+        y_min - y_rng * _ELEV_Y_BOTTOM_FRAC,
+        y_max + y_rng * _ELEV_Y_TOP_FRAC,
+    )
+
+
+def _elev_label_pads(
+    plot_x0: float, plot_x1: float, plot_y0: float, plot_y1: float
+) -> Tuple[float, float]:
+    x_rng = max(plot_x1 - plot_x0, 1e-6)
+    y_rng = max(plot_y1 - plot_y0, 1e-6)
+    return x_rng * _ELEV_LABEL_MARGIN_FRAC, y_rng * _ELEV_LABEL_MARGIN_FRAC
+
+
 def _elev_text_height_data(ax, fontsize_pt: float) -> float:
     _, ax_h_px = _ax_size_px(ax)
     y0, y1 = ax.get_ylim()
@@ -1847,9 +1975,9 @@ def _elev_text_height_data(ax, fontsize_pt: float) -> float:
     return h_px / max(ax_h_px, 1.0) * max(y1 - y0, 1e-9)
 
 
-def _elev_label_ha_for_marker(ad: float, x_min: float, x_max: float) -> str:
+def _elev_label_ha_for_marker(ad: float, data_x_max: float) -> str:
     """左半图左对齐、右半图右对齐，避免鸟名超出绘图区。"""
-    mid = x_min + (x_max - x_min) * 0.5
+    mid = max(float(data_x_max), 1e-6) * 0.5
     return "left" if ad <= mid else "right"
 
 
@@ -2022,6 +2150,7 @@ def _iter_elev_label_candidates(
     name: str,
     label_fs: float,
     *,
+    data_x_max: float,
     x_min: float,
     x_max: float,
     y_min: float,
@@ -2032,7 +2161,7 @@ def _iter_elev_label_candidates(
     """返回 (label_x, label_y, 优先级 tier, 同 tier 内 tie-break)。tier=0 为垂直列（ld=ad）。"""
     x_rng = max(x_max - x_min, 1e-6)
     y_rng = max(y_max - y_min, 1e-6)
-    ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+    ha = _elev_label_ha_for_marker(ad, data_x_max)
     out: List[Tuple[float, float, int, float]] = []
     seen: set = set()
 
@@ -2101,6 +2230,7 @@ def _pick_elev_label_position(
     name: str,
     label_fs: float,
     *,
+    data_x_max: float,
     x_min: float,
     x_max: float,
     y_min: float,
@@ -2112,13 +2242,14 @@ def _pick_elev_label_position(
 ) -> Tuple[float, float, float]:
     """返回 (lx, ly, max_overlap_fraction)。"""
     all_obstacles = list(blocked_disp) + list(other_disp)
-    ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+    ha = _elev_label_ha_for_marker(ad, data_x_max)
     candidates = _iter_elev_label_candidates(
         ax,
         ad,
         ae,
         name,
         label_fs,
+        data_x_max=data_x_max,
         x_min=x_min,
         x_max=x_max,
         y_min=y_min,
@@ -2185,6 +2316,7 @@ def _try_vertical_elev_label(
     name: str,
     label_fs: float,
     *,
+    data_x_max: float,
     x_min: float,
     x_max: float,
     y_min: float,
@@ -2196,7 +2328,7 @@ def _try_vertical_elev_label(
     """在记录点 x=ad 的垂直列上找不重叠的 y（左/右对齐由 ad 所在半区决定）。"""
     if not (x_min <= ad <= x_max):
         return None
-    ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+    ha = _elev_label_ha_for_marker(ad, data_x_max)
     y_rng = max(y_max - y_min, 1e-6)
     h = _elev_text_height_data(ax, label_fs)
     y_lo = y_min + pad_y + h * 0.5
@@ -2239,19 +2371,20 @@ def _elev_layout_overlap_score(
     *,
     ax,
     label_fs: float,
+    data_x_max: float,
     x_min: float,
     x_max: float,
     blocked_disp: Sequence[Tuple[float, float, float, float]],
 ) -> float:
     ad, _, ld, le, name = layouts[idx]
-    ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+    ha = _elev_label_ha_for_marker(ad, data_x_max)
     box_i = _elev_label_box_display(ax, ld, le, name, label_fs, ha=ha)
     others = list(blocked_disp)
     for j, item in enumerate(layouts):
         if j == idx:
             continue
         ad_j, _, ld_j, le_j, name_j = item
-        ha_j = _elev_label_ha_for_marker(ad_j, x_min, x_max)
+        ha_j = _elev_label_ha_for_marker(ad_j, data_x_max)
         others.append(
             _elev_label_box_display(ax, ld_j, le_j, name_j, label_fs, ha=ha_j)
         )
@@ -2265,6 +2398,7 @@ def _elev_refine_one_marker(
     *,
     ax,
     label_fs: float,
+    data_x_max: float,
     x_min: float,
     x_max: float,
     y_min: float,
@@ -2283,6 +2417,7 @@ def _elev_refine_one_marker(
         ae,
         name,
         label_fs,
+        data_x_max=data_x_max,
         x_min=x_min,
         x_max=x_max,
         y_min=y_min,
@@ -2300,6 +2435,7 @@ def _elev_refine_one_marker(
         ae,
         name,
         label_fs,
+        data_x_max=data_x_max,
         x_min=x_min,
         x_max=x_max,
         y_min=y_min,
@@ -2317,19 +2453,18 @@ def _layout_elevation_species_labels(
     markers: Sequence[Tuple[float, float, str]],
     label_fs: float,
     *,
-    x_min: float,
-    x_max: float,
-    y_min: float,
-    y_max: float,
+    data_x_max: float,
     blocked: Sequence[Tuple[float, float, float, float]] = (),
 ) -> List[Tuple[float, float, float, float, str]]:
     """鸟种名布局：优先垂直列；左半左对齐、右半右对齐，重叠率 ≤5%。"""
     if not markers:
         return []
+    plot_x0, plot_x1 = ax.get_xlim()
+    plot_y0, plot_y1 = ax.get_ylim()
+    x_min, x_max, y_min, y_max = plot_x0, plot_x1, plot_y0, plot_y1
+    pad_x, pad_y = _elev_label_pads(plot_x0, plot_x1, plot_y0, plot_y1)
     x_rng = max(x_max - x_min, 1e-6)
     y_rng = max(y_max - y_min, 1e-6)
-    pad_x = x_rng * 0.014
-    pad_y = y_rng * 0.028
     x_tol = x_rng * 0.002
 
     blocked_disp: List[Tuple[float, float, float, float]] = []
@@ -2349,7 +2484,7 @@ def _layout_elevation_species_labels(
             if skip_idx is not None and j == skip_idx:
                 continue
             ad_j, _, ld_j, le_j, name_j = item
-            ha_j = _elev_label_ha_for_marker(ad_j, x_min, x_max)
+            ha_j = _elev_label_ha_for_marker(ad_j, data_x_max)
             boxes.append(
                 _elev_label_box_display(
                     ax, ld_j, le_j, name_j, label_fs, ha=ha_j
@@ -2375,6 +2510,7 @@ def _layout_elevation_species_labels(
             ae,
             name,
             label_fs,
+            data_x_max=data_x_max,
             x_min=x_min,
             x_max=x_max,
             y_min=y_min,
@@ -2401,6 +2537,7 @@ def _layout_elevation_species_labels(
                         layouts,
                         ax=ax,
                         label_fs=label_fs,
+                        data_x_max=data_x_max,
                         x_min=x_min,
                         x_max=x_max,
                         blocked_disp=blocked_disp,
@@ -2415,6 +2552,7 @@ def _layout_elevation_species_labels(
                 layouts,
                 ax=ax,
                 label_fs=label_fs,
+                data_x_max=data_x_max,
                 x_min=x_min,
                 x_max=x_max,
                 y_min=y_min,
@@ -2435,7 +2573,7 @@ def _layout_elevation_species_labels(
 
     for idx in order:
         ad, ae, ld, le, name = layouts[idx]
-        ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+        ha = _elev_label_ha_for_marker(ad, data_x_max)
         if _elev_text_fits_in_plot(
             ax,
             ld,
@@ -2458,6 +2596,7 @@ def _layout_elevation_species_labels(
             ae,
             name,
             label_fs,
+            data_x_max=data_x_max,
             x_min=x_min,
             x_max=x_max,
             y_min=y_min,
@@ -2480,6 +2619,7 @@ def _layout_elevation_species_labels(
             ae,
             name,
             label_fs,
+            data_x_max=data_x_max,
             x_min=x_min,
             x_max=x_max,
             y_min=y_min,
@@ -2558,7 +2698,7 @@ def _create_elevation_panel_axes(map_ax):
         zorder=30,
     )
     _style_elevation_panel_frame(outer)
-    inner = outer.inset_axes([0.06, 0.14, 0.92, 0.80])
+    inner = outer.inset_axes(list(_ELEV_INNER_RECT))
     inner.set_facecolor("#FFFFFF")
     inner.patch.set_edgecolor("none")
     inner.patch.set_linewidth(0.0)
@@ -2574,15 +2714,12 @@ def _style_elevation_inset_ax(
     tick_fs: float,
     label_fs: float,
 ) -> None:
-    """海拔内层绘图区：浅绿填充、水平网格、轴端标签（贴近坐标轴端点）。"""
+    """海拔内层绘图区：浅绿填充、水平网格、轴端标签。"""
     ax.set_facecolor("#FFFFFF")
     ax.patch.set_edgecolor("none")
-    x1 = max(x_max, 0.01)
-    y_rng = max(y_max - y_min, 1e-6)
-    pad_x_data = max(x1 * 0.045, 0.015)
-    pad_y_data = max(y_rng * 0.09, 1.0)
-    ax.set_xlim(-pad_x_data * 0.2, x1 + pad_x_data * 0.85)
-    ax.set_ylim(y_min - pad_y_data * 0.75, y_max + pad_y_data * 0.18)
+    x_lo, x_hi, y_lo, y_hi = _elev_plot_limits(y_min, y_max, x_max)
+    ax.set_xlim(x_lo, x_hi)
+    ax.set_ylim(y_lo, y_hi)
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_title("")
@@ -2613,7 +2750,7 @@ def _style_elevation_inset_ax(
         width=0.65,
         colors=ELEV_AXIS_COLOR,
         labelsize=tick_fs,
-        pad=2,
+        pad=1,
     )
     for side in ("left", "bottom"):
         ax.spines[side].set_linewidth(0.75)
@@ -2625,7 +2762,7 @@ def _style_elevation_inset_ax(
     ax.annotate(
         "",
         xy=(x1, y_min),
-        xytext=(x1 * 0.985, y_min),
+        xytext=(x1 * 0.992, y_min),
         arrowprops=dict(
             arrowstyle="-|>",
             lw=0.75,
@@ -2636,8 +2773,8 @@ def _style_elevation_inset_ax(
     )
     ax.annotate(
         "",
-        xy=(0.0, y_max),
-        xytext=(0.0, y_min + (y_max - y_min) * 0.985),
+        xy=(0.0, y_min),
+        xytext=(0.0, y_max),
         arrowprops=dict(
             arrowstyle="-|>",
             lw=0.75,
@@ -2648,26 +2785,26 @@ def _style_elevation_inset_ax(
     )
 
     ax.text(
-        0.0,
-        y_max + y_rng * 0.035,
+        0.03,
+        0.97,
         "海拔(m)",
-        transform=ax.transData,
-        fontsize=label_fs,
-        color=ELEV_LABEL_COLOR,
-        ha="right",
-        va="bottom",
-        clip_on=False,
-        zorder=5,
-    )
-    ax.text(
-        x1,
-        y_min,
-        "里程(km)",
-        transform=ax.transData,
+        transform=ax.transAxes,
         fontsize=label_fs,
         color=ELEV_LABEL_COLOR,
         ha="left",
         va="top",
+        clip_on=False,
+        zorder=5,
+    )
+    ax.text(
+        0.97,
+        0.06,
+        "里程(km)",
+        transform=ax.transAxes,
+        fontsize=label_fs,
+        color=ELEV_LABEL_COLOR,
+        ha="right",
+        va="bottom",
         clip_on=False,
         zorder=5,
     )
@@ -2752,7 +2889,9 @@ def _plot_elevation_ax(
             linewidths=0.8,
         )
         ld, le = _offset_points_to_data(ax, d, e, 0.0, 7.0)
-        le = min(le, y_max - _elev_text_height_data(ax, hl_fs) * 0.6)
+        y_top = ax.get_ylim()[1]
+        text_h = _elev_text_height_data(ax, hl_fs)
+        le = min(le, y_top - text_h * 0.25)
         ax.text(
             ld,
             le,
@@ -2761,7 +2900,7 @@ def _plot_elevation_ax(
             va="bottom",
             fontsize=hl_fs,
             color=ELEV_LABEL_COLOR,
-            clip_on=True,
+            clip_on=False,
             zorder=5,
         )
         highlight_blocked.append(_elev_label_box_data(ax, ld, le, label, hl_fs))
@@ -2784,15 +2923,12 @@ def _plot_elevation_ax(
         ax,
         markers,
         species_fs,
-        x_min=x_min,
-        x_max=x_max,
-        y_min=y_min,
-        y_max=y_max,
+        data_x_max=x_max,
         blocked=highlight_blocked,
     )
     leader_thresh = max(x_max, y_max - y_min) * 0.008
     for ad, ae, ld, le, name in species_layouts:
-        label_ha = _elev_label_ha_for_marker(ad, x_min, x_max)
+        label_ha = _elev_label_ha_for_marker(ad, x_max)
         ax.scatter(
             [ad],
             [ae],
@@ -2825,7 +2961,7 @@ def _plot_elevation_ax(
             fontsize=species_fs,
             color=ELEV_SPECIES_NAME_COLOR,
             fontweight="medium",
-            clip_on=True,
+            clip_on=False,
             zorder=7,
         )
 
@@ -2963,7 +3099,7 @@ def generate_track_maps(
     logo_width_ratio: float = 0.30,
 ) -> Dict[str, str]:
     """
-    生成 PNG。preview_only 时最多标注 preview_max_photos 张鸟图；正式保存为 1440×2560（2K 竖屏）像素。
+    生成 PNG。preview_only 时最多标注 preview_max_photos 张鸟图；预览与正式导出均为 1440×2560（2K 竖屏）像素，鸟图比例一致。
     """
     _configure_matplotlib_cjk()
 
@@ -3082,12 +3218,9 @@ def generate_track_maps(
 
     if preview_only:
         width_px, height_px, dpi = PREVIEW_WIDTH_PX, PREVIEW_HEIGHT_PX, PREVIEW_DPI
-        thumb_map = int(round(_up_marker_size(52) * 1.25))
-        thumb_elev = int(round(_up_marker_size(40) * 1.25))
     else:
         width_px, height_px, dpi = EXPORT_WIDTH_PX, EXPORT_HEIGHT_PX, EXPORT_DPI
-        thumb_map = int(round(_up_marker_size(64) * 1.25))
-        thumb_elev = int(round(_up_marker_size(48) * 1.25))
+    thumb_map, thumb_elev = _track_map_thumb_diameters(height_px)
 
     fig_w, fig_h = _figure_size_inches(width_px, height_px, dpi)
     fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi, facecolor="white")
@@ -3103,7 +3236,7 @@ def generate_track_maps(
         gpx_tz=gpx_tz,
     )
     marker_kw = dict(
-        compact_labels=preview_only,
+        compact_labels=False,
         resolve_overlaps=True,
     )
     basemap_status = _plot_map_ax(

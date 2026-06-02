@@ -40,7 +40,6 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from burst_grouping import process_folder, get_kept_images, screened_paths_for_kept_images
-from html_report_generator import generate_html_report
 from geo_encoder import batch_write_gps_exif, geocode_location
 from detect_bird_and_eye import (
     BirdAndEyeDetector,
@@ -116,28 +115,30 @@ def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, f
     n = max(0, int(n_images))
     burst_on = config.get("enable_burst_detection", True)
     do_species = config.get("enable_species_detection", True)
-    do_crop = config.get("enable_crop", False)
     use_local = config.get("use_local_model", True)
     phases: List[Tuple[str, float]] = []
     if burst_on:
         phases.append(("burst", max(18.0, n * 2.8)))
-        if config.get("generate_burst_report", True):
-            phases.append(("burst_report", max(10.0, min(120.0, 15.0 + n * 0.12))))
     if config.get("enable_gps_write"):
         phases.append(("gps", max(4.0, min(120.0, 6.0 + n * 0.08))))
-    if do_species or do_crop:
+    if do_species:
         per = 5.0 if use_local else 14.0
         phases.append(("species", max(25.0, n * per)))
     if config.get("enable_watermark_generation", False):
         phases.append(("watermark", max(12.0, n * 0.8)))
-    if config.get("enable_record_export_auto", False) and (
-        config.get("enable_species_detection", True)
-        or config.get("enable_crop", False)
-    ):
+    if config.get("enable_record_export_auto", False):
         phases.append(("record_export", 8.0))
     if config.get("enable_track_map_auto", False):
         phases.append(("track_map", 15.0))
     return phases
+
+
+def _apply_gui_flow_policy(config: Dict) -> None:
+    """GUI：不生成连拍/物种 HTML 报告；物种步骤始终裁剪归档。"""
+    config["generate_burst_report"] = False
+    config["generate_species_report"] = False
+    if config.get("enable_species_detection", True):
+        config["enable_crop"] = True
 
 
 def _record_export_dirs_from_config(config: Dict) -> Tuple[str, str]:
@@ -258,6 +259,110 @@ def _reports_dir_from_config(config: Dict) -> str:
     return os.path.join((config.get("output_folder") or "./outputs").strip(), "reports")
 
 
+def _flow_enabled_flags(config: Dict) -> Dict[str, bool]:
+    """当前主流程各阶段是否勾选「加入主流程」。"""
+    return {
+        "burst": bool(config.get("enable_burst_detection", True)),
+        "gps": bool(config.get("enable_gps_write")),
+        "species": bool(config.get("enable_species_detection", True)),
+        "watermark": bool(config.get("enable_watermark_generation", False)),
+        "record_export": bool(config.get("enable_record_export_auto", False)),
+        "track_map": bool(config.get("enable_track_map_auto", False)),
+    }
+
+
+def _emit_burst_skipped_status(emit, config: Dict) -> None:
+    """连拍未加入主流程时，按实际后续步骤说明数据来源目录。"""
+    flags = _flow_enabled_flags(config)
+    if flags["burst"]:
+        return
+    uses: List[str] = []
+    if flags["species"]:
+        screened = os.path.join(
+            (config.get("output_folder") or "").strip(), "Screened_images"
+        )
+        uses.append(f"物种识别 → Screened_images（{screened}）")
+    class_dir = (config.get("crop_output_folder") or "").strip()
+    if flags["track_map"] and flags["record_export"] and class_dir:
+        uses.append(f"轨迹图 / 观鸟记录导出 → 分类归档（{class_dir}）")
+    elif flags["track_map"] and class_dir:
+        uses.append(f"轨迹图 → 分类归档（{class_dir}）")
+    elif flags["record_export"] and class_dir:
+        uses.append(f"观鸟记录导出 → 分类归档（{class_dir}）")
+    if flags["watermark"]:
+        uses.append("水印生成（见水印卡片输入/输出目录）")
+    if uses:
+        emit(
+            "已跳过连拍检测；"
+            + "；".join(uses)
+        )
+    else:
+        emit("已跳过连拍检测")
+
+
+def _build_processing_stats(
+    results: Dict, config: Dict
+) -> List[Tuple[str, str]]:
+    """仅汇总本次实际执行步骤的统计项。"""
+    stats: List[Tuple[str, str]] = []
+    if "total_images" in results:
+        stats.extend(
+            [
+                ("连拍·总图片", results.get("total_images", 0)),
+                ("连拍·保留", results.get("kept_images", 0)),
+                ("连拍·丢弃", results.get("discarded_images", 0)),
+            ]
+        )
+    if "gps_written" in results:
+        stats.append(("GPS 已写入", results.get("gps_written", 0)))
+    if "crop_result" in results:
+        cr = results["crop_result"]
+        stats.append(("裁剪归档文件", cr.get("total_crops", 0)))
+        stats.append(
+            ("物种识别耗时", f"{cr.get('processing_time', 0):.2f} 秒")
+        )
+    if "record_export" in results:
+        written = results["record_export"]
+        stats.append(("观鸟记录导出", f"{len(written)} 个文件"))
+        for k, p in written.items():
+            stats.append((f"  · {k}", os.path.basename(str(p))))
+    if "track_map" in results:
+        written = results["track_map"]
+        stats.append(("轨迹图输出", f"{len(written)} 个文件"))
+        for k, p in written.items():
+            stats.append((f"  · {k}", os.path.basename(str(p))))
+    if "watermark_result" in results:
+        wm = results["watermark_result"]
+        stats.append(("水印·总数", wm.get("total", 0)))
+        stats.append(("水印·成功", wm.get("ok", 0)))
+        stats.append(("水印·失败", wm.get("fail", 0)))
+    if not stats:
+        stats.append(("本次执行", "无统计项（请检查是否勾选了主流程步骤）"))
+    return stats
+
+
+def _build_output_path_logs(results: Dict, config: Dict) -> List[str]:
+    """完成时仅列出本次步骤相关的输出路径。"""
+    lines: List[str] = []
+    if "total_images" in results:
+        lines.append(f"📁 连拍输出: {config.get('output_folder', '')}")
+    if "crop_result" in results:
+        lines.append(f"📁 分类归档: {config.get('crop_output_folder', '')}")
+    if "track_map" in results:
+        class_dir = (config.get("crop_output_folder") or "").strip()
+        if class_dir:
+            lines.append(f"🗺 轨迹图鸟图源: {class_dir}")
+        lines.append(f"🗺 轨迹图保存: {_reports_dir_from_config(config)}")
+    if "record_export" in results:
+        _, out_dir = _record_export_dirs_from_config(config)
+        lines.append(f"📤 观鸟记录导出: {out_dir}")
+    if "watermark_result" in results:
+        out_wm = (config.get("watermark_output_folder") or "").strip()
+        if out_wm:
+            lines.append(f"🖼 水印输出: {out_wm}")
+    return lines
+
+
 def _main_flow_write_gps(config: Dict, screened_dir: str) -> Tuple[int, str]:
     """
     主流程 GPS 写入（二选一）。
@@ -311,34 +416,31 @@ class WorkerThread(QThread):
         try:
             import os
             config = self.config
+            _apply_gui_flow_policy(config)
             burst_on = config.get("enable_burst_detection", True)
+            do_species = config.get("enable_species_detection", True)
+            flow_flags = _flow_enabled_flags(config)
             total_steps = 0
             if config.get("enable_gps_write"):
                 total_steps += 1
             if burst_on:
-                total_steps += 2  # 连拍筛选 + 连拍报告
-            if config.get("enable_species_detection", True) or config.get(
-                "enable_crop", False
-            ):
+                total_steps += 1
+            if do_species:
                 total_steps += 1
             if config.get("enable_watermark_generation", False):
                 total_steps += 1
-            if config.get("enable_record_export_auto", False) and (
-                config.get("enable_species_detection", True)
-                or config.get("enable_crop", False)
-            ):
+            if config.get("enable_record_export_auto", False):
                 total_steps += 1
             if config.get("enable_track_map_auto", False):
                 total_steps += 1
             if total_steps < 1:
                 total_steps = 1
             current_step = 0
-            results = {}
+            results: Dict[str, Any] = {"_flow_flags": flow_flags}
             burst_filter_applied = False
             phase_weights: Dict[str, float] = {
                 "gps": 0.08,
-                "burst": 0.40,
-                "burst_report": 0.07,
+                "burst": 0.47,
                 "species": 0.35,
                 "watermark": 0.10,
                 "record_export": 0.06,
@@ -347,25 +449,29 @@ class WorkerThread(QThread):
             enabled_phases: List[str] = []
             if burst_on:
                 enabled_phases.append("burst")
-                if config.get("generate_burst_report", True):
-                    enabled_phases.append("burst_report")
             if config.get("enable_gps_write"):
                 enabled_phases.append("gps")
-            if config.get("enable_species_detection", True) or config.get(
-                "enable_crop", False
-            ):
+            if do_species:
                 enabled_phases.append("species")
             if config.get("enable_watermark_generation", False):
                 enabled_phases.append("watermark")
-            if config.get("enable_record_export_auto", False) and (
-                config.get("enable_species_detection", True)
-                or config.get("enable_crop", False)
-            ):
+            if config.get("enable_record_export_auto", False):
                 enabled_phases.append("record_export")
             if config.get("enable_track_map_auto", False):
                 enabled_phases.append("track_map")
             if not enabled_phases:
-                enabled_phases = ["species"]
+                for _p, _k in (
+                    ("track_map", "enable_track_map_auto"),
+                    ("record_export", "enable_record_export_auto"),
+                    ("watermark", "enable_watermark_generation"),
+                    ("species", "enable_species_detection"),
+                    ("burst", "enable_burst_detection"),
+                ):
+                    if config.get(_k, False if _k != "enable_species_detection" else True):
+                        enabled_phases.append(_p)
+                        break
+                if not enabled_phases:
+                    enabled_phases = ["track_map"]
 
             weight_sum = sum(float(phase_weights.get(p, 0.0)) for p in enabled_phases)
             if weight_sum <= 0:
@@ -494,64 +600,8 @@ class WorkerThread(QThread):
 
                 if not self.is_running:
                     return
-
-                # 第三步：生成连拍报告
-                current_step += 1
-                if config.get("generate_burst_report", True):
-                    self.status_updated.emit(
-                        f"[步骤 {current_step}/{total_steps}] 生成可视化报告..."
-                    )
-                    _emit_phase_progress("burst_report", 0, 1)
-                    self.eta_checkpoint.emit(
-                        {"kind": "phase_begin", "phase": "burst_report"}
-                    )
-
-                    try:
-                        json_report_file = os.path.join(
-                            config["output_folder"], "burst_analysis.json"
-                        )
-                        if os.path.exists(json_report_file):
-                            reports_dir = _reports_dir_from_config(config)
-                            os.makedirs(reports_dir, exist_ok=True)
-
-                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                            html_report_path = os.path.join(
-                                reports_dir, f"连拍分析报告_{timestamp}.html"
-                            )
-
-                            generate_html_report(
-                                json_report_path=json_report_file,
-                                output_html_path=html_report_path,
-                                image_folder=config["image_folder"],
-                            )
-                            self.status_updated.emit(
-                                f"✓ HTML报告已生成: {os.path.basename(html_report_path)}"
-                            )
-                        else:
-                            self.status_updated.emit(
-                                "⚠ 跳过报告生成：JSON报告文件不存在"
-                            )
-                    except Exception as e:
-                        self.error_occurred.emit(f"报告生成失败: {str(e)}")
-                    _emit_phase_progress("burst_report", 1, 1)
-                    self.eta_checkpoint.emit(
-                        {"kind": "phase_done", "phase": "burst_report"}
-                    )
-                else:
-                    self.status_updated.emit(
-                        f"[步骤 {current_step}/{total_steps}] 跳过报告生成"
-                    )
-                    _emit_phase_progress("burst_report", 1, 1)
-                    self.eta_checkpoint.emit(
-                        {"kind": "phase_done", "phase": "burst_report"}
-                    )
-
-                if not self.is_running:
-                    return
             else:
-                self.status_updated.emit(
-                    "已跳过连拍检测，物种等后续步骤将使用输出文件夹下的 Screened_images"
-                )
+                _emit_burst_skipped_status(self.status_updated.emit, config)
 
             if config.get("enable_gps_write") and not burst_on:
                 if os.path.isdir(screened_dir):
@@ -586,22 +636,11 @@ class WorkerThread(QThread):
                     )
                     results["gps_written"] = 0
 
-            # 下一步：物种识别 / 裁剪或原图归档
-            do_species = config.get('enable_species_detection', True)
-            do_crop = config.get('enable_crop', False)
-            if do_species or do_crop:
+            # 下一步：物种识别与裁剪归档
+            if do_species:
                 current_step += 1
-                step_title = (
-                    "物种检测、裁剪与归档"
-                    if do_species and do_crop
-                    else (
-                        "物种识别（原图按物种归档）"
-                        if do_species and not do_crop
-                        else "鸟体检测与裁剪（无物种识别）"
-                    )
-                )
                 self.status_updated.emit(
-                    f"[步骤 {current_step}/{total_steps}] {step_title}..."
+                    f"[步骤 {current_step}/{total_steps}] 物种检测、裁剪与归档..."
                 )
                 _emit_phase_progress("species", 0, 1)
                 self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "species"})
@@ -670,7 +709,7 @@ class WorkerThread(QThread):
                             msg = (
                                 "输出文件夹下的 Screened_images 中未找到图片。\n"
                                 f"路径：{screened_dir}\n"
-                                "请先完成连拍筛选并生成该目录，或勾选「连拍检测」。"
+                                "请先完成连拍筛选并生成该目录，或在连拍处理中勾选「加入主流程」。"
                             )
                             self.status_updated.emit(f"⚠ {msg}")
                             self.error_occurred.emit(msg)
@@ -694,8 +733,6 @@ class WorkerThread(QThread):
                     
                     total_crops = 0
                     archive_counter = {"n": 0}
-                    # 收集物种识别结果
-                    species_results = []
                     n_spec = len(image_files)
                     self.eta_checkpoint.emit({"kind": "species_begin", "n": n_spec})
                     def _cfg_geo_str(v):
@@ -720,63 +757,19 @@ class WorkerThread(QThread):
                                 manual_city=manual_city,
                             )
                             
-                            crop_paths = []
                             if detection_results.get('birds'):
                                 province = detection_results.get("province")
                                 city = detection_results.get("city")
-                                if do_crop:
-                                    saved_paths = detector.crop_species(
-                                        image=detector.load_image(image_file),
-                                        birds=detection_results['birds'],
-                                        output_dir=output_root,
-                                        source_path=image_file,
-                                        province=province,
-                                        city=city,
-                                        counter=archive_counter,
-                                    )
-                                    crop_paths = saved_paths
-                                    total_crops += len(saved_paths)
-                                elif do_species:
-                                    saved_paths = (
-                                        detector.copy_original_by_top_species(
-                                            source_path=image_file,
-                                            birds=detection_results['birds'],
-                                            output_dir=output_root,
-                                            province=province,
-                                            city=city,
-                                            counter=archive_counter,
-                                        )
-                                    )
-                                    crop_paths = saved_paths
-                                    total_crops += len(saved_paths)
-                            
-                            # 收集物种识别结果（含未知种类）
-                            if detection_results.get('birds'):
-                                for bird in detection_results['birds']:
-                                    sp_list = bird.get('species') or []
-                                    if not sp_list:
-                                        sp_list = [
-                                            {
-                                                "chinese_name": "未知种类",
-                                                "english_name": "",
-                                                "scientific_name": "",
-                                                "confidence": 0.0,
-                                            }
-                                        ]
-                                    species_results.append({
-                                        'image': os.path.basename(image_file),
-                                        'species': sp_list,
-                                        'method': bird.get('species_method', '未知'),
-                                        'crop_paths': crop_paths,
-                                    })
-                            else:
-                                # 即使没有检测到鸟，也添加到结果中，确保所有图片都出现在报告中
-                                species_results.append({
-                                    'image': os.path.basename(image_file),
-                                    'species': [],
-                                    'method': '未检测到鸟',
-                                    'crop_paths': []
-                                })
+                                saved_paths = detector.crop_species(
+                                    image=detector.load_image(image_file),
+                                    birds=detection_results['birds'],
+                                    output_dir=output_root,
+                                    source_path=image_file,
+                                    province=province,
+                                    city=city,
+                                    counter=archive_counter,
+                                )
+                                total_crops += len(saved_paths)
                         except Exception as e:
                             self.status_updated.emit(f"⚠ {os.path.basename(image_file)}: {str(e)}")
                         self.eta_checkpoint.emit(
@@ -791,7 +784,7 @@ class WorkerThread(QThread):
                     
                     processing_time = time.time() - start_time
                     self.status_updated.emit(
-                        f"✓ 已输出 {total_crops} 个文件（裁剪或原图归档），耗时 {processing_time:.2f} 秒"
+                        f"✓ 已输出 {total_crops} 个裁剪归档文件，耗时 {processing_time:.2f} 秒"
                     )
                     results_dict = {
                         'total_crops': total_crops,
@@ -799,101 +792,6 @@ class WorkerThread(QThread):
                         'processing_time': processing_time
                     }
                     results['crop_result'] = results_dict
-                    
-                    # 生成物种识别报告
-                    if config.get('generate_species_report', True):
-                        try:
-                            reports_dir = _reports_dir_from_config(config)
-                            os.makedirs(reports_dir, exist_ok=True)
-                            
-                            # 生成带时间戳的中文报告名称
-                            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                            species_report_path = os.path.join(reports_dir, f'物种识别报告_{timestamp}.html')
-                            
-                            # 生成HTML报告
-                            if species_results:
-                                html_content = f'''
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>物种识别报告</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        h1 {{ color: #333; }}
-        .result {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; }}
-        .image {{ font-weight: bold; }}
-        .species {{ margin-left: 20px; }}
-        .method {{ font-style: italic; color: #666; }}
-        .crop-images {{ margin-left: 20px; margin-top: 10px; }}
-        .crop-image {{ margin: 5px; display: inline-block; }}
-        .crop-image img {{ max-width: 200px; max-height: 200px; }}
-    </style>
-</head>
-<body>
-    <h1>物种识别报告</h1>
-    <p>生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-    <p>处理图片数量: {len(image_files)}</p>
-    <p>检测到鸟体数量: {total_crops}</p>
-    
-    <h2>识别结果</h2>
-'''
-                            
-                            for item in species_results:
-                                html_content += f'''
-    <div class="result">
-        <div class="image">图片: {item['image']}</div>
-        <div class="method">识别方法: {item['method']}</div>
-'''
-                                for species in item['species']:
-                                    # 统一物种名称到本地数据库
-                                    from detect_bird_and_eye import lookup_classification
-                                    chinese_name = species.get('chinese_name', '未知')
-                                    scientific_name = species.get('scientific_name', '')
-                                    classification = lookup_classification(chinese_name, scientific_name)
-                                    unified_chinese_name = classification.get('species_cn', chinese_name)
-                                    
-                                    html_content += f'''
-        <div class="species">
-            中文名: {unified_chinese_name}<br>
-            英文名: {species.get('english_name', '未知')}<br>
-            学名: {species.get('scientific_name', '未知')}<br>
-            置信度: {species.get('confidence', 0):.2f}
-        </div>
-'''
-                                # 添加裁剪图
-                                if item.get('crop_paths'):
-                                    html_content += '''
-        <div class="crop-images">
-            <strong>裁剪图:</strong><br>
-'''
-                                    for crop_path in item['crop_paths']:
-                                        # 计算裁剪图相对于报告目录的路径
-                                        relative_path = os.path.relpath(crop_path, reports_dir)
-                                        html_content += f'''
-            <div class="crop-image">
-                <img src="{relative_path}" alt="裁剪图">
-            </div>
-'''
-                                    html_content += '''
-        </div>
-'''
-                                html_content += '''
-    </div>
-'''
-                            
-                            html_content += '''
-</body>
-</html>
-'''
-                            
-                            with open(species_report_path, 'w', encoding='utf-8') as f:
-                                f.write(html_content)
-                            
-                            self.status_updated.emit(f"✓ 物种识别报告已生成: {os.path.basename(species_report_path)}")
-                        except Exception as e:
-                            self.error_occurred.emit(f"物种识别报告生成失败: {str(e)}")
                     
                 except Exception as e:
                     self.error_occurred.emit(f"物种检测/归档失败: {str(e)}")
@@ -1601,10 +1499,10 @@ class BirdDetectionGUI(QMainWindow):
             'use_bird_detection': True,
             'use_eye_detection': False,
             'use_fast_mode': True,
-            'generate_burst_report': True,
+            'generate_burst_report': False,
             'enable_species_detection': True,
             'enable_crop': True,
-            'generate_species_report': True,
+            'generate_species_report': False,
             # 物种识别模式配置
             'use_local_model': True,  # 默认使用本地模型
             'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
@@ -1986,7 +1884,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(geo_card)
         
         # ═════ 连拍处理（可收起；主流程勾选在标题栏）═════
-        self.enable_burst_detection_checkbox = QCheckBox("连拍检测")
+        self.enable_burst_detection_checkbox = QCheckBox("加入主流程")
         self.enable_burst_detection_checkbox.setToolTip(
             "勾选：对「图片文件夹」做连拍分组与筛选，并写入 Screened_images。\n"
             "不勾选：跳过连拍，后续从已有 Screened_images 读取。"
@@ -1997,20 +1895,12 @@ class BirdDetectionGUI(QMainWindow):
         self.enable_burst_detection_checkbox.toggled.connect(
             self._on_burst_detection_toggled
         )
-        self.generate_burst_report_checkbox = QCheckBox("连拍报告")
-        self.generate_burst_report_checkbox.setChecked(
-            self.config.get("generate_burst_report", True)
-        )
         self._style_flow_header_checkbox(self.enable_burst_detection_checkbox)
-        self._style_flow_header_checkbox(self.generate_burst_report_checkbox)
 
         process_card, process_group = self._create_collapsible_card(
             "📷 连拍处理",
             "burst",
-            header_widgets=[
-                self.enable_burst_detection_checkbox,
-                self.generate_burst_report_checkbox,
-            ],
+            header_widgets=[self.enable_burst_detection_checkbox],
         )
         process_layout = QFormLayout()
         process_layout.setSpacing(8)
@@ -2074,31 +1964,20 @@ class BirdDetectionGUI(QMainWindow):
         self._on_bird_detection_toggled(self.use_bird_detection_checkbox.isChecked())
         
         # ═════ 物种识别（可收起；主流程勾选在标题栏）═════
-        self.enable_species_checkbox = QCheckBox("物种识别")
+        self.enable_species_checkbox = QCheckBox("加入主流程")
+        self.enable_species_checkbox.setToolTip(
+            "勾选：对筛选后照片做物种识别并按鸟体裁剪归档至分类目录。\n"
+            "不勾选：跳过物种识别与裁剪归档。"
+        )
         self.enable_species_checkbox.setChecked(
             self.config.get("enable_species_detection", True)
         )
-        self.enable_crop_checkbox = QCheckBox("裁剪归档")
-        self.enable_crop_checkbox.setToolTip(
-            "关闭时：不裁剪；原图按顶一物种复制到分类归档目录。"
-        )
-        self.enable_crop_checkbox.setChecked(self.config.get("enable_crop", True))
-        self.generate_species_report_checkbox = QCheckBox("识别报告")
-        self.generate_species_report_checkbox.setChecked(
-            self.config.get("generate_species_report", True)
-        )
         self._style_flow_header_checkbox(self.enable_species_checkbox)
-        self._style_flow_header_checkbox(self.enable_crop_checkbox)
-        self._style_flow_header_checkbox(self.generate_species_report_checkbox)
 
         species_card, species_group = self._create_collapsible_card(
             "🦅 物种识别",
             "species",
-            header_widgets=[
-                self.enable_species_checkbox,
-                self.enable_crop_checkbox,
-                self.generate_species_report_checkbox,
-            ],
+            header_widgets=[self.enable_species_checkbox],
         )
         species_layout = QFormLayout()
         species_layout.setSpacing(8)
@@ -3046,6 +2925,31 @@ class BirdDetectionGUI(QMainWindow):
         self._track_map_progress = None
         QApplication.restoreOverrideCursor()
 
+    def _show_track_map_saved_dialog(self, png_path: str) -> None:
+        """轨迹图保存完成：简要提示 + 打开图片链接（详情见右侧日志）。"""
+        png_path = os.path.abspath(png_path)
+        if not os.path.isfile(png_path):
+            QMessageBox.warning(self, "提示", "未找到生成的图片文件。")
+            return
+        dlg = QDialog(self)
+        dlg.setWindowTitle("轨迹图已生成")
+        lay = QVBoxLayout(dlg)
+        lay.addWidget(QLabel(f"已保存：{os.path.basename(png_path)}"))
+        path_label = QLabel(png_path)
+        path_label.setWordWrap(True)
+        path_label.setStyleSheet("color: #666;")
+        lay.addWidget(path_label)
+        link = QLabel('<a href="#open">打开图片</a>')
+        link.setTextFormat(Qt.RichText)
+        link.setOpenExternalLinks(False)
+        link.linkActivated.connect(lambda _href: _open_local_file(png_path))
+        link.setCursor(Qt.PointingHandCursor)
+        lay.addWidget(link)
+        btns = QDialogButtonBox(QDialogButtonBox.Ok)
+        btns.accepted.connect(dlg.accept)
+        lay.addWidget(btns)
+        dlg.exec_()
+
     def _on_track_map_finished(self, written: Dict[str, str], preview: bool) -> None:
         main_png = written.get("track_png", "")
         lines = [f"已保存至 reports 目录:", main_png]
@@ -3085,8 +2989,8 @@ class BirdDetectionGUI(QMainWindow):
                 main_png,
                 window_title="观鸟地图预览",
             )
-        else:
-            QMessageBox.information(self, "完成", "\n".join(lines))
+        elif main_png:
+            self._show_track_map_saved_dialog(main_png)
 
     def _run_track_map_generation(self, preview: bool = False) -> None:
         if self._track_map_busy():
@@ -4271,7 +4175,6 @@ class BirdDetectionGUI(QMainWindow):
             en and self.use_bird_detection_checkbox.isChecked()
         )
         self.use_fast_mode_checkbox.setEnabled(en)
-        self.generate_burst_report_checkbox.setEnabled(en)
 
     def _on_bird_detection_toggled(self, checked: bool):
         """鸟眼检测依赖鸟体检测。"""
@@ -4295,19 +4198,31 @@ class BirdDetectionGUI(QMainWindow):
             self._save_config()
             return
         burst_on = self.config["enable_burst_detection"]
-        need_species_or_crop = (
-            self.config["enable_species_detection"] or self.config["enable_crop"]
-        )
+        need_species = self.config["enable_species_detection"]
+        need_track = self.config.get("enable_track_map_auto", False)
+        need_export = self.config.get("enable_record_export_auto", False)
+        class_dir = (self.config.get("crop_output_folder") or "").strip()
 
-        if not burst_on and need_species_or_crop:
+        if (need_track or need_export) and class_dir and not os.path.isdir(class_dir):
+            QMessageBox.warning(
+                self,
+                "提示",
+                "轨迹图 / 观鸟记录导出需要有效的「分类归档」目录。\n\n"
+                f"当前路径不存在：\n{class_dir}\n\n"
+                "请先完成物种识别归档，或在本工具卡片中指定已有归档目录。",
+            )
+            self._save_config()
+            return
+
+        if not burst_on and need_species:
             if self._count_images_in_screened(output_folder) < 1:
                 QMessageBox.warning(
                     self,
                     "提示",
-                    "未勾选「连拍检测」时，物种识别与裁剪将只处理输出文件夹下的 "
+                    "连拍处理未加入主流程时，物种识别将只处理输出文件夹下的 "
                     "Screened_images 中的已筛选照片。\n\n"
                     "当前该目录下没有图片，请先运行一次连拍流程生成筛选结果，"
-                    "或勾选「连拍检测」。",
+                    "或在连拍处理中勾选「加入主流程」。",
                 )
                 self._save_config()
                 return
@@ -4323,7 +4238,7 @@ class BirdDetectionGUI(QMainWindow):
             return
 
         n_eta = _count_images_for_eta(self.config.get("image_folder", ""))
-        if not burst_on and need_species_or_crop:
+        if not burst_on and need_species:
             n_eta = max(
                 n_eta,
                 self._count_images_in_screened(output_folder),
@@ -4440,37 +4355,23 @@ class BirdDetectionGUI(QMainWindow):
     
     def processing_finished(self, results: Dict):
         """处理完成"""
-        self.add_log("\n" + "="*60)
+        self.add_log("\n" + "=" * 60)
         self.add_log("✓ 处理完成！")
-        self.add_log("="*60)
-        
-        # 显示统计信息
+        self.add_log("=" * 60)
+
         self.stats_table.setRowCount(0)
-        stats = [
-            ("总处理图片", results.get('total_images', 'N/A')),
-            ("保留图片", results.get('kept_images', 'N/A')),
-            ("丢弃图片", results.get('discarded_images', 'N/A')),
-            ("GPS已写入", results.get('gps_written', 0)),
-        ]
-        
-        if 'crop_result' in results:
-            crop_result = results['crop_result']
-            stats.append(("检测到的鸟体", crop_result.get('total_crops', 'N/A')))
-            stats.append(("处理耗时", f"{crop_result.get('processing_time', 0):.2f}秒"))
-        if 'watermark_result' in results:
-            wm = results['watermark_result']
-            stats.append(("水印图片总数", wm.get('total', 'N/A')))
-            stats.append(("水印成功", wm.get('ok', 'N/A')))
-            stats.append(("水印失败", wm.get('fail', 'N/A')))
-        
-        for i, (key, value) in enumerate(stats):
+        for i, (key, value) in enumerate(
+            _build_processing_stats(results, self.config)
+        ):
             self.stats_table.insertRow(i)
             self.stats_table.setItem(i, 0, QTableWidgetItem(str(key)))
             self.stats_table.setItem(i, 1, QTableWidgetItem(str(value)))
-        
-        # 输出文件夹信息
-        self.add_log(f"\n📁 输出文件夹: {self.config['output_folder']}")
-        self.add_log(f"📁 分类归档: {self.config['crop_output_folder']}")
+
+        path_lines = _build_output_path_logs(results, self.config)
+        if path_lines:
+            self.add_log("")
+            for line in path_lines:
+                self.add_log(line)
         
         # 恢复UI状态
         self._process_time_timer.stop()
@@ -4487,7 +4388,24 @@ class BirdDetectionGUI(QMainWindow):
             self._save_config()
         except Exception as e:
             print(f"完成后保存配置失败: {e}")
-        QMessageBox.information(self, "处理完成", "图片处理已完成！\n请检查输出文件夹中的结果。")
+        done_parts: List[str] = []
+        flags = results.get("_flow_flags") or _flow_enabled_flags(self.config)
+        if "total_images" in results:
+            done_parts.append("连拍筛选")
+        if "crop_result" in results:
+            done_parts.append("物种归档")
+        if "track_map" in results:
+            done_parts.append("轨迹图")
+        if "record_export" in results:
+            done_parts.append("观鸟记录导出")
+        if "watermark_result" in results:
+            done_parts.append("水印")
+        summary = "、".join(done_parts) if done_parts else "主流程"
+        QMessageBox.information(
+            self,
+            "处理完成",
+            f"{summary} 已完成。\n请查看右侧日志与输出路径。",
+        )
     
     def add_log(self, message: str):
         """添加日志信息"""
@@ -4548,16 +4466,10 @@ class BirdDetectionGUI(QMainWindow):
             and self.config["use_bird_detection"]
         )
         self.config["use_fast_mode"] = self.use_fast_mode_checkbox.isChecked()
-        self.config["generate_burst_report"] = (
-            self.generate_burst_report_checkbox.isChecked()
-        )
         self.config["enable_species_detection"] = (
             self.enable_species_checkbox.isChecked()
         )
-        self.config["enable_crop"] = self.enable_crop_checkbox.isChecked()
-        self.config["generate_species_report"] = (
-            self.generate_species_report_checkbox.isChecked()
-        )
+        _apply_gui_flow_policy(self.config)
         self.config["enable_watermark_generation"] = (
             self.enable_watermark_checkbox.isChecked()
         )
@@ -4699,12 +4611,14 @@ class BirdDetectionGUI(QMainWindow):
                         )
                     if "output_root_folder" not in saved_config:
                         self.config["output_root_folder"] = ""
+                    _apply_gui_flow_policy(self.config)
                     self._update_ui_from_config()
             except Exception as e:
                 print(f"加载配置失败: {e}")
     
     def _update_ui_from_config(self):
         """从配置更新UI"""
+        _apply_gui_flow_policy(self.config)
         self.image_folder_input.setText(self.config.get('image_folder', ''))
         self.output_root_input.setText(self.config.get("output_root_folder", ""))
         self.output_folder_input.setText(self.config.get('output_folder', ''))
@@ -4729,16 +4643,9 @@ class BirdDetectionGUI(QMainWindow):
         self.use_bird_detection_checkbox.setChecked(self.config.get('use_bird_detection', True))
         self.use_eye_detection_checkbox.setChecked(self.config.get('use_eye_detection', False))
         self.use_fast_mode_checkbox.setChecked(self.config.get('use_fast_mode', True))
-        self.generate_burst_report_checkbox.setChecked(
-            self.config.get("generate_burst_report", True)
-        )
         self._on_bird_detection_toggled(self.use_bird_detection_checkbox.isChecked())
         self.enable_species_checkbox.setChecked(
             self.config.get('enable_species_detection', True)
-        )
-        self.enable_crop_checkbox.setChecked(self.config.get('enable_crop', True))
-        self.generate_species_report_checkbox.setChecked(
-            self.config.get("generate_species_report", True)
         )
         self.enable_watermark_checkbox.setChecked(
             self.config.get('enable_watermark_generation', False)
