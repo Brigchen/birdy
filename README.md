@@ -16,11 +16,31 @@
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
 > **当前发布版本**：**2.0.7**（稳定版）  
-> **版本发布日期**：**2026-05-19**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
+> **版本发布日期**：**2026-06-02**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
 克隆仓库后若缺少 `src/doubao_api_config.json` 或 `src/amap_api_config.json`，**无需手动新建**：首次在 GUI 中点击打开对应配置、或运行 CLI/GPS 相关流程时，程序会在 `src/` 下**自动生成**带完整字段、`api_key` 为空的 JSON 模板（逻辑见 `src/api_config_defaults.py`）。
+
+### 首次使用清单（克隆后）
+
+| 步骤 | 操作 | 说明 |
+| ---- | ---- | ---- |
+| 1 | `pip install -r requirements.txt` | 见下文「快速开始」 |
+| 2 | `git lfs pull` | 拉取 `models/bird-seg.pt`、`bird_iden_res34.pth`（约 200 MB） |
+| 3 | 填写 API Key（按需） | 见下表；**连拍 + 本地物种识别**可不配置任何 Key |
+| 4 | 选择图片文件夹并开始处理 | GPX 为**可选**（仅 GPS 按轨迹写入 / 轨迹图时需要自备） |
+
+| 功能 | 是否需要 Key | 配置文件 |
+| ---- | ------------ | -------- |
+| 连拍筛选 + 鸟体检测 + ResNet34 物种识别 | 否 | — |
+| 指定地点统一写入 GPS（默认上海坐标） | 否 | — |
+| 地名 → 坐标、水印地点文案 | **高德**（推荐） | `src/amap_api_config.json` |
+| 轨迹图 PNG 高德底图 | **高德** | 同上 |
+| 豆包云端物种识别 | **火山方舟** | `src/doubao_api_config.json` |
+| 观鸟记录导出（eBird / 观鸟记录中心） | 否 | 使用分类归档目录，无需 GPX |
+
+独立工具 **`tools/BIRDY-观鸟地图/`** 使用经纬度网格底图，**无需高德 Key**；用户自备 GPX 与鸟图目录即可。
 
 ---
 
@@ -179,7 +199,7 @@ birdy-skill/
 ├── requirements.txt
 ├── version-info.json             # 版本与变更摘要
 ├── start_gui.bat / start_gui.sh
-├── models/                    # 模型文件目录（见上文模型规格表）
+├── models/                    # 模型文件（bird-seg / res34 经 Git LFS；见 models/README.md）
 ├── data/                      # 地理与物种数据（含 bird_species_list.csv 名称对照表）
 ├── resources/                 # logo 等静态资源
 ├── tools/                     # 衍生独立工具（如 BIRDY-观鸟地图）
@@ -226,4 +246,4 @@ birdy-skill/
 
 ---
 
-*README 随功能迭代更新。当前文档对应 **2.0.7**，发布日期 **2026-05-19**；之后请以根目录 `**version-info.json**` 中的 `version` 与 `release_date` 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.7**，发布日期 **2026-06-02**；之后请以根目录 `**version-info.json**` 中的 `version` 与 `release_date` 为准。*

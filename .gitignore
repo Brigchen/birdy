@@ -86,6 +86,7 @@ Screened_images/
 **/Screened_images/
 reports/
 data/*.gpx
+data/gpx/*.gpx
 
 # --- Jupyter ---
 .ipynb_checkpoints/

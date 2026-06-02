@@ -523,11 +523,26 @@ def generate_javascript_code(all_path_coords, distances, elevations, stats):
 
 
 if __name__ == '__main__':
-    project_root = Path(__file__).parent.parent
-    gpx_file = project_root / 'data' / '20260516户外步行_合并.gpx'
-    output_file = project_root / 'data' / '20260516户外步行轨迹报告.html'
-    
-    if gpx_file.exists():
-        generate_html_report(gpx_file, output_file, "2026年5月16日户外步行")
+    import argparse
+
+    ap = argparse.ArgumentParser(description="从 GPX 生成 HTML 轨迹报告")
+    ap.add_argument("gpx", type=Path, help="GPX 文件路径")
+    ap.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=None,
+        help="输出 HTML 路径（默认与 GPX 同目录同名 .html）",
+    )
+    ap.add_argument("--title", default="", help="报告标题")
+    args = ap.parse_args()
+    gpx_file = args.gpx.expanduser().resolve()
+    if not gpx_file.is_file():
+        raise SystemExit(f"GPX 文件不存在: {gpx_file}")
+    output_file = args.output
+    if output_file is None:
+        output_file = gpx_file.with_suffix(".html")
     else:
-        print(f"GPX 文件不存在: {gpx_file}")
+        output_file = output_file.expanduser().resolve()
+    generate_html_report(gpx_file, output_file, args.title or gpx_file.stem)
+    print(f"已生成: {output_file}")
