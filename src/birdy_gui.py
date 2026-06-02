@@ -28,7 +28,7 @@ try:
         QGroupBox, QFormLayout, QMessageBox, QTableWidget, QTableWidgetItem,
         QDialog, QDialogButtonBox, QRadioButton, QButtonGroup, QScrollArea, QFrame,
         QCompleter,
-        QSizePolicy, QSlider, QShortcut, QProgressDialog,
+        QSizePolicy, QSlider, QShortcut, QProgressDialog, QListWidget,
     )
     from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
     from PyQt5.QtGui import QColor, QTextCursor, QIcon, QPalette, QDesktopServices, QKeySequence
@@ -64,7 +64,9 @@ from gpx_track import (
     generate_track_maps,
     show_track_map_preview,
     merge_gpx_files,
+    resolve_gpx_path_list,
 )
+from gpx_track.track_map import iter_skipped_photo_log_lines
 from gpx_track.timezone_util import (
     DEFAULT_EXIF_TZ,
     DEFAULT_GPX_TZ,
@@ -160,15 +162,22 @@ def _record_export_dirs_from_config(config: Dict) -> Tuple[str, str]:
     return classification, out
 
 
+def _config_gpx_paths(config: Dict) -> List[str]:
+    return resolve_gpx_path_list(
+        config.get("gpx_file_path"),
+        config.get("gpx_file_paths"),
+    )
+
+
 def _record_export_kwargs(config: Dict) -> Dict:
-    """观鸟记录导出：批次去重与 GPX/空间聚类参数。"""
-    gpx_path = (config.get("gpx_file_path") or "").strip()
+    """观鸟记录导出：批次去重、GPX 空间聚类与 GPX 里程参数。"""
+    gpx_paths = _config_gpx_paths(config)
     prefer = config.get("record_export_prefer_spatial_gps")
     if prefer is None:
-        prefer = config.get("gps_write_mode") == "gpx" and bool(gpx_path)
+        prefer = config.get("gps_write_mode") == "gpx" and bool(gpx_paths)
     else:
         prefer = bool(prefer)
-    return {
+    out: Dict = {
         "count_individuals": bool(
             config.get("record_export_count_individuals", True)
         ),
@@ -180,6 +189,23 @@ def _record_export_kwargs(config: Dict) -> Dict:
             config.get("record_export_time_minutes", 30) or 30
         ),
     }
+    out["location_name"] = (config.get("location_name") or "").strip()
+    out["province_cn"] = (config.get("province") or "").strip()
+    out["city_cn"] = (config.get("city") or "").strip()
+    if gpx_paths:
+        out["gpx_file_path"] = gpx_paths[0]
+        out["gpx_file_paths"] = gpx_paths
+        out["gpx_exif_tz"] = normalize_tz_name(
+            config.get("gpx_match_exif_tz")
+            or config.get("track_map_exif_tz")
+            or DEFAULT_EXIF_TZ
+        )
+        out["gpx_track_tz"] = normalize_tz_name(
+            config.get("gpx_match_gpx_tz")
+            or config.get("track_map_gpx_tz")
+            or DEFAULT_GPX_TZ
+        )
+    return out
 
 
 def _collect_image_paths_under(root: str) -> List[str]:
@@ -239,14 +265,14 @@ def _main_flow_write_gps(config: Dict, screened_dir: str) -> Tuple[int, str]:
     """
     mode = config.get("gps_write_mode", "fixed")
     if mode == "gpx":
-        gpx = (config.get("gpx_file_path") or "").strip()
-        if not gpx or not os.path.isfile(gpx):
+        gpx_paths = _config_gpx_paths(config)
+        if not gpx_paths:
             raise FileNotFoundError(
                 "主流程已选「GPX 按拍摄时间」，但未配置有效 GPX 文件。"
             )
         stats = batch_write_gps_from_gpx(
             screened_dir,
-            gpx,
+            gpx_paths=gpx_paths,
             exif_tz=normalize_tz_name(config.get("gpx_match_exif_tz", DEFAULT_EXIF_TZ)),
             gpx_tz=normalize_tz_name(config.get("gpx_match_gpx_tz", DEFAULT_GPX_TZ)),
         )
@@ -901,8 +927,8 @@ class WorkerThread(QThread):
                                 or "CN"
                             ),
                             ebird_state=str(
-                                config.get("record_export_ebird_state", "CN-FJ")
-                                or "CN-FJ"
+                                config.get("record_export_ebird_state", "FJ")
+                                or "FJ"
                             ),
                             **_record_export_kwargs(config),
                         )
@@ -939,10 +965,10 @@ class WorkerThread(QThread):
                         photo_folder = os.path.join(
                             config.get("output_folder", ""), "Screened_images"
                         )
-                    gpx = (config.get("gpx_file_path") or "").strip()
+                    gpx_paths = _config_gpx_paths(config)
                     written = generate_track_maps(
                         reports_dir=reports_dir,
-                        gpx_path=gpx or None,
+                        gpx_paths=gpx_paths or None,
                         photo_folder=photo_folder,
                         use_gpx_track=bool(config.get("track_map_use_gpx", True)),
                         use_exif_gps=bool(config.get("track_map_use_exif", True)),
@@ -960,6 +986,13 @@ class WorkerThread(QThread):
                         gpx_tz=normalize_tz_name(
                             config.get("gpx_match_gpx_tz")
                             or config.get("track_map_gpx_tz", DEFAULT_GPX_TZ)
+                        ),
+                        location_name=(config.get("location_name") or "").strip(),
+                        province=str(config.get("province") or ""),
+                        city=str(config.get("city") or ""),
+                        logo_path=str(config.get("wm_logo_path", "") or ""),
+                        logo_width_ratio=float(
+                            config.get("wm_logo_width_ratio", 0.30)
                         ),
                         preview_only=False,
                     )
@@ -1218,6 +1251,7 @@ class BirdDetectionGUI(QMainWindow):
         self._wm_batch_thread: Optional[WatermarkBatchThread] = None
         self._track_map_thread: Optional[TrackMapThread] = None
         self._track_map_progress: Optional[QProgressDialog] = None
+        self._track_map_preview_dialog = None
         self.config: Dict = self._get_default_config()
         self._process_start_monotonic: Optional[float] = None
         self._process_time_timer = QTimer(self)
@@ -1247,14 +1281,14 @@ class BirdDetectionGUI(QMainWindow):
             if info.exists():
                 with open(info, "r", encoding="utf-8") as f:
                     d = json.load(f)
-                v = str(d.get("version", "2.0.6"))
+                v = str(d.get("version", "2.0.7"))
                 rd = str(d.get("release_date", "") or "").strip()
                 if rd:
                     return f"{v}（{rd}）"
                 return v
         except Exception:
             pass
-        return "2.0.6"
+        return "2.0.7"
 
     @staticmethod
     def _primary_screen_dpr() -> float:
@@ -1602,7 +1636,7 @@ class BirdDetectionGUI(QMainWindow):
             'record_export_ebird': True,
             'record_export_birdreport': True,
             'record_export_ebird_country': 'CN',
-            'record_export_ebird_state': 'CN-FJ',
+            'record_export_ebird_state': 'FJ',
             'record_export_count_individuals': True,
             'record_export_spatial_km': 0.1,
             'record_export_time_minutes': 30.0,
@@ -1614,6 +1648,7 @@ class BirdDetectionGUI(QMainWindow):
             'ui_section_expanded_export': True,
             # GPX / 轨迹图
             'gpx_file_path': '',
+            'gpx_file_paths': [],
             'gpx_apply_to_screened': True,
             'enable_track_map_auto': False,
             'track_map_use_gpx': True,
@@ -1787,7 +1822,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(folder_card)
         
         # ═════ 地理位置（可收起；主流程勾选在标题栏）═════
-        self.gps_write_checkbox = QCheckBox("主流程写入GPS")
+        self.gps_write_checkbox = QCheckBox("加入主流程")
         self.gps_write_checkbox.setChecked(self.config["enable_gps_write"])
         self.gps_write_checkbox.setToolTip(
             "勾选后，连拍筛选完成时按下方「写入方式」自动写入 Screened_images：\n"
@@ -1806,7 +1841,7 @@ class BirdDetectionGUI(QMainWindow):
         geo_layout.setContentsMargins(12, 10, 12, 12)
 
         geo_gps_hint = QLabel(
-            "GPS 写入二选一（勾选「主流程写入GPS」后自动执行）："
+            "GPS 写入二选一（勾选「加入主流程」后自动执行）："
             "指定地点统一经纬度，或 GPX 按拍摄时间匹配。"
             "下方「按 GPX 时间批量写入」可随时单独对任意文件夹执行。"
         )
@@ -1889,18 +1924,25 @@ class BirdDetectionGUI(QMainWindow):
         gpx_form.setSpacing(8)
 
         gpx_row = QHBoxLayout()
-        self.gpx_file_input = QLineEdit()
-        self.gpx_file_input.setText(self.config.get("gpx_file_path", ""))
-        self.gpx_file_input.setPlaceholderText("选择 .gpx 轨迹文件（手表/手机导出）")
-        gpx_browse = QPushButton("浏览 GPX...")
-        gpx_browse.clicked.connect(self._select_gpx_file)
-        gpx_merge_btn = QPushButton("合并 GPX...")
-        gpx_merge_btn.setToolTip("选择多个 GPX 合并为一个文件")
+        self.gpx_list = QListWidget()
+        self.gpx_list.setMaximumHeight(84)
+        self.gpx_list.setToolTip(
+            "可添加多个 GPX（分段记录），生成地图与 GPS 匹配时按时间合并"
+        )
+        gpx_add_btn = QPushButton("添加 GPX...")
+        gpx_add_btn.clicked.connect(self._add_gpx_files)
+        gpx_remove_btn = QPushButton("移除")
+        gpx_remove_btn.clicked.connect(self._remove_selected_gpx)
+        gpx_merge_btn = QPushButton("合并为文件...")
+        gpx_merge_btn.setToolTip("将列表中的 GPX 合并保存为一个文件")
         gpx_merge_btn.clicked.connect(self._merge_gpx_files_dialog)
-        gpx_row.addWidget(self.gpx_file_input, 1)
-        gpx_row.addWidget(gpx_browse)
-        gpx_row.addWidget(gpx_merge_btn)
-        gpx_form.addRow("GPX 轨迹:", gpx_row)
+        gpx_btn_row = QHBoxLayout()
+        gpx_btn_row.addWidget(gpx_add_btn)
+        gpx_btn_row.addWidget(gpx_remove_btn)
+        gpx_btn_row.addWidget(gpx_merge_btn)
+        gpx_btn_row.addStretch(1)
+        gpx_form.addRow("GPX 轨迹:", self.gpx_list)
+        gpx_form.addRow("", gpx_btn_row)
 
         self.gpx_match_exif_tz_combo = self._create_timezone_combo(
             self._config_gpx_match_exif_tz()
@@ -2169,7 +2211,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(species_card)
 
         # ═════ 水印生成（可收起；主流程勾选在标题栏）═════
-        self.enable_watermark_checkbox = QCheckBox("主流程水印")
+        self.enable_watermark_checkbox = QCheckBox("加入主流程")
         self.enable_watermark_checkbox.setChecked(
             self.config.get("enable_watermark_generation", False)
         )
@@ -2308,7 +2350,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(wm_card)
 
         # ═════ 轨迹图生成（可收起，默认收起；主流程勾选在标题栏）═════
-        self.enable_track_map_auto_checkbox = QCheckBox("主流程轨迹图")
+        self.enable_track_map_auto_checkbox = QCheckBox("加入主流程")
         self.enable_track_map_auto_checkbox.setChecked(
             self.config.get("enable_track_map_auto", False)
         )
@@ -2328,11 +2370,7 @@ class BirdDetectionGUI(QMainWindow):
         track_layout.setSpacing(8)
         track_layout.setContentsMargins(12, 10, 12, 12)
 
-        track_hint = QLabel(
-            "生成观鸟行迹与物种分布图（PNG，便于分享）。鸟图来源默认「分类归档」；"
-            "同物种在设定半径内只显示一张，上方标注物种名。预览标注前 20 张鸟图；"
-            "保存 PNG 为 1440×2560（2K 竖屏）像素。"
-        )
+        track_hint = QLabel("从分类归档生成行迹与物种分布 PNG（2K 竖屏，需高德 Key）。")
         track_hint.setWordWrap(True)
         track_hint.setStyleSheet("color: #555; font-size: 9pt;")
         track_layout.addRow(track_hint)
@@ -2342,13 +2380,6 @@ class BirdDetectionGUI(QMainWindow):
             self.config.get("track_map_use_gpx", True)
         )
         track_layout.addRow("", self.track_map_use_gpx_checkbox)
-
-        track_tz_hint = QLabel(
-            "使用 GPX 时，照片与轨迹的时间对齐规则见「地理位置」卡片中的 EXIF/GPX 时区设置。"
-        )
-        track_tz_hint.setWordWrap(True)
-        track_tz_hint.setStyleSheet("color: #666; font-size: 9pt;")
-        track_layout.addRow(track_tz_hint)
 
         self.track_map_use_exif_checkbox = QCheckBox("补充使用照片 EXIF 中的 GPS")
         self.track_map_use_exif_checkbox.setChecked(
@@ -2416,13 +2447,12 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(track_card)
 
         # ═════ 观鸟记录导出（可收起；主流程勾选在标题栏）═════
-        self.enable_record_export_auto_checkbox = QCheckBox("主流程导出")
+        self.enable_record_export_auto_checkbox = QCheckBox("加入主流程")
         self.enable_record_export_auto_checkbox.setChecked(
             self.config.get("enable_record_export_auto", False)
         )
         self.enable_record_export_auto_checkbox.setToolTip(
-            "勾选后，「开始处理」在物种归档后自动导出 eBird CSV / 观鸟记录中心鸟种导入 Excel。\n"
-            "与下方「单独导出观鸟记录」无关。"
+            "勾选后，主流程在物种归档后自动导出观鸟记录。"
         )
         self._style_flow_header_checkbox(self.enable_record_export_auto_checkbox)
 
@@ -2436,12 +2466,7 @@ class BirdDetectionGUI(QMainWindow):
         export_layout.setContentsMargins(12, 10, 12, 12)
 
         export_hint = QLabel(
-            "eBird：按 data/species/ebird_checklist_format_template.xls 布局导出 Checklist Format .csv。"
-            "中国观鸟记录中心：鸟种导入.xls（中文名、数量）。\n"
-            "eBird 不提供公开观测上传 API；导入时选择「Checklist Format」并上传 .csv。\n"
-            "数量：有精确 GPS/GPX 时，0.1 km 内视为同一批个体；否则 30 分钟内视为同一批；"
-            "每批只取该批只数最多的一张再累加。可关闭「按批次累计只数」则每物种计 1。\n"
-            "导出后请自行核对数量与地点再上传。"
+            "从分类归档导出 eBird Checklist .csv 与中国观鸟记录中心鸟种导入 .xls。"
         )
         export_hint.setWordWrap(True)
         export_hint.setStyleSheet("color: #555555; font-size: 9pt;")
@@ -2502,10 +2527,14 @@ class BirdDetectionGUI(QMainWindow):
 
         self.record_export_state_input = QLineEdit()
         self.record_export_state_input.setText(
-            self.config.get("record_export_ebird_state", "CN-FJ")
+            self.config.get("record_export_ebird_state", "FJ")
         )
-        self.record_export_state_input.setMaxLength(16)
-        export_layout.addRow("eBird 省/州代码:", self.record_export_state_input)
+        self.record_export_state_input.setMaxLength(3)
+        self.record_export_state_input.setPlaceholderText("1–3 字符，如 FJ")
+        self.record_export_state_input.setToolTip(
+            "eBird 省/州代码（不含国家前缀），如福建为 FJ；填 CN-FJ 导出时会自动转为 FJ。"
+        )
+        export_layout.addRow("eBird 省/州:", self.record_export_state_input)
 
         self.record_export_count_individuals_checkbox = QCheckBox(
             "按批次累计只数"
@@ -2521,27 +2550,19 @@ class BirdDetectionGUI(QMainWindow):
         export_layout.addRow("数量统计:", self.record_export_count_individuals_checkbox)
 
         portal_row = QHBoxLayout()
-        self.record_export_ebird_portal_btn = QPushButton("打开 eBird 导入页")
-        self.record_export_ebird_portal_btn.setToolTip(EBIRD_IMPORT_URL)
-        self.record_export_ebird_portal_btn.clicked.connect(
-            lambda: self._open_record_portal_url(EBIRD_IMPORT_URL)
+        portal_row.addWidget(
+            self._make_external_link("ebird上传网页", EBIRD_IMPORT_URL)
         )
-        self.record_export_china_portal_btn = QPushButton("打开中国观鸟记录中心")
-        self.record_export_china_portal_btn.setToolTip(CHINA_BIRD_RECORD_HOME_URL)
-        self.record_export_china_portal_btn.clicked.connect(
-            lambda: self._open_record_portal_url(CHINA_BIRD_RECORD_HOME_URL)
+        portal_row.addSpacing(16)
+        portal_row.addWidget(
+            self._make_external_link("中国观鸟记录中心", CHINA_BIRD_RECORD_HOME_URL)
         )
-        portal_row.addWidget(self.record_export_ebird_portal_btn)
-        portal_row.addWidget(self.record_export_china_portal_btn)
         portal_row.addStretch(1)
-        export_layout.addRow("上传入口:", portal_row)
+        export_layout.addRow("", portal_row)
 
         export_btn_row = QHBoxLayout()
-        self.record_export_btn = QPushButton("单独导出观鸟记录")
-        self.record_export_btn.setToolTip(
-            "仅执行观鸟记录导出，不运行连拍/物种等主流程；"
-            "与上方「主流程自动导出」无关。"
-        )
+        self.record_export_btn = QPushButton("导出观鸟记录")
+        self.record_export_btn.setToolTip("仅导出观鸟记录，不运行主流程。")
         self.record_export_btn.clicked.connect(self._run_record_export)
         export_btn_row.addWidget(self.record_export_btn)
         export_btn_row.addStretch(1)
@@ -2851,7 +2872,7 @@ class BirdDetectionGUI(QMainWindow):
                 write_ebird_csv=self.record_export_ebird_checkbox.isChecked(),
                 write_china_bird_record_xls=self.record_export_birdreport_checkbox.isChecked(),
                 ebird_country=self.record_export_country_input.text().strip() or "CN",
-                ebird_state=self.record_export_state_input.text().strip() or "CN-FJ",
+                ebird_state=self.record_export_state_input.text().strip() or "FJ",
                 **_record_export_kwargs(self.config),
             )
         except Exception as e:
@@ -2868,19 +2889,62 @@ class BirdDetectionGUI(QMainWindow):
         self.add_log("观鸟记录已导出:\n" + "\n".join(lines))
         QMessageBox.information(self, "导出完成", "\n".join(lines))
 
-    def _select_gpx_file(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(
-            self, "选择 GPX 轨迹文件", "", "GPX files (*.gpx);;All files (*)"
-        )
-        if path:
-            self.gpx_file_input.setText(path)
-            self.config["gpx_file_path"] = path
+    def _gpx_paths_from_ui(self) -> List[str]:
+        paths: List[str] = []
+        for i in range(self.gpx_list.count()):
+            p = self.gpx_list.item(i).text().strip()
+            if p and p not in paths:
+                paths.append(p)
+        return resolve_gpx_path_list(gpx_paths=paths)
 
-    def _merge_gpx_files_dialog(self) -> None:
+    def _set_gpx_paths_to_ui(self, paths: List[str]) -> None:
+        self.gpx_list.clear()
+        for p in resolve_gpx_path_list(gpx_paths=paths):
+            self.gpx_list.addItem(p)
+
+    def _sync_gpx_paths_to_config(self) -> None:
+        paths = self._gpx_paths_from_ui()
+        self.config["gpx_file_paths"] = paths
+        self.config["gpx_file_path"] = paths[0] if paths else ""
+
+    def _add_gpx_files(self) -> None:
+        start = self.gpx_list.item(0).text() if self.gpx_list.count() else ""
         paths, _ = QFileDialog.getOpenFileNames(
-            self, "选择要合并的 GPX 文件", "", "GPX files (*.gpx);;All files (*)"
+            self,
+            "选择 GPX 轨迹文件（可多选）",
+            start,
+            "GPX files (*.gpx);;All files (*)",
         )
         if not paths:
+            return
+        existing = {
+            self.gpx_list.item(i).text()
+            for i in range(self.gpx_list.count())
+        }
+        for p in paths:
+            if p not in existing:
+                self.gpx_list.addItem(p)
+        self._sync_gpx_paths_to_config()
+
+    def _remove_selected_gpx(self) -> None:
+        for item in self.gpx_list.selectedItems():
+            row = self.gpx_list.row(item)
+            self.gpx_list.takeItem(row)
+        self._sync_gpx_paths_to_config()
+
+    def _merge_gpx_files_dialog(self) -> None:
+        paths = self._gpx_paths_from_ui()
+        if len(paths) < 2:
+            paths, _ = QFileDialog.getOpenFileNames(
+                self,
+                "选择要合并的 GPX 文件",
+                "",
+                "GPX files (*.gpx);;All files (*)",
+            )
+        if len(paths) < 2:
+            QMessageBox.information(
+                self, "提示", "请至少选择两个 GPX 文件进行合并。"
+            )
             return
         out_path, _ = QFileDialog.getSaveFileName(
             self, "保存合并后的 GPX", "merged_track.gpx", "GPX files (*.gpx)"
@@ -2889,8 +2953,8 @@ class BirdDetectionGUI(QMainWindow):
             return
         try:
             merged = merge_gpx_files(paths, out_path)
-            self.gpx_file_input.setText(merged)
-            self.config["gpx_file_path"] = merged
+            self._set_gpx_paths_to_ui([merged])
+            self._sync_gpx_paths_to_config()
             QMessageBox.information(self, "合并完成", f"已保存:\n{merged}")
         except Exception as e:
             QMessageBox.critical(self, "合并失败", str(e))
@@ -2905,9 +2969,9 @@ class BirdDetectionGUI(QMainWindow):
         return self.image_folder_input.text().strip()
 
     def _apply_gpx_gps_to_photos(self) -> None:
-        gpx = self.gpx_file_input.text().strip()
-        if not gpx or not os.path.isfile(gpx):
-            QMessageBox.warning(self, "提示", "请先选择有效的 GPX 文件。")
+        gpx_paths = self._gpx_paths_from_ui()
+        if not gpx_paths:
+            QMessageBox.warning(self, "提示", "请先添加至少一个有效的 GPX 文件。")
             return
         folder = self._gpx_target_photo_folder()
         if not folder or not os.path.isdir(folder):
@@ -2920,7 +2984,7 @@ class BirdDetectionGUI(QMainWindow):
         try:
             stats = batch_write_gps_from_gpx(
                 folder,
-                gpx,
+                gpx_paths=gpx_paths,
                 exif_tz=self._gpx_match_exif_tz(),
                 gpx_tz=self._gpx_match_gpx_tz(),
             )
@@ -2948,7 +3012,13 @@ class BirdDetectionGUI(QMainWindow):
 
     def _track_map_busy(self) -> bool:
         th = self._track_map_thread
-        return th is not None and th.isRunning()
+        if th is None:
+            return False
+        try:
+            return th.isRunning()
+        except RuntimeError:
+            self._track_map_thread = None
+            return False
 
     def _set_track_map_busy(self, busy: bool, *, preview: bool) -> None:
         self.track_preview_btn.setEnabled(not busy)
@@ -2998,27 +3068,22 @@ class BirdDetectionGUI(QMainWindow):
         if exif_pos:
             lines.append(f"地图坐标：{exif_pos} 张使用 EXIF GPS（与 GPX 插值一致时）")
         sk = written.get("skipped_time_mismatch")
-        if sk and int(sk) > 0:
+        skipped_lines = iter_skipped_photo_log_lines(written)
+        if skipped_lines:
+            lines.extend(skipped_lines)
+        elif sk and int(sk) > 0:
             lines.append(
                 f"未绘制 {sk} 张：与 GPX 时间差超过 30 分钟或无拍摄时间"
-            )
-        trunc = written.get("markers_truncated")
-        if trunc and int(trunc) > 0:
-            lines.append(
-                f"导出标注已达上限，另有 {trunc} 个物种点未绘制（可缩小去重半径或分批导出）"
             )
         self.add_log("\n".join(lines))
         if preview and main_png and os.path.isfile(main_png):
             map_title = written.get("map_title", "")
             if map_title:
                 self.add_log(f"地图标题：{map_title}")
-            QTimer.singleShot(
-                0,
-                lambda p=main_png: show_track_map_preview(
-                    self,
-                    p,
-                    window_title="观鸟地图预览",
-                ),
+            show_track_map_preview(
+                self,
+                main_png,
+                window_title="观鸟地图预览",
             )
         else:
             QMessageBox.information(self, "完成", "\n".join(lines))
@@ -3041,18 +3106,18 @@ class BirdDetectionGUI(QMainWindow):
                 "鸟图目录无效。请完成物种归档或选择 Screened_images，并确认路径。",
             )
             return
-        gpx = self.gpx_file_input.text().strip()
+        gpx_paths = self._gpx_paths_from_ui()
         use_gpx = self.track_map_use_gpx_checkbox.isChecked()
-        if use_gpx and (not gpx or not os.path.isfile(gpx)):
+        if use_gpx and not gpx_paths:
             QMessageBox.warning(
-                self, "提示", "已勾选使用 GPX，但未选择有效 GPX 文件。"
+                self, "提示", "已勾选使用 GPX，请添加至少一个有效的 GPX 文件。"
             )
             return
 
         reports_dir = _reports_dir_from_config(self.config)
         kwargs: Dict[str, Any] = dict(
             reports_dir=reports_dir,
-            gpx_path=gpx if use_gpx else None,
+            gpx_paths=gpx_paths if use_gpx else None,
             photo_folder=photo_folder,
             use_gpx_track=use_gpx,
             use_exif_gps=self.track_map_use_exif_checkbox.isChecked(),
@@ -3062,12 +3127,14 @@ class BirdDetectionGUI(QMainWindow):
                 self.track_map_basemap_combo.currentData() or "digital"
             ),
             preview_only=preview,
-            preview_max_photos=20,
+            preview_max_photos=40,
             location_name=self.location_input.text().strip(),
             province=self.config.get("province", ""),
             city=self.config.get("city", ""),
             exif_tz=self._gpx_match_exif_tz(),
             gpx_tz=self._gpx_match_gpx_tz(),
+            logo_path=str(self.config.get("wm_logo_path", "") or ""),
+            logo_width_ratio=float(self.config.get("wm_logo_width_ratio", 0.30)),
         )
 
         label = "预览" if preview else "保存"
@@ -3131,6 +3198,7 @@ class BirdDetectionGUI(QMainWindow):
             err = self._track_map_pending_err
             self._track_map_pending_ok = None
             self._track_map_pending_err = None
+            self._track_map_thread = None
             try:
                 if ok is not None:
                     self.progress_bar.setValue(100)
@@ -3232,6 +3300,19 @@ class BirdDetectionGUI(QMainWindow):
         """GPS 写入开关状态变化"""
         self.config["enable_gps_write"] = state == Qt.Checked
     
+    def _make_external_link(self, text: str, url: str) -> QLabel:
+        """下划线链接样式，点击在系统浏览器打开。"""
+        link = QLabel(f'<a href="{url}">{text}</a>')
+        link.setOpenExternalLinks(True)
+        link.setTextFormat(Qt.RichText)
+        link.setCursor(Qt.PointingHandCursor)
+        link.setToolTip(url)
+        link.setStyleSheet(
+            "QLabel { color: #1565C0; font-size: 9pt; }"
+            "QLabel a { text-decoration: underline; }"
+        )
+        return link
+
     def _open_record_portal_url(self, url: str) -> None:
         """在系统浏览器打开观鸟记录上传/说明页面。"""
         u = (url or "").strip()
@@ -4251,12 +4332,11 @@ class BirdDetectionGUI(QMainWindow):
 
         if self.config.get("enable_gps_write"):
             if self.config.get("gps_write_mode", "fixed") == "gpx":
-                gpx = (self.config.get("gpx_file_path") or "").strip()
-                if not gpx or not os.path.isfile(gpx):
+                if not _config_gpx_paths(self.config):
                     QMessageBox.warning(
                         self,
                         "提示",
-                        "主流程 GPS 已选「GPX 按拍摄时间」，请先选择有效 GPX 文件。",
+                        "主流程 GPS 已选「GPX 按拍摄时间」，请先添加有效 GPX 文件。",
                     )
                     self._save_config()
                     return
@@ -4540,9 +4620,9 @@ class BirdDetectionGUI(QMainWindow):
             self.record_export_country_input.text().strip() or "CN"
         )
         self.config["record_export_ebird_state"] = (
-            self.record_export_state_input.text().strip() or "CN-FJ"
+            self.record_export_state_input.text().strip() or "FJ"
         )
-        self.config["gpx_file_path"] = self.gpx_file_input.text().strip()
+        self._sync_gpx_paths_to_config()
         self.config["gpx_apply_to_screened"] = (
             self.gpx_apply_screened_checkbox.isChecked()
         )
@@ -4732,7 +4812,7 @@ class BirdDetectionGUI(QMainWindow):
             self.config.get("record_export_ebird_country", "CN")
         )
         self.record_export_state_input.setText(
-            self.config.get("record_export_ebird_state", "CN-FJ")
+            self.config.get("record_export_ebird_state", "FJ")
         )
         self.record_export_count_individuals_checkbox.setChecked(
             self.config.get("record_export_count_individuals", True)
@@ -4740,7 +4820,7 @@ class BirdDetectionGUI(QMainWindow):
         self._refresh_record_export_classification_default()
         self._apply_collapsible_sections_from_config()
 
-        self.gpx_file_input.setText(self.config.get("gpx_file_path", ""))
+        self._set_gpx_paths_to_ui(_config_gpx_paths(self.config))
         self.gpx_apply_screened_checkbox.setChecked(
             self.config.get("gpx_apply_to_screened", True)
         )

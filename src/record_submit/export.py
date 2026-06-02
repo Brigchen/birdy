@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
 from .china_bird_record_xls import export_china_bird_record_workbooks
 from .birdreport_submit import submit_batch_json_via_relay
@@ -19,20 +19,26 @@ def export_from_classification(
     out_dir: str,
     *,
     write_ebird_csv: bool = True,
-    ebird_checklist_template: Optional[str] = None,
+    ebird_checklist_sample: Optional[str] = None,
     write_china_bird_record_xls: bool = True,
     china_bird_record_template: Optional[str] = None,
     species_csv: Optional[str] = None,
     ebird_country: str = "CN",
-    ebird_state: str = "CN-FJ",
+    ebird_state: str = "FJ",
     ebird_protocol: str = "Traveling",
     ebird_duration_min: int = 60,
     ebird_num_observers: int = 1,
-    locality_prefix: str = "Birdy archive",
+    location_name: str = "",
+    province_cn: str = "",
+    city_cn: str = "",
     count_individuals: bool = True,
     prefer_spatial_gps: bool = False,
     spatial_threshold_km: float = 0.1,
     time_threshold_minutes: float = 30.0,
+    gpx_file_path: Optional[str] = None,
+    gpx_file_paths: Optional[Sequence[str]] = None,
+    gpx_exif_tz: str = "Asia/Shanghai",
+    gpx_track_tz: str = "UTC",
 ) -> Dict[str, str]:
     """
     扫描 ``classification_root``，在 ``out_dir`` 写入：
@@ -49,7 +55,7 @@ def export_from_classification(
     if write_china_bird_record_xls:
         ensure_xls_dependencies()
     csv_p = Path(species_csv) if species_csv else default_species_csv_path()
-    table = load_cn_to_en_sci(csv_p)
+    table = load_cn_to_en_sci(csv_p)  # 含 species_text_aliases 异写映射
     _leaves, buckets = scan_classification_tree(
         classification_root,
         count_individuals=count_individuals,
@@ -66,13 +72,19 @@ def export_from_classification(
             buckets,
             table,
             str(ebird_dir),
-            template_path=ebird_checklist_template,
+            sample_path=ebird_checklist_sample,
             country=ebird_country,
             state_province=ebird_state,
             protocol=ebird_protocol,
             duration_min=ebird_duration_min,
             num_observers=ebird_num_observers,
-            locality_prefix=locality_prefix,
+            location_name=location_name,
+            province_cn=province_cn,
+            city_cn=city_cn,
+            gpx_file_path=gpx_file_path,
+            gpx_file_paths=gpx_file_paths,
+            gpx_exif_tz=gpx_exif_tz,
+            gpx_track_tz=gpx_track_tz,
         )
         written.update(ebird_files)
     if write_china_bird_record_xls:

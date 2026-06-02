@@ -25,7 +25,7 @@ def _load_skill_info_meta() -> Tuple[str, str]:
     """从项目根目录 version-info.json 读取版本号与发布日期。"""
     root = Path(__file__).resolve().parent.parent
     info_path = root / "version-info.json"
-    version, release_date = "2.0.6", ""
+    version, release_date = "2.0.7", ""
     try:
         if info_path.is_file():
             with open(info_path, "r", encoding="utf-8") as f:

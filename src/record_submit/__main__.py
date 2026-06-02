@@ -35,10 +35,14 @@ def main(argv: list[str] | None = None) -> int:
         help="同 --no-china-bird-record（兼容旧参数）",
     )
     p.add_argument("--ebird-country", default="CN")
-    p.add_argument("--ebird-state", default="CN-FJ")
+    p.add_argument("--ebird-state", default="FJ", help="省/州 1–3 字符，如 FJ（福建）")
     p.add_argument("--ebird-protocol", default="Traveling")
     p.add_argument("--ebird-duration-min", type=int, default=60)
-    p.add_argument("--locality-prefix", default="Birdy archive")
+    p.add_argument(
+        "--location-name",
+        default="",
+        help="观鸟地点中文地址，导出 eBird 时转为拼音 Location Name",
+    )
     p.add_argument(
         "--no-count-individuals",
         action="store_true",
@@ -81,7 +85,7 @@ def main(argv: list[str] | None = None) -> int:
         ebird_state=args.ebird_state,
         ebird_protocol=args.ebird_protocol,
         ebird_duration_min=args.ebird_duration_min,
-        locality_prefix=args.locality_prefix,
+        location_name=args.location_name,
         count_individuals=not args.no_count_individuals,
         prefer_spatial_gps=args.prefer_spatial_gps,
         spatial_threshold_km=args.spatial_km,

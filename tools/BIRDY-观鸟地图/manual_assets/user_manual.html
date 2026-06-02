@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>BIRDY-观鸟地图 使用手册</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f6f7;
+    margin: 0; padding: 0;
+    color: #333;
+    line-height: 1.7;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .section h2 {
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e8e8e8;
+    color: #2c3e50;
+  }
+  .section p {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+  }
+  .step-num {
+    display: inline-block;
+    width: 28px; height: 28px;
+    background: #3498db;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  /* 软件界面模拟图样式 */
+  .ui-mockup {
+    border: 1px solid #c0c0c0;
+    border-radius: 6px;
+    background: #f0f0f0;
+    width: 720px;
+    margin: 20px auto;
+    position: relative;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .ui-titlebar {
+    background: linear-gradient(to bottom, #fff 0%, #e8e8e8 100%);
+    border-bottom: 1px solid #c0c0c0;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ui-icon {
+    width: 20px; height: 20px;
+    background: #3498db;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .ui-body {
+    padding: 14px 16px;
+    background: #f5f5f5;
+  }
+  .ui-group {
+    border: 1px solid #b0b0b0;
+    border-radius: 5px;
+    background: #fff;
+    margin-bottom: 12px;
+    padding: 14px 16px 10px;
+    position: relative;
+  }
+  .ui-group-title {
+    position: absolute;
+    top: -9px; left: 10px;
+    background: #fff;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+  }
+  .ui-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .ui-label {
+    width: 100px;
+    text-align: right;
+    color: #444;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .ui-input {
+    flex: 1;
+    border: 1px solid #aaa;
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #333;
+    min-height: 24px;
+  }
+  .ui-btn {
+    background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333;
+  }
+  .ui-btn-primary {
+    background: linear-gradient(to bottom, #4a90d9 0%, #357abd 100%);
+    color: #fff;
+    border-color: #2a6db5;
+  }
+  .ui-list {
+    border: 1px solid #aaa;
+    background: #fff;
+    border-radius: 3px;
+    height: 60px;
+    padding: 4px;
+    font-size: 11px;
+    color: #666;
+    flex: 1;
+  }
+  .ui-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #444;
+  }
+  .ui-checkbox-box {
+    width: 14px; height: 14px;
+    border: 1px solid #777;
+    background: #fff;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .ui-log {
+    border: 1px solid #aaa;
+    background: #fff;
+    border-radius: 3px;
+    height: 80px;
+    padding: 6px 8px;
+    font-size: 11px;
+    color: #555;
+    font-family: Consolas, monospace;
+    overflow: hidden;
+  }
+  .ui-combo {
+    border: 1px solid #aaa;
+    background: #fff;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #333;
+  }
+  .ui-spin {
+    border: 1px solid #aaa;
+    background: #fff;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    width: 80px;
+  }
+
+  /* 标注样式 */
+  .annotation {
+    position: absolute;
+    background: #ff5722;
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-weight: bold;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 10;
+    cursor: help;
+  }
+  .annot-line {
+    position: absolute;
+    background: #ff5722;
+    z-index: 9;
+    transform-origin: left center;
+  }
+  .annot-text {
+    position: absolute;
+    background: rgba(255, 87, 34, 0.95);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .annot-arrow {
+    position: absolute;
+    width: 0; height: 0;
+    border-style: solid;
+    z-index: 10;
+  }
+
+  /* 截图容器 */
+  .screenshot-wrap {
+    position: relative;
+    margin: 20px auto;
+    width: 720px;
+  }
+
+  .tip-box {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #1565c0;
+  }
+  .tip-box.warn {
+    background: #fff3e0;
+    border-left-color: #ff9800;
+    color: #e65100;
+  }
+  .output-sample {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    padding: 16px;
+    text-align: center;
+    margin: 16px 0;
+  }
+  .phone-frame {
+    width: 260px;
+    height: 460px;
+    border: 10px solid #333;
+    border-radius: 24px;
+    margin: 0 auto;
+    background: #8ecae6;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #a8d5e5 0%, #8ecae6 40%, #c8e6c9 100%);
+    position: relative;
+  }
+  .map-track {
+    position: absolute;
+    top: 80px; left: 40px;
+    width: 180px; height: 240px;
+    border: 2px dashed rgba(0,0,0,0.2);
+    border-radius: 8px;
+  }
+  .track-line {
+    position: absolute;
+    width: 120px; height: 3px;
+    background: #e74c3c;
+    top: 60px; left: 30px;
+    transform: rotate(25deg);
+    border-radius: 2px;
+  }
+  .bird-point {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #e74c3c;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  .phone-title {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-size: 11px;
+    color: #333;
+    font-weight: bold;
+  }
+  .phone-ele {
+    position: absolute;
+    bottom: 20px; left: 10px; right: 10px;
+    height: 50px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .ele-line {
+    position: absolute;
+    bottom: 10px; left: 5px; right: 5px;
+    height: 30px;
+    border-bottom: 2px solid #2ecc71;
+    border-radius: 0 0 50% 50%;
+  }
+
+  .footer {
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    padding: 30px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>BIRDY-观鸟地图 使用手册</h1>
+  <div class="subtitle">根据 GPX 轨迹与鸟图生成 2K 竖屏观鸟行迹图</div>
+
+  <!-- 步骤1：启动软件 -->
+  <div class="section">
+    <h2><span class="step-num">1</span>启动软件</h2>
+    <p>进入软件文件夹，双击 <code>start.bat</code>（Windows）或 <code>start.sh</code>（Mac/Linux）即可启动。</p>
+    <div class="tip-box">首次启动前请确保已安装依赖，并配置好高德 API Key（见步骤 5）。</div>
+
+    <div class="screenshot-wrap">
+      <div class="ui-mockup">
+        <div class="ui-titlebar"><span class="ui-icon"></span> BIRDY-观鸟地图</div>
+        <div class="ui-body">
+
+          <div class="ui-group">
+            <div class="ui-group-title">输入</div>
+            <div class="ui-row">
+              <div class="ui-label">鸟图目录:</div>
+              <div class="ui-input">D:\观鸟照片\2024-05-翔安</div>
+              <div class="ui-btn">浏览…</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">GPX 文件:</div>
+              <div class="ui-list">2024-05-12_上午.gpx<br>2024-05-12_下午.gpx</div>
+            </div>
+            <div class="ui-row" style="justify-content:flex-end;gap:6px;">
+              <div class="ui-btn">添加 GPX...</div>
+              <div class="ui-btn">移除</div>
+            </div>
+            <div class="ui-row" style="padding-left:108px;">
+              <div class="ui-checkbox"><span class="ui-checkbox-box" style="background:#4a90d9;border-color:#2a6db5;"></span> 使用 GPX 轨迹匹配拍摄时间</div>
+            </div>
+            <div class="ui-row" style="padding-left:108px;">
+              <div class="ui-checkbox"><span class="ui-checkbox-box" style="background:#4a90d9;border-color:#2a6db5;"></span> 补充使用照片 EXIF 中的 GPS</div>
+            </div>
+          </div>
+
+          <div class="annotation" style="top:78px;right:60px;">①</div>
+          <div class="annot-text" style="top:68px;right:-130px;">点击浏览选择鸟图文件夹</div>
+
+          <div class="annotation" style="top:132px;right:60px;">②</div>
+          <div class="annot-text" style="top:122px;right:-145px;">点击添加 GPX 轨迹文件</div>
+
+          <div class="annotation" style="top:218px;left:46px;">③</div>
+          <div class="annot-text" style="top:208px;left:70px;">勾选以启用轨迹时间匹配</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤2：设置地理位置 -->
+  <div class="section">
+    <h2><span class="step-num">2</span>设置地理位置（用于地图标题）</h2>
+    <p>填写观鸟地点名称，点击「查询」自动解析坐标及省市信息，生成地图标题「{地点}观鸟地图」。</p>
+
+    <div class="screenshot-wrap">
+      <div class="ui-mockup">
+        <div class="ui-titlebar"><span class="ui-icon"></span> BIRDY-观鸟地图</div>
+        <div class="ui-body">
+          <div class="ui-group">
+            <div class="ui-group-title">地理位置（用于地图标题）</div>
+            <div class="ui-row">
+              <div class="ui-label">地点:</div>
+              <div class="ui-input">厦门大学翔安校区</div>
+              <div class="ui-btn ui-btn-primary">查询</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">省/市:</div>
+              <div style="font-size:12px;color:#2ecc71;font-weight:bold;">福建省 厦门市</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation" style="top:58px;right:60px;">①</div>
+        <div class="annot-text" style="top:48px;right:-100px;">输入地点名称</div>
+
+        <div class="annotation" style="top:58px;right:8px;">②</div>
+        <div class="annot-text" style="top:82px;right:-80px;">点击查询</div>
+
+        <div class="annotation" style="top:92px;left:108px;">③</div>
+        <div class="annot-text" style="top:106px;left:130px;">自动解析省/市</div>
+      </div>
+    </div>
+
+    <div class="tip-box">地点查询需要网络连接，解析结果将显示在「省/市」栏，用于地图左上角标题。</div>
+  </div>
+
+  <!-- 步骤3：配置地图选项 -->
+  <div class="section">
+    <h2><span class="step-num">3</span>配置地图选项</h2>
+    <p>根据需求调整去重半径、底图样式、海拔剖面等参数。首次使用建议先保持默认。</p>
+
+    <div class="screenshot-wrap">
+      <div class="ui-mockup">
+        <div class="ui-titlebar"><span class="ui-icon"></span> BIRDY-观鸟地图</div>
+        <div class="ui-body">
+          <div class="ui-group">
+            <div class="ui-group-title">地图选项</div>
+            <div class="ui-row">
+              <div class="ui-label">物种去重半径:</div>
+              <div class="ui-spin">1.0 km</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">底图:</div>
+              <div class="ui-combo">高德·数字地图 ▼</div>
+            </div>
+            <div class="ui-row" style="padding-left:108px;">
+              <div class="ui-checkbox"><span class="ui-checkbox-box" style="background:#4a90d9;border-color:#2a6db5;"></span> 叠加海拔剖面（内嵌于地图底部）</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">EXIF 时区:</div>
+              <div class="ui-combo">Asia/Shanghai (UTC+8) ▼</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">GPX 时区:</div>
+              <div class="ui-combo">UTC ▼</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">签名 Logo:</div>
+              <div class="ui-input">D:\logo.png</div>
+              <div class="ui-btn">浏览…</div>
+            </div>
+            <div class="ui-row">
+              <div class="ui-label">Logo 宽度比例:</div>
+              <div class="ui-spin">0.30</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation" style="top:54px;right:140px;">①</div>
+        <div class="annot-text" style="top:44px;right:-140px;">去重半径：同种鸟太近只保留一个点</div>
+
+        <div class="annotation" style="top:84px;right:140px;">②</div>
+        <div class="annot-text" style="top:100px;right:-120px;">切换数字地图或卫星影像</div>
+
+        <div class="annotation" style="top:114px;left:130px;">③</div>
+        <div class="annot-text" style="top:128px;left:150px;">勾选在底部绘制海拔曲线</div>
+
+        <div class="annotation" style="top:204px;right:140px;">④</div>
+        <div class="annot-text" style="top:218px;right:-100px;">可选：添加个人签名 Logo</div>
+      </div>
+    </div>
+
+    <div class="tip-box">如果照片拍摄时间与 GPX 时间对不上，请检查 EXIF 时区和 GPX 时区设置是否正确。</div>
+  </div>
+
+  <!-- 步骤4：配置高德 API Key -->
+  <div class="section">
+    <h2><span class="step-num">4</span>配置高德 API Key（首次使用）</h2>
+    <p>点击「打开高德配置」按钮，系统会自动打开配置文件。填入你在高德开放平台申请的 Web 服务 Key。</p>
+
+    <div class="screenshot-wrap">
+      <div class="ui-mockup">
+        <div class="ui-titlebar"><span class="ui-icon"></span> BIRDY-观鸟地图</div>
+        <div class="ui-body">
+          <div class="ui-group">
+            <div class="ui-group-title">地图选项</div>
+            <div class="ui-row"><div class="ui-label">物种去重半径:</div><div class="ui-spin">1.0 km</div></div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-start;margin-top:4px;">
+            <div class="ui-btn">预览</div>
+            <div class="ui-btn ui-btn-primary">生成并保存 PNG</div>
+            <div class="ui-btn" style="margin-left:auto;background:#fff3e0;">打开高德配置</div>
+          </div>
+        </div>
+
+        <div class="annotation" style="top:106px;right:12px;">①</div>
+        <div class="annot-text" style="top:120px;right:-130px;">点击打开配置文件</div>
+      </div>
+    </div>
+
+    <div class="tip-box warn">未配置 Key 时仍可生成图片，但底图将显示为简易背景或空白。</div>
+  </div>
+
+  <!-- 步骤5：预览与生成 -->
+  <div class="section">
+    <h2><span class="step-num">5</span>预览与生成</h2>
+    <p>配置完成后，建议先点击「预览」快速生成一张带约 20 个标注的预览图，确认布局无误后再正式生成。</p>
+
+    <div class="screenshot-wrap">
+      <div class="ui-mockup">
+        <div class="ui-titlebar"><span class="ui-icon"></span> BIRDY-观鸟地图</div>
+        <div class="ui-body">
+          <div class="ui-group">
+            <div class="ui-group-title">输入</div>
+            <div class="ui-row"><div class="ui-label">鸟图目录:</div><div class="ui-input">D:\观鸟照片\2024-05-翔安</div><div class="ui-btn">浏览…</div></div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-start;margin:8px 0;">
+            <div class="ui-btn ui-btn-primary">预览</div>
+            <div class="ui-btn ui-btn-primary">生成并保存 PNG</div>
+            <div class="ui-btn" style="margin-left:auto;">打开高德配置</div>
+          </div>
+          <div class="ui-log">
+            观鸟地图预览：正在生成（约 30–90 秒）…<br>
+            观鸟地图：已启动生成子进程…<br>
+            观鸟地图：绘制完成<br>
+            已保存：output\轨迹图预览_20240512_143052.png<br>
+            标题：厦门大学翔安校区观鸟地图
+          </div>
+        </div>
+
+        <div class="annotation" style="top:118px;left:20px;">①</div>
+        <div class="annot-text" style="top:108px;left:44px;">先点预览，快速看效果</div>
+
+        <div class="annotation" style="top:118px;left:110px;">②</div>
+        <div class="annot-text" style="top:142px;left:130px;">确认后点正式生成</div>
+
+        <div class="annotation" style="top:210px;left:20px;">③</div>
+        <div class="annot-text" style="top:200px;left:44px;">下方日志区显示进度</div>
+      </div>
+    </div>
+
+    <div class="tip-box">预览图文件名以「轨迹图预览_」开头，正式图以「轨迹图_」开头，均保存在 output 文件夹中。</div>
+  </div>
+
+  <!-- 步骤6：查看输出结果 -->
+  <div class="section">
+    <h2><span class="step-num">6</span>输出结果</h2>
+    <p>生成的图片为 1440 × 2560 像素竖屏 2K 图，可直接分享到手机或打印。文件默认保存在软件同目录的 <code>output/</code> 文件夹中。</p>
+
+    <div class="output-sample">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-title">厦门大学翔安校区<br>观鸟地图<br><span style="font-size:9px;color:#555;">2024-05-12</span></div>
+          <div class="map-track">
+            <div class="track-line"></div>
+            <div class="bird-point" style="top:20px;left:80px;"></div>
+            <div class="bird-point" style="top:50px;left:40px;"></div>
+            <div class="bird-point" style="top:90px;left:100px;"></div>
+            <div class="bird-point" style="top:130px;left:60px;"></div>
+          </div>
+          <div style="position:absolute;top:110px;left:130px;font-size:9px;background:rgba(255,255,255,0.8);padding:1px 4px;border-radius:2px;">白鹭</div>
+          <div style="position:absolute;top:150px;left:90px;font-size:9px;background:rgba(255,255,255,0.8);padding:1px 4px;border-radius:2px;">池鹭</div>
+          <div class="phone-ele">
+            <div class="ele-line"></div>
+            <div style="position:absolute;bottom:2px;left:4px;font-size:8px;color:#555;">海拔(m)</div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:12px;font-size:13px;color:#666;">输出示意图：左上角标题、地图轨迹与鸟种标注、底部海拔剖面</p>
+    </div>
+  </div>
+
+  <!-- 常见问题 -->
+  <div class="section">
+    <h2>常见问题速查</h2>
+    <p><strong>Q：底图空白或提示 no_key / fallback？</strong><br>
+    A：检查是否已配置高德 API Key，并确认网络可访问高德地图服务。</p>
+    <p><strong>Q：地图上鸟点很少或没有？</strong><br>
+    A：确认照片 EXIF 包含拍摄时间；检查 GPX 与 EXIF 时区设置；可勾选「补充使用照片 EXIF 中的 GPS」。</p>
+    <p><strong>Q：生成速度很慢？</strong><br>
+    A：正式导出需要下载底图并绘制全部标注，属于正常现象。先用预览模式快速确认参数。</p>
+    <p><strong>Q：如何保存我的常用设置？</strong><br>
+    A：软件会自动将当前界面参数保存到同目录的 <code>config.json</code> 文件中，下次启动自动恢复。</p>
+  </div>
+
+  <div class="footer">
+    BIRDY-观鸟地图 · 使用手册<br>
+    仅供爱好者、公益、科研等非盈利用途
+  </div>
+
+</div>
+
+</body>
+</html>

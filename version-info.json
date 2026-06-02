@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-05-07",
+  "release_date": "2026-05-19",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,13 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.7": [
+      "观鸟轨迹图：GPX 30 分钟时间匹配、海拔剖面、物种侧标与标题/物种数布局避让；预览 40 / 导出 150 标记上限",
+      "观鸟记录导出：eBird Checklist CSV 与中国观鸟记录中心 Excel；批次去重与 GPX 里程",
+      "GUI：可收起卡片与标题栏「加入主流程」勾选；轨迹图子进程生成",
+      "模型权重：models/bird-seg.pt 与 bird_iden_res34.pth 经 Git LFS 纳入仓库",
+      "独立工具 tools/BIRDY-观鸟地图/；EfficientNet 推理与 eBird 名录对照修复"
+    ],
     "2.0.6": [
       "GUI：输出根目录 + 相片文件夹名自动生成 screened_<会话>/、classification_<会话>/、reports/；留空根目录时保留双路径手动模式",
       "连拍动图 ROI：链式与首张择优、重锚与突跳抑制、自适应 reproj、对齐调试与终端日志；预览/导出线程 OpenMP 与 QueuedConnection 稳定性",

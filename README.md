@@ -10,12 +10,13 @@
 4. **地理信息写入与反查**：支持 GPS EXIF 批量写入与地名编码，为归档检索和水印文案提供位置数据。
 5. **水印图批量生成与报告输出**：可批量生成带时间/地点/物种等信息的水印成片，并输出处理报告，便于分享与追溯。
 6. **连拍动图 / 视频**：GUI「动图生成」可将排序后的连拍序列导出为 **动画 WebP** 或 **MP4**（与动图同一套显影、对齐、裁剪与叠水印流程），便于在不支持动图 WebP 的 App 中播放。
-7. **输出根目录（GUI）**：填写固定本机「输出根目录」后，每次处理只需更换「图片文件夹」；程序按相片目录名自动生成 `screened_<名称>/`、`classification_<名称>/` 与 `reports/`（详见 `CHANGELOG.md` v2.0.6）。
+7. **观鸟行迹地图（GUI）**：GPX + 匹配鸟图生成行迹 PNG（高德底图、图内标题/签名、物种侧标、地图来源标注）；独立工具见 [BIRDY-观鸟地图](tools/BIRDY-观鸟地图/)。
+8. **输出根目录（GUI）**：填写固定本机「输出根目录」后，每次处理只需更换「图片文件夹」；程序按相片目录名自动生成 `screened_<名称>/`、`classification_<名称>/` 与 `reports/`（详见 `CHANGELOG.md` v2.0.6）。
 
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
-> **当前发布版本**：**2.0.6**（稳定版）  
-> **版本发布日期**：**2026-05-07**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
+> **当前发布版本**：**2.0.7**（稳定版）  
+> **版本发布日期**：**2026-05-19**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
 
@@ -31,22 +32,30 @@
 
 ### GitHub 源码包与本地模型
 
-从 GitHub 克隆或下载的压缩包**不包含**下列**大体积**本地推理权重（受分发方式限制，需自备或向作者索取）。为便于自备或自训，下面给出与当前代码兼容的最低规格：
+克隆本仓库后，下列**核心本地权重**已随 **`models/`** 目录经 **Git LFS** 分发（需安装 [Git LFS](https://git-lfs.com/) 并在克隆后执行 `git lfs pull`）：
+
+
+| 文件 | 用途 | 仓库状态 |
+| ---- | ---- | -------- |
+| `bird-seg.pt` | 鸟体检测与分割 | **已纳入**（Git LFS，约 88 MB） |
+| `bird_iden_res34.pth` | 本地物种识别（ResNet34） | **已纳入**（Git LFS，约 103 MB） |
+| `bird_info.json` | 物种索引与名称映射 | **已纳入**（普通 Git 文件） |
+
+
+下列文件**仍不包含**于仓库（体积或可选），需自行放置或向作者索取：
 
 
 | 文件                | 用途                | 兼容规格（最低要求）                                                                                                                                                                                               |
 | ----------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bird-seg.pt`     | 鸟体检测与分割           | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供 `boxes.xyxy / boxes.conf / boxes.cls`。建议训练为单类 bird（或以 bird 为主类）的检测/分割模型。                                    |
 | `birdeye.pt`      | 鸟眼检测（可选）          | **Ultralytics YOLO v8 `.pt`** 权重（与项目依赖 `ultralytics>=8.0.0` 一致），可被 `YOLO(path)` 直接加载；推理结果需提供边界框（同上 `boxes.*` 字段）。建议训练为鸟眼目标检测模型（单类或少类均可）。                                                                 |
-| `bird_iden_res34.pth` | 本地物种识别（ResNet34 权重） | **PyTorch `state_dict`**，`fc` 输入维 512 时构建 ResNet34。预处理：`Resize(256)+CenterCrop(224)+ImageNet Normalize`。 |
 | `bird_iden_efficient_b0.pt` | 本地物种识别（EfficientNet-B0） | **TorchScript**（`torch.jit.load`），与 `bird_info.json` 配套。 |
 
 
-`**models/bird_info.json**` 为与上述权重配套的物种索引与名称映射表。若你本地缺失该文件，可与本地物种权重成套向作者索取。
+`**models/bird_info.json**` 为与上述权重配套的物种索引与名称映射表。
 
 `bird_info.json` 与 `bird_iden_res34.pth` / `bird_iden_efficient_b0.pt` 的类别维度需配套：建议 `len(bird_info)` 与分类器输出类别数一致，并保持索引顺序一一对应（第 `i` 类对应该 JSON 的第 `i` 条）。
 
-将三个权重文件放入项目根目录下的 `**models/**`（与 `src/` 同级）即可与程序默认路径一致。若手中暂无权重，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台，便于单独获取或约定分发方式。
+将权重放入项目根目录下的 `**models/**`（与 `src/` 同级）。克隆后若 LFS 文件显示为几 KB 的指针文件，请在本仓库根目录执行 **`git lfs pull`**。若仍缺少 `birdeye.pt` 或 `bird_iden_efficient_b0.pt`，**可邮件联系作者**：**[brigchen@gmail.com](mailto:brigchen@gmail.com)**，说明用途与平台。
 
 ### 建议申请的 API Key（均为常见「按量 / 试用」档，个人学习可视为低成本或免费额度）
 
@@ -103,14 +112,15 @@ GPU 用户建议先到 [pytorch.org](https://pytorch.org) 安装匹配 CUDA 的 
 
 ### 2. 模型文件
 
-将以下文件放在 `**models/**`（与 `src/` 同级；其中 `.pt` / `.pth` 体积大，通常需单独拷贝或网盘分发）：
+克隆仓库并 **`git lfs pull`** 后，`**models/**` 下已含 **鸟体检测**（`bird-seg.pt`）与 **ResNet34 物种识别**（`bird_iden_res34.pth`）及 **`bird_info.json`**。可选文件需自行放置：
 
 
-| 文件                                   | 用途               |
-| ------------------------------------ | ---------------- |
-| `bird-seg.pt`                        | 鸟体检测             |
-| `bird_iden_res34.pth` 或 `bird_iden_efficient_b0.pt` + `bird_info.json` | 本地物种分类（权重 + 索引表） |
-| `birdeye.pt`                         | 鸟眼检测（可选）         |
+| 文件                                   | 用途               | 仓库 |
+| ------------------------------------ | ---------------- | ---- |
+| `bird-seg.pt`                        | 鸟体检测             | 已含（LFS） |
+| `bird_iden_res34.pth` + `bird_info.json` | 本地物种分类（ResNet34） | 已含（LFS + JSON） |
+| `bird_iden_efficient_b0.pt`          | 本地物种分类（EfficientNet-B0） | 需自备 |
+| `birdeye.pt`                         | 鸟眼检测（可选）         | 需自备 |
 
 
 ### 3. 启动 GUI
@@ -134,6 +144,14 @@ python src/birdy_cli.py -i ./images -o ./outputs
 python src/birdy_cli.py -i ./images --api-mode doubao --burst-keep-ratio 0.2 --burst-keep-min 2
 python src/birdy_cli.py --help
 ```
+
+### 5. 衍生工具（`tools/`）
+
+可**独立打包分享**的小工具（运行库在各自 `birdy_runtime/`，无需主程序 GUI）：
+
+| 工具 | 说明 | 启动 / 打包 |
+|------|------|-------------|
+| [BIRDY-观鸟地图](tools/BIRDY-观鸟地图/) | GPX + 鸟图 → 观鸟行迹 PNG | `start.bat`；分享前在工具目录运行 `sync_runtime.py` 后压缩整个文件夹 |
 
 ---
 
@@ -164,6 +182,7 @@ birdy-skill/
 ├── models/                    # 模型文件目录（见上文模型规格表）
 ├── data/                      # 地理与物种数据（含 bird_species_list.csv 名称对照表）
 ├── resources/                 # logo 等静态资源
+├── tools/                     # 衍生独立工具（如 BIRDY-观鸟地图）
 ├── test/                      # 测试脚本与样例
 └── src/
     ├── birdy_gui.py          # 图形界面入口
@@ -207,4 +226,4 @@ birdy-skill/
 
 ---
 
-*README 随功能迭代更新。当前文档对应 **2.0.6**，发布日期 **2026-05-07**；之后请以根目录 `**version-info.json**` 中的 `version` 与 `release_date` 为准。*
+*README 随功能迭代更新。当前文档对应 **2.0.7**，发布日期 **2026-05-19**；之后请以根目录 `**version-info.json**` 中的 `version` 与 `release_date` 为准。*

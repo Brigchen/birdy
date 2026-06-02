@@ -1,0 +1,2 @@
+models/bird-seg.pt filter=lfs diff=lfs merge=lfs -text
+models/bird_iden_res34.pth filter=lfs diff=lfs merge=lfs -text

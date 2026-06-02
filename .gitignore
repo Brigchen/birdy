@@ -35,6 +35,8 @@ Thumbs.db
 # --- 模型与权重（体积大；与 src/ 同级 models/ 为当前布局）---
 models/*.pt
 models/*.pth
+!models/bird-seg.pt
+!models/bird_iden_res34.pth
 models/*.onnx
 models/*.engine
 models/*.mlmodel
@@ -67,6 +69,14 @@ doubao_api_usage.json
 src/gui_config.json
 src/gui_config-*.json
 src/burst_webp_dialog_state.json
+
+# 衍生工具 BIRDY-观鸟地图
+# - birdy_runtime/、assets/：纳入版本控制
+# - config.json、output/*：本地数据，勿提交
+tools/BIRDY-观鸟地图/config.json
+tools/BIRDY-观鸟地图/output/*
+!tools/BIRDY-观鸟地图/output/.gitkeep
+tools/**/venv/
 
 # --- 本地测试数据与输出 ---
 test_images/

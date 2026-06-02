@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-eBird Checklist Format：按官方模版布局导出 .csv（每文件一个 checklist，列 C）。
+eBird Checklist Format：布局与 ``ebird_checklist_format_sample.xls`` 一致。
 
-布局与 ``data/species/ebird_checklist_format_template.xls`` 一致：
-A1 为空；第 1–14 行为努力信息；自第 15 行起 A 列为英文名、C 列为只数。
-导入时在 eBird 选择「Checklist Format」并上传 CSV。
+- 单 checklist 导出为 **3 列**（A/B/C）；勿导出 5 列，否则第 1 行尾 ``,,`` 导致 Missing location name；
+- 第 1 行：A/B 空，C=地点名（非空）；
+- 第 2–14 行：A=字段名（Latitude、Date…），C=对应值；Date/Time 用文本（M/D/YYYY、h:mm AM），勿用 Excel 序列号；
+- 第 15 行起：A=英文俗名，B=学名（eBird Taxonomy），C=只数。
 """
 
 from __future__ import annotations
@@ -12,15 +13,20 @@ from __future__ import annotations
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from .export_filenames import unique_checklist_slug
+from .gpx_travel_distance import GpxTravelDistanceResolver, try_create_gpx_resolver
+from .location_pinyin import format_ebird_location_name
 from .scan import ChecklistBucket
+from .taxonomy_cn import ebird_species_cells, lookup_species
 
-_FIRST_CHECKLIST_COL = 2  # Excel 列 C
-_SPECIES_ROW_START = 14  # Excel 第 15 行
-_EFFORT_LABELS = (
-    "Location Name",
+_NUM_COLS = 3  # 单 checklist 仅 A/B/C；sample.xls 的 5 列用于多列示例
+_CHECKLIST_COL = 2  # 列 C（第 3 列）= checklist 数据
+_SPECIES_ROW_START = 14  # 第 15 行起为物种
+# 第 2–14 行 A 列字段名（第 1 行 A 列为空，地点写在 C 列）
+_EFFORT_LABELS_COL_A: Tuple[Optional[str], ...] = (
+    None,
     "Latitude",
     "Longitude",
     "Date",
@@ -37,13 +43,41 @@ _EFFORT_LABELS = (
 )
 
 
-def default_ebird_checklist_template_path(project_root: Optional[Path] = None) -> Path:
+def default_ebird_checklist_sample_path(project_root: Optional[Path] = None) -> Path:
     root = project_root or Path(__file__).resolve().parent.parent.parent
-    return root / "data" / "species" / "ebird_checklist_format_template.xls"
+    return root / "data" / "species" / "ebird_checklist_format_sample.xls"
+
+
+def default_ebird_checklist_template_path(project_root: Optional[Path] = None) -> Path:
+    """兼容旧名：校验参照 sample。"""
+    return default_ebird_checklist_sample_path(project_root)
 
 
 def _fmt_date_us(d) -> str:
     return f"{d.month}/{d.day}/{d.year}"
+
+
+def normalize_ebird_state_province(state_province: str) -> str:
+    s = (state_province or "").strip()
+    if not s:
+        return ""
+    if "-" in s:
+        left, right = s.split("-", 1)
+        if len(left) in (2, 3) and right.strip():
+            return right.strip()[:3]
+    return s[:3]
+
+
+def _distance_miles_for_protocol(
+    protocol: str,
+    distance_mi: Optional[str] = None,
+) -> str:
+    if distance_mi is not None and str(distance_mi).strip() != "":
+        return str(distance_mi).strip()
+    p = (protocol or "").strip().lower()
+    if p in ("traveling", "biking", "running", "motorized"):
+        return "1"
+    return ""
 
 
 def _fmt_time(dt: Optional[datetime]) -> str:
@@ -57,41 +91,38 @@ def _fmt_time(dt: Optional[datetime]) -> str:
     return f"{h}:{dt.minute:02d} {ampm}"
 
 
-def _validate_checklist_template(rb) -> None:
+def _validate_checklist_sample(rb) -> None:
+    """与 ebird_checklist_format_sample.xls 结构对照。"""
     sh = rb.sheet_by_index(0)
-    if sh.nrows < _SPECIES_ROW_START + 1:
-        raise ValueError("eBird Checklist 模版行数不足")
-    if str(sh.cell_value(0, 0)).strip():
-        raise ValueError("eBird Checklist 模版 A1 须为空")
-    sp_label = str(sh.cell_value(_SPECIES_ROW_START, 0)).strip().upper()
-    if "SPECIES" not in sp_label or "COMMON" not in sp_label:
+    if sh.ncols < _CHECKLIST_COL + 1:
         raise ValueError(
-            f"模版第 15 行 A 列应为物种英文名标签，当前为: {sh.cell_value(_SPECIES_ROW_START, 0)!r}"
+            f"eBird Checklist 样本须至少 {_CHECKLIST_COL + 1} 列，当前 {sh.ncols}"
         )
-    if sh.ncols <= _FIRST_CHECKLIST_COL:
-        raise ValueError("eBird Checklist 模版须至少包含列 C")
-    for r, expected in enumerate(_EFFORT_LABELS):
-        label = str(sh.cell_value(r, _FIRST_CHECKLIST_COL)).strip()
-        if label != expected:
-            raise ValueError(
-                f"模版第 {r + 1} 行列 C 应为 {expected!r}，当前为 {label!r}"
-            )
+    if sh.nrows < _SPECIES_ROW_START + 1:
+        raise ValueError("eBird Checklist 样本行数不足")
+    if str(sh.cell_value(0, 0)).strip():
+        raise ValueError("样本 A1 须为空")
+    if str(sh.cell_value(1, 0)).strip() != "Latitude":
+        raise ValueError("样本第 2 行 A 列应为 Latitude")
+    sp = str(sh.cell_value(_SPECIES_ROW_START, 0)).strip()
+    if not sp:
+        raise ValueError("样本第 15 行 A 列应为物种名")
 
 
-def _ensure_template_valid(template_path: Optional[str] = None) -> Path:
-    tpl = Path(
-        template_path or default_ebird_checklist_template_path()
+def _ensure_sample_valid(sample_path: Optional[str] = None) -> Path:
+    path = Path(
+        sample_path or default_ebird_checklist_sample_path()
     ).expanduser().resolve()
-    if not tpl.is_file():
-        raise FileNotFoundError(f"找不到 eBird Checklist 模版: {tpl}")
+    if not path.is_file():
+        raise FileNotFoundError(f"找不到 eBird Checklist 样本: {path}")
     try:
         import xlrd
     except ImportError as e:
         raise ImportError(
-            "校验 eBird 模版需要 xlrd：python -m pip install xlrd"
+            "校验 eBird 样本需要 xlrd：python -m pip install xlrd"
         ) from e
-    _validate_checklist_template(xlrd.open_workbook(str(tpl)))
-    return tpl
+    _validate_checklist_sample(xlrd.open_workbook(str(path)))
+    return path
 
 
 def _effort_values_for_bucket(
@@ -102,27 +133,38 @@ def _effort_values_for_bucket(
     protocol: str,
     duration_min: int,
     num_observers: int,
-    locality_prefix: str,
+    location_name: str,
+    province_cn: str = "",
+    city_cn: str = "",
+    distance_mi: Optional[str] = None,
 ) -> List[str]:
-    loc = locality_prefix
-    if bucket.lat is not None and bucket.lon is not None:
-        loc += f" {bucket.lat:.4f},{bucket.lon:.4f}"
+    state = normalize_ebird_state_province(state_province)
+    dist = _distance_miles_for_protocol(protocol, distance_mi)
+    loc = format_ebird_location_name(
+        location_name,
+        country_code=country,
+        state_province=state_province,
+        province_cn=province_cn,
+        city_cn=city_cn,
+    )
+    if not loc:
+        loc = "China"
     lat_s = f"{bucket.lat:.6f}" if bucket.lat is not None else ""
     lon_s = f"{bucket.lon:.6f}" if bucket.lon is not None else ""
     notes = "Exported from Birdy; verify before upload."
     return [
-        loc.replace(",", ";"),
+        loc,
         lat_s,
         lon_s,
         _fmt_date_us(bucket.day),
         _fmt_time(bucket.start_time),
-        state_province,
+        state,
         country,
         protocol,
         str(int(num_observers)),
         str(int(duration_min)),
         "Y",
-        "",
+        dist,
         "",
         notes.replace(",", ";"),
     ]
@@ -131,16 +173,13 @@ def _effort_values_for_bucket(
 def _species_rows_for_bucket(
     bucket: ChecklistBucket,
     species_en_sci: Dict[str, Tuple[str, str]],
-) -> List[Tuple[str, str]]:
-    rows: List[Tuple[str, str]] = []
+) -> List[Tuple[str, str, str]]:
+    """(A 列俗名, B 列学名, C 列只数)。"""
+    rows: List[Tuple[str, str, str]] = []
     for sp_cn, cnt in sorted(bucket.species_counts.items()):
-        en, _sci = species_en_sci.get(sp_cn, ("", ""))
-        common = (en or sp_cn).replace(",", ";")
-        count_cell = str(int(cnt))
-        comment = f"source_cn={sp_cn}".replace(",", ";").replace("|", " ")
-        if comment:
-            count_cell = f"{count_cell}|{comment}"
-        rows.append((common, count_cell))
+        en, sci = lookup_species(sp_cn, species_en_sci)
+        common, sci_name = ebird_species_cells(en, sci, sp_cn)
+        rows.append((common, sci_name, str(int(cnt))))
     return rows
 
 
@@ -149,17 +188,19 @@ def build_checklist_grid(
     species_en_sci: Dict[str, Tuple[str, str]],
     *,
     country: str = "CN",
-    state_province: str = "CN-FJ",
+    state_province: str = "FJ",
     protocol: str = "Traveling",
     duration_min: int = 60,
     num_observers: int = 1,
-    locality_prefix: str = "Birdy archive",
+    location_name: str = "",
+    province_cn: str = "",
+    city_cn: str = "",
+    distance_mi: Optional[str] = None,
 ) -> List[List[str]]:
-    """三列（A/B/C）Checklist Format 网格，可直接写入 CSV。"""
+    """3 列网格（A/B/C），与 sample 单 checklist 列布局一致。"""
     species = _species_rows_for_bucket(bucket, species_en_sci)
     nrows = _SPECIES_ROW_START + len(species)
-    ncols = _FIRST_CHECKLIST_COL + 1
-    grid: List[List[str]] = [[""] * ncols for _ in range(nrows)]
+    grid: List[List[str]] = [[""] * _NUM_COLS for _ in range(nrows)]
 
     effort = _effort_values_for_bucket(
         bucket,
@@ -168,16 +209,22 @@ def build_checklist_grid(
         protocol=protocol,
         duration_min=duration_min,
         num_observers=num_observers,
-        locality_prefix=locality_prefix,
+        location_name=location_name,
+        province_cn=province_cn,
+        city_cn=city_cn,
+        distance_mi=distance_mi,
     )
     for r, val in enumerate(effort):
-        grid[r][_FIRST_CHECKLIST_COL] = val
+        label = _EFFORT_LABELS_COL_A[r]
+        if label:
+            grid[r][0] = label
+        grid[r][_CHECKLIST_COL] = val
 
-    for i, (common, count_cell) in enumerate(species):
+    for i, (common, sci_name, count_cell) in enumerate(species):
         row = _SPECIES_ROW_START + i
         grid[row][0] = common
-        grid[row][1] = ""
-        grid[row][_FIRST_CHECKLIST_COL] = count_cell
+        grid[row][1] = sci_name
+        grid[row][_CHECKLIST_COL] = count_cell
 
     return grid
 
@@ -187,15 +234,18 @@ def write_ebird_checklist_csv(
     bucket: ChecklistBucket,
     species_en_sci: Dict[str, Tuple[str, str]],
     *,
-    template_path: Optional[str] = None,
+    sample_path: Optional[str] = None,
     country: str = "CN",
-    state_province: str = "CN-FJ",
+    state_province: str = "FJ",
     protocol: str = "Traveling",
     duration_min: int = 60,
     num_observers: int = 1,
-    locality_prefix: str = "Birdy archive",
+    location_name: str = "",
+    province_cn: str = "",
+    city_cn: str = "",
+    distance_mi: Optional[str] = None,
 ) -> None:
-    _ensure_template_valid(template_path)
+    _ensure_sample_valid(sample_path)
     grid = build_checklist_grid(
         bucket,
         species_en_sci,
@@ -204,12 +254,22 @@ def write_ebird_checklist_csv(
         protocol=protocol,
         duration_min=duration_min,
         num_observers=num_observers,
-        locality_prefix=locality_prefix,
+        location_name=location_name,
+        province_cn=province_cn,
+        city_cn=city_cn,
+        distance_mi=distance_mi,
     )
     out = Path(output_path).expanduser().resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
+    # 须为 UTF-8 无 BOM；勿用 utf-8-sig 或 Excel 另存（易带 BOM / 尾逗号）
     with open(out, "w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f, lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
+        # 禁止字段引号（eBird：CSV 内勿含 "）；物种名中的逗号已替换为分号
+        writer = csv.writer(
+            f,
+            lineterminator="\r\n",
+            quoting=csv.QUOTE_NONE,
+            escapechar="\\",
+        )
         writer.writerows(grid)
 
 
@@ -218,16 +278,32 @@ def export_ebird_checklist_files(
     species_en_sci: Dict[str, Tuple[str, str]],
     out_dir: str,
     *,
+    sample_path: Optional[str] = None,
     template_path: Optional[str] = None,
     country: str = "CN",
-    state_province: str = "CN-FJ",
+    state_province: str = "FJ",
     protocol: str = "Traveling",
     duration_min: int = 60,
     num_observers: int = 1,
-    locality_prefix: str = "Birdy archive",
+    location_name: str = "",
+    province_cn: str = "",
+    city_cn: str = "",
+    gpx_file_path: Optional[str] = None,
+    gpx_file_paths: Optional[Sequence[str]] = None,
+    gpx_exif_tz: str = "Asia/Shanghai",
+    gpx_track_tz: str = "UTC",
+    gpx_resolver: Optional[GpxTravelDistanceResolver] = None,
 ) -> Dict[str, str]:
-    """每个 checklist 桶写一个 ``ebird_checklist_{…}.csv``。"""
-    _ensure_template_valid(template_path)
+    ref = sample_path or template_path
+    _ensure_sample_valid(ref)
+    resolver = gpx_resolver
+    if resolver is None:
+        resolver = try_create_gpx_resolver(
+            gpx_file_path,
+            gpx_file_paths=gpx_file_paths,
+            exif_tz=gpx_exif_tz,
+            gpx_tz=gpx_track_tz,
+        )
     out = Path(out_dir).expanduser().resolve()
     out.mkdir(parents=True, exist_ok=True)
     export_moment = datetime.now()
@@ -245,17 +321,23 @@ def export_ebird_checklist_files(
             export_moment=export_moment,
         )
         csv_path = out / f"ebird_checklist_{slug}.csv"
+        dist_mi: Optional[str] = None
+        if resolver is not None:
+            dist_mi = resolver.miles_for_bucket(bucket)
         write_ebird_checklist_csv(
             str(csv_path),
             bucket,
             species_en_sci,
-            template_path=template_path,
+            sample_path=ref,
             country=country,
             state_province=state_province,
             protocol=protocol,
             duration_min=duration_min,
             num_observers=num_observers,
-            locality_prefix=locality_prefix,
+            location_name=location_name,
+            province_cn=province_cn,
+            city_cn=city_cn,
+            distance_mi=dist_mi,
         )
         paths.append(str(csv_path))
 

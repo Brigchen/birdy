@@ -1,0 +1,5048 @@
+[
+  {
+    "english": "Rock Dove",
+    "chinese": "原鸽",
+    "scientific": "Columba livia",
+    "ebird": "Rock Pigeon (Feral Pigeon)"
+  },
+  {
+    "english": "Okarito Kiwi",
+    "ebird": "Okarito Brown Kiwi"
+  },
+  {
+    "chinese": "欧加里托几维鸟",
+    "ebird": "Okarito Brown Kiwi"
+  },
+  {
+    "scientific": "Apteryx rowi",
+    "ebird": "Okarito Brown Kiwi"
+  },
+  {
+    "english": "Grey Tinamou",
+    "ebird": "Gray Tinamou"
+  },
+  {
+    "chinese": "灰䳍",
+    "ebird": "Gray Tinamou"
+  },
+  {
+    "scientific": "Tinamus tao",
+    "ebird": "Gray Tinamou"
+  },
+  {
+    "english": "Grey-legged Tinamou",
+    "ebird": "Gray-legged Tinamou"
+  },
+  {
+    "chinese": "灰腿穴䳍",
+    "ebird": "Gray-legged Tinamou"
+  },
+  {
+    "scientific": "Crypturellus duidae",
+    "ebird": "Gray-legged Tinamou"
+  },
+  {
+    "english": "Elegant Crested Tinamou",
+    "ebird": "Elegant Crested-Tinamou"
+  },
+  {
+    "chinese": "凤头䳍",
+    "ebird": "Elegant Crested-Tinamou"
+  },
+  {
+    "scientific": "Eudromia elegans",
+    "ebird": "Elegant Crested-Tinamou"
+  },
+  {
+    "english": "Quebracho Crested Tinamou",
+    "ebird": "Quebracho Crested-Tinamou"
+  },
+  {
+    "chinese": "丽凤头䳍",
+    "ebird": "Quebracho Crested-Tinamou"
+  },
+  {
+    "scientific": "Eudromia formosa",
+    "ebird": "Quebracho Crested-Tinamou"
+  },
+  {
+    "english": "White-faced Whistling Duck",
+    "ebird": "White-faced Whistling-Duck"
+  },
+  {
+    "chinese": "白脸树鸭",
+    "ebird": "White-faced Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna viduata",
+    "ebird": "White-faced Whistling-Duck"
+  },
+  {
+    "english": "Black-bellied Whistling Duck",
+    "ebird": "Black-bellied Whistling-Duck"
+  },
+  {
+    "chinese": "黑腹树鸭",
+    "ebird": "Black-bellied Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna autumnalis",
+    "ebird": "Black-bellied Whistling-Duck"
+  },
+  {
+    "english": "Spotted Whistling Duck",
+    "ebird": "Spotted Whistling-Duck"
+  },
+  {
+    "chinese": "细斑树鸭",
+    "ebird": "Spotted Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna guttata",
+    "ebird": "Spotted Whistling-Duck"
+  },
+  {
+    "english": "West Indian Whistling Duck",
+    "ebird": "West Indian Whistling-Duck"
+  },
+  {
+    "chinese": "西印度树鸭",
+    "ebird": "West Indian Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna arborea",
+    "ebird": "West Indian Whistling-Duck"
+  },
+  {
+    "english": "Fulvous Whistling Duck",
+    "ebird": "Fulvous Whistling-Duck"
+  },
+  {
+    "chinese": "茶色树鸭",
+    "ebird": "Fulvous Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna bicolor",
+    "ebird": "Fulvous Whistling-Duck"
+  },
+  {
+    "english": "Plumed Whistling Duck",
+    "ebird": "Plumed Whistling-Duck"
+  },
+  {
+    "chinese": "尖羽树鸭",
+    "ebird": "Plumed Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna eytoni",
+    "ebird": "Plumed Whistling-Duck"
+  },
+  {
+    "english": "Wandering Whistling Duck",
+    "ebird": "Wandering Whistling-Duck"
+  },
+  {
+    "chinese": "斑胸树鸭",
+    "ebird": "Wandering Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna arcuata",
+    "ebird": "Wandering Whistling-Duck"
+  },
+  {
+    "english": "Lesser Whistling Duck",
+    "ebird": "Lesser Whistling-Duck"
+  },
+  {
+    "chinese": "栗树鸭",
+    "ebird": "Lesser Whistling-Duck"
+  },
+  {
+    "scientific": "Dendrocygna javanica",
+    "ebird": "Lesser Whistling-Duck"
+  },
+  {
+    "english": "Brant Goose",
+    "ebird": "Brant"
+  },
+  {
+    "chinese": "黑雁",
+    "ebird": "Brant"
+  },
+  {
+    "scientific": "Branta bernicla",
+    "ebird": "Brant"
+  },
+  {
+    "english": "Nene",
+    "ebird": "Hawaiian Goose"
+  },
+  {
+    "chinese": "夏威夷黑雁",
+    "ebird": "Hawaiian Goose"
+  },
+  {
+    "scientific": "Branta sandvicensis",
+    "ebird": "Hawaiian Goose"
+  },
+  {
+    "english": "Greylag Goose",
+    "ebird": "Graylag Goose"
+  },
+  {
+    "chinese": "灰雁",
+    "ebird": "Graylag Goose"
+  },
+  {
+    "scientific": "Anser anser",
+    "ebird": "Graylag Goose"
+  },
+  {
+    "english": "Taiga Bean Goose",
+    "ebird": "Taiga Bean-Goose"
+  },
+  {
+    "chinese": "豆雁",
+    "ebird": "Taiga Bean-Goose"
+  },
+  {
+    "scientific": "Anser fabalis",
+    "ebird": "Taiga Bean-Goose"
+  },
+  {
+    "english": "Tundra Bean Goose",
+    "ebird": "Tundra Bean-Goose"
+  },
+  {
+    "chinese": "短嘴豆雁",
+    "ebird": "Tundra Bean-Goose"
+  },
+  {
+    "scientific": "Anser serrirostris",
+    "ebird": "Tundra Bean-Goose"
+  },
+  {
+    "english": "Flying Steamer Duck",
+    "ebird": "Flying Steamer-Duck"
+  },
+  {
+    "chinese": "花斑船鸭",
+    "ebird": "Flying Steamer-Duck"
+  },
+  {
+    "scientific": "Tachyeres patachonicus",
+    "ebird": "Flying Steamer-Duck"
+  },
+  {
+    "english": "Fuegian Steamer Duck",
+    "ebird": "Flightless Steamer-Duck"
+  },
+  {
+    "chinese": "灰船鸭",
+    "ebird": "Flightless Steamer-Duck"
+  },
+  {
+    "scientific": "Tachyeres pteneres",
+    "ebird": "Flightless Steamer-Duck"
+  },
+  {
+    "english": "Falkland Steamer Duck",
+    "ebird": "Falkland Steamer-Duck"
+  },
+  {
+    "chinese": "短翅船鸭",
+    "ebird": "Falkland Steamer-Duck"
+  },
+  {
+    "scientific": "Tachyeres brachypterus",
+    "ebird": "Falkland Steamer-Duck"
+  },
+  {
+    "english": "Chubut Steamer Duck",
+    "ebird": "White-headed Steamer-Duck"
+  },
+  {
+    "chinese": "白头船鸭",
+    "ebird": "White-headed Steamer-Duck"
+  },
+  {
+    "scientific": "Tachyeres leucocephalus",
+    "ebird": "White-headed Steamer-Duck"
+  },
+  {
+    "english": "Mauritius Sheldgoose",
+    "ebird": "Mauritius Shelduck"
+  },
+  {
+    "chinese": "毛里求斯雁",
+    "ebird": "Mauritius Shelduck"
+  },
+  {
+    "scientific": "Alopochen mauritiana",
+    "ebird": "Mauritius Shelduck"
+  },
+  {
+    "english": "Reunion Sheldgoose",
+    "ebird": "Reunion Shelduck"
+  },
+  {
+    "chinese": "留尼汪雁",
+    "ebird": "Reunion Shelduck"
+  },
+  {
+    "scientific": "Alopochen kervazoi",
+    "ebird": "Reunion Shelduck"
+  },
+  {
+    "english": "Raja Shelduck",
+    "ebird": "Radjah Shelduck"
+  },
+  {
+    "chinese": "白腹麻鸭",
+    "ebird": "Radjah Shelduck"
+  },
+  {
+    "scientific": "Radjah radjah",
+    "ebird": "Radjah Shelduck"
+  },
+  {
+    "english": "African Pygmy Goose",
+    "ebird": "African Pygmy-Goose"
+  },
+  {
+    "chinese": "厚嘴棉凫",
+    "ebird": "African Pygmy-Goose"
+  },
+  {
+    "scientific": "Nettapus auritus",
+    "ebird": "African Pygmy-Goose"
+  },
+  {
+    "english": "Cotton Pygmy Goose",
+    "ebird": "Cotton Pygmy-Goose"
+  },
+  {
+    "chinese": "棉凫",
+    "ebird": "Cotton Pygmy-Goose"
+  },
+  {
+    "scientific": "Nettapus coromandelianus",
+    "ebird": "Cotton Pygmy-Goose"
+  },
+  {
+    "english": "Green Pygmy Goose",
+    "ebird": "Green Pygmy-Goose"
+  },
+  {
+    "chinese": "绿棉凫",
+    "ebird": "Green Pygmy-Goose"
+  },
+  {
+    "scientific": "Nettapus pulchellus",
+    "ebird": "Green Pygmy-Goose"
+  },
+  {
+    "english": "Bronze-winged Duck",
+    "ebird": "Spectacled Duck"
+  },
+  {
+    "chinese": "铜翅鸭",
+    "ebird": "Spectacled Duck"
+  },
+  {
+    "scientific": "Speculanas specularis",
+    "ebird": "Spectacled Duck"
+  },
+  {
+    "english": "Hottentot Teal",
+    "ebird": "Blue-billed Teal"
+  },
+  {
+    "chinese": "南非鸭",
+    "ebird": "Blue-billed Teal"
+  },
+  {
+    "scientific": "Spatula hottentota",
+    "ebird": "Blue-billed Teal"
+  },
+  {
+    "english": "Amsterdam Wigeon",
+    "ebird": "Amsterdam Duck"
+  },
+  {
+    "chinese": "阿岛鸭",
+    "ebird": "Amsterdam Duck"
+  },
+  {
+    "scientific": "Mareca marecula",
+    "ebird": "Amsterdam Duck"
+  },
+  {
+    "english": "Red-billed Teal",
+    "ebird": "Red-billed Duck"
+  },
+  {
+    "chinese": "赤嘴鸭",
+    "ebird": "Red-billed Duck"
+  },
+  {
+    "scientific": "Anas erythrorhyncha",
+    "ebird": "Red-billed Duck"
+  },
+  {
+    "english": "Eurasian Teal",
+    "ebird": "Green-winged Teal"
+  },
+  {
+    "chinese": "绿翅鸭",
+    "ebird": "Green-winged Teal"
+  },
+  {
+    "scientific": "Anas crecca",
+    "ebird": "Green-winged Teal"
+  },
+  {
+    "english": "Mascarene Teal",
+    "ebird": "Mauritius Duck"
+  },
+  {
+    "chinese": "毛里求斯鸭",
+    "ebird": "Mauritius Duck"
+  },
+  {
+    "scientific": "Anas theodori",
+    "ebird": "Mauritius Duck"
+  },
+  {
+    "english": "Grey Teal",
+    "ebird": "Gray Teal"
+  },
+  {
+    "chinese": "灰鸭",
+    "ebird": "Gray Teal"
+  },
+  {
+    "scientific": "Anas gracilis",
+    "ebird": "Gray Teal"
+  },
+  {
+    "english": "Auckland Teal",
+    "ebird": "Auckland Islands Teal"
+  },
+  {
+    "chinese": "奥岛鸭",
+    "ebird": "Auckland Islands Teal"
+  },
+  {
+    "scientific": "Anas aucklandica",
+    "ebird": "Auckland Islands Teal"
+  },
+  {
+    "english": "Campbell Teal",
+    "ebird": "Campbell Islands Teal"
+  },
+  {
+    "chinese": "坎岛鸭",
+    "ebird": "Campbell Islands Teal"
+  },
+  {
+    "scientific": "Anas nesiotis",
+    "ebird": "Campbell Islands Teal"
+  },
+  {
+    "english": "Madagascan Pochard",
+    "ebird": "Madagascar Pochard"
+  },
+  {
+    "chinese": "马岛潜鸭",
+    "ebird": "Madagascar Pochard"
+  },
+  {
+    "scientific": "Aythya innotata",
+    "ebird": "Madagascar Pochard"
+  },
+  {
+    "english": "New Zealand Merganser",
+    "ebird": "Auckland Islands Merganser"
+  },
+  {
+    "chinese": "奥克兰秋沙鸭",
+    "ebird": "Auckland Islands Merganser"
+  },
+  {
+    "scientific": "Mergus australis",
+    "ebird": "Auckland Islands Merganser"
+  },
+  {
+    "english": "Black-billed Brushturkey",
+    "ebird": "Yellow-legged Brushturkey"
+  },
+  {
+    "chinese": "黑嘴塚雉",
+    "ebird": "Yellow-legged Brushturkey"
+  },
+  {
+    "scientific": "Talegalla fuscirostris",
+    "ebird": "Yellow-legged Brushturkey"
+  },
+  {
+    "english": "Collared Brushturkey",
+    "ebird": "Red-legged Brushturkey"
+  },
+  {
+    "chinese": "褐领塚雉",
+    "ebird": "Red-legged Brushturkey"
+  },
+  {
+    "scientific": "Talegalla jobiensis",
+    "ebird": "Red-legged Brushturkey"
+  },
+  {
+    "english": "Biak Scrubfowl",
+    "ebird": "Biak Megapode"
+  },
+  {
+    "chinese": "比亚克冢雉",
+    "ebird": "Biak Megapode"
+  },
+  {
+    "scientific": "Megapodius geelvinkianus",
+    "ebird": "Biak Megapode"
+  },
+  {
+    "english": "New Guinea Scrubfowl",
+    "ebird": "New Guinea Megapode"
+  },
+  {
+    "chinese": "斑喉塚雉",
+    "ebird": "New Guinea Megapode"
+  },
+  {
+    "scientific": "Megapodius decollatus",
+    "ebird": "New Guinea Megapode"
+  },
+  {
+    "english": "Orange-footed Scrubfowl",
+    "ebird": "Orange-footed Megapode"
+  },
+  {
+    "chinese": "橙脚塚雉",
+    "ebird": "Orange-footed Megapode"
+  },
+  {
+    "scientific": "Megapodius reinwardt",
+    "ebird": "Orange-footed Megapode"
+  },
+  {
+    "english": "Grey-headed Chachalaca",
+    "ebird": "Gray-headed Chachalaca"
+  },
+  {
+    "chinese": "灰头小冠雉",
+    "ebird": "Gray-headed Chachalaca"
+  },
+  {
+    "scientific": "Ortalis cinereiceps",
+    "ebird": "Gray-headed Chachalaca"
+  },
+  {
+    "english": "Little Chachalaca",
+    "ebird": "Variable Chachalaca"
+  },
+  {
+    "chinese": "小冠雉",
+    "ebird": "Variable Chachalaca"
+  },
+  {
+    "scientific": "Ortalis motmot",
+    "ebird": "Variable Chachalaca"
+  },
+  {
+    "english": "Trinidad Piping Guan",
+    "ebird": "Trinidad Piping-Guan"
+  },
+  {
+    "chinese": "鸣冠雉",
+    "ebird": "Trinidad Piping-Guan"
+  },
+  {
+    "scientific": "Pipile pipile",
+    "ebird": "Trinidad Piping-Guan"
+  },
+  {
+    "english": "Blue-throated Piping Guan",
+    "ebird": "Blue-throated Piping-Guan"
+  },
+  {
+    "chinese": "蓝喉鸣冠雉",
+    "ebird": "Blue-throated Piping-Guan"
+  },
+  {
+    "scientific": "Pipile cumanensis",
+    "ebird": "Blue-throated Piping-Guan"
+  },
+  {
+    "english": "Red-throated Piping Guan",
+    "ebird": "Red-throated Piping-Guan"
+  },
+  {
+    "chinese": "红喉鸣冠雉",
+    "ebird": "Red-throated Piping-Guan"
+  },
+  {
+    "scientific": "Pipile cujubi",
+    "ebird": "Red-throated Piping-Guan"
+  },
+  {
+    "english": "Black-fronted Piping Guan",
+    "ebird": "Black-fronted Piping-Guan"
+  },
+  {
+    "chinese": "黑额鸣冠雉",
+    "ebird": "Black-fronted Piping-Guan"
+  },
+  {
+    "scientific": "Pipile jacutinga",
+    "ebird": "Black-fronted Piping-Guan"
+  },
+  {
+    "english": "Crested Guineafowl",
+    "ebird": "Eastern Crested Guineafowl"
+  },
+  {
+    "chinese": "冠珠鸡",
+    "ebird": "Eastern Crested Guineafowl"
+  },
+  {
+    "scientific": "Guttera pucherani",
+    "ebird": "Eastern Crested Guineafowl"
+  },
+  {
+    "english": "Bearded Wood Partridge",
+    "ebird": "Bearded Wood-Partridge"
+  },
+  {
+    "chinese": "须林鹑",
+    "ebird": "Bearded Wood-Partridge"
+  },
+  {
+    "scientific": "Dendrortyx barbatus",
+    "ebird": "Bearded Wood-Partridge"
+  },
+  {
+    "english": "Long-tailed Wood Partridge",
+    "ebird": "Long-tailed Wood-Partridge"
+  },
+  {
+    "chinese": "长尾林鹑",
+    "ebird": "Long-tailed Wood-Partridge"
+  },
+  {
+    "scientific": "Dendrortyx macroura",
+    "ebird": "Long-tailed Wood-Partridge"
+  },
+  {
+    "english": "Buffy-crowned Wood Partridge",
+    "ebird": "Buffy-crowned Wood-Partridge"
+  },
+  {
+    "chinese": "黄顶林鹑",
+    "ebird": "Buffy-crowned Wood-Partridge"
+  },
+  {
+    "scientific": "Dendrortyx leucophrys",
+    "ebird": "Buffy-crowned Wood-Partridge"
+  },
+  {
+    "english": "Yucatan Bobwhite",
+    "ebird": "Black-throated Bobwhite"
+  },
+  {
+    "chinese": "黑喉齿鹑",
+    "ebird": "Black-throated Bobwhite"
+  },
+  {
+    "scientific": "Colinus nigrogularis",
+    "ebird": "Black-throated Bobwhite"
+  },
+  {
+    "english": "Marbled Wood Quail",
+    "ebird": "Marbled Wood-Quail"
+  },
+  {
+    "chinese": "云斑林鹑",
+    "ebird": "Marbled Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus gujanensis",
+    "ebird": "Marbled Wood-Quail"
+  },
+  {
+    "english": "Spot-winged Wood Quail",
+    "ebird": "Spot-winged Wood-Quail"
+  },
+  {
+    "chinese": "斑翅林鹑",
+    "ebird": "Spot-winged Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus capueira",
+    "ebird": "Spot-winged Wood-Quail"
+  },
+  {
+    "english": "Black-eared Wood Quail",
+    "ebird": "Black-eared Wood-Quail"
+  },
+  {
+    "chinese": "黑耳林鹑",
+    "ebird": "Black-eared Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus melanotis",
+    "ebird": "Black-eared Wood-Quail"
+  },
+  {
+    "english": "Rufous-fronted Wood Quail",
+    "ebird": "Rufous-fronted Wood-Quail"
+  },
+  {
+    "chinese": "棕额林鹑",
+    "ebird": "Rufous-fronted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus erythrops",
+    "ebird": "Rufous-fronted Wood-Quail"
+  },
+  {
+    "english": "Black-fronted Wood Quail",
+    "ebird": "Black-fronted Wood-Quail"
+  },
+  {
+    "chinese": "黑额林鹑",
+    "ebird": "Black-fronted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus atrifrons",
+    "ebird": "Black-fronted Wood-Quail"
+  },
+  {
+    "english": "Chestnut Wood Quail",
+    "ebird": "Chestnut Wood-Quail"
+  },
+  {
+    "chinese": "栗林鹑",
+    "ebird": "Chestnut Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus hyperythrus",
+    "ebird": "Chestnut Wood-Quail"
+  },
+  {
+    "english": "Dark-backed Wood Quail",
+    "ebird": "Dark-backed Wood-Quail"
+  },
+  {
+    "chinese": "暗背林鹑",
+    "ebird": "Dark-backed Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus melanonotus",
+    "ebird": "Dark-backed Wood-Quail"
+  },
+  {
+    "english": "Rufous-breasted Wood Quail",
+    "ebird": "Rufous-breasted Wood-Quail"
+  },
+  {
+    "chinese": "棕胸林鹑",
+    "ebird": "Rufous-breasted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus speciosus",
+    "ebird": "Rufous-breasted Wood-Quail"
+  },
+  {
+    "english": "Tacarcuna Wood Quail",
+    "ebird": "Tacarcuna Wood-Quail"
+  },
+  {
+    "chinese": "黑顶林鹑",
+    "ebird": "Tacarcuna Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus dialeucos",
+    "ebird": "Tacarcuna Wood-Quail"
+  },
+  {
+    "english": "Gorgeted Wood Quail",
+    "ebird": "Gorgeted Wood-Quail"
+  },
+  {
+    "chinese": "领林鹑",
+    "ebird": "Gorgeted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus strophium",
+    "ebird": "Gorgeted Wood-Quail"
+  },
+  {
+    "english": "Venezuelan Wood Quail",
+    "ebird": "Venezuelan Wood-Quail"
+  },
+  {
+    "chinese": "委内瑞拉林鹑",
+    "ebird": "Venezuelan Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus columbianus",
+    "ebird": "Venezuelan Wood-Quail"
+  },
+  {
+    "english": "Black-breasted Wood Quail",
+    "ebird": "Black-breasted Wood-Quail"
+  },
+  {
+    "chinese": "白喉林鹑",
+    "ebird": "Black-breasted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus leucolaemus",
+    "ebird": "Black-breasted Wood-Quail"
+  },
+  {
+    "english": "Stripe-faced Wood Quail",
+    "ebird": "Stripe-faced Wood-Quail"
+  },
+  {
+    "chinese": "纹颊林鹑",
+    "ebird": "Stripe-faced Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus balliviani",
+    "ebird": "Stripe-faced Wood-Quail"
+  },
+  {
+    "english": "Starred Wood Quail",
+    "ebird": "Starred Wood-Quail"
+  },
+  {
+    "chinese": "黄眼斑林鹑",
+    "ebird": "Starred Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus stellatus",
+    "ebird": "Starred Wood-Quail"
+  },
+  {
+    "english": "Spotted Wood Quail",
+    "ebird": "Spotted Wood-Quail"
+  },
+  {
+    "chinese": "点斑林鹑",
+    "ebird": "Spotted Wood-Quail"
+  },
+  {
+    "scientific": "Odontophorus guttatus",
+    "ebird": "Spotted Wood-Quail"
+  },
+  {
+    "english": "Sage Grouse",
+    "ebird": "Greater Sage-Grouse"
+  },
+  {
+    "chinese": "艾草松鸡",
+    "ebird": "Greater Sage-Grouse"
+  },
+  {
+    "scientific": "Centrocercus urophasianus",
+    "ebird": "Greater Sage-Grouse"
+  },
+  {
+    "english": "Gunnison Grouse",
+    "ebird": "Gunnison Sage-Grouse"
+  },
+  {
+    "chinese": "小艾草松鸡",
+    "ebird": "Gunnison Sage-Grouse"
+  },
+  {
+    "scientific": "Centrocercus minimus",
+    "ebird": "Gunnison Sage-Grouse"
+  },
+  {
+    "english": "Lesser Prairie Chicken",
+    "ebird": "Lesser Prairie-Chicken"
+  },
+  {
+    "chinese": "小草原松鸡",
+    "ebird": "Lesser Prairie-Chicken"
+  },
+  {
+    "scientific": "Tympanuchus pallidicinctus",
+    "ebird": "Lesser Prairie-Chicken"
+  },
+  {
+    "english": "Greater Prairie Chicken",
+    "ebird": "Greater Prairie-Chicken"
+  },
+  {
+    "chinese": "草原松鸡",
+    "ebird": "Greater Prairie-Chicken"
+  },
+  {
+    "scientific": "Tympanuchus cupido",
+    "ebird": "Greater Prairie-Chicken"
+  },
+  {
+    "english": "Verreaux's Monal-Partridge",
+    "ebird": "Chestnut-throated Monal-Partridge"
+  },
+  {
+    "chinese": "雉鹑",
+    "ebird": "Chestnut-throated Monal-Partridge"
+  },
+  {
+    "scientific": "Tetraophasis obscurus",
+    "ebird": "Chestnut-throated Monal-Partridge"
+  },
+  {
+    "english": "Szechenyi's Monal-Partridge",
+    "ebird": "Buff-throated Monal-Partridge"
+  },
+  {
+    "chinese": "黄喉雉鹑",
+    "ebird": "Buff-throated Monal-Partridge"
+  },
+  {
+    "scientific": "Tetraophasis szechenyii",
+    "ebird": "Buff-throated Monal-Partridge"
+  },
+  {
+    "english": "Chukar Partridge",
+    "ebird": "Chukar"
+  },
+  {
+    "chinese": "石鸡",
+    "ebird": "Chukar"
+  },
+  {
+    "scientific": "Alectoris chukar",
+    "ebird": "Chukar"
+  },
+  {
+    "english": "Grey-winged Francolin",
+    "ebird": "Gray-winged Francolin"
+  },
+  {
+    "chinese": "灰翅鹧鸪",
+    "ebird": "Gray-winged Francolin"
+  },
+  {
+    "scientific": "Scleroptila afra",
+    "ebird": "Gray-winged Francolin"
+  },
+  {
+    "english": "Grey-striped Spurfowl",
+    "ebird": "Gray-striped Spurfowl"
+  },
+  {
+    "chinese": "灰纹鹧鸪",
+    "ebird": "Gray-striped Spurfowl"
+  },
+  {
+    "scientific": "Pternistis griseostriatus",
+    "ebird": "Gray-striped Spurfowl"
+  },
+  {
+    "english": "Grey-breasted Spurfowl",
+    "ebird": "Gray-breasted Spurfowl"
+  },
+  {
+    "chinese": "彩鹧鸪",
+    "ebird": "Gray-breasted Spurfowl"
+  },
+  {
+    "scientific": "Pternistis rufopictus",
+    "ebird": "Gray-breasted Spurfowl"
+  },
+  {
+    "english": "Grey Partridge",
+    "ebird": "Gray Partridge"
+  },
+  {
+    "chinese": "灰山鹑",
+    "ebird": "Gray Partridge"
+  },
+  {
+    "scientific": "Perdix perdix",
+    "ebird": "Gray Partridge"
+  },
+  {
+    "english": "Hose's Partridge",
+    "ebird": "Dulit Partridge"
+  },
+  {
+    "chinese": "霍氏长嘴山鹑",
+    "ebird": "Dulit Partridge"
+  },
+  {
+    "scientific": "Rhizothera dulitensis",
+    "ebird": "Dulit Partridge"
+  },
+  {
+    "english": "Madagascan Partridge",
+    "ebird": "Madagascar Partridge"
+  },
+  {
+    "chinese": "马岛鹑",
+    "ebird": "Madagascar Partridge"
+  },
+  {
+    "scientific": "Margaroperdix madagarensis",
+    "ebird": "Madagascar Partridge"
+  },
+  {
+    "english": "Jungle Bush Quail",
+    "ebird": "Jungle Bush-Quail"
+  },
+  {
+    "chinese": "丛林鹑",
+    "ebird": "Jungle Bush-Quail"
+  },
+  {
+    "scientific": "Perdicula asiatica",
+    "ebird": "Jungle Bush-Quail"
+  },
+  {
+    "english": "Rock Bush Quail",
+    "ebird": "Rock Bush-Quail"
+  },
+  {
+    "chinese": "岩林鹑",
+    "ebird": "Rock Bush-Quail"
+  },
+  {
+    "scientific": "Perdicula argoondah",
+    "ebird": "Rock Bush-Quail"
+  },
+  {
+    "english": "Painted Bush Quail",
+    "ebird": "Painted Bush-Quail"
+  },
+  {
+    "chinese": "红嘴林鹑",
+    "ebird": "Painted Bush-Quail"
+  },
+  {
+    "scientific": "Perdicula erythrorhyncha",
+    "ebird": "Painted Bush-Quail"
+  },
+  {
+    "english": "Manipur Bush Quail",
+    "ebird": "Manipur Bush-Quail"
+  },
+  {
+    "chinese": "阿萨姆林鹑",
+    "ebird": "Manipur Bush-Quail"
+  },
+  {
+    "scientific": "Perdicula manipurensis",
+    "ebird": "Manipur Bush-Quail"
+  },
+  {
+    "english": "Udzungwa Forest Partridge",
+    "ebird": "Udzungwa Partridge"
+  },
+  {
+    "chinese": "坦桑尼亚鹑",
+    "ebird": "Udzungwa Partridge"
+  },
+  {
+    "scientific": "Xenoperdix udzungwensis",
+    "ebird": "Udzungwa Partridge"
+  },
+  {
+    "english": "Malaysian Partridge",
+    "ebird": "Malayan Partridge"
+  },
+  {
+    "chinese": "砍氏山鹧鸪",
+    "ebird": "Malayan Partridge"
+  },
+  {
+    "scientific": "Arborophila campbelli",
+    "ebird": "Malayan Partridge"
+  },
+  {
+    "english": "Grey-breasted Partridge",
+    "ebird": "Gray-breasted Partridge"
+  },
+  {
+    "chinese": "灰胸山鹧鸪",
+    "ebird": "Gray-breasted Partridge"
+  },
+  {
+    "scientific": "Arborophila orientalis",
+    "ebird": "Gray-breasted Partridge"
+  },
+  {
+    "english": "Green-legged Partridge",
+    "ebird": "Scaly-breasted Partridge"
+  },
+  {
+    "chinese": "绿脚树鹧鸪",
+    "ebird": "Scaly-breasted Partridge"
+  },
+  {
+    "scientific": "Tropicoperdix chloropus",
+    "ebird": "Scaly-breasted Partridge"
+  },
+  {
+    "english": "Mountain Bamboo Partridge",
+    "ebird": "Mountain Bamboo-Partridge"
+  },
+  {
+    "chinese": "棕胸竹鸡",
+    "ebird": "Mountain Bamboo-Partridge"
+  },
+  {
+    "scientific": "Bambusicola fytchii",
+    "ebird": "Mountain Bamboo-Partridge"
+  },
+  {
+    "english": "Chinese Bamboo Partridge",
+    "ebird": "Chinese Bamboo-Partridge"
+  },
+  {
+    "chinese": "灰胸竹鸡",
+    "ebird": "Chinese Bamboo-Partridge"
+  },
+  {
+    "scientific": "Bambusicola thoracicus",
+    "ebird": "Chinese Bamboo-Partridge"
+  },
+  {
+    "english": "Taiwan Bamboo Partridge",
+    "ebird": "Taiwan Bamboo-Partridge"
+  },
+  {
+    "chinese": "台湾竹鸡",
+    "ebird": "Taiwan Bamboo-Partridge"
+  },
+  {
+    "scientific": "Bambusicola sonorivox",
+    "ebird": "Taiwan Bamboo-Partridge"
+  },
+  {
+    "english": "Grey Junglefowl",
+    "ebird": "Gray Junglefowl"
+  },
+  {
+    "chinese": "灰原鸡",
+    "ebird": "Gray Junglefowl"
+  },
+  {
+    "scientific": "Gallus sonneratii",
+    "ebird": "Gray Junglefowl"
+  },
+  {
+    "english": "Crestless Fireback",
+    "ebird": "Malayan Crestless Fireback"
+  },
+  {
+    "chinese": "棕尾火背鹇",
+    "ebird": "Malayan Crestless Fireback"
+  },
+  {
+    "scientific": "Lophura erythrophthalma",
+    "ebird": "Malayan Crestless Fireback"
+  },
+  {
+    "english": "Crested Fireback",
+    "ebird": "Bornean Crested Fireback"
+  },
+  {
+    "chinese": "凤冠火背鹇",
+    "ebird": "Bornean Crested Fireback"
+  },
+  {
+    "scientific": "Lophura ignita",
+    "ebird": "Bornean Crested Fireback"
+  },
+  {
+    "english": "White Eared Pheasant",
+    "ebird": "White Eared-Pheasant"
+  },
+  {
+    "chinese": "白马鸡",
+    "ebird": "White Eared-Pheasant"
+  },
+  {
+    "scientific": "Crossoptilon crossoptilon",
+    "ebird": "White Eared-Pheasant"
+  },
+  {
+    "english": "Tibetan Eared Pheasant",
+    "ebird": "Tibetan Eared-Pheasant"
+  },
+  {
+    "chinese": "藏马鸡",
+    "ebird": "Tibetan Eared-Pheasant"
+  },
+  {
+    "scientific": "Crossoptilon harmani",
+    "ebird": "Tibetan Eared-Pheasant"
+  },
+  {
+    "english": "Brown Eared Pheasant",
+    "ebird": "Brown Eared-Pheasant"
+  },
+  {
+    "chinese": "褐马鸡",
+    "ebird": "Brown Eared-Pheasant"
+  },
+  {
+    "scientific": "Crossoptilon mantchuricum",
+    "ebird": "Brown Eared-Pheasant"
+  },
+  {
+    "english": "Blue Eared Pheasant",
+    "ebird": "Blue Eared-Pheasant"
+  },
+  {
+    "chinese": "蓝马鸡",
+    "ebird": "Blue Eared-Pheasant"
+  },
+  {
+    "scientific": "Crossoptilon auritum",
+    "ebird": "Blue Eared-Pheasant"
+  },
+  {
+    "english": "Common Pheasant",
+    "ebird": "Ring-necked Pheasant"
+  },
+  {
+    "chinese": "雉鸡",
+    "ebird": "Ring-necked Pheasant"
+  },
+  {
+    "scientific": "Phasianus colchicus",
+    "ebird": "Ring-necked Pheasant"
+  },
+  {
+    "english": "Grey Peacock-Pheasant",
+    "ebird": "Gray Peacock-Pheasant"
+  },
+  {
+    "chinese": "灰孔雀雉",
+    "ebird": "Gray Peacock-Pheasant"
+  },
+  {
+    "scientific": "Polyplectron bicalcaratum",
+    "ebird": "Gray Peacock-Pheasant"
+  },
+  {
+    "english": "Congo Peafowl",
+    "ebird": "Congo Peacock"
+  },
+  {
+    "chinese": "刚果孔雀",
+    "ebird": "Congo Peacock"
+  },
+  {
+    "scientific": "Afropavo congensis",
+    "ebird": "Congo Peacock"
+  },
+  {
+    "english": "Houbara Bustard",
+    "ebird": "African Houbara"
+  },
+  {
+    "chinese": "翎颌鸨",
+    "ebird": "African Houbara"
+  },
+  {
+    "scientific": "Chlamydotis undulata",
+    "ebird": "African Houbara"
+  },
+  {
+    "english": "Macqueen's Bustard",
+    "ebird": "Asian Houbara"
+  },
+  {
+    "chinese": "波斑鸨",
+    "ebird": "Asian Houbara"
+  },
+  {
+    "scientific": "Chlamydotis macqueenii",
+    "ebird": "Asian Houbara"
+  },
+  {
+    "english": "Blue Korhaan",
+    "ebird": "Blue Bustard"
+  },
+  {
+    "chinese": "蓝鸨",
+    "ebird": "Blue Bustard"
+  },
+  {
+    "scientific": "Eupodotis caerulescens",
+    "ebird": "Blue Bustard"
+  },
+  {
+    "english": "Red-crested Korhaan",
+    "ebird": "Red-crested Bustard"
+  },
+  {
+    "chinese": "红冠鸨",
+    "ebird": "Red-crested Bustard"
+  },
+  {
+    "scientific": "Lophotis ruficrista",
+    "ebird": "Red-crested Bustard"
+  },
+  {
+    "english": "Southern Black Korhaan",
+    "ebird": "Black Bustard"
+  },
+  {
+    "chinese": "黑鸨",
+    "ebird": "Black Bustard"
+  },
+  {
+    "scientific": "Afrotis afra",
+    "ebird": "Black Bustard"
+  },
+  {
+    "english": "Northern Black Korhaan",
+    "ebird": "White-quilled Bustard"
+  },
+  {
+    "chinese": "白翅黑鸨",
+    "ebird": "White-quilled Bustard"
+  },
+  {
+    "scientific": "Afrotis afraoides",
+    "ebird": "White-quilled Bustard"
+  },
+  {
+    "english": "Grey-throated Rail",
+    "ebird": "Gray-throated Rail"
+  },
+  {
+    "chinese": "灰喉秧鸡",
+    "ebird": "Gray-throated Rail"
+  },
+  {
+    "scientific": "Canirallus oculeus",
+    "ebird": "Gray-throated Rail"
+  },
+  {
+    "english": "Madagascan Wood Rail",
+    "ebird": "Madagascar Forest Rail"
+  },
+  {
+    "chinese": "马岛林秧鸡",
+    "ebird": "Madagascar Forest Rail"
+  },
+  {
+    "scientific": "Mentocrex kioloides",
+    "ebird": "Madagascar Forest Rail"
+  },
+  {
+    "english": "Tsingy Wood Rail",
+    "ebird": "Tsingy Forest Rail"
+  },
+  {
+    "chinese": "石林秧鸡",
+    "ebird": "Tsingy Forest Rail"
+  },
+  {
+    "scientific": "Mentocrex beankaensis",
+    "ebird": "Tsingy Forest Rail"
+  },
+  {
+    "english": "Madagascan Flufftail",
+    "ebird": "Madagascar Flufftail"
+  },
+  {
+    "chinese": "马岛侏秧鸡",
+    "ebird": "Madagascar Flufftail"
+  },
+  {
+    "scientific": "Sarothrura insularis",
+    "ebird": "Madagascar Flufftail"
+  },
+  {
+    "english": "Grey-breasted Crake",
+    "ebird": "Gray-breasted Crake"
+  },
+  {
+    "chinese": "灰胸田鸡",
+    "ebird": "Gray-breasted Crake"
+  },
+  {
+    "scientific": "Laterallus exilis",
+    "ebird": "Gray-breasted Crake"
+  },
+  {
+    "english": "Galapagos Crake",
+    "ebird": "Galapagos Rail"
+  },
+  {
+    "chinese": "加岛田鸡",
+    "ebird": "Galapagos Rail"
+  },
+  {
+    "scientific": "Laterallus spilonota",
+    "ebird": "Galapagos Rail"
+  },
+  {
+    "english": "Madagascan Rail",
+    "ebird": "Madagascar Rail"
+  },
+  {
+    "chinese": "马岛秧鸡",
+    "ebird": "Madagascar Rail"
+  },
+  {
+    "scientific": "Rallus madagascariensis",
+    "ebird": "Madagascar Rail"
+  },
+  {
+    "english": "Brown-banded Rail",
+    "ebird": "Luzon Rail"
+  },
+  {
+    "chinese": "褐斑秧鸡",
+    "ebird": "Luzon Rail"
+  },
+  {
+    "scientific": "Lewinia mirifica",
+    "ebird": "Luzon Rail"
+  },
+  {
+    "english": "Auckland Rail",
+    "ebird": "Auckland Islands Rail"
+  },
+  {
+    "chinese": "奥岛秧鸡",
+    "ebird": "Auckland Islands Rail"
+  },
+  {
+    "scientific": "Lewinia muelleri",
+    "ebird": "Auckland Islands Rail"
+  },
+  {
+    "english": "Little Wood Rail",
+    "ebird": "Little Wood-Rail"
+  },
+  {
+    "chinese": "小林秧鸡",
+    "ebird": "Little Wood-Rail"
+  },
+  {
+    "scientific": "Aramides mangle",
+    "ebird": "Little Wood-Rail"
+  },
+  {
+    "english": "Rufous-necked Wood Rail",
+    "ebird": "Rufous-necked Wood-Rail"
+  },
+  {
+    "chinese": "棕颈林秧鸡",
+    "ebird": "Rufous-necked Wood-Rail"
+  },
+  {
+    "scientific": "Aramides axillaris",
+    "ebird": "Rufous-necked Wood-Rail"
+  },
+  {
+    "english": "Grey-cowled Wood Rail",
+    "ebird": "Gray-cowled Wood-Rail"
+  },
+  {
+    "chinese": "灰颈林秧鸡",
+    "ebird": "Gray-cowled Wood-Rail"
+  },
+  {
+    "scientific": "Aramides cajaneus",
+    "ebird": "Gray-cowled Wood-Rail"
+  },
+  {
+    "english": "Russet-naped Wood Rail",
+    "ebird": "Russet-naped Wood-Rail"
+  },
+  {
+    "chinese": "白腹林秧鸡",
+    "ebird": "Russet-naped Wood-Rail"
+  },
+  {
+    "scientific": "Aramides albiventris",
+    "ebird": "Russet-naped Wood-Rail"
+  },
+  {
+    "english": "Brown Wood Rail",
+    "ebird": "Brown Wood-Rail"
+  },
+  {
+    "chinese": "褐林秧鸡",
+    "ebird": "Brown Wood-Rail"
+  },
+  {
+    "scientific": "Aramides wolfi",
+    "ebird": "Brown Wood-Rail"
+  },
+  {
+    "english": "Giant Wood Rail",
+    "ebird": "Giant Wood-Rail"
+  },
+  {
+    "chinese": "大林秧鸡",
+    "ebird": "Giant Wood-Rail"
+  },
+  {
+    "scientific": "Aramides ypecaha",
+    "ebird": "Giant Wood-Rail"
+  },
+  {
+    "english": "Slaty-breasted Wood Rail",
+    "ebird": "Slaty-breasted Wood-Rail"
+  },
+  {
+    "chinese": "灰胸林秧鸡",
+    "ebird": "Slaty-breasted Wood-Rail"
+  },
+  {
+    "scientific": "Aramides saracura",
+    "ebird": "Slaty-breasted Wood-Rail"
+  },
+  {
+    "english": "Red-winged Wood Rail",
+    "ebird": "Red-winged Wood-Rail"
+  },
+  {
+    "chinese": "红翅林秧鸡",
+    "ebird": "Red-winged Wood-Rail"
+  },
+  {
+    "scientific": "Aramides calopterus",
+    "ebird": "Red-winged Wood-Rail"
+  },
+  {
+    "english": "Tahiti Crake",
+    "ebird": "Miller's Rail"
+  },
+  {
+    "chinese": "塔希提田鸡",
+    "ebird": "Miller's Rail"
+  },
+  {
+    "scientific": "Zapornia nigra",
+    "ebird": "Miller's Rail"
+  },
+  {
+    "english": "Henderson Crake",
+    "ebird": "Henderson Island Crake"
+  },
+  {
+    "chinese": "亨岛田鸡",
+    "ebird": "Henderson Island Crake"
+  },
+  {
+    "scientific": "Zapornia atra",
+    "ebird": "Henderson Island Crake"
+  },
+  {
+    "english": "Grey-headed Swamphen",
+    "ebird": "Gray-headed Swamphen"
+  },
+  {
+    "chinese": "紫水鸡",
+    "ebird": "Gray-headed Swamphen"
+  },
+  {
+    "scientific": "Porphyrio poliocephalus",
+    "ebird": "Gray-headed Swamphen"
+  },
+  {
+    "english": "White Swamphen",
+    "ebird": "Lord Howe Swamphen"
+  },
+  {
+    "chinese": "新不列颠紫水鸡",
+    "ebird": "Lord Howe Swamphen"
+  },
+  {
+    "scientific": "Porphyrio albus",
+    "ebird": "Lord Howe Swamphen"
+  },
+  {
+    "english": "Samoan Woodhen",
+    "ebird": "Samoan Moorhen"
+  },
+  {
+    "chinese": "萨摩亚水鸡",
+    "ebird": "Samoan Moorhen"
+  },
+  {
+    "scientific": "Gallinula pacifica",
+    "ebird": "Samoan Moorhen"
+  },
+  {
+    "english": "Makira Woodhen",
+    "ebird": "Makira Moorhen"
+  },
+  {
+    "chinese": "圣岛骨顶",
+    "ebird": "Makira Moorhen"
+  },
+  {
+    "scientific": "Gallinula silvestris",
+    "ebird": "Makira Moorhen"
+  },
+  {
+    "english": "Common Moorhen",
+    "ebird": "Eurasian Moorhen"
+  },
+  {
+    "chinese": "黑水鸡",
+    "ebird": "Eurasian Moorhen"
+  },
+  {
+    "scientific": "Gallinula chloropus",
+    "ebird": "Eurasian Moorhen"
+  },
+  {
+    "english": "Andean Coot",
+    "ebird": "Slate-colored Coot"
+  },
+  {
+    "chinese": "安第斯骨顶",
+    "ebird": "Slate-colored Coot"
+  },
+  {
+    "scientific": "Fulica ardesiaca",
+    "ebird": "Slate-colored Coot"
+  },
+  {
+    "english": "Grey-winged Trumpeter",
+    "ebird": "Gray-winged Trumpeter"
+  },
+  {
+    "chinese": "灰翅喇叭声鹤",
+    "ebird": "Gray-winged Trumpeter"
+  },
+  {
+    "scientific": "Psophia crepitans",
+    "ebird": "Gray-winged Trumpeter"
+  },
+  {
+    "english": "Grey Crowned Crane",
+    "ebird": "Gray Crowned-Crane"
+  },
+  {
+    "chinese": "灰冕鹤",
+    "ebird": "Gray Crowned-Crane"
+  },
+  {
+    "scientific": "Balearica regulorum",
+    "ebird": "Gray Crowned-Crane"
+  },
+  {
+    "english": "Black Crowned Crane",
+    "ebird": "Black Crowned-Crane"
+  },
+  {
+    "chinese": "黑冕鹤",
+    "ebird": "Black Crowned-Crane"
+  },
+  {
+    "scientific": "Balearica pavonina",
+    "ebird": "Black Crowned-Crane"
+  },
+  {
+    "english": "Eurasian Stone-curlew",
+    "ebird": "Eurasian Thick-knee"
+  },
+  {
+    "chinese": "欧石鸻",
+    "ebird": "Eurasian Thick-knee"
+  },
+  {
+    "scientific": "Burhinus oedicnemus",
+    "ebird": "Eurasian Thick-knee"
+  },
+  {
+    "english": "Indian Stone-curlew",
+    "ebird": "Indian Thick-knee"
+  },
+  {
+    "chinese": "印度石鸻",
+    "ebird": "Indian Thick-knee"
+  },
+  {
+    "scientific": "Burhinus indicus",
+    "ebird": "Indian Thick-knee"
+  },
+  {
+    "english": "Bush Stone-curlew",
+    "ebird": "Bush Thick-knee"
+  },
+  {
+    "chinese": "长尾石鸻",
+    "ebird": "Bush Thick-knee"
+  },
+  {
+    "scientific": "Burhinus grallarius",
+    "ebird": "Bush Thick-knee"
+  },
+  {
+    "english": "Great Stone-curlew",
+    "ebird": "Great Thick-knee"
+  },
+  {
+    "chinese": "大石鸻",
+    "ebird": "Great Thick-knee"
+  },
+  {
+    "scientific": "Esacus recurvirostris",
+    "ebird": "Great Thick-knee"
+  },
+  {
+    "english": "Beach Stone-curlew",
+    "ebird": "Beach Thick-knee"
+  },
+  {
+    "chinese": "石鸻",
+    "ebird": "Beach Thick-knee"
+  },
+  {
+    "scientific": "Esacus magnirostris",
+    "ebird": "Beach Thick-knee"
+  },
+  {
+    "english": "Canary Islands Oystercatcher",
+    "ebird": "Canarian Oystercatcher"
+  },
+  {
+    "chinese": "坎岛蛎鹬",
+    "ebird": "Canarian Oystercatcher"
+  },
+  {
+    "scientific": "Haematopus meadewaldoi",
+    "ebird": "Canarian Oystercatcher"
+  },
+  {
+    "english": "Chatham Oystercatcher",
+    "ebird": "Chatham Islands Oystercatcher"
+  },
+  {
+    "chinese": "查岛蛎鹬",
+    "ebird": "Chatham Islands Oystercatcher"
+  },
+  {
+    "scientific": "Haematopus chathamensis",
+    "ebird": "Chatham Islands Oystercatcher"
+  },
+  {
+    "english": "European Golden Plover",
+    "ebird": "European Golden-Plover"
+  },
+  {
+    "chinese": "欧金鸻",
+    "ebird": "European Golden-Plover"
+  },
+  {
+    "scientific": "Pluvialis apricaria",
+    "ebird": "European Golden-Plover"
+  },
+  {
+    "english": "Pacific Golden Plover",
+    "ebird": "Pacific Golden-Plover"
+  },
+  {
+    "chinese": "金斑鸻",
+    "ebird": "Pacific Golden-Plover"
+  },
+  {
+    "scientific": "Pluvialis fulva",
+    "ebird": "Pacific Golden-Plover"
+  },
+  {
+    "english": "American Golden Plover",
+    "ebird": "American Golden-Plover"
+  },
+  {
+    "chinese": "美洲金鸻",
+    "ebird": "American Golden-Plover"
+  },
+  {
+    "scientific": "Pluvialis dominica",
+    "ebird": "American Golden-Plover"
+  },
+  {
+    "english": "Grey Plover",
+    "ebird": "Black-bellied Plover"
+  },
+  {
+    "chinese": "灰斑鸻",
+    "ebird": "Black-bellied Plover"
+  },
+  {
+    "scientific": "Pluvialis squatarola",
+    "ebird": "Black-bellied Plover"
+  },
+  {
+    "english": "Hooded Dotterel",
+    "ebird": "Hooded Plover"
+  },
+  {
+    "chinese": "黑头鸻",
+    "ebird": "Hooded Plover"
+  },
+  {
+    "scientific": "Thinornis cucullatus",
+    "ebird": "Hooded Plover"
+  },
+  {
+    "english": "Shore Dotterel",
+    "ebird": "Shore Plover"
+  },
+  {
+    "chinese": "滨鸻",
+    "ebird": "Shore Plover"
+  },
+  {
+    "scientific": "Thinornis novaeseelandiae",
+    "ebird": "Shore Plover"
+  },
+  {
+    "english": "Madagascan Sandgrouse",
+    "ebird": "Madagascar Sandgrouse"
+  },
+  {
+    "chinese": "马岛沙鸡",
+    "ebird": "Madagascar Sandgrouse"
+  },
+  {
+    "scientific": "Pterocles personatus",
+    "ebird": "Madagascar Sandgrouse"
+  },
+  {
+    "english": "Rock Dove",
+    "ebird": "Rock Pigeon"
+  },
+  {
+    "chinese": "原鸽",
+    "ebird": "Rock Pigeon"
+  },
+  {
+    "scientific": "Columba livia",
+    "ebird": "Rock Pigeon"
+  },
+  {
+    "english": "Common Wood Pigeon",
+    "ebird": "Common Wood-Pigeon"
+  },
+  {
+    "chinese": "斑尾林鸽",
+    "ebird": "Common Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba palumbus",
+    "ebird": "Common Wood-Pigeon"
+  },
+  {
+    "english": "African Olive Pigeon",
+    "ebird": "Rameron Pigeon"
+  },
+  {
+    "chinese": "黄眼鸽",
+    "ebird": "Rameron Pigeon"
+  },
+  {
+    "scientific": "Columba arquatrix",
+    "ebird": "Rameron Pigeon"
+  },
+  {
+    "english": "Cameroon Olive Pigeon",
+    "ebird": "Cameroon Pigeon"
+  },
+  {
+    "chinese": "喀麦隆鸽",
+    "ebird": "Cameroon Pigeon"
+  },
+  {
+    "scientific": "Columba sjostedti",
+    "ebird": "Cameroon Pigeon"
+  },
+  {
+    "english": "Sao Tome Olive Pigeon",
+    "ebird": "Maroon Pigeon"
+  },
+  {
+    "chinese": "圣多美绿鸽",
+    "ebird": "Maroon Pigeon"
+  },
+  {
+    "scientific": "Columba thomensis",
+    "ebird": "Maroon Pigeon"
+  },
+  {
+    "english": "Comoros Olive Pigeon",
+    "ebird": "Comoro Pigeon"
+  },
+  {
+    "chinese": "科摩罗林鸽",
+    "ebird": "Comoro Pigeon"
+  },
+  {
+    "scientific": "Columba pollenii",
+    "ebird": "Comoro Pigeon"
+  },
+  {
+    "english": "Speckled Wood Pigeon",
+    "ebird": "Speckled Wood-Pigeon"
+  },
+  {
+    "chinese": "点斑林鸽",
+    "ebird": "Speckled Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba hodgsonii",
+    "ebird": "Speckled Wood-Pigeon"
+  },
+  {
+    "english": "Ashy Wood Pigeon",
+    "ebird": "Ashy Wood-Pigeon"
+  },
+  {
+    "chinese": "灰林鸽",
+    "ebird": "Ashy Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba pulchricollis",
+    "ebird": "Ashy Wood-Pigeon"
+  },
+  {
+    "english": "Nilgiri Wood Pigeon",
+    "ebird": "Nilgiri Wood-Pigeon"
+  },
+  {
+    "chinese": "灰头林鸽",
+    "ebird": "Nilgiri Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba elphinstonii",
+    "ebird": "Nilgiri Wood-Pigeon"
+  },
+  {
+    "english": "Sri Lanka Wood Pigeon",
+    "ebird": "Sri Lanka Wood-Pigeon"
+  },
+  {
+    "chinese": "紫头林鸽",
+    "ebird": "Sri Lanka Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba torringtoniae",
+    "ebird": "Sri Lanka Wood-Pigeon"
+  },
+  {
+    "english": "Silvery Pigeon",
+    "ebird": "Silvery Wood-Pigeon"
+  },
+  {
+    "chinese": "银鸽",
+    "ebird": "Silvery Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba argentina",
+    "ebird": "Silvery Wood-Pigeon"
+  },
+  {
+    "english": "Andaman Wood Pigeon",
+    "ebird": "Andaman Wood-Pigeon"
+  },
+  {
+    "chinese": "安达曼林鸽",
+    "ebird": "Andaman Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba palumboides",
+    "ebird": "Andaman Wood-Pigeon"
+  },
+  {
+    "english": "Japanese Wood Pigeon",
+    "ebird": "Black Wood-Pigeon"
+  },
+  {
+    "chinese": "黑林鸽",
+    "ebird": "Black Wood-Pigeon"
+  },
+  {
+    "scientific": "Columba janthina",
+    "ebird": "Black Wood-Pigeon"
+  },
+  {
+    "english": "Bonin Wood Pigeon",
+    "ebird": "Bonin Pigeon"
+  },
+  {
+    "chinese": "小笠原杂色林鸽",
+    "ebird": "Bonin Pigeon"
+  },
+  {
+    "scientific": "Columba versicolor",
+    "ebird": "Bonin Pigeon"
+  },
+  {
+    "english": "Ryukyu Wood Pigeon",
+    "ebird": "Ryukyu Pigeon"
+  },
+  {
+    "chinese": "琉球銀斑黑鴿",
+    "ebird": "Ryukyu Pigeon"
+  },
+  {
+    "scientific": "Columba jouyi",
+    "ebird": "Ryukyu Pigeon"
+  },
+  {
+    "english": "Island Bronze-naped Pigeon",
+    "ebird": "Sao Tome Pigeon"
+  },
+  {
+    "chinese": "圣多美鸽",
+    "ebird": "Sao Tome Pigeon"
+  },
+  {
+    "scientific": "Columba malherbii",
+    "ebird": "Sao Tome Pigeon"
+  },
+  {
+    "english": "Maranon Pigeon",
+    "ebird": "Peruvian Pigeon"
+  },
+  {
+    "chinese": "秘鲁鸽",
+    "ebird": "Peruvian Pigeon"
+  },
+  {
+    "scientific": "Patagioenas oenops",
+    "ebird": "Peruvian Pigeon"
+  },
+  {
+    "english": "Malagasy Turtle Dove",
+    "ebird": "Malagasy Turtle-Dove"
+  },
+  {
+    "chinese": "马岛斑鸠",
+    "ebird": "Malagasy Turtle-Dove"
+  },
+  {
+    "scientific": "Nesoenas picturatus",
+    "ebird": "Malagasy Turtle-Dove"
+  },
+  {
+    "english": "Rodrigues Pigeon",
+    "ebird": "Rodrigues Turtle-Dove"
+  },
+  {
+    "chinese": "罗岛蓝鸠",
+    "ebird": "Rodrigues Turtle-Dove"
+  },
+  {
+    "scientific": "Nesoenas rodericanus",
+    "ebird": "Rodrigues Turtle-Dove"
+  },
+  {
+    "english": "European Turtle Dove",
+    "ebird": "European Turtle-Dove"
+  },
+  {
+    "chinese": "欧斑鸠",
+    "ebird": "European Turtle-Dove"
+  },
+  {
+    "scientific": "Streptopelia turtur",
+    "ebird": "European Turtle-Dove"
+  },
+  {
+    "english": "Dusky Turtle Dove",
+    "ebird": "Dusky Turtle-Dove"
+  },
+  {
+    "chinese": "粉胸斑鸠",
+    "ebird": "Dusky Turtle-Dove"
+  },
+  {
+    "scientific": "Streptopelia lugens",
+    "ebird": "Dusky Turtle-Dove"
+  },
+  {
+    "english": "Adamawa Turtle Dove",
+    "ebird": "Adamawa Turtle-Dove"
+  },
+  {
+    "chinese": "喀麦隆斑鸠",
+    "ebird": "Adamawa Turtle-Dove"
+  },
+  {
+    "scientific": "Streptopelia hypopyrrha",
+    "ebird": "Adamawa Turtle-Dove"
+  },
+  {
+    "english": "Oriental Turtle Dove",
+    "ebird": "Oriental Turtle-Dove"
+  },
+  {
+    "chinese": "山斑鸠",
+    "ebird": "Oriental Turtle-Dove"
+  },
+  {
+    "scientific": "Streptopelia orientalis",
+    "ebird": "Oriental Turtle-Dove"
+  },
+  {
+    "english": "Island Collared Dove",
+    "ebird": "Sunda Collared-Dove"
+  },
+  {
+    "chinese": "爪哇斑鸠",
+    "ebird": "Sunda Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia bitorquata",
+    "ebird": "Sunda Collared-Dove"
+  },
+  {
+    "english": "Eurasian Collared Dove",
+    "ebird": "Eurasian Collared-Dove"
+  },
+  {
+    "chinese": "灰斑鸠",
+    "ebird": "Eurasian Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia decaocto",
+    "ebird": "Eurasian Collared-Dove"
+  },
+  {
+    "english": "African Collared Dove",
+    "ebird": "African Collared-Dove"
+  },
+  {
+    "chinese": "粉头斑鸠",
+    "ebird": "African Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia roseogrisea",
+    "ebird": "African Collared-Dove"
+  },
+  {
+    "english": "White-winged Collared Dove",
+    "ebird": "White-winged Collared-Dove"
+  },
+  {
+    "chinese": "白翅斑鸠",
+    "ebird": "White-winged Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia reichenowi",
+    "ebird": "White-winged Collared-Dove"
+  },
+  {
+    "english": "Mourning Collared Dove",
+    "ebird": "Mourning Collared-Dove"
+  },
+  {
+    "chinese": "哀斑鸠",
+    "ebird": "Mourning Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia decipiens",
+    "ebird": "Mourning Collared-Dove"
+  },
+  {
+    "english": "Red Collared Dove",
+    "ebird": "Red Collared-Dove"
+  },
+  {
+    "chinese": "火斑鸠",
+    "ebird": "Red Collared-Dove"
+  },
+  {
+    "scientific": "Streptopelia tranquebarica",
+    "ebird": "Red Collared-Dove"
+  },
+  {
+    "english": "Bar-tailed Cuckoo-Dove",
+    "ebird": "Black-billed Cuckoo-Dove"
+  },
+  {
+    "chinese": "黑嘴鹃鸠",
+    "ebird": "Black-billed Cuckoo-Dove"
+  },
+  {
+    "scientific": "Macropygia nigrirostris",
+    "ebird": "Black-billed Cuckoo-Dove"
+  },
+  {
+    "english": "MacKinlay's Cuckoo-Dove",
+    "ebird": "Spot-breasted Cuckoo-Dove"
+  },
+  {
+    "chinese": "棕鹃鸠",
+    "ebird": "Spot-breasted Cuckoo-Dove"
+  },
+  {
+    "scientific": "Macropygia mackinlayi",
+    "ebird": "Spot-breasted Cuckoo-Dove"
+  },
+  {
+    "english": "Black Cuckoo-Dove",
+    "ebird": "Slaty Cuckoo-Dove"
+  },
+  {
+    "chinese": "黑蕉鸠",
+    "ebird": "Slaty Cuckoo-Dove"
+  },
+  {
+    "scientific": "Turacoena modesta",
+    "ebird": "Slaty Cuckoo-Dove"
+  },
+  {
+    "english": "Emerald-spotted Wood Dove",
+    "ebird": "Emerald-spotted Wood-Dove"
+  },
+  {
+    "chinese": "绿点森鸠",
+    "ebird": "Emerald-spotted Wood-Dove"
+  },
+  {
+    "scientific": "Turtur chalcospilos",
+    "ebird": "Emerald-spotted Wood-Dove"
+  },
+  {
+    "english": "Black-billed Wood Dove",
+    "ebird": "Black-billed Wood-Dove"
+  },
+  {
+    "chinese": "黑嘴森鸠",
+    "ebird": "Black-billed Wood-Dove"
+  },
+  {
+    "scientific": "Turtur abyssinicus",
+    "ebird": "Black-billed Wood-Dove"
+  },
+  {
+    "english": "Blue-spotted Wood Dove",
+    "ebird": "Blue-spotted Wood-Dove"
+  },
+  {
+    "chinese": "蓝斑森鸠",
+    "ebird": "Blue-spotted Wood-Dove"
+  },
+  {
+    "scientific": "Turtur afer",
+    "ebird": "Blue-spotted Wood-Dove"
+  },
+  {
+    "english": "Blue-headed Wood Dove",
+    "ebird": "Blue-headed Wood-Dove"
+  },
+  {
+    "chinese": "蓝头森鸠",
+    "ebird": "Blue-headed Wood-Dove"
+  },
+  {
+    "scientific": "Turtur brehmeri",
+    "ebird": "Blue-headed Wood-Dove"
+  },
+  {
+    "english": "Common Emerald Dove",
+    "ebird": "Asian Emerald Dove"
+  },
+  {
+    "chinese": "绿翅金鸠",
+    "ebird": "Asian Emerald Dove"
+  },
+  {
+    "scientific": "Chalcophaps indica",
+    "ebird": "Asian Emerald Dove"
+  },
+  {
+    "english": "Stephan's Emerald Dove",
+    "ebird": "Stephan's Dove"
+  },
+  {
+    "chinese": "褐背金鸠",
+    "ebird": "Stephan's Dove"
+  },
+  {
+    "scientific": "Chalcophaps stephani",
+    "ebird": "Stephan's Dove"
+  },
+  {
+    "english": "Thick-billed Ground Pigeon",
+    "ebird": "Thick-billed Ground-Pigeon"
+  },
+  {
+    "chinese": "厚嘴地鸠",
+    "ebird": "Thick-billed Ground-Pigeon"
+  },
+  {
+    "scientific": "Trugon terrestris",
+    "ebird": "Thick-billed Ground-Pigeon"
+  },
+  {
+    "english": "Chestnut-quilled Rock Pigeon",
+    "ebird": "Chestnut-quilled Rock-Pigeon"
+  },
+  {
+    "chinese": "栗翅岩鸠",
+    "ebird": "Chestnut-quilled Rock-Pigeon"
+  },
+  {
+    "scientific": "Petrophassa rufipennis",
+    "ebird": "Chestnut-quilled Rock-Pigeon"
+  },
+  {
+    "english": "White-quilled Rock Pigeon",
+    "ebird": "White-quilled Rock-Pigeon"
+  },
+  {
+    "chinese": "白翅岩鸠",
+    "ebird": "White-quilled Rock-Pigeon"
+  },
+  {
+    "scientific": "Petrophassa albipennis",
+    "ebird": "White-quilled Rock-Pigeon"
+  },
+  {
+    "english": "Moreno's Ground Dove",
+    "ebird": "Bare-eyed Ground Dove"
+  },
+  {
+    "chinese": "裸眶地鸠",
+    "ebird": "Bare-eyed Ground Dove"
+  },
+  {
+    "scientific": "Metriopelia morenoi",
+    "ebird": "Bare-eyed Ground Dove"
+  },
+  {
+    "english": "Grey-fronted Quail-Dove",
+    "ebird": "Gray-fronted Quail-Dove"
+  },
+  {
+    "chinese": "灰头鹑鸠",
+    "ebird": "Gray-fronted Quail-Dove"
+  },
+  {
+    "scientific": "Geotrygon caniceps",
+    "ebird": "Gray-fronted Quail-Dove"
+  },
+  {
+    "english": "Yungas Dove",
+    "ebird": "Large-tailed Dove"
+  },
+  {
+    "chinese": "大尾棕翅鸠",
+    "ebird": "Large-tailed Dove"
+  },
+  {
+    "scientific": "Leptotila megalura",
+    "ebird": "Large-tailed Dove"
+  },
+  {
+    "english": "Grey-fronted Dove",
+    "ebird": "Gray-fronted Dove"
+  },
+  {
+    "chinese": "灰额棕翅鸠",
+    "ebird": "Gray-fronted Dove"
+  },
+  {
+    "scientific": "Leptotila rufaxilla",
+    "ebird": "Gray-fronted Dove"
+  },
+  {
+    "english": "Grey-headed Dove",
+    "ebird": "Gray-headed Dove"
+  },
+  {
+    "chinese": "灰头棕翅鸠",
+    "ebird": "Gray-headed Dove"
+  },
+  {
+    "scientific": "Leptotila plumbeiceps",
+    "ebird": "Gray-headed Dove"
+  },
+  {
+    "english": "Grey-chested Dove",
+    "ebird": "Gray-chested Dove"
+  },
+  {
+    "chinese": "灰胸棕翅鸠",
+    "ebird": "Gray-chested Dove"
+  },
+  {
+    "scientific": "Leptotila cassinii",
+    "ebird": "Gray-chested Dove"
+  },
+  {
+    "english": "White-breasted Ground Dove",
+    "ebird": "White-bibbed Ground Dove"
+  },
+  {
+    "chinese": "白胸鸡鸠",
+    "ebird": "White-bibbed Ground Dove"
+  },
+  {
+    "scientific": "Pampusana jobiensis",
+    "ebird": "White-bibbed Ground Dove"
+  },
+  {
+    "english": "White-fronted Ground Dove",
+    "ebird": "Caroline Islands Ground Dove"
+  },
+  {
+    "chinese": "特岛鸡鸠",
+    "ebird": "Caroline Islands Ground Dove"
+  },
+  {
+    "scientific": "Pampusana kubaryi",
+    "ebird": "Caroline Islands Ground Dove"
+  },
+  {
+    "english": "Tongan Ground Dove",
+    "ebird": "Shy Ground Dove"
+  },
+  {
+    "chinese": "睦鸡鸠",
+    "ebird": "Shy Ground Dove"
+  },
+  {
+    "scientific": "Pampusana stairi",
+    "ebird": "Shy Ground Dove"
+  },
+  {
+    "english": "Western Crowned Pigeon",
+    "ebird": "Western Crowned-Pigeon"
+  },
+  {
+    "chinese": "蓝凤冠鸠",
+    "ebird": "Western Crowned-Pigeon"
+  },
+  {
+    "scientific": "Goura cristata",
+    "ebird": "Western Crowned-Pigeon"
+  },
+  {
+    "english": "Scheepmaker's Crowned Pigeon",
+    "ebird": "Scheepmaker's Crowned-Pigeon"
+  },
+  {
+    "chinese": "紫胸凤冠鸠",
+    "ebird": "Scheepmaker's Crowned-Pigeon"
+  },
+  {
+    "scientific": "Goura scheepmakeri",
+    "ebird": "Scheepmaker's Crowned-Pigeon"
+  },
+  {
+    "english": "Sclater's Crowned Pigeon",
+    "ebird": "Sclater's Crowned-Pigeon"
+  },
+  {
+    "chinese": "斯克氏紫胸风冠鸠",
+    "ebird": "Sclater's Crowned-Pigeon"
+  },
+  {
+    "scientific": "Goura sclaterii",
+    "ebird": "Sclater's Crowned-Pigeon"
+  },
+  {
+    "english": "Victoria Crowned Pigeon",
+    "ebird": "Victoria Crowned-Pigeon"
+  },
+  {
+    "chinese": "维多凤冠鸠",
+    "ebird": "Victoria Crowned-Pigeon"
+  },
+  {
+    "scientific": "Goura victoria",
+    "ebird": "Victoria Crowned-Pigeon"
+  },
+  {
+    "english": "White-eared Brown Dove",
+    "ebird": "White-eared Brown-Dove"
+  },
+  {
+    "chinese": "小褐果鸠",
+    "ebird": "White-eared Brown-Dove"
+  },
+  {
+    "scientific": "Phapitreron leucotis",
+    "ebird": "White-eared Brown-Dove"
+  },
+  {
+    "english": "Amethyst Brown Dove",
+    "ebird": "Amethyst Brown-Dove"
+  },
+  {
+    "chinese": "大褐果鸠",
+    "ebird": "Amethyst Brown-Dove"
+  },
+  {
+    "scientific": "Phapitreron amethystinus",
+    "ebird": "Amethyst Brown-Dove"
+  },
+  {
+    "english": "Tawitawi Brown Dove",
+    "ebird": "Tawitawi Brown-Dove"
+  },
+  {
+    "chinese": "棕耳褐果鸠",
+    "ebird": "Tawitawi Brown-Dove"
+  },
+  {
+    "scientific": "Phapitreron cinereiceps",
+    "ebird": "Tawitawi Brown-Dove"
+  },
+  {
+    "english": "Mindanao Brown Dove",
+    "ebird": "Mindanao Brown-Dove"
+  },
+  {
+    "chinese": "棉岛褐果鸠",
+    "ebird": "Mindanao Brown-Dove"
+  },
+  {
+    "scientific": "Phapitreron brunneiceps",
+    "ebird": "Mindanao Brown-Dove"
+  },
+  {
+    "english": "Cinnamon-headed Green Pigeon",
+    "ebird": "Cinnamon-headed Green-Pigeon"
+  },
+  {
+    "chinese": "棕头绿鸠",
+    "ebird": "Cinnamon-headed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron fulvicollis",
+    "ebird": "Cinnamon-headed Green-Pigeon"
+  },
+  {
+    "english": "Little Green Pigeon",
+    "ebird": "Little Green-Pigeon"
+  },
+  {
+    "chinese": "小绿鸠",
+    "ebird": "Little Green-Pigeon"
+  },
+  {
+    "scientific": "Treron olax",
+    "ebird": "Little Green-Pigeon"
+  },
+  {
+    "english": "Pink-necked Green Pigeon",
+    "ebird": "Pink-necked Green-Pigeon"
+  },
+  {
+    "chinese": "红颈绿鸠",
+    "ebird": "Pink-necked Green-Pigeon"
+  },
+  {
+    "scientific": "Treron vernans",
+    "ebird": "Pink-necked Green-Pigeon"
+  },
+  {
+    "english": "Orange-breasted Green Pigeon",
+    "ebird": "Orange-breasted Green-Pigeon"
+  },
+  {
+    "chinese": "橙胸绿鸠",
+    "ebird": "Orange-breasted Green-Pigeon"
+  },
+  {
+    "scientific": "Treron bicinctus",
+    "ebird": "Orange-breasted Green-Pigeon"
+  },
+  {
+    "english": "Sri Lanka Green Pigeon",
+    "ebird": "Sri Lanka Green-Pigeon"
+  },
+  {
+    "chinese": "斯里兰卡绿鸠",
+    "ebird": "Sri Lanka Green-Pigeon"
+  },
+  {
+    "scientific": "Treron pompadora",
+    "ebird": "Sri Lanka Green-Pigeon"
+  },
+  {
+    "english": "Grey-fronted Green Pigeon",
+    "ebird": "Gray-fronted Green-Pigeon"
+  },
+  {
+    "chinese": "灰额绿鸠",
+    "ebird": "Gray-fronted Green-Pigeon"
+  },
+  {
+    "scientific": "Treron affinis",
+    "ebird": "Gray-fronted Green-Pigeon"
+  },
+  {
+    "english": "Ashy-headed Green Pigeon",
+    "ebird": "Ashy-headed Green-Pigeon"
+  },
+  {
+    "chinese": "灰头绿鸠",
+    "ebird": "Ashy-headed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron phayrei",
+    "ebird": "Ashy-headed Green-Pigeon"
+  },
+  {
+    "english": "Andaman Green Pigeon",
+    "ebird": "Andaman Green-Pigeon"
+  },
+  {
+    "chinese": "安达曼绿鸠",
+    "ebird": "Andaman Green-Pigeon"
+  },
+  {
+    "scientific": "Treron chloropterus",
+    "ebird": "Andaman Green-Pigeon"
+  },
+  {
+    "english": "Philippine Green Pigeon",
+    "ebird": "Philippine Green-Pigeon"
+  },
+  {
+    "chinese": "菲律宾绿鸠",
+    "ebird": "Philippine Green-Pigeon"
+  },
+  {
+    "scientific": "Treron axillaris",
+    "ebird": "Philippine Green-Pigeon"
+  },
+  {
+    "english": "Buru Green Pigeon",
+    "ebird": "Buru Green-Pigeon"
+  },
+  {
+    "chinese": "布鲁绿鸠",
+    "ebird": "Buru Green-Pigeon"
+  },
+  {
+    "scientific": "Treron aromaticus",
+    "ebird": "Buru Green-Pigeon"
+  },
+  {
+    "english": "Thick-billed Green Pigeon",
+    "ebird": "Thick-billed Green-Pigeon"
+  },
+  {
+    "chinese": "厚嘴绿鸠",
+    "ebird": "Thick-billed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron curvirostra",
+    "ebird": "Thick-billed Green-Pigeon"
+  },
+  {
+    "english": "Grey-cheeked Green Pigeon",
+    "ebird": "Gray-cheeked Green-Pigeon"
+  },
+  {
+    "chinese": "灰颊绿鸠",
+    "ebird": "Gray-cheeked Green-Pigeon"
+  },
+  {
+    "scientific": "Treron griseicauda",
+    "ebird": "Gray-cheeked Green-Pigeon"
+  },
+  {
+    "english": "Sumba Green Pigeon",
+    "ebird": "Sumba Green-Pigeon"
+  },
+  {
+    "chinese": "松巴绿鸠",
+    "ebird": "Sumba Green-Pigeon"
+  },
+  {
+    "scientific": "Treron teysmannii",
+    "ebird": "Sumba Green-Pigeon"
+  },
+  {
+    "english": "Flores Green Pigeon",
+    "ebird": "Flores Green-Pigeon"
+  },
+  {
+    "chinese": "绿鸠",
+    "ebird": "Flores Green-Pigeon"
+  },
+  {
+    "scientific": "Treron floris",
+    "ebird": "Flores Green-Pigeon"
+  },
+  {
+    "english": "Timor Green Pigeon",
+    "ebird": "Timor Green-Pigeon"
+  },
+  {
+    "chinese": "帝汶绿鸠",
+    "ebird": "Timor Green-Pigeon"
+  },
+  {
+    "scientific": "Treron psittaceus",
+    "ebird": "Timor Green-Pigeon"
+  },
+  {
+    "english": "Large Green Pigeon",
+    "ebird": "Large Green-Pigeon"
+  },
+  {
+    "chinese": "大绿鸠",
+    "ebird": "Large Green-Pigeon"
+  },
+  {
+    "scientific": "Treron capellei",
+    "ebird": "Large Green-Pigeon"
+  },
+  {
+    "english": "Yellow-footed Green Pigeon",
+    "ebird": "Yellow-footed Green-Pigeon"
+  },
+  {
+    "chinese": "黄脚绿鸠",
+    "ebird": "Yellow-footed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron phoenicopterus",
+    "ebird": "Yellow-footed Green-Pigeon"
+  },
+  {
+    "english": "Bruce's Green Pigeon",
+    "ebird": "Bruce's Green-Pigeon"
+  },
+  {
+    "chinese": "黄腹绿鸠",
+    "ebird": "Bruce's Green-Pigeon"
+  },
+  {
+    "scientific": "Treron waalia",
+    "ebird": "Bruce's Green-Pigeon"
+  },
+  {
+    "english": "Madagascan Green Pigeon",
+    "ebird": "Madagascar Green-Pigeon"
+  },
+  {
+    "chinese": "马岛绿鸠",
+    "ebird": "Madagascar Green-Pigeon"
+  },
+  {
+    "scientific": "Treron australis",
+    "ebird": "Madagascar Green-Pigeon"
+  },
+  {
+    "english": "Comoros Green Pigeon",
+    "ebird": "Comoro Green-Pigeon"
+  },
+  {
+    "chinese": "科摩罗绿鸠",
+    "ebird": "Comoro Green-Pigeon"
+  },
+  {
+    "scientific": "Treron griveaudi",
+    "ebird": "Comoro Green-Pigeon"
+  },
+  {
+    "english": "African Green Pigeon",
+    "ebird": "African Green-Pigeon"
+  },
+  {
+    "chinese": "非洲绿鸠",
+    "ebird": "African Green-Pigeon"
+  },
+  {
+    "scientific": "Treron calvus",
+    "ebird": "African Green-Pigeon"
+  },
+  {
+    "english": "Pemba Green Pigeon",
+    "ebird": "Pemba Green-Pigeon"
+  },
+  {
+    "chinese": "奔巴绿鸠",
+    "ebird": "Pemba Green-Pigeon"
+  },
+  {
+    "scientific": "Treron pembaensis",
+    "ebird": "Pemba Green-Pigeon"
+  },
+  {
+    "english": "Sao Tome Green Pigeon",
+    "ebird": "Sao Tome Green-Pigeon"
+  },
+  {
+    "chinese": "圣多美绿鸠",
+    "ebird": "Sao Tome Green-Pigeon"
+  },
+  {
+    "scientific": "Treron sanctithomae",
+    "ebird": "Sao Tome Green-Pigeon"
+  },
+  {
+    "english": "Pin-tailed Green Pigeon",
+    "ebird": "Pin-tailed Green-Pigeon"
+  },
+  {
+    "chinese": "针尾绿鸠",
+    "ebird": "Pin-tailed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron apicauda",
+    "ebird": "Pin-tailed Green-Pigeon"
+  },
+  {
+    "english": "Sumatran Green Pigeon",
+    "ebird": "Sumatran Green-Pigeon"
+  },
+  {
+    "chinese": "黄腹针尾绿鸠",
+    "ebird": "Sumatran Green-Pigeon"
+  },
+  {
+    "scientific": "Treron oxyurus",
+    "ebird": "Sumatran Green-Pigeon"
+  },
+  {
+    "english": "Yellow-vented Green Pigeon",
+    "ebird": "Yellow-vented Green-Pigeon"
+  },
+  {
+    "chinese": "白腹针尾绿鸠",
+    "ebird": "Yellow-vented Green-Pigeon"
+  },
+  {
+    "scientific": "Treron seimundi",
+    "ebird": "Yellow-vented Green-Pigeon"
+  },
+  {
+    "english": "Wedge-tailed Green Pigeon",
+    "ebird": "Wedge-tailed Green-Pigeon"
+  },
+  {
+    "chinese": "楔尾绿鸠",
+    "ebird": "Wedge-tailed Green-Pigeon"
+  },
+  {
+    "scientific": "Treron sphenurus",
+    "ebird": "Wedge-tailed Green-Pigeon"
+  },
+  {
+    "english": "White-bellied Green Pigeon",
+    "ebird": "White-bellied Green-Pigeon"
+  },
+  {
+    "chinese": "红翅绿鸠",
+    "ebird": "White-bellied Green-Pigeon"
+  },
+  {
+    "scientific": "Treron sieboldii",
+    "ebird": "White-bellied Green-Pigeon"
+  },
+  {
+    "english": "Whistling Green Pigeon",
+    "ebird": "Whistling Green-Pigeon"
+  },
+  {
+    "chinese": "红顶绿鸠",
+    "ebird": "Whistling Green-Pigeon"
+  },
+  {
+    "scientific": "Treron formosae",
+    "ebird": "Whistling Green-Pigeon"
+  },
+  {
+    "english": "Banded Fruit Dove",
+    "ebird": "Black-backed Fruit-Dove"
+  },
+  {
+    "chinese": "黑背果鸠",
+    "ebird": "Black-backed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus cinctus",
+    "ebird": "Black-backed Fruit-Dove"
+  },
+  {
+    "english": "Black-banded Fruit Dove",
+    "ebird": "Black-banded Fruit-Dove"
+  },
+  {
+    "chinese": "黑斑果鸠",
+    "ebird": "Black-banded Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus alligator",
+    "ebird": "Black-banded Fruit-Dove"
+  },
+  {
+    "english": "Red-naped Fruit Dove",
+    "ebird": "Red-naped Fruit-Dove"
+  },
+  {
+    "chinese": "红枕果鸠",
+    "ebird": "Red-naped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus dohertyi",
+    "ebird": "Red-naped Fruit-Dove"
+  },
+  {
+    "english": "Pink-headed Fruit Dove",
+    "ebird": "Pink-headed Fruit-Dove"
+  },
+  {
+    "chinese": "粉红颈果鸠",
+    "ebird": "Pink-headed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus porphyreus",
+    "ebird": "Pink-headed Fruit-Dove"
+  },
+  {
+    "english": "Flame-breasted Fruit Dove",
+    "ebird": "Flame-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "黑耳果鸠",
+    "ebird": "Flame-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus marchei",
+    "ebird": "Flame-breasted Fruit-Dove"
+  },
+  {
+    "english": "Cream-breasted Fruit Dove",
+    "ebird": "Cream-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "梅氏果鸠",
+    "ebird": "Cream-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus merrilli",
+    "ebird": "Cream-breasted Fruit-Dove"
+  },
+  {
+    "english": "Yellow-breasted Fruit Dove",
+    "ebird": "Yellow-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "栗耳果鸠",
+    "ebird": "Yellow-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus occipitalis",
+    "ebird": "Yellow-breasted Fruit-Dove"
+  },
+  {
+    "english": "Red-eared Fruit Dove",
+    "ebird": "Red-eared Fruit-Dove"
+  },
+  {
+    "chinese": "费氏果鸠",
+    "ebird": "Red-eared Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus fischeri",
+    "ebird": "Red-eared Fruit-Dove"
+  },
+  {
+    "english": "Jambu Fruit Dove",
+    "ebird": "Jambu Fruit-Dove"
+  },
+  {
+    "chinese": "粉头果鸠",
+    "ebird": "Jambu Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus jambu",
+    "ebird": "Jambu Fruit-Dove"
+  },
+  {
+    "english": "Banggai Fruit Dove",
+    "ebird": "Banggai Fruit-Dove"
+  },
+  {
+    "chinese": "暗颏果鸠",
+    "ebird": "Banggai Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus subgularis",
+    "ebird": "Banggai Fruit-Dove"
+  },
+  {
+    "english": "Oberholser's Fruit Dove",
+    "ebird": "Maroon-chinned Fruit-Dove"
+  },
+  {
+    "chinese": "奥氏果鸠",
+    "ebird": "Maroon-chinned Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus epius",
+    "ebird": "Maroon-chinned Fruit-Dove"
+  },
+  {
+    "english": "Sula Fruit Dove",
+    "ebird": "Sula Fruit-Dove"
+  },
+  {
+    "chinese": "苏拉果鸠",
+    "ebird": "Sula Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus mangoliensis",
+    "ebird": "Sula Fruit-Dove"
+  },
+  {
+    "english": "Black-chinned Fruit Dove",
+    "ebird": "Black-chinned Fruit-Dove"
+  },
+  {
+    "chinese": "黑颏果鸠",
+    "ebird": "Black-chinned Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus leclancheri",
+    "ebird": "Black-chinned Fruit-Dove"
+  },
+  {
+    "english": "Scarlet-breasted Fruit Dove",
+    "ebird": "Scarlet-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "红胸果鸠",
+    "ebird": "Scarlet-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus bernsteinii",
+    "ebird": "Scarlet-breasted Fruit-Dove"
+  },
+  {
+    "english": "Wompoo Fruit Dove",
+    "ebird": "Wompoo Fruit-Dove"
+  },
+  {
+    "chinese": "巨果鸠",
+    "ebird": "Wompoo Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus magnificus",
+    "ebird": "Wompoo Fruit-Dove"
+  },
+  {
+    "english": "Pink-spotted Fruit Dove",
+    "ebird": "Pink-spotted Fruit-Dove"
+  },
+  {
+    "chinese": "粉斑果鸠",
+    "ebird": "Pink-spotted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus perlatus",
+    "ebird": "Pink-spotted Fruit-Dove"
+  },
+  {
+    "english": "Ornate Fruit Dove",
+    "ebird": "Ornate Fruit-Dove"
+  },
+  {
+    "chinese": "丽色果鸠",
+    "ebird": "Ornate Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus ornatus",
+    "ebird": "Ornate Fruit-Dove"
+  },
+  {
+    "english": "Tanna Fruit Dove",
+    "ebird": "Tanna Fruit-Dove"
+  },
+  {
+    "chinese": "银肩果鸠",
+    "ebird": "Tanna Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus tannensis",
+    "ebird": "Tanna Fruit-Dove"
+  },
+  {
+    "english": "Orange-fronted Fruit Dove",
+    "ebird": "Orange-fronted Fruit-Dove"
+  },
+  {
+    "chinese": "橙额果鸠",
+    "ebird": "Orange-fronted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus aurantiifrons",
+    "ebird": "Orange-fronted Fruit-Dove"
+  },
+  {
+    "english": "Wallace's Fruit Dove",
+    "ebird": "Wallace's Fruit-Dove"
+  },
+  {
+    "chinese": "金肩果鸠",
+    "ebird": "Wallace's Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus wallacii",
+    "ebird": "Wallace's Fruit-Dove"
+  },
+  {
+    "english": "Superb Fruit Dove",
+    "ebird": "Superb Fruit-Dove"
+  },
+  {
+    "chinese": "华丽果鸠",
+    "ebird": "Superb Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus superbus",
+    "ebird": "Superb Fruit-Dove"
+  },
+  {
+    "english": "Many-colored Fruit Dove",
+    "ebird": "Many-colored Fruit-Dove"
+  },
+  {
+    "chinese": "多色果鸠",
+    "ebird": "Many-colored Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus perousii",
+    "ebird": "Many-colored Fruit-Dove"
+  },
+  {
+    "english": "Crimson-crowned Fruit Dove",
+    "ebird": "Crimson-crowned Fruit-Dove"
+  },
+  {
+    "chinese": "紫顶果鸠",
+    "ebird": "Crimson-crowned Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus porphyraceus",
+    "ebird": "Crimson-crowned Fruit-Dove"
+  },
+  {
+    "english": "Purple-capped Fruit Dove",
+    "ebird": "Purple-capped Fruit-Dove"
+  },
+  {
+    "chinese": "紫额果鸠",
+    "ebird": "Purple-capped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus ponapensis",
+    "ebird": "Purple-capped Fruit-Dove"
+  },
+  {
+    "english": "Kosrae Fruit Dove",
+    "ebird": "Kosrae Fruit-Dove"
+  },
+  {
+    "chinese": "库岛果鸠",
+    "ebird": "Kosrae Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus hernsheimi",
+    "ebird": "Kosrae Fruit-Dove"
+  },
+  {
+    "english": "Palau Fruit Dove",
+    "ebird": "Palau Fruit-Dove"
+  },
+  {
+    "chinese": "帕岛果鸠",
+    "ebird": "Palau Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus pelewensis",
+    "ebird": "Palau Fruit-Dove"
+  },
+  {
+    "english": "Lilac-crowned Fruit Dove",
+    "ebird": "Cook Islands Fruit-Dove"
+  },
+  {
+    "chinese": "拉罗果鸠",
+    "ebird": "Cook Islands Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus rarotongensis",
+    "ebird": "Cook Islands Fruit-Dove"
+  },
+  {
+    "english": "Mariana Fruit Dove",
+    "ebird": "Mariana Fruit-Dove"
+  },
+  {
+    "chinese": "马里岛果鸠",
+    "ebird": "Mariana Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus roseicapilla",
+    "ebird": "Mariana Fruit-Dove"
+  },
+  {
+    "english": "Rose-crowned Fruit Dove",
+    "ebird": "Rose-crowned Fruit-Dove"
+  },
+  {
+    "chinese": "粉顶果鸠",
+    "ebird": "Rose-crowned Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus regina",
+    "ebird": "Rose-crowned Fruit-Dove"
+  },
+  {
+    "english": "Silver-capped Fruit Dove",
+    "ebird": "Silver-capped Fruit-Dove"
+  },
+  {
+    "chinese": "银顶果鸠",
+    "ebird": "Silver-capped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus richardsii",
+    "ebird": "Silver-capped Fruit-Dove"
+  },
+  {
+    "english": "Grey-green Fruit Dove",
+    "ebird": "Gray-green Fruit-Dove"
+  },
+  {
+    "chinese": "灰绿果鸠",
+    "ebird": "Gray-green Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus purpuratus",
+    "ebird": "Gray-green Fruit-Dove"
+  },
+  {
+    "english": "Makatea Fruit Dove",
+    "ebird": "Makatea Fruit-Dove"
+  },
+  {
+    "chinese": "马喀岛果鸠",
+    "ebird": "Makatea Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus chalcurus",
+    "ebird": "Makatea Fruit-Dove"
+  },
+  {
+    "english": "Atoll Fruit Dove",
+    "ebird": "Atoll Fruit-Dove"
+  },
+  {
+    "chinese": "土岛果鸠",
+    "ebird": "Atoll Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus coralensis",
+    "ebird": "Atoll Fruit-Dove"
+  },
+  {
+    "english": "Red-bellied Fruit Dove",
+    "ebird": "Red-bellied Fruit-Dove"
+  },
+  {
+    "chinese": "红嘴果鸠",
+    "ebird": "Red-bellied Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus greyi",
+    "ebird": "Red-bellied Fruit-Dove"
+  },
+  {
+    "english": "Rapa Fruit Dove",
+    "ebird": "Rapa Fruit-Dove"
+  },
+  {
+    "chinese": "拉帕岛果鸠",
+    "ebird": "Rapa Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus huttoni",
+    "ebird": "Rapa Fruit-Dove"
+  },
+  {
+    "english": "White-capped Fruit Dove",
+    "ebird": "White-capped Fruit-Dove"
+  },
+  {
+    "chinese": "白顶果鸠",
+    "ebird": "White-capped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus dupetithouarsii",
+    "ebird": "White-capped Fruit-Dove"
+  },
+  {
+    "english": "Red-moustached Fruit Dove",
+    "ebird": "Red-moustached Fruit-Dove"
+  },
+  {
+    "chinese": "赤髯果鸠",
+    "ebird": "Red-moustached Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus mercierii",
+    "ebird": "Red-moustached Fruit-Dove"
+  },
+  {
+    "english": "Henderson Fruit Dove",
+    "ebird": "Henderson Island Fruit-Dove"
+  },
+  {
+    "chinese": "亨岛果鸠",
+    "ebird": "Henderson Island Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus insularis",
+    "ebird": "Henderson Island Fruit-Dove"
+  },
+  {
+    "english": "Coroneted Fruit Dove",
+    "ebird": "Coroneted Fruit-Dove"
+  },
+  {
+    "chinese": "小紫顶果鸠",
+    "ebird": "Coroneted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus coronulatus",
+    "ebird": "Coroneted Fruit-Dove"
+  },
+  {
+    "english": "Beautiful Fruit Dove",
+    "ebird": "Beautiful Fruit-Dove"
+  },
+  {
+    "chinese": "深红顶果鸠",
+    "ebird": "Beautiful Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus pulchellus",
+    "ebird": "Beautiful Fruit-Dove"
+  },
+  {
+    "english": "Blue-capped Fruit Dove",
+    "ebird": "Blue-capped Fruit-Dove"
+  },
+  {
+    "chinese": "蓝顶果鸠",
+    "ebird": "Blue-capped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus monacha",
+    "ebird": "Blue-capped Fruit-Dove"
+  },
+  {
+    "english": "White-bibbed Fruit Dove",
+    "ebird": "White-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "白胸果鸠",
+    "ebird": "White-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus rivoli",
+    "ebird": "White-breasted Fruit-Dove"
+  },
+  {
+    "english": "Yellow-bibbed Fruit Dove",
+    "ebird": "Yellow-bibbed Fruit-Dove"
+  },
+  {
+    "chinese": "黄胸果鸠",
+    "ebird": "Yellow-bibbed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus solomonensis",
+    "ebird": "Yellow-bibbed Fruit-Dove"
+  },
+  {
+    "english": "Claret-breasted Fruit Dove",
+    "ebird": "Claret-breasted Fruit-Dove"
+  },
+  {
+    "chinese": "紫红胸果鸠",
+    "ebird": "Claret-breasted Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus viridis",
+    "ebird": "Claret-breasted Fruit-Dove"
+  },
+  {
+    "english": "White-headed Fruit Dove",
+    "ebird": "White-headed Fruit-Dove"
+  },
+  {
+    "chinese": "白头果鸠",
+    "ebird": "White-headed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus eugeniae",
+    "ebird": "White-headed Fruit-Dove"
+  },
+  {
+    "english": "Orange-bellied Fruit Dove",
+    "ebird": "Orange-bellied Fruit-Dove"
+  },
+  {
+    "chinese": "橙腹果鸠",
+    "ebird": "Orange-bellied Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus iozonus",
+    "ebird": "Orange-bellied Fruit-Dove"
+  },
+  {
+    "english": "Knob-billed Fruit Dove",
+    "ebird": "Knob-billed Fruit-Dove"
+  },
+  {
+    "chinese": "瘤鼻果鸠",
+    "ebird": "Knob-billed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus insolitus",
+    "ebird": "Knob-billed Fruit-Dove"
+  },
+  {
+    "english": "Grey-headed Fruit Dove",
+    "ebird": "Gray-headed Fruit-Dove"
+  },
+  {
+    "chinese": "灰头果鸠",
+    "ebird": "Gray-headed Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus hyogastrus",
+    "ebird": "Gray-headed Fruit-Dove"
+  },
+  {
+    "english": "Carunculated Fruit Dove",
+    "ebird": "Carunculated Fruit-Dove"
+  },
+  {
+    "chinese": "花鼻果鸠",
+    "ebird": "Carunculated Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus granulifrons",
+    "ebird": "Carunculated Fruit-Dove"
+  },
+  {
+    "english": "Black-naped Fruit Dove",
+    "ebird": "Black-naped Fruit-Dove"
+  },
+  {
+    "chinese": "黑项果鸠",
+    "ebird": "Black-naped Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus melanospilus",
+    "ebird": "Black-naped Fruit-Dove"
+  },
+  {
+    "english": "Dwarf Fruit Dove",
+    "ebird": "Dwarf Fruit-Dove"
+  },
+  {
+    "chinese": "小绿果鸠",
+    "ebird": "Dwarf Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus nainus",
+    "ebird": "Dwarf Fruit-Dove"
+  },
+  {
+    "english": "Negros Fruit Dove",
+    "ebird": "Negros Fruit-Dove"
+  },
+  {
+    "chinese": "里氏果鸠",
+    "ebird": "Negros Fruit-Dove"
+  },
+  {
+    "scientific": "Ptilinopus arcanus",
+    "ebird": "Negros Fruit-Dove"
+  },
+  {
+    "english": "Orange Fruit Dove",
+    "ebird": "Orange Dove"
+  },
+  {
+    "chinese": "橙色果鸠",
+    "ebird": "Orange Dove"
+  },
+  {
+    "scientific": "Ptilinopus victor",
+    "ebird": "Orange Dove"
+  },
+  {
+    "english": "Golden Fruit Dove",
+    "ebird": "Golden Dove"
+  },
+  {
+    "chinese": "金果鸠",
+    "ebird": "Golden Dove"
+  },
+  {
+    "scientific": "Ptilinopus luteovirens",
+    "ebird": "Golden Dove"
+  },
+  {
+    "english": "Whistling Fruit Dove",
+    "ebird": "Whistling Dove"
+  },
+  {
+    "chinese": "黄头果鸠",
+    "ebird": "Whistling Dove"
+  },
+  {
+    "scientific": "Ptilinopus layardi",
+    "ebird": "Whistling Dove"
+  },
+  {
+    "english": "Mauritius Blue Pigeon",
+    "ebird": "Mauritius Blue-Pigeon"
+  },
+  {
+    "chinese": "模里西斯蓝鸠",
+    "ebird": "Mauritius Blue-Pigeon"
+  },
+  {
+    "scientific": "Alectroenas nitidissimus",
+    "ebird": "Mauritius Blue-Pigeon"
+  },
+  {
+    "english": "Madagascan Blue Pigeon",
+    "ebird": "Madagascar Blue-Pigeon"
+  },
+  {
+    "chinese": "马岛蓝鸠",
+    "ebird": "Madagascar Blue-Pigeon"
+  },
+  {
+    "scientific": "Alectroenas madagascariensis",
+    "ebird": "Madagascar Blue-Pigeon"
+  },
+  {
+    "english": "Comoros Blue Pigeon",
+    "ebird": "Comoro Blue-Pigeon"
+  },
+  {
+    "chinese": "科摩罗蓝鸠",
+    "ebird": "Comoro Blue-Pigeon"
+  },
+  {
+    "scientific": "Alectroenas sganzini",
+    "ebird": "Comoro Blue-Pigeon"
+  },
+  {
+    "english": "Seychelles Blue Pigeon",
+    "ebird": "Seychelles Blue-Pigeon"
+  },
+  {
+    "chinese": "红冠蓝鸠",
+    "ebird": "Seychelles Blue-Pigeon"
+  },
+  {
+    "scientific": "Alectroenas pulcherrimus",
+    "ebird": "Seychelles Blue-Pigeon"
+  },
+  {
+    "english": "Pink-bellied Imperial Pigeon",
+    "ebird": "Pink-bellied Imperial-Pigeon"
+  },
+  {
+    "chinese": "红腹皇鸠",
+    "ebird": "Pink-bellied Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula poliocephala",
+    "ebird": "Pink-bellied Imperial-Pigeon"
+  },
+  {
+    "english": "White-bellied Imperial Pigeon",
+    "ebird": "White-bellied Imperial-Pigeon"
+  },
+  {
+    "chinese": "斑尾皇鸠",
+    "ebird": "White-bellied Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula forsteni",
+    "ebird": "White-bellied Imperial-Pigeon"
+  },
+  {
+    "english": "Mindoro Imperial Pigeon",
+    "ebird": "Mindoro Imperial-Pigeon"
+  },
+  {
+    "chinese": "红喉皇鸠",
+    "ebird": "Mindoro Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula mindorensis",
+    "ebird": "Mindoro Imperial-Pigeon"
+  },
+  {
+    "english": "Grey-headed Imperial Pigeon",
+    "ebird": "Gray-headed Imperial-Pigeon"
+  },
+  {
+    "chinese": "灰头皇鸠",
+    "ebird": "Gray-headed Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula radiata",
+    "ebird": "Gray-headed Imperial-Pigeon"
+  },
+  {
+    "english": "Spotted Imperial Pigeon",
+    "ebird": "Spotted Imperial-Pigeon"
+  },
+  {
+    "chinese": "点斑皇鸠",
+    "ebird": "Spotted Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula carola",
+    "ebird": "Spotted Imperial-Pigeon"
+  },
+  {
+    "english": "Green Imperial Pigeon",
+    "ebird": "Green Imperial-Pigeon"
+  },
+  {
+    "chinese": "绿皇鸠",
+    "ebird": "Green Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula aenea",
+    "ebird": "Green Imperial-Pigeon"
+  },
+  {
+    "english": "Nicobar Imperial Pigeon",
+    "ebird": "Nicobar Imperial-Pigeon"
+  },
+  {
+    "chinese": "尼柯巴皇鸠",
+    "ebird": "Nicobar Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula nicobarica",
+    "ebird": "Nicobar Imperial-Pigeon"
+  },
+  {
+    "english": "Spectacled Imperial Pigeon",
+    "ebird": "Spectacled Imperial-Pigeon"
+  },
+  {
+    "chinese": "白眼皇鸠",
+    "ebird": "Spectacled Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula perspicillata",
+    "ebird": "Spectacled Imperial-Pigeon"
+  },
+  {
+    "english": "Seram Imperial Pigeon",
+    "ebird": "Seram Imperial-Pigeon"
+  },
+  {
+    "chinese": "斯兰皇鸠",
+    "ebird": "Seram Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula neglecta",
+    "ebird": "Seram Imperial-Pigeon"
+  },
+  {
+    "english": "Elegant Imperial Pigeon",
+    "ebird": "Elegant Imperial-Pigeon"
+  },
+  {
+    "chinese": "蓝尾皇鸠",
+    "ebird": "Elegant Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula concinna",
+    "ebird": "Elegant Imperial-Pigeon"
+  },
+  {
+    "english": "Pacific Imperial Pigeon",
+    "ebird": "Pacific Imperial-Pigeon"
+  },
+  {
+    "chinese": "太平洋皇鸠",
+    "ebird": "Pacific Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula pacifica",
+    "ebird": "Pacific Imperial-Pigeon"
+  },
+  {
+    "english": "Micronesian Imperial Pigeon",
+    "ebird": "Micronesian Imperial-Pigeon"
+  },
+  {
+    "chinese": "密克皇鸠",
+    "ebird": "Micronesian Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula oceanica",
+    "ebird": "Micronesian Imperial-Pigeon"
+  },
+  {
+    "english": "Polynesian Imperial Pigeon",
+    "ebird": "Polynesian Imperial-Pigeon"
+  },
+  {
+    "chinese": "波利皇鸠",
+    "ebird": "Polynesian Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula aurorae",
+    "ebird": "Polynesian Imperial-Pigeon"
+  },
+  {
+    "english": "Marquesan Imperial Pigeon",
+    "ebird": "Nuku Hiva Imperial-Pigeon"
+  },
+  {
+    "chinese": "马克萨斯皇鸠",
+    "ebird": "Nuku Hiva Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula galeata",
+    "ebird": "Nuku Hiva Imperial-Pigeon"
+  },
+  {
+    "english": "Red-knobbed Imperial Pigeon",
+    "ebird": "Red-knobbed Imperial-Pigeon"
+  },
+  {
+    "chinese": "红疣皇鸠",
+    "ebird": "Red-knobbed Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula rubricera",
+    "ebird": "Red-knobbed Imperial-Pigeon"
+  },
+  {
+    "english": "Spice Imperial Pigeon",
+    "ebird": "Spice Imperial-Pigeon"
+  },
+  {
+    "chinese": "黑疣皇鸠",
+    "ebird": "Spice Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula myristicivora",
+    "ebird": "Spice Imperial-Pigeon"
+  },
+  {
+    "english": "Purple-tailed Imperial Pigeon",
+    "ebird": "Purple-tailed Imperial-Pigeon"
+  },
+  {
+    "chinese": "紫尾皇鸠",
+    "ebird": "Purple-tailed Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula rufigaster",
+    "ebird": "Purple-tailed Imperial-Pigeon"
+  },
+  {
+    "english": "Cinnamon-bellied Imperial Pigeon",
+    "ebird": "Cinnamon-bellied Imperial-Pigeon"
+  },
+  {
+    "chinese": "棕腹皇鸠",
+    "ebird": "Cinnamon-bellied Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula basilica",
+    "ebird": "Cinnamon-bellied Imperial-Pigeon"
+  },
+  {
+    "english": "Finsch's Imperial Pigeon",
+    "ebird": "Finsch's Imperial-Pigeon"
+  },
+  {
+    "chinese": "芬氏皇鸠",
+    "ebird": "Finsch's Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula finschii",
+    "ebird": "Finsch's Imperial-Pigeon"
+  },
+  {
+    "english": "Rufescent Imperial Pigeon",
+    "ebird": "Rufescent Imperial-Pigeon"
+  },
+  {
+    "chinese": "红胸皇鸠",
+    "ebird": "Rufescent Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula chalconota",
+    "ebird": "Rufescent Imperial-Pigeon"
+  },
+  {
+    "english": "Island Imperial Pigeon",
+    "ebird": "Island Imperial-Pigeon"
+  },
+  {
+    "chinese": "灰皇鸠",
+    "ebird": "Island Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula pistrinaria",
+    "ebird": "Island Imperial-Pigeon"
+  },
+  {
+    "english": "Pink-headed Imperial Pigeon",
+    "ebird": "Pink-headed Imperial-Pigeon"
+  },
+  {
+    "chinese": "粉头皇鸠",
+    "ebird": "Pink-headed Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula rosacea",
+    "ebird": "Pink-headed Imperial-Pigeon"
+  },
+  {
+    "english": "Christmas Imperial Pigeon",
+    "ebird": "Christmas Island Imperial-Pigeon"
+  },
+  {
+    "chinese": "圣诞岛皇鸠",
+    "ebird": "Christmas Island Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula whartoni",
+    "ebird": "Christmas Island Imperial-Pigeon"
+  },
+  {
+    "english": "Grey Imperial Pigeon",
+    "ebird": "Gray Imperial-Pigeon"
+  },
+  {
+    "chinese": "马来皇鸠",
+    "ebird": "Gray Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula pickeringii",
+    "ebird": "Gray Imperial-Pigeon"
+  },
+  {
+    "english": "Barking Imperial Pigeon",
+    "ebird": "Barking Imperial-Pigeon"
+  },
+  {
+    "chinese": "皮氏皇鸠",
+    "ebird": "Barking Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula latrans",
+    "ebird": "Barking Imperial-Pigeon"
+  },
+  {
+    "english": "Chestnut-bellied Imperial Pigeon",
+    "ebird": "Chestnut-bellied Imperial-Pigeon"
+  },
+  {
+    "chinese": "栗腹皇鸠",
+    "ebird": "Chestnut-bellied Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula brenchleyi",
+    "ebird": "Chestnut-bellied Imperial-Pigeon"
+  },
+  {
+    "english": "Vanuatu Imperial Pigeon",
+    "ebird": "Baker's Imperial-Pigeon"
+  },
+  {
+    "chinese": "贝氏皇鸠",
+    "ebird": "Baker's Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula bakeri",
+    "ebird": "Baker's Imperial-Pigeon"
+  },
+  {
+    "english": "Goliath Imperial Pigeon",
+    "ebird": "New Caledonian Imperial-Pigeon"
+  },
+  {
+    "chinese": "巨皇鸠",
+    "ebird": "New Caledonian Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula goliath",
+    "ebird": "New Caledonian Imperial-Pigeon"
+  },
+  {
+    "english": "Pinon's Imperial Pigeon",
+    "ebird": "Pinon's Imperial-Pigeon"
+  },
+  {
+    "chinese": "裸眶皇鸠",
+    "ebird": "Pinon's Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula pinon",
+    "ebird": "Pinon's Imperial-Pigeon"
+  },
+  {
+    "english": "Black Imperial Pigeon",
+    "ebird": "Bismarck Imperial-Pigeon"
+  },
+  {
+    "chinese": "黑皇鸠",
+    "ebird": "Bismarck Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula melanochroa",
+    "ebird": "Bismarck Imperial-Pigeon"
+  },
+  {
+    "english": "Collared Imperial Pigeon",
+    "ebird": "Collared Imperial-Pigeon"
+  },
+  {
+    "chinese": "黑领皇鸠",
+    "ebird": "Collared Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula mullerii",
+    "ebird": "Collared Imperial-Pigeon"
+  },
+  {
+    "english": "Zoe's Imperial Pigeon",
+    "ebird": "Zoe's Imperial-Pigeon"
+  },
+  {
+    "chinese": "横斑皇鸠",
+    "ebird": "Zoe's Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula zoeae",
+    "ebird": "Zoe's Imperial-Pigeon"
+  },
+  {
+    "english": "Mountain Imperial Pigeon",
+    "ebird": "Mountain Imperial-Pigeon"
+  },
+  {
+    "chinese": "山皇鸠",
+    "ebird": "Mountain Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula badia",
+    "ebird": "Mountain Imperial-Pigeon"
+  },
+  {
+    "english": "Dark-backed Imperial Pigeon",
+    "ebird": "Dark-backed Imperial-Pigeon"
+  },
+  {
+    "chinese": "黑背皇鸠",
+    "ebird": "Dark-backed Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula lacernulata",
+    "ebird": "Dark-backed Imperial-Pigeon"
+  },
+  {
+    "english": "Timor Imperial Pigeon",
+    "ebird": "Timor Imperial-Pigeon"
+  },
+  {
+    "chinese": "帝汶皇鸠",
+    "ebird": "Timor Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula cineracea",
+    "ebird": "Timor Imperial-Pigeon"
+  },
+  {
+    "english": "Pied Imperial Pigeon",
+    "ebird": "Pied Imperial-Pigeon"
+  },
+  {
+    "chinese": "斑皇鸠",
+    "ebird": "Pied Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula bicolor",
+    "ebird": "Pied Imperial-Pigeon"
+  },
+  {
+    "english": "Silver-tipped Imperial Pigeon",
+    "ebird": "Silver-tipped Imperial-Pigeon"
+  },
+  {
+    "chinese": "苏拉斑皇鸠",
+    "ebird": "Silver-tipped Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula luctuosa",
+    "ebird": "Silver-tipped Imperial-Pigeon"
+  },
+  {
+    "english": "Torresian Imperial Pigeon",
+    "ebird": "Torresian Imperial-Pigeon"
+  },
+  {
+    "chinese": "澳洲斑皇鸠",
+    "ebird": "Torresian Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula spilorrhoa",
+    "ebird": "Torresian Imperial-Pigeon"
+  },
+  {
+    "english": "Yellowish Imperial Pigeon",
+    "ebird": "Yellowish Imperial-Pigeon"
+  },
+  {
+    "chinese": "淡黄皇鸠",
+    "ebird": "Yellowish Imperial-Pigeon"
+  },
+  {
+    "scientific": "Ducula subflavescens",
+    "ebird": "Yellowish Imperial-Pigeon"
+  },
+  {
+    "english": "Chatham Pigeon",
+    "ebird": "Chatham Islands Pigeon"
+  },
+  {
+    "chinese": "查岛鸠",
+    "ebird": "Chatham Islands Pigeon"
+  },
+  {
+    "scientific": "Hemiphaga chathamensis",
+    "ebird": "Chatham Islands Pigeon"
+  },
+  {
+    "english": "Papuan Mountain Pigeon",
+    "ebird": "Papuan Mountain-Pigeon"
+  },
+  {
+    "chinese": "裸眶山鸠",
+    "ebird": "Papuan Mountain-Pigeon"
+  },
+  {
+    "scientific": "Gymnophaps albertisii",
+    "ebird": "Papuan Mountain-Pigeon"
+  },
+  {
+    "english": "Buru Mountain Pigeon",
+    "ebird": "Buru Mountain-Pigeon"
+  },
+  {
+    "chinese": "长尾山鸠",
+    "ebird": "Buru Mountain-Pigeon"
+  },
+  {
+    "scientific": "Gymnophaps mada",
+    "ebird": "Buru Mountain-Pigeon"
+  },
+  {
+    "english": "Seram Mountain Pigeon",
+    "ebird": "Seram Mountain-Pigeon"
+  },
+  {
+    "chinese": "斯兰山鸠",
+    "ebird": "Seram Mountain-Pigeon"
+  },
+  {
+    "scientific": "Gymnophaps stalkeri",
+    "ebird": "Seram Mountain-Pigeon"
+  },
+  {
+    "english": "Pale Mountain Pigeon",
+    "ebird": "Pale Mountain-Pigeon"
+  },
+  {
+    "chinese": "所罗门山鸠",
+    "ebird": "Pale Mountain-Pigeon"
+  },
+  {
+    "scientific": "Gymnophaps solomonensis",
+    "ebird": "Pale Mountain-Pigeon"
+  },
+  {
+    "english": "Lesser Ground Cuckoo",
+    "ebird": "Lesser Ground-Cuckoo"
+  },
+  {
+    "chinese": "小地鹃",
+    "ebird": "Lesser Ground-Cuckoo"
+  },
+  {
+    "scientific": "Morococcyx erythropygus",
+    "ebird": "Lesser Ground-Cuckoo"
+  },
+  {
+    "english": "Rufous-vented Ground Cuckoo",
+    "ebird": "Rufous-vented Ground-Cuckoo"
+  },
+  {
+    "chinese": "棕腹鸡鹃",
+    "ebird": "Rufous-vented Ground-Cuckoo"
+  },
+  {
+    "scientific": "Neomorphus geoffroyi",
+    "ebird": "Rufous-vented Ground-Cuckoo"
+  },
+  {
+    "english": "Scaled Ground Cuckoo",
+    "ebird": "Scaled Ground-Cuckoo"
+  },
+  {
+    "chinese": "鳞鸡鹃",
+    "ebird": "Scaled Ground-Cuckoo"
+  },
+  {
+    "scientific": "Neomorphus squamiger",
+    "ebird": "Scaled Ground-Cuckoo"
+  },
+  {
+    "english": "Banded Ground Cuckoo",
+    "ebird": "Banded Ground-Cuckoo"
+  },
+  {
+    "chinese": "斑鸡鹃",
+    "ebird": "Banded Ground-Cuckoo"
+  },
+  {
+    "scientific": "Neomorphus radiolosus",
+    "ebird": "Banded Ground-Cuckoo"
+  },
+  {
+    "english": "Rufous-winged Ground Cuckoo",
+    "ebird": "Rufous-winged Ground-Cuckoo"
+  },
+  {
+    "chinese": "棕翅鸡鹃",
+    "ebird": "Rufous-winged Ground-Cuckoo"
+  },
+  {
+    "scientific": "Neomorphus rufipennis",
+    "ebird": "Rufous-winged Ground-Cuckoo"
+  },
+  {
+    "english": "Red-billed Ground Cuckoo",
+    "ebird": "Red-billed Ground-Cuckoo"
+  },
+  {
+    "chinese": "红嘴鸡鹃",
+    "ebird": "Red-billed Ground-Cuckoo"
+  },
+  {
+    "scientific": "Neomorphus pucheranii",
+    "ebird": "Red-billed Ground-Cuckoo"
+  },
+  {
+    "english": "White-necked Coucal",
+    "ebird": "Pied Coucal"
+  },
+  {
+    "chinese": "杂色鸦鹃",
+    "ebird": "Pied Coucal"
+  },
+  {
+    "scientific": "Centropus ateralbus",
+    "ebird": "Pied Coucal"
+  },
+  {
+    "english": "Ivory-billed Coucal",
+    "ebird": "Greater Black Coucal"
+  },
+  {
+    "chinese": "大鸦鹃",
+    "ebird": "Greater Black Coucal"
+  },
+  {
+    "scientific": "Centropus menbeki",
+    "ebird": "Greater Black Coucal"
+  },
+  {
+    "english": "Black-billed Coucal",
+    "ebird": "Lesser Black Coucal"
+  },
+  {
+    "chinese": "小黑鸦鹃",
+    "ebird": "Lesser Black Coucal"
+  },
+  {
+    "scientific": "Centropus bernsteini",
+    "ebird": "Lesser Black Coucal"
+  },
+  {
+    "english": "Bornean Ground Cuckoo",
+    "ebird": "Bornean Ground-Cuckoo"
+  },
+  {
+    "chinese": "地鹃",
+    "ebird": "Bornean Ground-Cuckoo"
+  },
+  {
+    "scientific": "Carpococcyx radiceus",
+    "ebird": "Bornean Ground-Cuckoo"
+  },
+  {
+    "english": "Sumatran Ground Cuckoo",
+    "ebird": "Sumatran Ground-Cuckoo"
+  },
+  {
+    "chinese": "苏门答腊地鹃",
+    "ebird": "Sumatran Ground-Cuckoo"
+  },
+  {
+    "scientific": "Carpococcyx viridis",
+    "ebird": "Sumatran Ground-Cuckoo"
+  },
+  {
+    "english": "Coral-billed Ground Cuckoo",
+    "ebird": "Coral-billed Ground-Cuckoo"
+  },
+  {
+    "chinese": "瑞氏红嘴地鹃",
+    "ebird": "Coral-billed Ground-Cuckoo"
+  },
+  {
+    "scientific": "Carpococcyx renauldi",
+    "ebird": "Coral-billed Ground-Cuckoo"
+  },
+  {
+    "english": "Rough-crested Malkoha",
+    "ebird": "Red-crested Malkoha"
+  },
+  {
+    "chinese": "蓬冠地鹃",
+    "ebird": "Red-crested Malkoha"
+  },
+  {
+    "scientific": "Dasylophus superciliosus",
+    "ebird": "Red-crested Malkoha"
+  },
+  {
+    "english": "Jacobin Cuckoo",
+    "ebird": "Pied Cuckoo"
+  },
+  {
+    "chinese": "斑翅凤头鹃",
+    "ebird": "Pied Cuckoo"
+  },
+  {
+    "scientific": "Clamator jacobinus",
+    "ebird": "Pied Cuckoo"
+  },
+  {
+    "english": "Grey-capped Cuckoo",
+    "ebird": "Gray-capped Cuckoo"
+  },
+  {
+    "chinese": "灰顶美洲鹃",
+    "ebird": "Gray-capped Cuckoo"
+  },
+  {
+    "scientific": "Coccyzus lansbergi",
+    "ebird": "Gray-capped Cuckoo"
+  },
+  {
+    "english": "Jamaican Lizard Cuckoo",
+    "ebird": "Jamaican Lizard-Cuckoo"
+  },
+  {
+    "chinese": "牙买加蜥鹃",
+    "ebird": "Jamaican Lizard-Cuckoo"
+  },
+  {
+    "scientific": "Coccyzus vetula",
+    "ebird": "Jamaican Lizard-Cuckoo"
+  },
+  {
+    "english": "Great Lizard Cuckoo",
+    "ebird": "Great Lizard-Cuckoo"
+  },
+  {
+    "chinese": "大蜥鹃",
+    "ebird": "Great Lizard-Cuckoo"
+  },
+  {
+    "scientific": "Coccyzus merlini",
+    "ebird": "Great Lizard-Cuckoo"
+  },
+  {
+    "english": "Puerto Rican Lizard Cuckoo",
+    "ebird": "Puerto Rican Lizard-Cuckoo"
+  },
+  {
+    "chinese": "波多黎各蜥鹃",
+    "ebird": "Puerto Rican Lizard-Cuckoo"
+  },
+  {
+    "scientific": "Coccyzus vieilloti",
+    "ebird": "Puerto Rican Lizard-Cuckoo"
+  },
+  {
+    "english": "Hispaniolan Lizard Cuckoo",
+    "ebird": "Hispaniolan Lizard-Cuckoo"
+  },
+  {
+    "chinese": "长嘴蜥鹃",
+    "ebird": "Hispaniolan Lizard-Cuckoo"
+  },
+  {
+    "scientific": "Coccyzus longirostris",
+    "ebird": "Hispaniolan Lizard-Cuckoo"
+  },
+  {
+    "english": "Pacific Long-tailed Cuckoo",
+    "ebird": "Long-tailed Koel"
+  },
+  {
+    "chinese": "长尾噪鹃",
+    "ebird": "Long-tailed Koel"
+  },
+  {
+    "scientific": "Urodynamis taitensis",
+    "ebird": "Long-tailed Koel"
+  },
+  {
+    "english": "Diederik Cuckoo",
+    "ebird": "Dideric Cuckoo"
+  },
+  {
+    "chinese": "白眉金鹃",
+    "ebird": "Dideric Cuckoo"
+  },
+  {
+    "scientific": "Chrysococcyx caprius",
+    "ebird": "Dideric Cuckoo"
+  },
+  {
+    "english": "Grey-bellied Cuckoo",
+    "ebird": "Gray-bellied Cuckoo"
+  },
+  {
+    "chinese": "灰腹杜鹃",
+    "ebird": "Gray-bellied Cuckoo"
+  },
+  {
+    "scientific": "Cacomantis passerinus",
+    "ebird": "Gray-bellied Cuckoo"
+  },
+  {
+    "english": "Brush Cuckoo",
+    "ebird": "Sahul Brush Cuckoo"
+  },
+  {
+    "chinese": "灌丛杜鹃",
+    "ebird": "Sahul Brush Cuckoo"
+  },
+  {
+    "scientific": "Cacomantis variolosus",
+    "ebird": "Sahul Brush Cuckoo"
+  },
+  {
+    "english": "Rusty-breasted Cuckoo",
+    "ebird": "Sunda Brush Cuckoo"
+  },
+  {
+    "chinese": "锈胸杜鹃",
+    "ebird": "Sunda Brush Cuckoo"
+  },
+  {
+    "scientific": "Cacomantis sepulcralis",
+    "ebird": "Sunda Brush Cuckoo"
+  },
+  {
+    "english": "Moluccan Cuckoo",
+    "ebird": "Moluccan Brush Cuckoo"
+  },
+  {
+    "chinese": "摩鹿加杜鹃",
+    "ebird": "Moluccan Brush Cuckoo"
+  },
+  {
+    "scientific": "Cacomantis aeruginosus",
+    "ebird": "Moluccan Brush Cuckoo"
+  },
+  {
+    "english": "Rufous Hawk-Cuckoo",
+    "ebird": "Northern Hawk-Cuckoo"
+  },
+  {
+    "chinese": "北鹰鹃",
+    "ebird": "Northern Hawk-Cuckoo"
+  },
+  {
+    "scientific": "Hierococcyx hyperythrus",
+    "ebird": "Northern Hawk-Cuckoo"
+  },
+  {
+    "english": "Madagascan Cuckoo",
+    "ebird": "Madagascar Cuckoo"
+  },
+  {
+    "chinese": "马岛杜鹃",
+    "ebird": "Madagascar Cuckoo"
+  },
+  {
+    "scientific": "Cuculus rochii",
+    "ebird": "Madagascar Cuckoo"
+  },
+  {
+    "english": "Satanic Nightjar",
+    "ebird": "Diabolical Nightjar"
+  },
+  {
+    "chinese": "环颈毛腿夜鹰",
+    "ebird": "Diabolical Nightjar"
+  },
+  {
+    "scientific": "Eurostopodus diabolicus",
+    "ebird": "Diabolical Nightjar"
+  },
+  {
+    "english": "Malaysian Eared Nightjar",
+    "ebird": "Malaysian Eared-Nightjar"
+  },
+  {
+    "chinese": "马来毛腿夜鹰",
+    "ebird": "Malaysian Eared-Nightjar"
+  },
+  {
+    "scientific": "Lyncornis temminckii",
+    "ebird": "Malaysian Eared-Nightjar"
+  },
+  {
+    "english": "Great Eared Nightjar",
+    "ebird": "Great Eared-Nightjar"
+  },
+  {
+    "chinese": "毛腿耳夜鹰",
+    "ebird": "Great Eared-Nightjar"
+  },
+  {
+    "scientific": "Lyncornis macrotis",
+    "ebird": "Great Eared-Nightjar"
+  },
+  {
+    "english": "Plain-tailed Nighthawk",
+    "ebird": "Bahian Nighthawk"
+  },
+  {
+    "chinese": "巴伊亚夜鹰",
+    "ebird": "Bahian Nighthawk"
+  },
+  {
+    "scientific": "Nyctiprogne vielliardi",
+    "ebird": "Bahian Nighthawk"
+  },
+  {
+    "english": "Pauraque",
+    "ebird": "Common Pauraque"
+  },
+  {
+    "chinese": "帕拉夜鹰",
+    "ebird": "Common Pauraque"
+  },
+  {
+    "scientific": "Nyctidromus albicollis",
+    "ebird": "Common Pauraque"
+  },
+  {
+    "english": "Anthony's Nightjar",
+    "ebird": "Scrub Nightjar"
+  },
+  {
+    "chinese": "灌丛夜鹰",
+    "ebird": "Scrub Nightjar"
+  },
+  {
+    "scientific": "Nyctidromus anthonyi",
+    "ebird": "Scrub Nightjar"
+  },
+  {
+    "english": "Least Poorwill",
+    "ebird": "Least Pauraque"
+  },
+  {
+    "chinese": "中美夜鹰",
+    "ebird": "Least Pauraque"
+  },
+  {
+    "scientific": "Siphonorhis brewsteri",
+    "ebird": "Least Pauraque"
+  },
+  {
+    "english": "Jamaican Poorwill",
+    "ebird": "Jamaican Pauraque"
+  },
+  {
+    "chinese": "牙买加夜鹰",
+    "ebird": "Jamaican Pauraque"
+  },
+  {
+    "scientific": "Siphonorhis americana",
+    "ebird": "Jamaican Pauraque"
+  },
+  {
+    "english": "Grey Nightjar",
+    "ebird": "Gray Nightjar"
+  },
+  {
+    "chinese": "普通夜鹰",
+    "ebird": "Gray Nightjar"
+  },
+  {
+    "scientific": "Caprimulgus jotaka",
+    "ebird": "Gray Nightjar"
+  },
+  {
+    "english": "European Nightjar",
+    "ebird": "Eurasian Nightjar"
+  },
+  {
+    "chinese": "欧夜鹰",
+    "ebird": "Eurasian Nightjar"
+  },
+  {
+    "scientific": "Caprimulgus europaeus",
+    "ebird": "Eurasian Nightjar"
+  },
+  {
+    "english": "Madagascan Nightjar",
+    "ebird": "Madagascar Nightjar"
+  },
+  {
+    "chinese": "马岛夜鹰",
+    "ebird": "Madagascar Nightjar"
+  },
+  {
+    "scientific": "Caprimulgus madagascariensis",
+    "ebird": "Madagascar Nightjar"
+  },
+  {
+    "english": "Prigogine's Nightjar",
+    "ebird": "Itombwe Nightjar"
+  },
+  {
+    "chinese": "普氏夜鹰",
+    "ebird": "Itombwe Nightjar"
+  },
+  {
+    "scientific": "Caprimulgus prigoginei",
+    "ebird": "Itombwe Nightjar"
+  },
+  {
+    "english": "Grey-rumped Treeswift",
+    "ebird": "Gray-rumped Treeswift"
+  },
+  {
+    "chinese": "灰腰雨燕",
+    "ebird": "Gray-rumped Treeswift"
+  },
+  {
+    "scientific": "Hemiprocne longipennis",
+    "ebird": "Gray-rumped Treeswift"
+  },
+  {
+    "english": "American Black Swift",
+    "ebird": "Black Swift"
+  },
+  {
+    "chinese": "黑雨燕",
+    "ebird": "Black Swift"
+  },
+  {
+    "scientific": "Cypseloides niger",
+    "ebird": "Black Swift"
+  },
+  {
+    "english": "Giant Swiftlet",
+    "ebird": "Waterfall Swift"
+  },
+  {
+    "chinese": "瀑布雨燕",
+    "ebird": "Waterfall Swift"
+  },
+  {
+    "scientific": "Hydrochous gigas",
+    "ebird": "Waterfall Swift"
+  },
+  {
+    "english": "Grey-rumped Swiftlet",
+    "ebird": "Gray-rumped Swiftlet"
+  },
+  {
+    "chinese": "灰腰金丝燕",
+    "ebird": "Gray-rumped Swiftlet"
+  },
+  {
+    "scientific": "Collocalia marginata",
+    "ebird": "Gray-rumped Swiftlet"
+  },
+  {
+    "english": "Halmahera Swiftlet",
+    "ebird": "Moluccan Swiftlet"
+  },
+  {
+    "chinese": "摩鹿加金丝燕",
+    "ebird": "Moluccan Swiftlet"
+  },
+  {
+    "scientific": "Aerodramus infuscatus",
+    "ebird": "Moluccan Swiftlet"
+  },
+  {
+    "english": "Island Swiftlet",
+    "ebird": "Caroline Islands Swiftlet"
+  },
+  {
+    "chinese": "卡罗琳金丝燕",
+    "ebird": "Caroline Islands Swiftlet"
+  },
+  {
+    "scientific": "Aerodramus inquietus",
+    "ebird": "Caroline Islands Swiftlet"
+  },
+  {
+    "english": "Edible-nest Swiftlet",
+    "ebird": "White-nest Swiftlet"
+  },
+  {
+    "chinese": "爪哇金丝燕",
+    "ebird": "White-nest Swiftlet"
+  },
+  {
+    "scientific": "Aerodramus fuciphagus",
+    "ebird": "White-nest Swiftlet"
+  },
+  {
+    "english": "Philippine Spine-tailed Swift",
+    "ebird": "Philippine Spinetail"
+  },
+  {
+    "chinese": "菲律宾针尾雨燕",
+    "ebird": "Philippine Spinetail"
+  },
+  {
+    "scientific": "Mearnsia picina",
+    "ebird": "Philippine Spinetail"
+  },
+  {
+    "english": "Papuan Spine-tailed Swift",
+    "ebird": "Papuan Spinetail"
+  },
+  {
+    "chinese": "新几内亚雨燕",
+    "ebird": "Papuan Spinetail"
+  },
+  {
+    "scientific": "Mearnsia novaeguineae",
+    "ebird": "Papuan Spinetail"
+  },
+  {
+    "english": "Madagascan Spinetail",
+    "ebird": "Madagascar Spinetail"
+  },
+  {
+    "chinese": "马岛雨燕",
+    "ebird": "Madagascar Spinetail"
+  },
+  {
+    "scientific": "Zoonavena grandidieri",
+    "ebird": "Madagascar Spinetail"
+  },
+  {
+    "english": "Böhm's Spinetail",
+    "ebird": "Bat-like Spinetail"
+  },
+  {
+    "chinese": "伯氏针尾雨燕",
+    "ebird": "Bat-like Spinetail"
+  },
+  {
+    "scientific": "Neafrapus boehmi",
+    "ebird": "Bat-like Spinetail"
+  },
+  {
+    "english": "Grey-rumped Swift",
+    "ebird": "Gray-rumped Swift"
+  },
+  {
+    "chinese": "淡腰雨燕",
+    "ebird": "Gray-rumped Swift"
+  },
+  {
+    "scientific": "Chaetura cinereiventris",
+    "ebird": "Gray-rumped Swift"
+  },
+  {
+    "english": "Neotropical Palm Swift",
+    "ebird": "Fork-tailed Palm Swift"
+  },
+  {
+    "chinese": "叉尾棕雨燕",
+    "ebird": "Fork-tailed Palm Swift"
+  },
+  {
+    "scientific": "Tachornis squamata",
+    "ebird": "Fork-tailed Palm Swift"
+  },
+  {
+    "english": "African Black Swift",
+    "ebird": "African Swift"
+  },
+  {
+    "chinese": "非洲黑雨燕",
+    "ebird": "African Swift"
+  },
+  {
+    "scientific": "Apus barbatus",
+    "ebird": "African Swift"
+  },
+  {
+    "english": "Malagasy Black Swift",
+    "ebird": "Malagasy Swift"
+  },
+  {
+    "chinese": "马岛黑雨燕",
+    "ebird": "Malagasy Swift"
+  },
+  {
+    "scientific": "Apus balstoni",
+    "ebird": "Malagasy Swift"
+  },
+  {
+    "english": "Grey-chinned Hermit",
+    "ebird": "Gray-chinned Hermit"
+  },
+  {
+    "chinese": "灰颏隐蜂鸟",
+    "ebird": "Gray-chinned Hermit"
+  },
+  {
+    "scientific": "Phaethornis griseogularis",
+    "ebird": "Gray-chinned Hermit"
+  },
+  {
+    "english": "Curve-winged Sabrewing",
+    "ebird": "Wedge-tailed Sabrewing"
+  },
+  {
+    "chinese": "弯翅刀翅蜂鸟",
+    "ebird": "Wedge-tailed Sabrewing"
+  },
+  {
+    "scientific": "Pampa curvipennis",
+    "ebird": "Wedge-tailed Sabrewing"
+  },
+  {
+    "english": "Grey-breasted Sabrewing",
+    "ebird": "Gray-breasted Sabrewing"
+  },
+  {
+    "chinese": "灰胸刀翅蜂鸟",
+    "ebird": "Gray-breasted Sabrewing"
+  },
+  {
+    "scientific": "Campylopterus largipennis",
+    "ebird": "Gray-breasted Sabrewing"
+  },
+  {
+    "english": "Antillean Mango",
+    "ebird": "Hispaniolan Mango"
+  },
+  {
+    "chinese": "黑胸芒果蜂鸟",
+    "ebird": "Hispaniolan Mango"
+  },
+  {
+    "scientific": "Anthracothorax dominicus",
+    "ebird": "Hispaniolan Mango"
+  },
+  {
+    "english": "Letitia's Thorntail",
+    "ebird": "Coppery Thorntail"
+  },
+  {
+    "chinese": "铜色刺尾蜂鸟",
+    "ebird": "Coppery Thorntail"
+  },
+  {
+    "scientific": "Discosura letitiae",
+    "ebird": "Coppery Thorntail"
+  },
+  {
+    "english": "Racket-tailed Coquette",
+    "ebird": "Racket-tipped Thorntail"
+  },
+  {
+    "chinese": "扇尾蜂鸟",
+    "ebird": "Racket-tipped Thorntail"
+  },
+  {
+    "scientific": "Discosura longicaudus",
+    "ebird": "Racket-tipped Thorntail"
+  },
+  {
+    "english": "Oaxaca Hummingbird",
+    "ebird": "Blue-capped Hummingbird"
+  },
+  {
+    "chinese": "蓝顶蜂鸟",
+    "ebird": "Blue-capped Hummingbird"
+  },
+  {
+    "scientific": "Eupherusa cyanophrys",
+    "ebird": "Blue-capped Hummingbird"
+  },
+  {
+    "english": "Doubleday's Hummingbird",
+    "ebird": "Turquoise-crowned Hummingbird"
+  },
+  {
+    "chinese": "双日阔嘴蜂鸟",
+    "ebird": "Turquoise-crowned Hummingbird"
+  },
+  {
+    "scientific": "Cynanthus doubledayi",
+    "ebird": "Turquoise-crowned Hummingbird"
+  },
+  {
+    "english": "Blue-throated Sapphire",
+    "ebird": "Blue-throated Goldentail"
+  },
+  {
+    "chinese": "蓝喉红嘴蜂鸟",
+    "ebird": "Blue-throated Goldentail"
+  },
+  {
+    "scientific": "Chlorestes eliciae",
+    "ebird": "Blue-throated Goldentail"
+  },
+  {
+    "english": "Gilded Sapphire",
+    "ebird": "Gilded Hummingbird"
+  },
+  {
+    "chinese": "金红嘴蜂鸟",
+    "ebird": "Gilded Hummingbird"
+  },
+  {
+    "scientific": "Hylocharis chrysura",
+    "ebird": "Gilded Hummingbird"
+  },
+  {
+    "english": "Blue-throated Mountaingem",
+    "ebird": "Blue-throated Mountain-gem"
+  },
+  {
+    "chinese": "蓝喉宝石蜂鸟",
+    "ebird": "Blue-throated Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis clemenciae",
+    "ebird": "Blue-throated Mountain-gem"
+  },
+  {
+    "english": "Amethyst-throated Mountaingem",
+    "ebird": "Amethyst-throated Mountain-gem"
+  },
+  {
+    "chinese": "辉紫喉宝石蜂鸟",
+    "ebird": "Amethyst-throated Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis amethystinus",
+    "ebird": "Amethyst-throated Mountain-gem"
+  },
+  {
+    "english": "Green-throated Mountaingem",
+    "ebird": "Green-throated Mountain-gem"
+  },
+  {
+    "chinese": "绿喉宝石蜂鸟",
+    "ebird": "Green-throated Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis viridipallens",
+    "ebird": "Green-throated Mountain-gem"
+  },
+  {
+    "english": "Green-breasted Mountaingem",
+    "ebird": "Green-breasted Mountain-gem"
+  },
+  {
+    "chinese": "绿胸宝石蜂鸟",
+    "ebird": "Green-breasted Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis sybillae",
+    "ebird": "Green-breasted Mountain-gem"
+  },
+  {
+    "english": "White-bellied Mountaingem",
+    "ebird": "White-bellied Mountain-gem"
+  },
+  {
+    "chinese": "白腹宝石蜂鸟",
+    "ebird": "White-bellied Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis hemileucus",
+    "ebird": "White-bellied Mountain-gem"
+  },
+  {
+    "english": "Purple-throated Mountaingem",
+    "ebird": "Purple-throated Mountain-gem"
+  },
+  {
+    "chinese": "紫喉宝石蜂鸟",
+    "ebird": "Purple-throated Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis calolaemus",
+    "ebird": "Purple-throated Mountain-gem"
+  },
+  {
+    "english": "White-throated Mountaingem",
+    "ebird": "White-throated Mountain-gem"
+  },
+  {
+    "chinese": "白喉宝石蜂鸟",
+    "ebird": "White-throated Mountain-gem"
+  },
+  {
+    "scientific": "Lampornis castaneoventris",
+    "ebird": "White-throated Mountain-gem"
+  },
+  {
+    "english": "Flame-throated Sunangel",
+    "ebird": "Little Sunangel"
+  },
+  {
+    "chinese": "小领蜂鸟",
+    "ebird": "Little Sunangel"
+  },
+  {
+    "scientific": "Heliangelus micraster",
+    "ebird": "Little Sunangel"
+  },
+  {
+    "english": "Fiery-throated Metaltail",
+    "ebird": "Fire-throated Metaltail"
+  },
+  {
+    "chinese": "火喉辉尾蜂鸟",
+    "ebird": "Fire-throated Metaltail"
+  },
+  {
+    "scientific": "Metallura eupogon",
+    "ebird": "Fire-throated Metaltail"
+  },
+  {
+    "english": "Grey-bellied Comet",
+    "ebird": "Gray-bellied Comet"
+  },
+  {
+    "chinese": "灰嘴慧星蜂鸟",
+    "ebird": "Gray-bellied Comet"
+  },
+  {
+    "scientific": "Taphrolesbia griseiventris",
+    "ebird": "Gray-bellied Comet"
+  },
+  {
+    "english": "Sparkling-tailed Woodstar",
+    "ebird": "Sparkling-tailed Hummingbird"
+  },
+  {
+    "chinese": "火尾蜂鸟",
+    "ebird": "Sparkling-tailed Hummingbird"
+  },
+  {
+    "scientific": "Tilmatura dupontii",
+    "ebird": "Sparkling-tailed Hummingbird"
+  },
+  {
+    "english": "Lucifer Sheartail",
+    "ebird": "Lucifer Hummingbird"
+  },
+  {
+    "chinese": "瑰丽蜂鸟",
+    "ebird": "Lucifer Hummingbird"
+  },
+  {
+    "scientific": "Calothorax lucifer",
+    "ebird": "Lucifer Hummingbird"
+  },
+  {
+    "english": "Beautiful Sheartail",
+    "ebird": "Beautiful Hummingbird"
+  },
+  {
+    "chinese": "华丽蜂鸟",
+    "ebird": "Beautiful Hummingbird"
+  },
+  {
+    "scientific": "Calothorax pulcher",
+    "ebird": "Beautiful Hummingbird"
+  },
+  {
+    "english": "Malaysian Crested Argus",
+    "ebird": "Malayan Crested Argus"
+  },
+  {
+    "chinese": "马来冠眼斑雉",
+    "ebird": "Malayan Crested Argus"
+  },
+  {
+    "scientific": "Rheinardia nigrescens",
+    "ebird": "Malayan Crested Argus"
+  }
+]

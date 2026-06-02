@@ -1,0 +1,8 @@
+# BIRDY-观鸟地图 — 独立工具 Python 依赖
+# 安装: python -m pip install -r requirements.txt
+
+PyQt5>=5.15.0
+matplotlib>=3.5.0
+numpy>=1.19.0
+Pillow>=8.0.0
+piexif>=1.1.3

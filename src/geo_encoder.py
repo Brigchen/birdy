@@ -41,12 +41,20 @@ except ImportError:
     API_TIMEOUT = 5
     AUTO_SAVE_TO_LOCAL_DB = True
 
+def _resolve_amap_config_path() -> Path:
+    """amap_api_config.json 路径；独立工具可通过环境变量 BIRDY_AMAP_CONFIG 指定。"""
+    override = (os.environ.get("BIRDY_AMAP_CONFIG") or "").strip()
+    if override:
+        return Path(override).expanduser().resolve()
+    return Path(__file__).resolve().parent / "amap_api_config.json"
+
+
 def _effective_amap_key() -> str:
     """
     高德 Web 服务 Key：优先 amap_api_config.json（与 GUI「打开配置文件」一致），
     否则回退 geocoding_config.AMAP_KEY。
     """
-    cfg_path = Path(__file__).resolve().parent / "amap_api_config.json"
+    cfg_path = _resolve_amap_config_path()
     if not cfg_path.is_file():
         try:
             from api_config_defaults import ensure_amap_api_config_file

@@ -52,6 +52,7 @@ class ChecklistBucket:
     species_counts: Dict[str, int] = field(default_factory=dict)
     sample_files: List[str] = field(default_factory=list)
     start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
     def key(self) -> Tuple[date, str, str]:
         la = f"{self.lat:.4f}" if self.lat is not None else ""
@@ -240,6 +241,8 @@ def scan_classification_tree(
         b = buckets[bkey]
         if b.start_time is None or ln.dt < b.start_time:
             b.start_time = ln.dt
+        if b.end_time is None or ln.dt > b.end_time:
+            b.end_time = ln.dt
         if len(b.sample_files) < 8:
             b.sample_files.append(ln.path)
 
