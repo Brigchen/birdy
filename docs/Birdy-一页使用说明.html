@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>鸟图智慧仓储 Birdy — 一页使用说明</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+      max-width: 180mm;
+      margin: 0 auto;
+      padding: 8mm 0;
+    }
+    h1 {
+      font-size: 17pt;
+      margin: 0 0 4px;
+      color: #1b5e20;
+      letter-spacing: 0.02em;
+    }
+    .sub { font-size: 9.5pt; color: #555; margin-bottom: 10px; }
+    h2 {
+      font-size: 11pt;
+      margin: 10px 0 4px;
+      padding-bottom: 2px;
+      border-bottom: 1.5px solid #c8e6c9;
+      color: #2e7d32;
+    }
+    ol, ul { margin: 4px 0 6px; padding-left: 1.25em; }
+    li { margin: 2px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 4px 0 8px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #e8f5e9; font-weight: 600; }
+    .tip {
+      background: #f1f8e9;
+      border-left: 3px solid #66bb6a;
+      padding: 6px 8px;
+      margin: 6px 0;
+      font-size: 9.5pt;
+    }
+    .foot {
+      margin-top: 8px;
+      font-size: 8.5pt;
+      color: #666;
+      text-align: center;
+    }
+    code, .path { font-family: Consolas, "Courier New", monospace; font-size: 9pt; }
+    @media print {
+      body { padding: 0; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>鸟图智慧仓储（Birdy）</h1>
+  <p class="sub">一页上手 · 拍鸟照片自动筛图、认种、归档、加水印、出行迹图 · 版本 2.0.9（2026-06-04）</p>
+
+  <h2>① 第一次打开（只需做一次）</h2>
+  <ol>
+    <li>安装 <strong>Python 3.8+</strong>，在项目根目录（含 <code>src</code> 文件夹）打开终端，执行：<br />
+      <code>pip install -r requirements.txt</code></li>
+    <li>若从 GitHub 下载源码，再执行：<code>git lfs pull</code>（拉取鸟体检测与识种模型，约 200 MB）</li>
+    <li>双击 <strong><code>start_gui.bat</code></strong>（Windows），或运行：<code>python src\birdy_gui.py</code></li>
+  </ol>
+  <p class="tip"><strong>不用申请任何账号</strong>也能完成：连拍筛选 → 鸟体检测 → 本地识种 → 按物种分文件夹。只有需要「地名写进照片 / 轨迹图高德底图 / 云端识种」时才填 API Key（见下表）。</p>
+
+  <h2>② 每次处理（三步）</h2>
+  <ol>
+    <li><strong>图片文件夹</strong>：选本次要处理的鸟照所在目录。</li>
+    <li><strong>输出根目录</strong>（建议填写）：例如 <code>D:\birdy\output</code>。程序会自动在下面生成以本次文件夹命名的子目录。</li>
+    <li>在左侧卡片勾选需要的功能，点 <strong>「开始处理」</strong>。右侧可看进度与日志。</li>
+  </ol>
+
+  <h2>③ 处理完会得到什么</h2>
+  <table>
+    <tr><th>输出位置（在输出根目录下）</th><th>内容</th></tr>
+    <tr><td><code>screened_文件夹名/</code></td><td>连拍筛选后保留的照片（Screened_images）</td></tr>
+    <tr><td><code>classification_文件夹名/</code></td><td>按物种分好的归档目录</td></tr>
+    <tr><td><code>reports/</code></td><td>轨迹图 PNG、观鸟记录导出文件等</td></tr>
+  </table>
+
+  <h2>④ 常用功能怎么开</h2>
+  <table>
+    <tr><th>想做什么</th><th>在界面里</th></tr>
+    <tr><td>连拍里只留最清晰几张</td><td>「连拍筛选」→ 勾选「加入主流程」</td></tr>
+    <tr><td>自动认种并分文件夹</td><td>「物种识别」→ 勾选「加入主流程」</td></tr>
+    <tr><td>照片上加时间/地点/物种水印</td><td>「水印生成」→ 勾选「加入主流程」或单独点生成</td></tr>
+    <tr><td>生成观鸟行迹地图</td><td>「轨迹图生成」→ 准备 GPX + 鸟图目录 →「预览」或「单独生成并保存 PNG」</td></tr>
+    <tr><td>导出 eBird / 观鸟记录中心表格</td><td>「观鸟记录导出」→ 需先有分类归档目录；导出成功后可点链接<strong>直接打开</strong> CSV / Excel；「累计只数」旁「设置」可调分窗时间与距离</td></tr>
+    <tr><td>连拍做成动图或 MP4</td><td>「动图生成」→ 选 WebP 或 MP4</td></tr>
+  </table>
+
+  <h2>⑤ API Key（按需，可后填）</h2>
+  <table>
+    <tr><th>功能</th><th>要不要 Key</th><th>配置文件（GUI 里可打开）</th></tr>
+    <tr><td>连拍 + 本地识种</td><td>不需要</td><td>—</td></tr>
+    <tr><td>地名 → GPS、水印地点</td><td>高德 Key</td><td><code>src/amap_api_config.json</code></td></tr>
+    <tr><td>轨迹图高德底图</td><td>高德 Key</td><td>同上</td></tr>
+    <tr><td>云端识种（豆包）</td><td>火山方舟 Key</td><td><code>src/doubao_api_config.json</code></td></tr>
+  </table>
+
+  <h2>⑥ 遇到问题</h2>
+  <ul>
+    <li>模型报错 / 文件很小：在项目根目录再执行 <code>git lfs pull</code>。</li>
+    <li>RAW 照片：尽量先转成 JPG，或确认已安装 <code>rawpy</code>（见 <code>requirements.txt</code>）。</li>
+    <li>详细安装与许可：见同目录上级 <code>安装说明.md</code>、<code>README.md</code>。</li>
+    <li>仅做轨迹图、不要主程序：可用 <code>tools/BIRDY-观鸟地图/</code> 独立工具（无需高德 Key）。</li>
+  </ul>
+
+  <p class="foot">鸟图智慧仓储 Birdy · 仅限爱好者 / 公益 / 科研等非商业用途 · brigchen@gmail.com</p>
+
+</body>
+</html>

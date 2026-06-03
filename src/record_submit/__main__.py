@@ -63,7 +63,18 @@ def main(argv: list[str] | None = None) -> int:
         "--time-minutes",
         type=float,
         default=30.0,
-        help="时间聚类阈值（分钟，默认 30）",
+        help="地点合并时间窗（分钟，默认 30，仅影响坐标批次）",
+    )
+    p.add_argument(
+        "--individual-time-minutes",
+        type=float,
+        default=120.0,
+        help="同物种个体去重时间窗（分钟，默认 120）",
+    )
+    p.add_argument(
+        "--split-checklists",
+        action="store_true",
+        help="按日+坐标拆成多份 eBird/xls（默认合并为一份）",
     )
     p.add_argument(
         "--submit-birdreport-relay",
@@ -90,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
         prefer_spatial_gps=args.prefer_spatial_gps,
         spatial_threshold_km=args.spatial_km,
         time_threshold_minutes=args.time_minutes,
+        individual_time_threshold_minutes=args.individual_time_minutes,
+        merge_single_checklist=not args.split_checklists,
     )
     for k, v in written.items():
         print(f"{k}: {v}")

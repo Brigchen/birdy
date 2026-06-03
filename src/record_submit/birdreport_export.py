@@ -44,7 +44,7 @@ def build_birdreport_batch(
         "source": "birdy-record_submit",
         "notes": (
             "字段为草案，与官方 App/接口未必一一对应；count 按批次去重后累加"
-            "（0.1 km 或 30 分钟内视为同一批，取该批只数最多的一张），"
+            "（0.1 km 或默认 120 分钟内视为同一批，取该批只数最多的一张），"
             "请在提交前自行修改数量与地点。"
         ),
         "checklists": checklists,

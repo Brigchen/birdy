@@ -52,7 +52,12 @@ def checklist_export_slug(
     例如 ``20260504_0800_lat24p5919_lon117p9492_exp153045``。
     ``seq>0`` 时追加 ``_b02``，避免同秒同地点多 checklist 重名。
     """
-    date_s = bucket.day.strftime("%Y%m%d")
+    if bucket.day_end is not None and bucket.day_end != bucket.day:
+        date_s = (
+            f"{bucket.day.strftime('%Y%m%d')}_{bucket.day_end.strftime('%Y%m%d')}"
+        )
+    else:
+        date_s = bucket.day.strftime("%Y%m%d")
     if bucket.start_time is not None:
         time_s = bucket.start_time.strftime("%H%M")
     else:

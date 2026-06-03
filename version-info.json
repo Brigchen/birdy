@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-05-19",
+  "release_date": "2026-06-04",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,10 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.9": [
+      "观鸟记录：按原图 inst 计只、单文件导出、定点时间窗去重；导出完成弹窗可打开文件",
+      "GUI：累计只数分窗设置；一页使用说明 docs/Birdy-一页使用说明.html"
+    ],
     "2.0.8": [
       "轨迹图：预览/导出同画布与鸟图 1/32 比例；物种名 1/100 字号与 1/50 边距",
       "海拔剖面：均衡上下左右留白、轴标题 axes 坐标、鸟名布局与生成失败修复",

@@ -187,8 +187,12 @@ def _record_export_kwargs(config: Dict) -> Dict:
             config.get("record_export_spatial_km", 0.1) or 0.1
         ),
         "time_threshold_minutes": float(
-            config.get("record_export_time_minutes", 30) or 30
+            config.get("record_export_location_time_minutes", 30) or 30
         ),
+        "individual_time_threshold_minutes": float(
+            config.get("record_export_time_minutes", 60) or 60
+        ),
+        "merge_single_checklist": True,
     }
     out["location_name"] = (config.get("location_name") or "").strip()
     out["province_cn"] = (config.get("province") or "").strip()
@@ -1537,7 +1541,8 @@ class BirdDetectionGUI(QMainWindow):
             'record_export_ebird_state': 'FJ',
             'record_export_count_individuals': True,
             'record_export_spatial_km': 0.1,
-            'record_export_time_minutes': 30.0,
+            'record_export_time_minutes': 120.0,
+            'record_export_location_time_minutes': 30.0,
             # 可折叠区块默认展开
             'ui_section_expanded_geo': True,
             'ui_section_expanded_burst': True,
@@ -2415,18 +2420,33 @@ class BirdDetectionGUI(QMainWindow):
         )
         export_layout.addRow("eBird 省/州:", self.record_export_state_input)
 
+        self._record_export_individual_time_minutes = float(
+            self.config.get("record_export_time_minutes", 120.0) or 120.0
+        )
+        self._record_export_spatial_km = float(
+            self.config.get("record_export_spatial_km", 0.1) or 0.1
+        )
         self.record_export_count_individuals_checkbox = QCheckBox(
-            "按批次累计只数"
+            "累计只数（计数）"
         )
         self.record_export_count_individuals_checkbox.setChecked(
             self.config.get("record_export_count_individuals", True)
         )
         self.record_export_count_individuals_checkbox.setToolTip(
-            "勾选：先按 0.1 km（精确 GPS/GPX）或 30 分钟（地名统写）合并为同一批个体，"
-            "每批取只数最多的一张再累加。\n"
-            "取消：每个 checklist 内该物种只计 1 只（仅记录出现）。"
+            "勾选：按「设置」中的分窗时间与距离，将同一物种的连续拍摄视为同一批个体后累计只数；"
+            "整次导出合并为一份 eBird/记录中心文件。\n"
+            "取消：每个 checklist 内该物种只计 1（仅记录出现）。"
         )
-        export_layout.addRow("数量统计:", self.record_export_count_individuals_checkbox)
+        count_row = QHBoxLayout()
+        count_row.addWidget(self.record_export_count_individuals_checkbox)
+        count_row.addStretch(1)
+        count_row.addWidget(
+            self._make_action_link(
+                "设置",
+                self._open_record_export_count_settings_dialog,
+            )
+        )
+        export_layout.addRow("计数:", count_row)
 
         portal_row = QHBoxLayout()
         portal_row.addWidget(
@@ -2766,7 +2786,7 @@ class BirdDetectionGUI(QMainWindow):
             "eBird 用 .csv 上传；中国观鸟记录中心用 china_bird_record/*.xls。"
         )
         self.add_log("观鸟记录已导出:\n" + "\n".join(lines))
-        QMessageBox.information(self, "导出完成", "\n".join(lines))
+        self._show_record_export_done_dialog(out_dir, written)
 
     def _gpx_paths_from_ui(self) -> List[str]:
         paths: List[str] = []
@@ -2945,6 +2965,84 @@ class BirdDetectionGUI(QMainWindow):
         link.linkActivated.connect(lambda _href: _open_local_file(png_path))
         link.setCursor(Qt.PointingHandCursor)
         lay.addWidget(link)
+        btns = QDialogButtonBox(QDialogButtonBox.Ok)
+        btns.accepted.connect(dlg.accept)
+        lay.addWidget(btns)
+        dlg.exec_()
+
+    def _record_export_openable_files(
+        self, written: Dict[str, str]
+    ) -> List[Tuple[str, str]]:
+        """从 export_from_classification 返回值解析可打开的 (链接文案, 绝对路径)。"""
+        specs = (
+            (
+                "ebird_checklist_format_csv",
+                "ebird_checklist_format_csv_all",
+                "打开 eBird CSV",
+            ),
+            (
+                "china_bird_record_xls",
+                "china_bird_record_xls_all",
+                "打开观鸟记录中心 Excel",
+            ),
+        )
+        seen: set[str] = set()
+        out: List[Tuple[str, str]] = []
+        for primary, all_key, base_label in specs:
+            if all_key in written:
+                paths = [
+                    p.strip()
+                    for p in written[all_key].split(";")
+                    if p.strip()
+                ]
+            elif primary in written:
+                paths = [written[primary].strip()]
+            else:
+                continue
+            for p in paths:
+                ap = os.path.abspath(p)
+                if ap in seen or not os.path.isfile(ap):
+                    continue
+                seen.add(ap)
+                label = base_label
+                if len(paths) > 1:
+                    label = f"{base_label} · {os.path.basename(ap)}"
+                out.append((label, ap))
+        return out
+
+    def _show_record_export_done_dialog(
+        self, out_dir: str, written: Dict[str, str]
+    ) -> None:
+        """观鸟记录导出完成：路径摘要 + 打开各导出文件 / 导出目录。"""
+        out_dir = os.path.abspath(out_dir)
+        files = self._record_export_openable_files(written)
+        dlg = QDialog(self)
+        dlg.setWindowTitle("导出完成")
+        lay = QVBoxLayout(dlg)
+        lay.addWidget(QLabel("观鸟记录已导出，请核对数量后再上传各平台。"))
+        dir_label = QLabel(f"导出目录：{out_dir}")
+        dir_label.setWordWrap(True)
+        dir_label.setStyleSheet("color: #666;")
+        lay.addWidget(dir_label)
+        if files:
+            for label, path in files:
+                path_lbl = QLabel(os.path.basename(path))
+                path_lbl.setStyleSheet("color: #666; font-size: 9pt;")
+                path_lbl.setToolTip(path)
+                lay.addWidget(path_lbl)
+                lay.addWidget(
+                    self._make_action_link(
+                        label, lambda p=path: _open_local_file(p)
+                    )
+                )
+        else:
+            lay.addWidget(QLabel("未找到可打开的导出文件，请查看右侧日志。"))
+        lay.addWidget(
+            self._make_action_link(
+                "打开导出目录",
+                lambda: _open_local_file(out_dir),
+            )
+        )
         btns = QDialogButtonBox(QDialogButtonBox.Ok)
         btns.accepted.connect(dlg.accept)
         lay.addWidget(btns)
@@ -3216,6 +3314,72 @@ class BirdDetectionGUI(QMainWindow):
             "QLabel a { text-decoration: underline; }"
         )
         return link
+
+    def _make_action_link(self, text: str, on_click) -> QLabel:
+        """下划线链接样式，点击触发回调（非外链）。"""
+        link = QLabel(f'<a href="#action">{text}</a>')
+        link.setTextFormat(Qt.RichText)
+        link.setOpenExternalLinks(False)
+        link.linkActivated.connect(lambda _href: on_click())
+        link.setCursor(Qt.PointingHandCursor)
+        link.setStyleSheet(
+            "QLabel { color: #1565C0; font-size: 9pt; }"
+            "QLabel a { text-decoration: underline; }"
+        )
+        return link
+
+    def _open_record_export_count_settings_dialog(self) -> None:
+        """累计只数：按 EXIF 拍摄时间分窗与 GPS 距离分窗。"""
+        dlg = QDialog(self)
+        dlg.setWindowTitle("累计只数 — 分窗设置")
+        lay = QVBoxLayout(dlg)
+        hint = QLabel(
+            "分窗仅依据照片 EXIF 中的拍摄时间（DateTimeOriginal），"
+            "不用文件修改时间或其它时间戳。\n"
+            "同一物种在「时间窗内」或「距离内」的多次拍摄视为同一批个体，"
+            "每批取归档张数最多的一次再累加。"
+        )
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color: #555; font-size: 9pt;")
+        lay.addWidget(hint)
+
+        form = QFormLayout()
+        time_spin = QDoubleSpinBox()
+        time_spin.setRange(5.0, 10080.0)
+        time_spin.setDecimals(0)
+        time_spin.setSuffix(" 分钟")
+        time_spin.setSingleStep(5.0)
+        time_spin.setValue(self._record_export_individual_time_minutes)
+        time_spin.setToolTip(
+            "同一物种两次拍摄相隔不超过此时间（按 EXIF 拍摄时刻）则合并为 1 个个体批次。"
+        )
+        form.addRow("分窗时间:", time_spin)
+
+        dist_spin = QDoubleSpinBox()
+        dist_spin.setRange(0.01, 10.0)
+        dist_spin.setDecimals(2)
+        dist_spin.setSuffix(" km")
+        dist_spin.setSingleStep(0.05)
+        dist_spin.setValue(self._record_export_spatial_km)
+        dist_spin.setToolTip(
+            "有 GPS 时，两次拍摄相距不超过此距离则合并为 1 个个体批次；"
+            "若在时间窗内即使略超距离也会合并（定点观鸟）。"
+        )
+        form.addRow("分窗距离:", dist_spin)
+        lay.addLayout(form)
+
+        btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+        lay.addWidget(btns)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        self._record_export_individual_time_minutes = float(time_spin.value())
+        self._record_export_spatial_km = float(dist_spin.value())
+        self.config["record_export_time_minutes"] = (
+            self._record_export_individual_time_minutes
+        )
+        self.config["record_export_spatial_km"] = self._record_export_spatial_km
 
     def _open_record_portal_url(self, url: str) -> None:
         """在系统浏览器打开观鸟记录上传/说明页面。"""
@@ -4528,6 +4692,12 @@ class BirdDetectionGUI(QMainWindow):
         self.config["record_export_count_individuals"] = (
             self.record_export_count_individuals_checkbox.isChecked()
         )
+        self.config["record_export_time_minutes"] = float(
+            getattr(self, "_record_export_individual_time_minutes", 120.0)
+        )
+        self.config["record_export_spatial_km"] = float(
+            getattr(self, "_record_export_spatial_km", 0.1)
+        )
         self.config["record_export_ebird_country"] = (
             self.record_export_country_input.text().strip() or "CN"
         )
@@ -4723,6 +4893,12 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.record_export_count_individuals_checkbox.setChecked(
             self.config.get("record_export_count_individuals", True)
+        )
+        self._record_export_individual_time_minutes = float(
+            self.config.get("record_export_time_minutes", 120.0) or 120.0
+        )
+        self._record_export_spatial_km = float(
+            self.config.get("record_export_spatial_km", 0.1) or 0.1
         )
         self._refresh_record_export_classification_default()
         self._apply_collapsible_sections_from_config()

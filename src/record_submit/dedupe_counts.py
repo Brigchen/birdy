@@ -114,19 +114,20 @@ def observation_location_clusters(
 
     def can_merge(i: int, j: int) -> bool:
         a, b = observations[i], observations[j]
+        dt_close = abs((a.dt - b.dt).total_seconds()) <= time_sec
         if use_spatial:
             if (
                 a.lat is not None
                 and a.lon is not None
                 and b.lat is not None
                 and b.lon is not None
+                and haversine_km(a.lat, a.lon, b.lat, b.lon)
+                <= spatial_threshold_km
             ):
-                return (
-                    haversine_km(a.lat, a.lon, b.lat, b.lon)
-                    <= spatial_threshold_km
-                )
-            return False
-        return abs((a.dt - b.dt).total_seconds()) <= time_sec
+                return True
+            # 定点观鸟：GPS 沿轨迹微移仍视为同一个体，用时间窗合并
+            return dt_close
+        return dt_close
 
     return _cluster_indices(n, can_merge)
 

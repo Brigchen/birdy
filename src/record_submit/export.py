@@ -35,6 +35,8 @@ def export_from_classification(
     prefer_spatial_gps: bool = False,
     spatial_threshold_km: float = 0.1,
     time_threshold_minutes: float = 30.0,
+    individual_time_threshold_minutes: Optional[float] = None,
+    merge_single_checklist: bool = True,
     gpx_file_path: Optional[str] = None,
     gpx_file_paths: Optional[Sequence[str]] = None,
     gpx_exif_tz: str = "Asia/Shanghai",
@@ -46,8 +48,10 @@ def export_from_classification(
     - ``ebird/ebird_checklist_{日期}_{时间}_{坐标}_exp{导出时刻}.csv``（Checklist Format）
     - ``china_bird_record/china_bird_species_{…}.xls``（中国观鸟记录中心两列模版）
 
-    数量：同 checklist 内按空间（0.1 km，精确 GPS/GPX）或时间（30 分钟，
-    地名统写/无 GPS）合并为同一批个体，每批取只数最多的一张再累加；
+    默认整次扫描合并为 **一份** eBird CSV 与 **一份** 记录中心 xls（连日同点一次观鸟）。
+
+    数量：同 checklist 内按空间（0.1 km，精确 GPS/GPX）或时间窗（默认 **120 分钟**，
+    定点观鸟时 GPS 微移仍按时间合并）视为同一批个体，每批取只数最多的一张再累加；
     ``count_individuals=False`` 时每物种计 1。导出后请人工核对 Count。
 
     返回已写入文件的绝对路径键值对。
@@ -62,6 +66,8 @@ def export_from_classification(
         prefer_spatial_gps=prefer_spatial_gps,
         spatial_threshold_km=spatial_threshold_km,
         time_threshold_minutes=time_threshold_minutes,
+        individual_time_threshold_minutes=individual_time_threshold_minutes,
+        merge_single_checklist=merge_single_checklist,
     )
     out = Path(out_dir).expanduser().resolve()
     out.mkdir(parents=True, exist_ok=True)
