@@ -13,10 +13,11 @@
 7. **观鸟行迹地图（GUI）**：GPX + 匹配鸟图生成行迹 PNG（高德底图、图内标题/签名、物种侧标、地图来源标注）；独立工具见 [BIRDY-观鸟地图](tools/BIRDY-观鸟地图/)。
 8. **观鸟记录导出（GUI / CLI）**：从分类归档导出 **eBird Checklist .csv** 与 **中国观鸟记录中心** 鸟种导入 **.xls**；按原图 EXIF 时刻与 `inst` 标签计只，默认一次活动各一份文件；导出成功弹窗可 **直接打开** 生成文件（详见 `CHANGELOG.md` v2.0.9）。
 9. **输出根目录（GUI）**：填写固定本机「输出根目录」后，每次处理只需更换「图片文件夹」；程序按相片目录名自动生成 `screened_<名称>/`、`classification_<名称>/` 与 `reports/`（详见 `CHANGELOG.md` v2.0.6）。
+10. **RAW+JPG 双格式（v2.0.12）**：同目录 RAW+JPEG 时可选 **仅 JPG 走主流程**，或筛选后 **复制配对 RAW 至 `Screened_raw_images/`**。
 
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
-> **当前发布版本**：**2.0.11**（稳定版）  
+> **当前发布版本**：**2.0.12**（稳定版）  
 > **版本发布日期**：**2026-07-23**（与根目录 `**version-info.json`** 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **一页上手**：[`docs/Birdy-一页使用说明.html`](docs/Birdy-一页使用说明.html)（可浏览器打开或打印为 PDF）。  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
@@ -104,6 +105,7 @@
 | **地理信息**      | EXIF GPS、**高德** / 其它地理编码（`src/amap_api_config.json` + `geocoding_config.py`）                                 |
 | **报告**        | 连拍报告、物种识别报告；GUI 含 **ETA** 与各阶段耗时估算                                                                           |
 | **连拍动图/视频** | GUI「动图生成」：**WebP** 或 **MP4**；ROI 内特征**欧氏对齐**（旋转+平移）或边带 ECC；帧间隔按 EXIF 推断 |
+| **RAW+JPG 双格式** | GUI「RAW+JPG」：`仅 JPG` / `JPG + 复制 RAW`（`Screened_raw_images/`）；CLI `--dual-format` |
 | **视频裁剪与稳定** | GUI「水印与分享」→ **视频裁剪**：时间/空间裁剪、vidstab 防抖；Windows 可用仓库 `bin/ffmpeg.exe`（LFS）保留音轨 |
 | **观鸟记录导出** | 分类归档 → `reports/` 下 **ebird/** 与 **china_bird_record/**；GUI **累计只数** 可设时间/距离分窗；CLI：`python -m record_submit <classification>`（需在 `src` 为工作目录或配置 PYTHONPATH） |
 

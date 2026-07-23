@@ -88,6 +88,7 @@ from watermark_enhance import (
     load_overrides_json,
     rel_key,
 )
+from dual_format import extensions_for_dual_mode
 from burst_webp_dialog import open_burst_webp_dialog
 from video_stabilize_dialog import open_video_stabilize_dialog
 
@@ -101,11 +102,11 @@ def _open_local_file(path: str) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
 
 
-def _count_images_for_eta(folder: str) -> int:
-    """与连拍/物种步骤同级的图片数量预估（递归 jpg/jpeg/png）。"""
+def _count_images_for_eta(folder: str, dual_format_mode: str = "off") -> int:
+    """与连拍/物种步骤同级的图片数量预估（递归）。"""
     if not folder or not os.path.isdir(folder):
         return 0
-    return len(_collect_image_paths_under(folder))
+    return len(_collect_image_paths_under(folder, dual_format_mode))
 
 
 def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, float]]:
@@ -214,13 +215,13 @@ def _record_export_kwargs(config: Dict) -> Dict:
     return out
 
 
-def _collect_image_paths_under(root: str) -> List[str]:
-    """递归收集 root 下常见位图与 RAW 路径（去重）。"""
+def _collect_image_paths_under(root: str, dual_format_mode: str = "off") -> List[str]:
+    """递归收集 root 下图片路径（双格式模式下可仅 JPG）。"""
     import os
 
     if not root or not os.path.isdir(root):
         return []
-    exts = all_supported_extensions()
+    exts = extensions_for_dual_mode(dual_format_mode)
     out: List[str] = []
     for walk_root, _dirs, files in os.walk(root):
         for file in files:
@@ -543,7 +544,10 @@ class WorkerThread(QThread):
 
             n_eta = int(config.get("_eta_image_estimate", 0) or 0)
             if n_eta <= 0:
-                n_eta = _count_images_for_eta(config.get("image_folder", ""))
+                n_eta = _count_images_for_eta(
+                    config.get("image_folder", ""),
+                    config.get("dual_format_mode", "off"),
+                )
             phase_ests = _build_eta_phase_estimates(config, n_eta)
             self.eta_checkpoint.emit(
                 {
@@ -599,6 +603,7 @@ class WorkerThread(QThread):
                             ),
                             fast_mode=config["use_fast_mode"],
                             screened_output_dir=screened_dir,
+                            dual_format_mode=config.get("dual_format_mode", "off"),
                             progress_callback=lambda d: _emit_phase_progress(
                                 "burst",
                                 int(d.get("done", 0)),
@@ -610,6 +615,12 @@ class WorkerThread(QThread):
                         )
                         results.update(burst_result)
                         burst_filter_applied = True
+                        n_raw = int(burst_result.get("raw_companions_copied") or 0)
+                        if n_raw:
+                            raw_dir = burst_result.get("screened_raw_dir") or ""
+                            self.status_updated.emit(
+                                f"✓ 已复制 {n_raw} 个配对 RAW 至 Screened_raw_images"
+                            )
                 except Exception as e:
                     self.error_occurred.emit(f"连拍识别失败: {str(e)}")
                     traceback.print_exc()
@@ -767,6 +778,8 @@ class WorkerThread(QThread):
                         )
                     else:
                         image_folder = config['image_folder']
+                        _dual = config.get("dual_format_mode", "off")
+                        _img_exts = extensions_for_dual_mode(_dual)
                         image_files = []
                         for root, dirs, files in os.walk(image_folder):
                             for file in files:
@@ -1546,6 +1559,7 @@ class BirdDetectionGUI(QMainWindow):
         """获取默认配置"""
         return {
             'image_folder': '',
+            'dual_format_mode': 'off',
             'output_root_folder': '',
             'output_folder': './outputs',
             'crop_output_folder': './crops',
@@ -1736,7 +1750,22 @@ class BirdDetectionGUI(QMainWindow):
         folder_row.addWidget(self.image_folder_input, 1)
         folder_row.addWidget(folder_btn)
         folder_layout.addRow("图片文件夹:", folder_row)
-        
+
+        dual_format_row = QHBoxLayout()
+        self.dual_format_combo = QComboBox()
+        self.dual_format_combo.addItem("关", "off")
+        self.dual_format_combo.addItem("仅 JPG", "jpg_only")
+        self.dual_format_combo.addItem("JPG + 复制 RAW", "jpg_copy_raw")
+        _df = self.config.get("dual_format_mode", "off")
+        _dfi = self.dual_format_combo.findData(_df)
+        self.dual_format_combo.setCurrentIndex(_dfi if _dfi >= 0 else 0)
+        self.dual_format_combo.setToolTip(
+            "RAW+JPG 同目录时使用：主流程只处理 JPG；"
+            "「复制 RAW」在筛选后将配对 RAW 写入 Screened_raw_images。"
+        )
+        dual_format_row.addWidget(self.dual_format_combo, 1)
+        folder_layout.addRow("RAW+JPG:", dual_format_row)
+
         # 输出根目录（固定本机路径；与相片文件夹名自动生成 screened_* / classification_* / reports）
         output_root_row = QHBoxLayout()
         self.output_root_input = QLineEdit()
@@ -1786,7 +1815,10 @@ class BirdDetectionGUI(QMainWindow):
         self.output_root_input.textChanged.connect(
             lambda _t: self._refresh_track_map_path_ui()
         )
-        
+        self.dual_format_combo.currentIndexChanged.connect(
+            lambda _i: self._refresh_derived_paths_display()
+        )
+
         folder_group.setLayout(folder_layout)
         layout.addWidget(folder_card)
         
@@ -3750,12 +3782,19 @@ class BirdDetectionGUI(QMainWindow):
                 o = os.path.join(root, f"screened_{slug}")
                 c = os.path.join(root, f"classification_{slug}")
                 r = os.path.join(root, "reports")
-                self.derived_paths_label.setText(
-                    f"会话标签「{slug}」：\n"
-                    f"· {o}\n"
-                    f"· {c}\n"
-                    f"· {r}"
-                )
+                lines = [
+                    f"会话标签「{slug}」：",
+                    f"· {o}",
+                    f"· {c}",
+                    f"· {r}",
+                ]
+                if hasattr(self, "dual_format_combo"):
+                    if self.dual_format_combo.currentData() == "jpg_copy_raw":
+                        lines.insert(
+                            3,
+                            f"· {os.path.join(o, 'Screened_raw_images')}",
+                        )
+                self.derived_paths_label.setText("\n".join(lines))
         else:
             self._legacy_paths_container.setVisible(True)
             self.derived_paths_label.setVisible(False)
@@ -4587,7 +4626,10 @@ class BirdDetectionGUI(QMainWindow):
             self._save_config()
             return
 
-        n_eta = _count_images_for_eta(self.config.get("image_folder", ""))
+        n_eta = _count_images_for_eta(
+            self.config.get("image_folder", ""),
+            self.config.get("dual_format_mode", "off"),
+        )
         if not burst_on and need_species:
             n_eta = max(
                 n_eta,
@@ -4776,6 +4818,9 @@ class BirdDetectionGUI(QMainWindow):
     def _sync_config_from_ui(self) -> None:
         """把当前界面上的选项全部写回 self.config（与「开始处理」写入项保持一致）。"""
         self.config["image_folder"] = self.image_folder_input.text().strip()
+        _df = self.dual_format_combo.currentData()
+        if _df:
+            self.config["dual_format_mode"] = str(_df)
         root = self.output_root_input.text().strip()
         self.config["output_root_folder"] = root
         img = self.config["image_folder"]
@@ -4981,6 +5026,10 @@ class BirdDetectionGUI(QMainWindow):
         """从配置更新UI"""
         _apply_gui_flow_policy(self.config)
         self.image_folder_input.setText(self.config.get('image_folder', ''))
+        if hasattr(self, "dual_format_combo"):
+            _df = self.config.get("dual_format_mode", "off")
+            _dfi = self.dual_format_combo.findData(_df)
+            self.dual_format_combo.setCurrentIndex(_dfi if _dfi >= 0 else 0)
         self.output_root_input.setText(self.config.get("output_root_folder", ""))
         self.output_folder_input.setText(self.config.get('output_folder', ''))
         self.crop_folder_input.setText(self.config.get('crop_output_folder', ''))

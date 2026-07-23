@@ -52,6 +52,7 @@ from detect_bird_and_eye import (
 )
 from api_config_defaults import ensure_doubao_api_config_file
 from image_io import all_supported_extensions
+from dual_format import extensions_for_dual_mode
 
 
 class BirdDetectionCLI:
@@ -88,6 +89,7 @@ class BirdDetectionCLI:
         """获取默认配置"""
         return {
             'image_folder': '',
+            'dual_format_mode': 'off',
             'output_folder': './outputs',
             'crop_output_folder': './crops',
             'enable_gps_write': False,
@@ -235,6 +237,13 @@ class BirdDetectionCLI:
         )
         parser.add_argument('--keep-top-n', type=int,
                           help='已弃用：等同 --burst-keep-min')
+        parser.add_argument(
+            '--dual-format',
+            type=str,
+            choices=['off', 'jpg_only', 'jpg_copy_raw'],
+            dest='dual_format_mode',
+            help='RAW+JPG 双格式：off | jpg_only | jpg_copy_raw（筛选后复制 RAW 至 Screened_raw_images）',
+        )
         parser.add_argument('--no-bird-detection', action='store_true',
                           help='禁用鸟体检测')
         parser.add_argument('--eye-detection', action='store_true',
@@ -327,6 +336,8 @@ class BirdDetectionCLI:
             self.config['use_fast_mode'] = False
         if args.no_burst_report:
             self.config['generate_burst_report'] = False
+        if getattr(args, 'dual_format_mode', None):
+            self.config['dual_format_mode'] = args.dual_format_mode
         
         # 物种识别配置
         if args.no_species:
@@ -437,6 +448,7 @@ class BirdDetectionCLI:
                 ),
                 fast_mode=self.config['use_fast_mode'],
                 screened_output_dir=screened_dir,
+                dual_format_mode=self.config.get('dual_format_mode', 'off'),
             )
             print(f"    [+] 处理 {burst_result['total_images']} 张图片")
             print(f"    [+] 保留 {burst_result['kept_images']} 张")
@@ -563,7 +575,9 @@ class BirdDetectionCLI:
                         )
                 else:
                     image_folder = self.config['image_folder']
-                    _exts = all_supported_extensions()
+                    _exts = extensions_for_dual_mode(
+                        self.config.get('dual_format_mode', 'off')
+                    )
                     image_files = []
                     for root, dirs, files in os.walk(image_folder):
                         for file in files:

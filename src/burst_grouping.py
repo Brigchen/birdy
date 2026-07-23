@@ -446,7 +446,8 @@ def calculate_bird_area(bbox: List[int]) -> float:
 
 def group_images_by_time(
     image_folder: str,
-    time_threshold: float = BURST_TIME_THRESHOLD
+    time_threshold: float = BURST_TIME_THRESHOLD,
+    dual_format_mode: str = "off",
 ) -> Tuple[List[BurstGroup], List[ImageInfo]]:
     """
     按拍摄时间分组图片
@@ -459,9 +460,13 @@ def group_images_by_time(
         (连拍组列表, 非连拍图片列表)
     """
     folder = Path(image_folder)
-    
-    # 支持的图片格式（含常见 RAW，需安装 rawpy 才能解码）
-    extensions = set(all_supported_extensions())
+
+    from dual_format import extensions_for_dual_mode, normalize_dual_format_mode
+
+    dual_mode = normalize_dual_format_mode(dual_format_mode)
+    extensions = set(extensions_for_dual_mode(dual_mode))
+    if dual_mode != "off":
+        print(f"双格式模式: {dual_mode}（主流程仅处理 {', '.join(sorted(extensions))}）")
     
     # 获取所有图片文件
     image_files = [
@@ -897,6 +902,7 @@ def process_folder(
     fast_mode: bool = False,
     batch_size: int = BATCH_SIZE,
     screened_output_dir: Optional[str] = None,
+    dual_format_mode: str = "off",
     progress_callback: Optional[Callable[[Dict], None]] = None,
 ) -> Dict:
     """
@@ -921,7 +927,9 @@ def process_folder(
     print("=" * 60)
     
     # 1. 按时间分组
-    groups, non_burst = group_images_by_time(image_folder, time_threshold)
+    groups, non_burst = group_images_by_time(
+        image_folder, time_threshold, dual_format_mode=dual_format_mode
+    )
     
     print(f"\n发现 {len(groups)} 组连拍，共 {sum(g.total for g in groups)} 张图片")
     print(f"非连拍图片: {len(non_burst)} 张")
@@ -1132,6 +1140,29 @@ def process_folder(
                 all_results, image_folder, screened_output_dir
             )
             print(f"\n已保留图片已复制到: {screened_output_dir} （共 {n_copied} 个文件）")
+            from dual_format import (
+                DUAL_FORMAT_JPG_COPY_RAW,
+                copy_kept_raw_companions_to_screened,
+                normalize_dual_format_mode,
+                screened_raw_dir_for,
+            )
+
+            if normalize_dual_format_mode(dual_format_mode) == DUAL_FORMAT_JPG_COPY_RAW:
+                raw_dir = screened_raw_dir_for(screened_output_dir)
+                n_raw = copy_kept_raw_companions_to_screened(
+                    all_results,
+                    image_folder,
+                    raw_dir,
+                    get_kept_paths=get_kept_images,
+                )
+                all_results["raw_companions_copied"] = n_raw
+                all_results["screened_raw_dir"] = raw_dir
+                if n_raw:
+                    print(
+                        f"已复制对应 RAW 到: {raw_dir} （共 {n_raw} 个文件）"
+                    )
+                else:
+                    print(f"未找到可复制的配对 RAW（目录: {raw_dir}）")
         except Exception as e:
             print(f"\n警告: 复制保留图片到 Screened_images 失败: {e}")
     if progress_callback:

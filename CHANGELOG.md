@@ -1,5 +1,16 @@
 # 🐦 鸟类检测Skill - 更新日志
 
+## v2.0.12 (2026-07-23)
+
+### RAW+JPG 双格式（GUI / CLI）
+
+- **文件夹与输出 → RAW+JPG**：`关` / `仅 JPG` / `JPG + 复制 RAW`。
+- **仅 JPG**：连拍筛选、物种归档等主流程只处理 JPEG，忽略同目录 RAW。
+- **JPG + 复制 RAW**：主流程仍只处理 JPG；筛选保留后，将同名配对 RAW 复制至 **`Screened_raw_images/`**（与 `Screened_images/` 同级），便于后续人工用 RAW 精修。
+- CLI：`--dual-format off|jpg_only|jpg_copy_raw`；逻辑见 **`src/dual_format.py`**。
+
+---
+
 ## v2.0.11 (2026-07-23)
 
 ### 视频裁剪与稳定（GUI）
