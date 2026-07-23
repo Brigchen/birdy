@@ -89,6 +89,7 @@ from watermark_enhance import (
     rel_key,
 )
 from burst_webp_dialog import open_burst_webp_dialog
+from video_stabilize_dialog import open_video_stabilize_dialog
 
 
 def _open_local_file(path: str) -> None:
@@ -261,6 +262,49 @@ def _reports_dir_from_config(config: Dict) -> str:
     if r:
         return r
     return os.path.join((config.get("output_folder") or "./outputs").strip(), "reports")
+
+
+def _config_paths_snapshot(
+    *,
+    output_root_folder: str = "",
+    image_folder: str = "",
+    output_folder: str = "",
+    crop_output_folder: str = "",
+) -> Dict[str, str]:
+    """
+    由当前 UI/配置推导会话路径（与 _sync_config_from_ui 一致）。
+    启用「输出根目录」时，分类/Screened 路径不在 legacy 输入框中显示，须由此函数解析。
+    """
+    root = (output_root_folder or "").strip()
+    img = (image_folder or "").strip()
+    if root:
+        slug = _session_slug_from_image_folder(img)
+        screened_root = os.path.join(root, f"screened_{slug}")
+        classification = os.path.join(root, f"classification_{slug}")
+        reports = os.path.join(root, "reports")
+        return {
+            "output_folder": screened_root,
+            "crop_output_folder": classification,
+            "reports_output_folder": reports,
+            "screened_images": os.path.join(screened_root, "Screened_images"),
+        }
+    out = (output_folder or "").strip()
+    crop = (crop_output_folder or "").strip()
+    reports = os.path.join(out, "reports") if out else ""
+    return {
+        "output_folder": out,
+        "crop_output_folder": crop,
+        "reports_output_folder": reports,
+        "screened_images": os.path.join(out, "Screened_images") if out else "",
+    }
+
+
+def _track_map_location_from_config(config: Dict) -> str:
+    """轨迹图标题地点：与水印「人工地点」一致，优先 wm_location_text。"""
+    manual = (config.get("wm_location_text") or "").strip()
+    if manual:
+        return manual
+    return (config.get("location_name") or "").strip()
 
 
 def _flow_enabled_flags(config: Dict) -> Dict[str, bool]:
@@ -889,7 +933,7 @@ class WorkerThread(QThread):
                             config.get("gpx_match_gpx_tz")
                             or config.get("track_map_gpx_tz", DEFAULT_GPX_TZ)
                         ),
-                        location_name=(config.get("location_name") or "").strip(),
+                        location_name=_track_map_location_from_config(config),
                         province=str(config.get("province") or ""),
                         city=str(config.get("city") or ""),
                         logo_path=str(config.get("wm_logo_path", "") or ""),
@@ -915,11 +959,28 @@ class WorkerThread(QThread):
                 _emit_phase_progress("watermark", 0, 1)
                 self.eta_checkpoint.emit({"kind": "phase_begin", "phase": "watermark"})
                 try:
-                    source_folder = config.get("watermark_input_folder", "").strip()
-                    if not source_folder:
-                        source_folder = choose_default_watermark_source(
+                    # 主流程模式下：优先使用文件夹设置自动生成的 classification 目录（crop_output_folder），
+                    # 确保与物种识别归档目录一致；仅在 classification 目录无效时才 fallback 到 watermark_input_folder
+                    crop_folder = config.get("crop_output_folder", "").strip()
+                    wm_manual_folder = config.get("watermark_input_folder", "").strip()
+
+                    # 优先使用 classification 目录（如果存在且包含图片）
+                    if crop_folder and os.path.isdir(crop_folder):
+                        imgs_in_crop = collect_images_recursive(crop_folder)
+                        if imgs_in_crop:
+                            source_folder = crop_folder
+                        else:
+                            # classification 目录为空，尝试 manual folder 或默认选择
+                            source_folder = wm_manual_folder or choose_default_watermark_source(
+                                image_folder=config.get("image_folder", ""),
+                                crop_output_folder=crop_folder,
+                                output_folder=config.get("output_folder", ""),
+                            )
+                    else:
+                        # classification 目录不存在，使用手动设置或默认选择
+                        source_folder = wm_manual_folder or choose_default_watermark_source(
                             image_folder=config.get("image_folder", ""),
-                            crop_output_folder=config.get("crop_output_folder", ""),
+                            crop_output_folder=crop_folder,
                             output_folder=config.get("output_folder", ""),
                         )
                     output_folder = (
@@ -1557,6 +1618,7 @@ class BirdDetectionGUI(QMainWindow):
             'track_map_use_gpx': True,
             'track_map_use_exif': True,
             'track_map_photo_source': 'classification',
+            'track_map_photo_folder_override': '',
             'track_map_radius_km': 1.0,
             'track_map_include_elevation': True,
             'track_map_basemap_style': 'digital',
@@ -1717,8 +1779,12 @@ class BirdDetectionGUI(QMainWindow):
         folder_layout.addRow(self._legacy_paths_container)
 
         self._refresh_derived_paths_display()
+        self._refresh_track_map_path_ui()
         self.output_root_input.textChanged.connect(
             lambda _t: self._refresh_derived_paths_display()
+        )
+        self.output_root_input.textChanged.connect(
+            lambda _t: self._refresh_track_map_path_ui()
         )
         
         folder_group.setLayout(folder_layout)
@@ -2227,6 +2293,13 @@ class BirdDetectionGUI(QMainWindow):
         )
         wm_burst_btn.clicked.connect(self._open_burst_webp_dialog)
         wm_preview_row.addWidget(wm_burst_btn)
+        wm_video_stab_btn = QPushButton("视频裁剪")
+        wm_video_stab_btn.setToolTip(
+            "视频裁剪与稳定：支持 OpenCV VideoStab 和 MTools AI 算法，"
+            "可设置时间范围和空间裁剪区域，消除手持拍摄抖动。"
+        )
+        wm_video_stab_btn.clicked.connect(self._open_video_stabilize_dialog)
+        wm_preview_row.addWidget(wm_video_stab_btn)
         wm_preview_row.addStretch(1)
         wm_layout.addRow("", wm_preview_row)
 
@@ -2254,7 +2327,10 @@ class BirdDetectionGUI(QMainWindow):
         track_layout.setSpacing(8)
         track_layout.setContentsMargins(12, 10, 12, 12)
 
-        track_hint = QLabel("从分类归档生成行迹与物种分布 PNG（2K 竖屏，需高德 Key）。")
+        track_hint = QLabel(
+            "从分类归档生成行迹与物种分布 PNG（2K 竖屏，需高德 Key）。"
+            "图内标题地点优先使用「水印生成 → 人工地点」。"
+        )
         track_hint.setWordWrap(True)
         track_hint.setStyleSheet("color: #555; font-size: 9pt;")
         track_layout.addRow(track_hint)
@@ -2282,6 +2358,34 @@ class BirdDetectionGUI(QMainWindow):
         _tsi = self.track_map_source_combo.findData(_tsrc)
         self.track_map_source_combo.setCurrentIndex(_tsi if _tsi >= 0 else 0)
         track_layout.addRow("鸟图来源:", self.track_map_source_combo)
+
+        track_map_folder_row = QHBoxLayout()
+        self.track_map_folder_override_input = QLineEdit()
+        self.track_map_folder_override_input.setPlaceholderText(
+            "留空则使用上方来源的自动路径；可浏览指定其它目录"
+        )
+        self.track_map_folder_override_input.setText(
+            self.config.get("track_map_photo_folder_override", "")
+        )
+        track_map_folder_btn = QPushButton("浏览…")
+        track_map_folder_btn.clicked.connect(
+            self._select_track_map_photo_folder_override
+        )
+        track_map_folder_row.addWidget(self.track_map_folder_override_input, 1)
+        track_map_folder_row.addWidget(track_map_folder_btn)
+        track_layout.addRow("鸟图目录:", track_map_folder_row)
+
+        self.track_map_photo_path_label = QLabel("")
+        self.track_map_photo_path_label.setWordWrap(True)
+        self.track_map_photo_path_label.setStyleSheet("color: #555; font-size: 9pt;")
+        track_layout.addRow("当前使用:", self.track_map_photo_path_label)
+
+        self.track_map_source_combo.currentIndexChanged.connect(
+            lambda _i: self._refresh_track_map_path_ui()
+        )
+        self.track_map_folder_override_input.textChanged.connect(
+            lambda _t: self._refresh_track_map_path_ui()
+        )
 
         self.track_map_radius_input = QDoubleSpinBox()
         self.track_map_radius_input.setRange(0.1, 100.0)
@@ -2329,6 +2433,7 @@ class BirdDetectionGUI(QMainWindow):
 
         track_group.setLayout(track_layout)
         layout.addWidget(track_card)
+        self._refresh_track_map_path_ui()
 
         # ═════ 观鸟记录导出（可收起；主流程勾选在标题栏）═════
         self.enable_record_export_auto_checkbox = QCheckBox("加入主流程")
@@ -2711,19 +2816,65 @@ class BirdDetectionGUI(QMainWindow):
             body.setVisible(expanded)
             toggle_btn.blockSignals(False)
 
+    def _gui_paths_snapshot(self) -> Dict[str, str]:
+        return _config_paths_snapshot(
+            output_root_folder=self.output_root_input.text().strip(),
+            image_folder=self.image_folder_input.text().strip(),
+            output_folder=self.output_folder_input.text().strip(),
+            crop_output_folder=self.crop_folder_input.text().strip(),
+        )
+
+    def _refresh_track_map_path_ui(self) -> None:
+        """刷新轨迹图鸟图来源下拉项文案（含实际路径）与「当前使用」提示。"""
+        if not hasattr(self, "track_map_source_combo"):
+            return
+        paths = self._gui_paths_snapshot()
+        cls_p = paths.get("crop_output_folder") or ""
+        scr_p = paths.get("screened_images") or ""
+        cur = self.track_map_source_combo.currentData()
+        self.track_map_source_combo.blockSignals(True)
+        self.track_map_source_combo.clear()
+        cls_label = f"分类归档 — {cls_p}" if cls_p else "分类归档（物种目录）"
+        scr_label = f"Screened — {scr_p}" if scr_p else "Screened_images 筛选图"
+        self.track_map_source_combo.addItem(cls_label, "classification")
+        self.track_map_source_combo.addItem(scr_label, "screened")
+        idx = self.track_map_source_combo.findData(cur or "classification")
+        self.track_map_source_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        self.track_map_source_combo.blockSignals(False)
+
+        effective = self._track_map_photo_folder()
+        exists = os.path.isdir(effective)
+        if hasattr(self, "track_map_photo_path_label"):
+            if effective:
+                status = "（目录存在）" if exists else "（目录不存在或为空路径）"
+                self.track_map_photo_path_label.setText(f"{effective}\n{status}")
+            else:
+                self.track_map_photo_path_label.setText(
+                    "未解析到路径：请设置输出根目录与图片文件夹，或手动浏览指定鸟图目录。"
+                )
+
+    def _select_track_map_photo_folder_override(self) -> None:
+        folder = QFileDialog.getExistingDirectory(self, "选择鸟图目录")
+        if not folder:
+            return
+        self.track_map_folder_override_input.setText(folder)
+        self.config["track_map_photo_folder_override"] = folder
+        self._refresh_track_map_path_ui()
+
     def _effective_classification_folder(self) -> str:
         """当前有效的分类归档路径（与主流程一致）。"""
         manual = self.record_export_class_input.text().strip()
         if manual:
             return manual
-        return self.crop_folder_input.text().strip()
+        return self._gui_paths_snapshot().get("crop_output_folder", "").strip()
 
     def _default_record_export_output_dir(self) -> str:
+        paths = self._gui_paths_snapshot()
         _sync = {
             "record_export_output_folder": self.record_export_out_input.text().strip(),
             "output_root_folder": self.output_root_input.text().strip(),
-            "reports_output_folder": self.config.get("reports_output_folder", ""),
-            "crop_output_folder": self.crop_folder_input.text().strip(),
+            "reports_output_folder": paths.get("reports_output_folder", ""),
+            "crop_output_folder": paths.get("crop_output_folder", ""),
         }
         return _record_export_dirs_from_config(_sync)[1]
 
@@ -2731,7 +2882,7 @@ class BirdDetectionGUI(QMainWindow):
         """分类路径未手填时，随归档目录联动显示占位提示（不覆盖用户输入）。"""
         if self.record_export_class_input.text().strip():
             return
-        crop = self.crop_folder_input.text().strip()
+        crop = self._gui_paths_snapshot().get("crop_output_folder", "")
         if crop:
             self.record_export_class_input.setPlaceholderText(crop)
 
@@ -2899,15 +3050,18 @@ class BirdDetectionGUI(QMainWindow):
             QMessageBox.critical(self, "写入失败", str(e))
 
     def _track_map_photo_folder(self) -> str:
+        override = ""
+        if hasattr(self, "track_map_folder_override_input"):
+            override = self.track_map_folder_override_input.text().strip()
+        if not override:
+            override = (self.config.get("track_map_photo_folder_override") or "").strip()
+        if override:
+            return override
+        paths = self._gui_paths_snapshot()
         src = self.track_map_source_combo.currentData()
         if src == "screened":
-            out = self.output_folder_input.text().strip() or self.config.get(
-                "output_folder", ""
-            )
-            return os.path.join(out, "Screened_images") if out else ""
-        return self.crop_folder_input.text().strip() or self.config.get(
-            "crop_output_folder", ""
-        )
+            return paths.get("screened_images", "")
+        return paths.get("crop_output_folder", "")
 
     def _track_map_busy(self) -> bool:
         th = self._track_map_thread
@@ -3105,7 +3259,10 @@ class BirdDetectionGUI(QMainWindow):
             QMessageBox.warning(
                 self,
                 "提示",
-                "鸟图目录无效。请完成物种归档或选择 Screened_images，并确认路径。",
+                "鸟图目录无效。\n\n"
+                f"当前路径：\n{photo_folder or '(空)'}\n\n"
+                "若已用「输出根目录」完成物种归档，请确认已选择图片文件夹；"
+                "或在「鸟图目录」中浏览指定 classification 目录。",
             )
             return
         gpx_paths = self._gpx_paths_from_ui()
@@ -3130,7 +3287,7 @@ class BirdDetectionGUI(QMainWindow):
             ),
             preview_only=preview,
             preview_max_photos=40,
-            location_name=self.location_input.text().strip(),
+            location_name=_track_map_location_from_config(self.config),
             province=self.config.get("province", ""),
             city=self.config.get("city", ""),
             exif_tz=self._gpx_match_exif_tz(),
@@ -3613,16 +3770,19 @@ class BirdDetectionGUI(QMainWindow):
                 self.config['image_folder'] = folder
                 self.image_folder_input.setText(folder)
                 self._refresh_derived_paths_display()
+                self._refresh_track_map_path_ui()
             elif field_name == 'output_root_folder':
                 self.config['output_root_folder'] = folder
                 self.output_root_input.setText(folder)
                 self._refresh_derived_paths_display()
+                self._refresh_track_map_path_ui()
             elif field_name == 'output_folder':
                 self.config['output_folder'] = folder
                 self.output_folder_input.setText(folder)
             elif field_name == 'crop_output_folder':
                 self.config['crop_output_folder'] = folder
                 self.crop_folder_input.setText(folder)
+                self._refresh_track_map_path_ui()
             elif field_name == 'watermark_input_folder':
                 self.config['watermark_input_folder'] = folder
                 self.wm_input_folder_input.setText(folder)
@@ -3701,6 +3861,32 @@ class BirdDetectionGUI(QMainWindow):
                 self,
                 "动图",
                 f"打开连拍动图窗口失败：\n{e}",
+            )
+
+    def _open_video_stabilize_dialog(self) -> None:
+        """视频裁剪与稳定（弹窗内选文件、调参、预览与处理）。"""
+        # 起始目录使用原始相片文件夹或输出根目录
+        img_dir = self.image_folder_input.text().strip()
+        output_root = self.output_root_input.text().strip() if hasattr(self, 'output_root_input') else ""
+        default_dir = img_dir or output_root or ""
+
+        # 输出目录使用水印输出文件夹（watermarked）
+        wm_output_dir = self.wm_output_folder_input.text().strip() if hasattr(self, 'wm_output_folder_input') else ""
+        if not wm_output_dir:
+            wm_output_dir = self.config.get("watermark_output_folder", "./watermarked").strip()
+
+        print(
+            f"[Birdy 视频稳定GUI] 主界面：打开视频稳定对话框，默认目录={default_dir or '(空)'}, 输出目录={wm_output_dir}",
+            flush=True,
+        )
+        try:
+            open_video_stabilize_dialog(self, default_dir=default_dir, default_output_dir=wm_output_dir)
+        except Exception as e:
+            traceback.print_exc()
+            QMessageBox.critical(
+                self,
+                "视频稳定",
+                f"打开视频稳定窗口失败：\n{e}",
             )
 
     def get_burst_webp_bird_detector(self):
@@ -4550,6 +4736,7 @@ class BirdDetectionGUI(QMainWindow):
         try:
             self._sync_config_from_ui()
             self._save_config()
+            self._refresh_track_map_path_ui()
         except Exception as e:
             print(f"完成后保存配置失败: {e}")
         done_parts: List[str] = []
@@ -4718,6 +4905,10 @@ class BirdDetectionGUI(QMainWindow):
         _ts = self.track_map_source_combo.currentData()
         if _ts:
             self.config["track_map_photo_source"] = _ts
+        if hasattr(self, "track_map_folder_override_input"):
+            self.config["track_map_photo_folder_override"] = (
+                self.track_map_folder_override_input.text().strip()
+            )
         self.config["track_map_radius_km"] = float(
             self.track_map_radius_input.value()
         )
@@ -4919,6 +5110,11 @@ class BirdDetectionGUI(QMainWindow):
         _tsrc = self.config.get("track_map_photo_source", "classification")
         _tsi = self.track_map_source_combo.findData(_tsrc)
         self.track_map_source_combo.setCurrentIndex(_tsi if _tsi >= 0 else 0)
+        if hasattr(self, "track_map_folder_override_input"):
+            self.track_map_folder_override_input.setText(
+                self.config.get("track_map_photo_folder_override", "")
+            )
+        self._refresh_track_map_path_ui()
         self.track_map_radius_input.setValue(
             float(self.config.get("track_map_radius_km", 1.0))
         )
