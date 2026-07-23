@@ -673,7 +673,41 @@ def _estimate_translation_from_roi_matches(
     return M, n_in
 
 
-def _roi_pair_estimate_translation(
+def _estimate_euclidean_from_roi_matches(
+    pts_cur: np.ndarray,
+    pts_ref: np.ndarray,
+    reproj_thresh: float,
+) -> Tuple[np.ndarray, int]:
+    """
+    ROI 内匹配点 → 欧氏变换（旋转 + 平移）2×3。
+    使用 cv2.estimateAffinePartial2D 估计相似变换（平移+旋转+尺度），
+    再经 _similarity_to_euclidean_2x3 去尺度得到纯旋转+平移。
+
+    estimateAffinePartial2D(src, dst) 返回 M 使得 dst ≈ M * src，
+    与 warpAffine(..., WARP_INVERSE_MAP) 方向一致：传入 M 即可将 cur 逆映射到 ref 坐标系。
+    """
+    if pts_cur.shape[0] < 4 or pts_ref.shape[0] < 4:
+        return np.eye(2, 3, dtype=np.float32), 0
+    thr = float(reproj_thresh)
+    try:
+        M_raw, inliers = cv2.estimateAffinePartial2D(
+            pts_ref,
+            pts_cur,
+            method=cv2.RANSAC,
+            ransacReprojThreshold=thr,
+        )
+    except cv2.error:
+        return np.eye(2, 3, dtype=np.float32), 0
+    if M_raw is None:
+        return np.eye(2, 3, dtype=np.float32), 0
+    n_in = int(np.count_nonzero(inliers)) if inliers is not None else 0
+    if n_in < 4:
+        return np.eye(2, 3, dtype=np.float32), 0
+    A_eucl = _similarity_to_euclidean_2x3(M_raw)
+    return A_eucl, n_in
+
+
+def _roi_pair_estimate_euclidean(
     det_name: str,
     kp_ref: Any,
     d_ref: Any,
@@ -683,7 +717,7 @@ def _roi_pair_estimate_translation(
     reproj_thr: float,
 ) -> Tuple[np.ndarray, int, int, int]:
     """
-    一对「参考图 / 当前图」在已有 mask 上提好的关键点与描述子，估计整图平移 2×3。
+    一对「参考图 / 当前图」在已有 mask 上提好的关键点与描述子，估计整图欧氏变换（旋转+平移）2×3。
     返回 (A_try, n_in, n_match, n_kept_disp_gate)。
     """
     A_id = np.eye(2, 3, dtype=np.float32)
@@ -708,7 +742,7 @@ def _roi_pair_estimate_translation(
     if n_kept >= 4:
         pts_cur = pts_cur[keep]
         pts_ref = pts_ref[keep]
-    A_try, n_in = _estimate_translation_from_roi_matches(
+    A_try, n_in = _estimate_euclidean_from_roi_matches(
         pts_cur, pts_ref, reproj_thr
     )
     return A_try, n_in, n_match, n_kept
@@ -744,7 +778,7 @@ def _clamp_affine_euclidean(
     A[1, 2] = float(np.clip(float(A[1, 2]), -lim, lim))
 
 
-def _align_burst_roi_translation_features(
+def _align_burst_roi_euclidean_features(
     proc: List[np.ndarray],
     roi_norm: Tuple[float, float, float, float],
     feature_name: str,
@@ -753,8 +787,9 @@ def _align_burst_roi_translation_features(
 ) -> List[np.ndarray]:
     """
     首张 ROI 内提点作全局锚；后续帧在 ROI 外扩区提点。
-    j≥2 时链式对齐上一已对齐帧并与首张结果择优；若链式单步平移过大则改首张（抑错配顶夹）。
-    每 6 帧强制与首张重锚一次以抑制链式累积漂移。输出为整幅平移 warp + BORDER_CONSTANT 留白。
+    j≥2 时链式对齐上一已对齐帧并与首张结果择优；若链式单步变换过大则改首张（抑错配顶夹）。
+    每 6 帧强制与首张重锚一次以抑制链式累积漂移。输出为整幅欧氏变换 warp + BORDER_CONSTANT 留白。
+    支持旋转（±5°）+ 平移估计。
     """
     if len(proc) < 2:
         return proc
@@ -762,8 +797,8 @@ def _align_burst_roi_translation_features(
     bx0, by0, bx1, by1 = _roi_norm_rect_to_pixel_box(w0, h0, roi_norm)
     mask0 = np.zeros((h0, w0), dtype=np.uint8)
     mask0[by0:by1, bx0:bx1] = 255
-    # 与 _clamp_align_translation(max_frac=0.14) 一致量级，保证「能移出小框的石头」仍落在搜索区内
     _roi_align_max_t_frac = 0.14
+    _roi_align_max_deg = 5.0
     lim_pix = int(math.ceil(_roi_align_max_t_frac * float(min(h0, w0))))
     pad_search = max(40, lim_pix + 28)
 
@@ -775,7 +810,7 @@ def _align_burst_roi_translation_features(
         align_debug.append(
             {
                 "i": 0,
-                "mode": "roi_trans",
+                "mode": "roi_euclid",
                 "det": det_name,
                 "roi_px": [bx0, by0, bx1, by1],
                 "nkp0": len(kp0) if kp0 else 0,
@@ -792,12 +827,14 @@ def _align_burst_roi_translation_features(
     lim_t_abs = float(_roi_align_max_t_frac * float(min(h0, w0)))
     roi_reanchor_period = 6
     chain_spike_lim = max(130.0, 0.036 * float(min(h0, w0)))
+    chain_rot_spike_deg = 3.0
     _burst_align_log(
-        f"ROI 模式 图幅={w0}x{h0} det={det_name} roi_px=[{bx0},{by0},{bx1},{by1}] "
+        f"ROI 欧氏模式 图幅={w0}x{h0} det={det_name} roi_px=[{bx0},{by0},{bx1},{by1}] "
         f"search_pad={pad_search} max_pair_disp={max_pair_disp:.1f} "
         f"reproj_thr={reproj_thr:.1f}px clamp|t|<={lim_t_abs:.1f}px "
+        f"clamp|θ|<={_roi_align_max_deg:.1f}° "
         f"n_kp_ref={len(kp0) if kp0 else 0} 总帧={len(proc)} "
-        f"j≥2链式+首张择优; 抑链跳>{chain_spike_lim:.0f}px→首张; "
+        f"j≥2链式+首张择优; 抑链跳>{chain_spike_lim:.0f}px或>{chain_rot_spike_deg:.1f}°→首张; "
         f"每{roi_reanchor_period}帧重锚首张"
     )
 
@@ -814,6 +851,7 @@ def _align_burst_roi_translation_features(
         n_match = 0
         n_kept = 0
         tx_est = ty_est = 0.0
+        theta_est_deg = 0.0
         log_note = ""
         ref_src = ""
         if (
@@ -829,30 +867,32 @@ def _align_burst_roi_translation_features(
                 f"(k0={0 if kp0 is None else len(kp0)} k1={0 if kp1 is None else len(kp1)})"
             )
         elif j == 1:
-            A_try, n_in, n_match, n_kept = _roi_pair_estimate_translation(
+            A_try, n_in, n_match, n_kept = _roi_pair_estimate_euclidean(
                 det_name, kp0, d0, kp1, d1, max_pair_disp, reproj_thr
             )
             ref_src = "首张"
             tx_est = float(A_try[0, 2])
             ty_est = float(A_try[1, 2])
+            theta_est_deg = math.degrees(math.atan2(float(A_try[1, 0]), float(A_try[0, 0])))
             if n_in >= 4:
                 A_eucl = A_try
-                _clamp_align_translation(
-                    A_eucl, w0, h0, max_frac=_roi_align_max_t_frac
+                _clamp_affine_euclidean(
+                    A_eucl, w0, h0, max_deg=_roi_align_max_deg, max_t_frac=_roi_align_max_t_frac
                 )
+                theta_app_deg = math.degrees(math.atan2(float(A_eucl[1, 0]), float(A_eucl[0, 0])))
                 log_note = (
-                    f"[{ref_src}] 估计 t=({tx_est:.3f},{ty_est:.3f}) n_in={n_in} "
-                    f"→ 夹紧后 applied=({float(A_eucl[0, 2]):.3f},{float(A_eucl[1, 2]):.3f})"
+                    f"[{ref_src}] 估计 θ={theta_est_deg:.2f}° t=({tx_est:.3f},{ty_est:.3f}) n_in={n_in} "
+                    f"→ 夹紧后 θ={theta_app_deg:.2f}° t=({float(A_eucl[0, 2]):.3f},{float(A_eucl[1, 2]):.3f})"
                 )
             else:
                 A_eucl = np.eye(2, 3, dtype=np.float32)
                 n_in = 0
                 log_note = (
                     f"[{ref_src}] 跳过对齐: 内点不足 n_in=0 "
-                    f"(估计曾 t=({tx_est:.3f},{ty_est:.3f}))"
+                    f"(估计曾 θ={theta_est_deg:.2f}° t=({tx_est:.3f},{ty_est:.3f}))"
                 )
         else:
-            A_f, n_f, nm_f, nk_f = _roi_pair_estimate_translation(
+            A_f, n_f, nm_f, nk_f = _roi_pair_estimate_euclidean(
                 det_name, kp0, d0, kp1, d1, max_pair_disp, reproj_thr
             )
             if j % roi_reanchor_period == 0:
@@ -861,7 +901,7 @@ def _align_burst_roi_translation_features(
                 if n_in < 4:
                     ref_gray_p = cv2.cvtColor(aligned[j - 1], cv2.COLOR_BGR2GRAY)
                     kp_p, d_p = detector.detectAndCompute(ref_gray_p, mask0)
-                    A_ch, n_ch, nm_ch, nk_ch = _roi_pair_estimate_translation(
+                    A_ch, n_ch, nm_ch, nk_ch = _roi_pair_estimate_euclidean(
                         det_name, kp_p, d_p, kp1, d1, max_pair_disp, reproj_thr
                     )
                     if n_ch > n_in:
@@ -870,12 +910,15 @@ def _align_burst_roi_translation_features(
             else:
                 ref_gray_p = cv2.cvtColor(aligned[j - 1], cv2.COLOR_BGR2GRAY)
                 kp_p, d_p = detector.detectAndCompute(ref_gray_p, mask0)
-                A_ch, n_ch, nm_ch, nk_ch = _roi_pair_estimate_translation(
+                A_ch, n_ch, nm_ch, nk_ch = _roi_pair_estimate_euclidean(
                     det_name, kp_p, d_p, kp1, d1, max_pair_disp, reproj_thr
                 )
                 mag_ch = math.hypot(float(A_ch[0, 2]), float(A_ch[1, 2]))
                 mag_f = math.hypot(float(A_f[0, 2]), float(A_f[1, 2]))
+                theta_ch_deg = math.degrees(math.atan2(float(A_ch[1, 0]), float(A_ch[0, 0])))
+                theta_f_deg = math.degrees(math.atan2(float(A_f[1, 0]), float(A_f[0, 0])))
                 lim_warn = 0.082 * float(min(h0, w0))
+                rot_spike = abs(theta_ch_deg) > chain_rot_spike_deg and abs(theta_ch_deg - theta_f_deg) > 1.5
                 heavy_spike = mag_ch > chain_spike_lim and (
                     mag_ch > mag_f * 2.0 + 45.0
                     or mag_ch - mag_f > 95.0
@@ -884,14 +927,15 @@ def _align_burst_roi_translation_features(
                 chain_spike = (
                     n_ch >= 4
                     and n_f >= 4
-                    and heavy_spike
+                    and (heavy_spike or rot_spike)
                     and not (n_ch > n_f + 28)
                 )
                 if chain_spike:
                     A_try, n_in, n_match, n_kept = A_f, n_f, nm_f, nk_f
+                    spike_reason = "平移" if heavy_spike else "旋转"
                     ref_src = (
-                        f"首张(抑链跳‖链‖={mag_ch:.0f}‖首‖={mag_f:.0f}"
-                        f" lim~{lim_warn:.0f})"
+                        f"首张(抑链{spike_reason}跳‖链‖={mag_ch:.0f}‖首‖={mag_f:.0f}"
+                        f" θ链={theta_ch_deg:.1f}° θ首={theta_f_deg:.1f}° lim~{lim_warn:.0f})"
                     )
                 else:
                     cand: List[Tuple[str, np.ndarray, int, int, int]] = [
@@ -908,24 +952,26 @@ def _align_burst_roi_translation_features(
                     )
             tx_est = float(A_try[0, 2])
             ty_est = float(A_try[1, 2])
+            theta_est_deg = math.degrees(math.atan2(float(A_try[1, 0]), float(A_try[0, 0])))
             if n_in >= 4:
                 A_eucl = A_try
-                _clamp_align_translation(
-                    A_eucl, w0, h0, max_frac=_roi_align_max_t_frac
+                _clamp_affine_euclidean(
+                    A_eucl, w0, h0, max_deg=_roi_align_max_deg, max_t_frac=_roi_align_max_t_frac
                 )
+                theta_app_deg = math.degrees(math.atan2(float(A_eucl[1, 0]), float(A_eucl[0, 0])))
                 log_note = (
-                    f"[{ref_src}] 估计 t=({tx_est:.3f},{ty_est:.3f}) n_in={n_in} "
-                    f"→ 夹紧后 applied=({float(A_eucl[0, 2]):.3f},{float(A_eucl[1, 2]):.3f})"
+                    f"[{ref_src}] 估计 θ={theta_est_deg:.2f}° t=({tx_est:.3f},{ty_est:.3f}) n_in={n_in} "
+                    f"→ 夹紧后 θ={theta_app_deg:.2f}° t=({float(A_eucl[0, 2]):.3f},{float(A_eucl[1, 2]):.3f})"
                 )
             else:
                 A_eucl = np.eye(2, 3, dtype=np.float32)
                 n_in = 0
                 log_note = (
                     f"[{ref_src}] 跳过对齐: 内点不足 n_in=0 "
-                    f"(估计曾 t=({tx_est:.3f},{ty_est:.3f}))"
+                    f"(估计曾 θ={theta_est_deg:.2f}° t=({tx_est:.3f},{ty_est:.3f}))"
                 )
         _burst_align_log(
-            f"ROI 帧 j={j}/{len(proc) - 1} search=[{sx0},{sy0},{sx1},{sy1}] "
+            f"ROI 欧氏帧 j={j}/{len(proc) - 1} search=[{sx0},{sy0},{sx1},{sy1}] "
             f"n_kp1={0 if kp1 is None else len(kp1)} n_match={n_match} n_kept_disp_gate={n_kept} "
             f"reproj_thr={reproj_thr:.1f}px {log_note}"
         )
@@ -939,15 +985,17 @@ def _align_burst_roi_translation_features(
         )
         aligned.append(warped)
         if align_debug is not None:
+            theta_app_deg = math.degrees(math.atan2(float(A_eucl[1, 0]), float(A_eucl[0, 0])))
             align_debug.append(
                 {
                     "i": j,
-                    "mode": "roi_trans",
+                    "mode": "roi_euclid",
                     "det": det_name,
                     "nin": n_in,
                     "nkp1": len(kp1) if kp1 else 0,
                     "tx": float(A_eucl[0, 2]),
                     "ty": float(A_eucl[1, 2]),
+                    "theta_deg": theta_app_deg,
                     "search_px": [sx0, sy0, sx1, sy1],
                     "align_ref": ref_src or "-",
                 }
@@ -1136,7 +1184,7 @@ def _align_burst_stack_ecc(
 ) -> List[np.ndarray]:
     """
     以 proc[0] 为参考对齐后续帧。
-    - 人工 ROI：框内特征 + 仅平移，整图逆 warp、常量边界留白。
+    - 人工 ROI：框内特征 + 欧氏变换（旋转+平移），整图逆 warp、常量边界留白。
     - 未设 ROI：边带掩膜 + 相位/ECC + 时序平滑。
 
     on_frame：每对齐完一帧调用 on_frame(当前索引 j, 总对齐全帧数 n-1)，便于导出/预览进度。
@@ -1144,7 +1192,7 @@ def _align_burst_stack_ecc(
     if len(proc) < 2:
         return proc
     if align_track_roi_norm is not None:
-        return _align_burst_roi_translation_features(
+        return _align_burst_roi_euclidean_features(
             proc,
             align_track_roi_norm,
             align_feature_detector,

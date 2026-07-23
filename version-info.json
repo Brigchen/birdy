@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -37,6 +37,10 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.11": [
+      "GUI 视频裁剪与稳定（vidstab + ffmpeg 保留音轨）；bin/ffmpeg.exe（LFS）",
+      "连拍 ROI 对齐支持旋转+平移（欧氏变换）"
+    ],
     "2.0.10": [
       "轨迹图：输出根目录下鸟图路径解析、来源下拉与手动指定目录",
       "轨迹图标题地点优先同步水印「人工地点」"
