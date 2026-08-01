@@ -36,8 +36,8 @@ try:
         BURST_KEEP_MIN,
         MIN_BIRD_AREA,
         ENABLE_FOCUS_SORT,
-        FOCUS_WEIGHT,
-        BIRD_AREA_WEIGHT,
+        FOCUS_SCORE_WEIGHT,
+        AREA_SCORE_WEIGHT,
         FOCUS_METRIC_MODE,
         FOCUS_ROI_MARGIN_FRAC,
         FOCUS_HYBRID_W_LAP,
@@ -60,8 +60,8 @@ except ImportError:
     BURST_KEEP_MIN = 2
     MIN_BIRD_AREA = 1000
     ENABLE_FOCUS_SORT = True
-    FOCUS_WEIGHT = 1.0
-    BIRD_AREA_WEIGHT = 0.45
+    FOCUS_SCORE_WEIGHT = 9.0
+    AREA_SCORE_WEIGHT = 1.0
     FOCUS_METRIC_MODE = "hybrid"
     FOCUS_ROI_MARGIN_FRAC = 0.04
     FOCUS_HYBRID_W_LAP = 1.0
@@ -838,10 +838,15 @@ def select_best_images(
     keep_top_n: int = KEEP_TOP_N,
     min_bird_area: int = MIN_BIRD_AREA,
     use_bird_detection: bool = False,
+    focus_score_weight: float = FOCUS_SCORE_WEIGHT,
+    area_score_weight: float = AREA_SCORE_WEIGHT,
 ) -> BurstGroup:
     """
     在连拍组内保留对焦最优的 keep_top_n 张。
     启用鸟检时：无有效鸟体（面积 < 阈值）的图不参与排序，一律丢弃（一票否决）。
+
+    标准化打分：对焦和面积各自在组内做 min-max 标准化到 0-10，
+    再按 focus_score_weight : area_score_weight 加权求和（默认 9:1）。
     """
     if not group.images:
         return group
@@ -861,27 +866,49 @@ def select_best_images(
         print("    本组无有效鸟体，全部丢弃（一票否决）")
         return group
 
-    sorted_eligible = sorted(
-        eligible,
-        key=lambda x: (
-            float(FOCUS_WEIGHT) * x.focus_score
-            + float(BIRD_AREA_WEIGHT) * (x.bird_area / 10000.0)
-            + (float(EYE_BONUS_WEIGHT) if bool(getattr(x, "has_eye", False)) else 0.0)
-        ),
-        reverse=True,
-    )
+    # --- min-max 标准化到 0-10 ---
+    focus_vals = [im.focus_score for im in eligible]
+    area_vals = [im.bird_area for im in eligible]
+    f_min, f_max = min(focus_vals), max(focus_vals)
+    a_min, a_max = min(area_vals), max(area_vals)
+
+    def _norm(val: float, lo: float, hi: float) -> float:
+        if hi <= lo:
+            return 5.0  # 组内无差异时给中间分
+        return 10.0 * (val - lo) / (hi - lo)
+
+    fw = float(focus_score_weight)
+    aw = float(area_score_weight)
+
+    def _composite(im: ImageInfo) -> float:
+        nf = _norm(im.focus_score, f_min, f_max)
+        na = _norm(im.bird_area, a_min, a_max)
+        eye_bonus = float(EYE_BONUS_WEIGHT) if bool(getattr(im, "has_eye", False)) else 0.0
+        return fw * nf + aw * na + eye_bonus
+
+    sorted_eligible = sorted(eligible, key=_composite, reverse=True)
     take = min(keep_top_n, len(sorted_eligible))
     for im in sorted_eligible[:take]:
         im.keep = True
         tag = "鸟体ROI对焦" if use_bird_detection else "全图对焦"
+        nf = _norm(im.focus_score, f_min, f_max)
+        na = _norm(im.bird_area, a_min, a_max)
+        comp = _composite(im)
         print(
             f"    保留: {Path(im.path).name} - {tag} "
-            f"(评分: {im.focus_score:.2f}, 鸟面积: {im.bird_area:.0f})"
+            f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+            f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
+            f"综合: {comp:.2f})"
         )
     for im in sorted_eligible[take:]:
+        nf = _norm(im.focus_score, f_min, f_max)
+        na = _norm(im.bird_area, a_min, a_max)
+        comp = _composite(im)
         print(
             f"    丢弃: {Path(im.path).name} - 组内排名靠后 "
-            f"(评分: {im.focus_score:.2f})"
+            f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+            f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
+            f"综合: {comp:.2f})"
         )
     for im in group.images:
         if not _eligible(im):
@@ -904,12 +931,17 @@ def process_folder(
     screened_output_dir: Optional[str] = None,
     dual_format_mode: str = "off",
     progress_callback: Optional[Callable[[Dict], None]] = None,
+    focus_score_weight: float = FOCUS_SCORE_WEIGHT,
+    area_score_weight: float = AREA_SCORE_WEIGHT,
+    should_cancel: Optional[Callable[[], bool]] = None,
 ) -> Dict:
     """
     处理整个文件夹的图片
 
     burst_keep_ratio / burst_keep_min：每组实际保留张数为
     min(组内张数, max(burst_keep_min, round(组内张数 * burst_keep_ratio)))。
+
+    should_cancel：可选取消回调，返回 True 时在当前组/张完成后提前结束循环。
     """
     print("=" * 60)
     print("连拍图片预分组处理")
@@ -965,6 +997,9 @@ def process_folder(
     
     # 批处理：每batch_size组使用一个模型实例
     for batch_start in range(0, len(groups), batch_size):
+        if should_cancel and should_cancel():
+            print("\n[连拍] 收到中止信号，提前结束批处理循环")
+            break
         batch_end = min(batch_start + batch_size, len(groups))
         batch_groups = groups[batch_start:batch_end]
         
@@ -972,6 +1007,9 @@ def process_folder(
             print(f"\n[快速模式] 处理批次 {batch_start // batch_size + 1}/{(len(groups) + batch_size - 1) // batch_size}")
         
         for group in batch_groups:
+            if should_cancel and should_cancel():
+                print("\n[连拍] 收到中止信号，提前结束连拍组循环")
+                break
             n_g = len(group.images)
             keep_count = compute_burst_keep_count(
                 n_g, burst_keep_ratio, burst_keep_min
@@ -994,6 +1032,8 @@ def process_folder(
                     keep_top_n=keep_count,
                     min_bird_area=MIN_BIRD_AREA,
                     use_bird_detection=use_bird_detection,
+                    focus_score_weight=focus_score_weight,
+                    area_score_weight=area_score_weight,
                 )
             
             # 保存结果
@@ -1054,6 +1094,9 @@ def process_folder(
         print("  警告: 鸟体模型不可用，非连拍单张将按全图对焦并全部保留（未做无鸟丢弃）")
 
     for img in non_burst:
+        if should_cancel and should_cancel():
+            print("\n[连拍] 收到中止信号，提前结束非连拍单张循环")
+            break
         kept = True
         if use_bird_detection and nb_model is not None:
             print(f"  单张: {Path(img.path).name}")
@@ -1302,9 +1345,9 @@ BURST_KEEP_MIN = 2
 MIN_BIRD_AREA = 1000
 ENABLE_FOCUS_SORT = True
 
-# 组内排序：FOCUS_WEIGHT * focus_score + BIRD_AREA_WEIGHT * (bird_area/10000)
-FOCUS_WEIGHT = 1.0
-BIRD_AREA_WEIGHT = 0.45
+# 组内排序（标准化）：FOCUS_SCORE_WEIGHT * norm_focus + AREA_SCORE_WEIGHT * norm_area + EYE_BONUS
+FOCUS_SCORE_WEIGHT = 9.0
+AREA_SCORE_WEIGHT = 1.0
 
 # laplacian | hybrid | mask_hybrid
 FOCUS_METRIC_MODE = "mask_hybrid"

@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.12",
+  "version": "2.0.14",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-07-23",
+  "release_date": "2026-07-30",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,15 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.14": [
+      "主流程停止：改为异步停止（移除阻塞的 wait），UI 立即响应不再无响应",
+      "主流程停止：连拍、水印循环新增取消检查点，当前组/张完成后立即退出；阶段间补全检查点",
+      "水印：inline 无外框模式支持相机参数第三行与日期并入地点行；EXIF 提取增加 PIL fallback"
+    ],
+    "2.0.13": [
+      "轨迹图：鸟名与圆形鸟图间距减半；海拔剖面鸟名初始偏移同步收紧",
+      "水印：直接选择物种子目录作为输入时，正确显示物种名（不再显示「未知」)"
+    ],
     "2.0.12": [
       "RAW+JPG 双格式：仅 JPG 主流程；可选筛选后复制配对 RAW 至 Screened_raw_images",
       "CLI --dual-format；模块 src/dual_format.py"

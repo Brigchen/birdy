@@ -130,66 +130,119 @@ def _get_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 
 
 def _extract_exif_datetime(path: str) -> str:
+    # 优先 piexif，失败则回退 PIL getexif()
     try:
-        if piexif is None:
-            return ""
-        exif = piexif.load(path)
-        dt = (
-            exif.get("Exif", {}).get(piexif.ExifIFD.DateTimeOriginal)
-            or exif.get("0th", {}).get(piexif.ImageIFD.DateTime)
-        )
-        if not dt:
-            return ""
-        if isinstance(dt, bytes):
-            dt = dt.decode("utf-8", errors="ignore")
-        s = str(dt).strip()
-        # 2026:04:15 13:30:00 -> 2026-04-15
-        if len(s) >= 10:
-            return s[:10].replace(":", "-")
-        return s
-    except Exception:
-        return ""
+        if piexif is not None:
+            exif = piexif.load(path)
+            dt = (
+                exif.get("Exif", {}).get(piexif.ExifIFD.DateTimeOriginal)
+                or exif.get("Exif", {}).get(piexif.ExifIFD.DateTimeDigitized)
+                or exif.get("0th", {}).get(piexif.ImageIFD.DateTime)
+            )
+            if dt:
+                if isinstance(dt, bytes):
+                    dt = dt.decode("utf-8", errors="ignore")
+                s = str(dt).strip()
+                # 2026:04:15 13:30:00 -> 2026-04-15
+                if len(s) >= 10:
+                    return s[:10].replace(":", "-")
+                return s
+    except Exception as e:
+        print(f"[watermark exif] _extract_exif_datetime piexif 失败: {path} -> {e}", flush=True)
+
+    # PIL fallback：getexif() 可读出部分 piexif 漏掉的 EXIF
+    try:
+        with Image.open(path) as im:
+            ex = im.getexif()
+            if ex:
+                # 36867=DateTimeOriginal, 36868=DateTimeDigitized, 306=DateTime
+                dt = ex.get(36867) or ex.get(36868) or ex.get(306)
+                if dt:
+                    s = str(dt).strip()
+                    if len(s) >= 10:
+                        return s[:10].replace(":", "-")
+                    return s
+    except Exception as e:
+        print(f"[watermark exif] _extract_exif_datetime PIL fallback 失败: {path} -> {e}", flush=True)
+    return ""
 
 
 def _extract_exif_camera_params(path: str) -> str:
-    try:
-        if piexif is None:
-            return ""
-        exif = piexif.load(path)
-        exif_ifd = exif.get("Exif", {})
-        zeroth_ifd = exif.get("0th", {})
-        model = zeroth_ifd.get(piexif.ImageIFD.Model)
-        fnum = exif_ifd.get(piexif.ExifIFD.FNumber)
-        expo = exif_ifd.get(piexif.ExifIFD.ExposureTime)
-        iso = exif_ifd.get(piexif.ExifIFD.ISOSpeedRatings)
-        focal = exif_ifd.get(piexif.ExifIFD.FocalLength)
+    exif_ifd = {}
+    zeroth_ifd = {}
 
-        parts: List[str] = []
-        # 仅显示机身型号（不含品牌 Make）
-        if model:
-            if isinstance(model, bytes):
-                ms = model.decode("utf-8", errors="ignore").strip()
-            else:
-                ms = str(model).strip()
-            if ms:
-                parts.append(ms)
-        if fnum and isinstance(fnum, tuple) and len(fnum) == 2 and fnum[1]:
-            parts.append(f"f/{fnum[0] / fnum[1]:.1f}")
-        if expo and isinstance(expo, tuple) and len(expo) == 2 and expo[1]:
-            v = expo[0] / expo[1]
-            if v < 1:
-                parts.append(f"1/{int(round(1 / max(v, 1e-6)))}s")
-            else:
-                parts.append(f"{v:.1f}s")
-        if focal and isinstance(focal, tuple) and len(focal) == 2 and focal[1]:
-            parts.append(f"{int(round(focal[0] / focal[1]))}mm")
-        if iso:
-            if isinstance(iso, (tuple, list)):
-                iso = iso[0]
+    # 优先 piexif
+    piexif_ok = False
+    try:
+        if piexif is not None:
+            exif = piexif.load(path)
+            exif_ifd = exif.get("Exif", {}) or {}
+            zeroth_ifd = exif.get("0th", {}) or {}
+            piexif_ok = True
+    except Exception as e:
+        print(f"[watermark exif] _extract_exif_camera_params piexif 失败: {path} -> {e}", flush=True)
+
+    # PIL fallback
+    if not piexif_ok or (not exif_ifd and not zeroth_ifd):
+        try:
+            with Image.open(path) as im:
+                ex = im.getexif()
+                if ex:
+                    zeroth_ifd = dict(zeroth_ifd)
+                    for k, v in ex.items():
+                        zeroth_ifd.setdefault(k, v)
+                    # Exif IFD tag id = 34665；get_ifd 在 Pillow 7.2+ 可用
+                    try:
+                        exif_sub = ex.get_ifd(34665)
+                    except Exception:
+                        exif_sub = None
+                    if exif_sub:
+                        for k, v in exif_sub.items():
+                            exif_ifd.setdefault(k, v)
+        except Exception as e:
+            print(f"[watermark exif] _extract_exif_camera_params PIL fallback 失败: {path} -> {e}", flush=True)
+
+    def _decode(v):
+        if isinstance(v, bytes):
+            return v.decode("utf-8", errors="ignore").strip()
+        return str(v).strip() if v is not None else ""
+
+    model = _decode(zeroth_ifd.get(piexif.ImageIFD.Model if piexif else 272)) if zeroth_ifd else ""
+    fnum = exif_ifd.get(piexif.ExifIFD.FNumber if piexif else 33434)
+    expo = exif_ifd.get(piexif.ExifIFD.ExposureTime if piexif else 33434)
+    iso = exif_ifd.get(piexif.ExifIFD.ISOSpeedRatings if piexif else 34855)
+    focal = exif_ifd.get(piexif.ExifIFD.FocalLength if piexif else 37386)
+
+    parts: List[str] = []
+    # 仅显示机身型号（不含品牌 Make）
+    if model:
+        parts.append(model)
+    if fnum and isinstance(fnum, tuple) and len(fnum) == 2 and fnum[1]:
+        parts.append(f"f/{fnum[0] / fnum[1]:.1f}")
+    if expo and isinstance(expo, tuple) and len(expo) == 2 and expo[1]:
+        v = expo[0] / expo[1]
+        if v < 1:
+            parts.append(f"1/{int(round(1 / max(v, 1e-6)))}s")
+        else:
+            parts.append(f"{v:.1f}s")
+    if focal and isinstance(focal, tuple) and len(focal) == 2 and focal[1]:
+        parts.append(f"{int(round(focal[0] / focal[1]))}mm")
+    if iso:
+        if isinstance(iso, (tuple, list)):
+            iso = iso[0]
+        try:
             parts.append(f"ISO{int(iso)}")
-        return "  ".join(parts)
-    except Exception:
-        return ""
+        except (TypeError, ValueError):
+            pass
+
+    if not parts:
+        print(
+            f"[watermark exif] 相机参数为空: {path}  "
+            f"piexif_ok={piexif_ok} zeroth_keys={list(zeroth_ifd.keys())[:8]} "
+            f"exif_keys={list(exif_ifd.keys())[:8]}",
+            flush=True,
+        )
+    return "  ".join(parts)
 
 
 def _city_from_gps(path: str) -> str:
@@ -259,9 +312,9 @@ def _species_from_path(img_path: str, source_root: str) -> str:
     except Exception:
         rel = p.parent
     parts = rel.parts
+    # 直接选中物种级目录时，图片与 source_root 同级，relative 为空
     if not parts:
-        return "未知"
-    # 优先最后一级目录名
+        return root.name or "未知"
     return str(parts[-1]) or "未知"
 
 
@@ -438,11 +491,11 @@ def _inline_text_line_height(draw: ImageDraw.ImageDraw, font) -> int:
 
 
 def _inline_font_for_ref_height(
-    ref_h: int, two_lines: bool
+    ref_h: int, nrows: int
 ) -> tuple:
     """
     在竖条标签区按 ref_h（与签名 Logo 实际高度同量级）选最大可用字号。
-    两行时满足 2*line_h + gap <= ref_h；单行时 line_h <= ref_h。
+    nrows 行时满足 nrows*line_h + (nrows-1)*gap <= ref_h。
     """
     ref_h = max(12, int(ref_h))
     gap = max(2, int(ref_h * 0.12))
@@ -451,9 +504,7 @@ def _inline_font_for_ref_height(
     def fits(fs: int) -> bool:
         font = _get_font(fs)
         lh = _inline_text_line_height(measure, font)
-        if two_lines:
-            return 2 * lh + gap <= ref_h
-        return lh <= ref_h
+        return nrows * lh + (nrows - 1) * gap <= ref_h
 
     hi = min(320, max(24, ref_h * 5))
     best = 8
@@ -487,16 +538,22 @@ def _compose_inline_signature_label(
     species_line: str,
     place_line: str,
     logo_width_ratio: float,
+    camera_line: str = "",
 ) -> Image.Image:
     """
-    无外框：图内中下方 [签名 | 竖线 | 标签]；标签两行：物种、城市+地点。
+    无外框：图内中下方 [签名 | 竖线 | 标签]。
+    标签可有两行或三行（与左侧 Logo 等高合并）：
+      - 物种名称
+      - 地点（+日期）
+      - 相机参数（如有）
     竖线与文字颜色与签名水印（剪影上色）一致。
     """
     img_rgb = img.convert("RGB")
     w, h = img_rgb.size
     sp = (species_line or "").strip()
     pl = (place_line or "").strip()
-    if logo is None and not sp and not pl:
+    cam = (camera_line or "").strip()
+    if logo is None and not sp and not pl and not cam:
         return img_rgb.copy()
 
     base = img_rgb.convert("RGBA")
@@ -512,12 +569,15 @@ def _compose_inline_signature_label(
         lg = _fit_logo(logo.convert("RGBA"), area_w, area_h)
         lw, lh = lg.size
 
-    # 标签字号：以签名实际高度（或同框外推高度）为标尺，随图宽与 logo_width_ratio 成比例
+    # 收集所有非空文本行
+    all_lines = [x for x in (sp, pl, cam) if x]
+    will_draw_text = bool(all_lines)
+    nrows = len(all_lines)
+
+    # 标签字号：以签名实际高度（或同框外推高度）为标尺
     ref_h = lh if lg else min(area_h, max(28, int(round(area_w * 0.52))))
-    two_text_rows = bool(sp and pl)
-    will_draw_text = bool(sp or pl)
     if will_draw_text:
-        font, line_h, line_gap = _inline_font_for_ref_height(ref_h, two_text_rows)
+        font, line_h, line_gap = _inline_font_for_ref_height(ref_h, nrows)
     else:
         font = _get_font(12)
         measure_tmp = ImageDraw.Draw(Image.new("RGB", (8, 8)))
@@ -526,21 +586,16 @@ def _compose_inline_signature_label(
 
     measure = ImageDraw.Draw(Image.new("RGB", (max(128, w // 2), 256)))
     max_text_w = max(96, int(w * max(0.28, min(0.52, float(ratio) + 0.12))))
-    sp_d = _truncate_line_to_width(measure, sp, font, max_text_w) if sp else ""
-    pl_d = _truncate_line_to_width(measure, pl, font, max_text_w) if pl else ""
+    truncated = [
+        _truncate_line_to_width(measure, ln, font, max_text_w) for ln in all_lines
+    ]
     tw = max(
-        _text_pixel_width(measure, sp_d, font) if sp_d else 0,
-        _text_pixel_width(measure, pl_d, font) if pl_d else 0,
-        1 if (sp_d or pl_d) else 0,
+        [_text_pixel_width(measure, ln, font) for ln in truncated] + [1 if truncated else 0]
     )
 
-    has_text = bool(sp_d or pl_d)
+    has_text = bool(truncated)
     if has_text:
-        nrows = (1 if sp_d else 0) + (1 if pl_d else 0)
-        if nrows >= 2:
-            text_h = line_h + line_gap + line_h
-        else:
-            text_h = line_h
+        text_h = nrows * line_h + (nrows - 1) * line_gap
     else:
         text_h = 0
 
@@ -588,11 +643,9 @@ def _compose_inline_signature_label(
     if has_text:
         tx = cx
         ty = y_top + max(0, (block_h - text_h) // 2)
-        if sp_d:
-            dr.text((tx, ty), sp_d, fill=rgba_text, font=font)
-            ty += line_h + (line_gap if pl_d else 0)
-        if pl_d:
-            dr.text((tx, ty), pl_d, fill=rgba_text, font=font)
+        for i, ln in enumerate(truncated):
+            dr.text((tx, ty), ln, fill=rgba_text, font=font)
+            ty += line_h + (line_gap if i < len(truncated) - 1 else 0)
 
     out = Image.alpha_composite(base, overlay)
     return out.convert("RGB")
@@ -628,8 +681,21 @@ def _finalize_watermarked_image(
     if style == "inline":
         sp_line = species if options.enable_species else ""
         pl = _inline_place_line(img_path, options) if options.enable_location else ""
+        # 日期追加到地点行末尾
+        if dt and pl:
+            pl = f"{pl}  {dt}"
+        elif dt:
+            pl = dt
+        cam_line = cam if options.enable_camera_params else ""
+        print(
+            f"[watermark inline] path={img_path}\n"
+            f"  sp={sp_line!r} pl={pl!r} cam={cam_line!r} dt={dt!r}\n"
+            f"  enable_cam={options.enable_camera_params} enable_date={options.enable_date} "
+            f"enable_species={options.enable_species} enable_location={options.enable_location}",
+            flush=True,
+        )
         return _compose_inline_signature_label(
-            img, logo_img, sp_line, pl, options.logo_width_ratio
+            img, logo_img, sp_line, pl, options.logo_width_ratio, cam_line
         )
 
     left_fields = [x for x in (species, loc, dt) if x]
@@ -647,9 +713,10 @@ def generate_watermarks(
     options: WatermarkOptions,
     prefer_folder_name_as_species: bool = True,
     progress_callback: Optional[Callable[[Dict], None]] = None,
+    should_cancel: Optional[Callable[[], bool]] = None,
 ) -> Dict[str, int]:
     """
-    批量生成水印图。
+    批量生成水印图。should_cancel 返回 True 时提前中断循环。
     """
     os.makedirs(output_folder, exist_ok=True)
     images = _collect_images_recursive(source_folder)
@@ -675,6 +742,8 @@ def generate_watermarks(
         except Exception:
             pass
     for img_path in images:
+        if should_cancel and should_cancel():
+            break
         img = _safe_open_image(img_path)
         if img is None:
             fail += 1

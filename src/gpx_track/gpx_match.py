@@ -165,11 +165,14 @@ def _interp_on_timeline(
     pts: Sequence[GpxPoint],
     when_tl: datetime,
 ) -> Optional[Tuple[float, float, Optional[float], float]]:
+    """在 GPX 时间轴上插值；超出范围时用最近端点（delta_s 记录实际时间差）。"""
     if not ts:
         return None
+    # GPX 开晚了：照片早于首个轨迹点 → 用首点坐标，delta_s = 时间差
     if when_tl <= ts[0]:
         p = pts[0]
         return (p.lat, p.lon, p.ele, abs((ts[0] - when_tl).total_seconds()))
+    # GPX 关早了：照片晚于末尾轨迹点 → 用末点坐标，delta_s = 时间差
     if when_tl >= ts[-1]:
         p = pts[-1]
         return (p.lat, p.lon, p.ele, abs((ts[-1] - when_tl).total_seconds()))
@@ -355,26 +358,47 @@ def batch_write_gps_from_gpx(
     align = alignment_from_tz(exif_tz, gpx_tz)
     matched = 0
     written = 0
+    skipped_no_time = 0
+    skipped_delta = 0
+    endpoint_matched = 0
     max_delta = max_delta_hours * 3600.0
+
+    ts_tl, _ = _timeline_index(track, align)
 
     for path in files:
         when = _photo_time(path)
         if when is None:
+            skipped_no_time += 1
             continue
         got = interpolate_track_at_aligned(track, when, align)
         if got is None:
+            skipped_delta += 1
             continue
         lat, lon, ele, delta_s = got
         if delta_s > max_delta:
+            skipped_delta += 1
             continue
+        # 判断是否为端点匹配（照片时间在 GPX 范围之外）
+        when_tl = align.photo_to_timeline(when)
+        if ts_tl and (when_tl < ts_tl[0] or when_tl > ts_tl[-1]):
+            endpoint_matched += 1
         lat, lon, _ = _resolve_lat_lon(path, lat, lon)
         matched += 1
         if write_gps_exif(path, lat, lon, ele, verbose=False):
             written += 1
+
+    if endpoint_matched > 0:
+        print(
+            f"  GPX 匹配：{endpoint_matched} 张照片在 GPX 时间范围外，"
+            f"已按最近端点坐标匹配（时间差 ≤ {max_delta_hours:.0f} 小时）"
+        )
 
     return {
         "total": len(files),
         "matched": matched,
         "written": written,
         "skipped": len(files) - matched,
+        "skipped_no_time": skipped_no_time,
+        "skipped_delta": skipped_delta,
+        "endpoint_matched": endpoint_matched,
     }

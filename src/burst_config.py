@@ -34,13 +34,12 @@ MIN_BIRD_AREA = 1000
 # 如果禁用，所有图片都会保留
 ENABLE_FOCUS_SORT = True
 
-# 对焦评分权重
-# 综合排序分 = FOCUS_WEIGHT * focus_score + BIRD_AREA_WEIGHT * (鸟体面积/10000)
-# 增加此值可更重视对焦质量
-FOCUS_WEIGHT = 1.0
-
-# 鸟体面积项权重（降低此值可减少“大鸟体”对组内排序的主导）
-BIRD_AREA_WEIGHT = 0.45
+# 对焦/面积标准化权重（总分 10 分）
+# 对焦和面积先各自在组内做 min-max 标准化到 0-10，再按权重加权求和
+# 综合排序分 = FOCUS_SCORE_WEIGHT * norm_focus + AREA_SCORE_WEIGHT * norm_area + EYE_BONUS
+# 默认 9:1（对焦主导，面积仅作微调）
+FOCUS_SCORE_WEIGHT = 9.0
+AREA_SCORE_WEIGHT = 1.0
 
 # 对焦指标模式（连拍筛选用）
 # - laplacian：仅在 ROI 内计算 Laplacian 方差（与早期版本一致）
@@ -77,8 +76,8 @@ EYE_INSIDE_TOL_FRAC = 0.06
 # 每只鸟最多保留的鸟眼数（按置信度排序）
 EYE_MAX_PER_BIRD = 2
 
-# 鸟眼加权（在原有排序分基础上增加）
-# 综合排序分 = FOCUS_WEIGHT * focus_score + BIRD_AREA_WEIGHT * (鸟体面积/10000) + (有鸟眼? EYE_BONUS_WEIGHT:0)
+# 鸟眼加权（在标准化排序分基础上额外加分）
+# 综合排序分 = FOCUS_SCORE_WEIGHT * norm_focus + AREA_SCORE_WEIGHT * norm_area + (有鸟眼? EYE_BONUS_WEIGHT:0)
 EYE_BONUS_WEIGHT = 0.8
 
 # ==================== 输出设置 ====================

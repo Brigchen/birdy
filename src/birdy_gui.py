@@ -562,6 +562,7 @@ class WorkerThread(QThread):
             # GPS 在连拍筛选并复制到 Screened_images 之后再写入（见 burst 分支内）
 
             if not self.is_running:
+                self.finished.emit({"_aborted": True})
                 return
 
             screened_dir = os.path.join(config["output_folder"], "Screened_images")
@@ -604,11 +605,26 @@ class WorkerThread(QThread):
                             fast_mode=config["use_fast_mode"],
                             screened_output_dir=screened_dir,
                             dual_format_mode=config.get("dual_format_mode", "off"),
-                            progress_callback=lambda d: _emit_phase_progress(
-                                "burst",
-                                int(d.get("done", 0)),
-                                int(d.get("total", 1)),
+                            focus_score_weight=float(
+                                config.get("focus_score_weight", 9.0)
                             ),
+                            area_score_weight=float(
+                                config.get("area_score_weight", 1.0)
+                            ),
+                            progress_callback=lambda d: (
+                                _emit_phase_progress(
+                                    "burst",
+                                    int(d.get("done", 0)),
+                                    int(d.get("total", 1)),
+                                ),
+                                self.eta_checkpoint.emit({
+                                    "kind": "phase_tick",
+                                    "phase": "burst",
+                                    "done": int(d.get("done", 0)),
+                                    "total": max(1, int(d.get("total", 1))),
+                                }) if d.get("kind") != "start" else None,
+                            ),
+                            should_cancel=lambda: not self.is_running,
                         )
                         self.status_updated.emit(
                             f"✓ 处理 {burst_result['total_images']} 张图片，保留 {burst_result['kept_images']} 张"
@@ -628,6 +644,7 @@ class WorkerThread(QThread):
                 self.eta_checkpoint.emit({"kind": "phase_done", "phase": "burst"})
 
                 if not self.is_running:
+                    self.finished.emit({"_aborted": True})
                     return
 
                 if config.get("enable_gps_write"):
@@ -658,6 +675,7 @@ class WorkerThread(QThread):
                     self.eta_checkpoint.emit({"kind": "phase_done", "phase": "gps"})
 
                 if not self.is_running:
+                    self.finished.emit({"_aborted": True})
                     return
             else:
                 _emit_burst_skipped_status(self.status_updated.emit, config)
@@ -860,6 +878,10 @@ class WorkerThread(QThread):
                 _emit_phase_progress("species", 1, 1)
                 self.eta_checkpoint.emit({"kind": "phase_done", "phase": "species"})
 
+            if not self.is_running:
+                self.finished.emit({"_aborted": True})
+                return
+
             if config.get("enable_record_export_auto", False):
                 current_step += 1
                 self.status_updated.emit(
@@ -909,6 +931,10 @@ class WorkerThread(QThread):
                 self.eta_checkpoint.emit(
                     {"kind": "phase_done", "phase": "record_export"}
                 )
+
+            if not self.is_running:
+                self.finished.emit({"_aborted": True})
+                return
 
             if config.get("enable_track_map_auto", False):
                 current_step += 1
@@ -962,6 +988,10 @@ class WorkerThread(QThread):
                     self.error_occurred.emit(f"轨迹图生成失败: {str(e)}")
                 _emit_phase_progress("track_map", 1, 1)
                 self.eta_checkpoint.emit({"kind": "phase_done", "phase": "track_map"})
+
+            if not self.is_running:
+                self.finished.emit({"_aborted": True})
+                return
 
             # 水印生成
             if config.get("enable_watermark_generation", False):
@@ -1031,6 +1061,7 @@ class WorkerThread(QThread):
                             int(d.get("done", 0)),
                             int(d.get("total", 1)),
                         ),
+                        should_cancel=lambda: not self.is_running,
                     )
                     self.status_updated.emit(
                         f"✓ 水印生成完成: 共 {wm_result['total']}，成功 {wm_result['ok']}，失败 {wm_result['fail']}"
@@ -1056,7 +1087,7 @@ class WorkerThread(QThread):
 class WatermarkBatchThread(QThread):
     """在后台线程运行批量水印，避免阻塞 GUI。"""
 
-    progress = pyqtSignal(int, int)  # done, total
+    progress = pyqtSignal(int, int, int, int)  # percent(0-100), elapsed_sec, remaining_sec, done
     log_line = pyqtSignal(str)
     finished_ok = pyqtSignal(dict)
     failed = pyqtSignal(str)
@@ -1073,25 +1104,43 @@ class WatermarkBatchThread(QThread):
         self._output_folder = output_folder
         self._options = options
         self._last_log_pct = -1
+        self._t_start: float = 0.0
+        self._last_pct: int = -1
 
     def run(self) -> None:
+        import time as _t
         self._last_log_pct = -1
+        self._last_pct = -1
+        self._t_start = _t.time()
+
+        def _emit(pct: int, done: int, total: int) -> None:
+            pct = max(0, min(100, pct))
+            if pct == self._last_pct and pct < 100:
+                return
+            self._last_pct = pct
+            elapsed = int(_t.time() - self._t_start)
+            if pct > 0:
+                total_est = elapsed / (pct / 100.0)
+                remaining = max(0, int(total_est - elapsed))
+            else:
+                remaining = 0
+            self.progress.emit(pct, elapsed, remaining, done)
 
         def _cb(d: Dict) -> None:
             k = d.get("kind")
             tot = max(1, int(d.get("total", 1)))
             if k == "start":
                 self.log_line.emit(f"水印批量：开始，共 {tot} 张…")
-                self.progress.emit(0, tot)
+                _emit(0, 0, tot)
             elif k == "tick":
                 done = int(d.get("done", 0))
-                self.progress.emit(done, tot)
                 pct = min(100, (100 * done) // tot)
+                _emit(pct, done, tot)
                 if pct >= self._last_log_pct + 5 or done >= tot:
                     self.log_line.emit(f"水印批量：进度 {done}/{tot}（{pct}%）")
                     self._last_log_pct = pct
             elif k == "done":
-                self.progress.emit(tot, tot)
+                _emit(100, tot, tot)
 
         try:
             r = generate_watermarks(
@@ -1574,6 +1623,8 @@ class BirdDetectionGUI(QMainWindow):
             'burst_keep_ratio': 0.2,
             'burst_keep_min': 2,
             'keep_top_n': 2,
+            'focus_score_weight': 9.0,
+            'area_score_weight': 1.0,
             'enable_burst_detection': True,
             'use_bird_detection': True,
             'use_eye_detection': False,
@@ -2038,6 +2089,35 @@ class BirdDetectionGUI(QMainWindow):
             "每组至少尝试保留的张数；与比例取 max 后不超过该组总张数"
         )
         process_layout.addRow("连拍最少保留:", self.burst_keep_min_input)
+
+        # 对焦/面积标准化权重（总分 10 分）
+        self.focus_score_weight_input = QDoubleSpinBox()
+        self.focus_score_weight_input.setRange(0.0, 10.0)
+        self.focus_score_weight_input.setSingleStep(0.5)
+        self.focus_score_weight_input.setDecimals(1)
+        self.focus_score_weight_input.setValue(
+            float(self.config.get("focus_score_weight", 9.0))
+        )
+        self.focus_score_weight_input.setToolTip(
+            "对焦评分在组内标准化(0-10)后的权重，默认 9（总分 10 中占 9 分）"
+        )
+        self.area_score_weight_input = QDoubleSpinBox()
+        self.area_score_weight_input.setRange(0.0, 10.0)
+        self.area_score_weight_input.setSingleStep(0.5)
+        self.area_score_weight_input.setDecimals(1)
+        self.area_score_weight_input.setValue(
+            float(self.config.get("area_score_weight", 1.0))
+        )
+        self.area_score_weight_input.setToolTip(
+            "鸟体面积在组内标准化(0-10)后的权重，默认 1（总分 10 中占 1 分）"
+        )
+
+        from PyQt5.QtWidgets import QHBoxLayout as _QHL
+        _ratio_row = _QHL()
+        _ratio_row.addWidget(self.focus_score_weight_input)
+        _ratio_row.addWidget(QLabel(":"))
+        _ratio_row.addWidget(self.area_score_weight_input)
+        process_layout.addRow("对焦:面积 权重:", _ratio_row)
         
         # 启用鸟体检测
         self.use_bird_detection_checkbox = QCheckBox("启用鸟体检测")
@@ -3261,7 +3341,7 @@ class BirdDetectionGUI(QMainWindow):
             lines.extend(skipped_lines)
         elif sk and int(sk) > 0:
             lines.append(
-                f"未绘制 {sk} 张：与 GPX 时间差超过 30 分钟或无拍摄时间"
+                f"未绘制 {sk} 张：与 GPX 时间差超过 1 小时或无拍摄时间"
             )
         self.add_log("\n".join(lines))
         if preview and main_png and os.path.isfile(main_png):
@@ -3994,15 +4074,25 @@ class BirdDetectionGUI(QMainWindow):
 
         self.wm_run_btn.setEnabled(False)
         self.progress_bar.setValue(0)
+        if hasattr(self, "_elapsed_label"):
+            self._elapsed_label.setText("已用时间：0秒")
+        if hasattr(self, "_eta_label"):
+            self._eta_label.setText("预计剩余：…")
         self.add_log("已启动后台批量水印线程…")
         print("已启动后台批量水印线程…")
 
         th = WatermarkBatchThread(source_folder, output_folder, options, self)
         self._wm_batch_thread = th
 
-        def _on_prog(done: int, total: int) -> None:
-            pct = int(100 * min(done, total) / max(1, total))
+        def _on_prog(pct: int, elapsed: int, remaining: int, done: int) -> None:
             self.progress_bar.setValue(pct)
+            if hasattr(self, "_elapsed_label"):
+                self._elapsed_label.setText(f"已用时间：{self._format_duration_hms(elapsed)}")
+            if hasattr(self, "_eta_label"):
+                if pct >= 100:
+                    self._eta_label.setText("预计剩余：完成")
+                else:
+                    self._eta_label.setText(f"预计剩余：{self._format_duration_hms(remaining)}")
 
         def _on_log(msg: str) -> None:
             self.add_log(msg)
@@ -4011,6 +4101,8 @@ class BirdDetectionGUI(QMainWindow):
         def _on_ok(r: Dict) -> None:
             self.wm_run_btn.setEnabled(True)
             self.progress_bar.setValue(100)
+            if hasattr(self, "_eta_label"):
+                self._eta_label.setText("预计剩余：完成")
             QMessageBox.information(
                 self,
                 "水印生成完成",
@@ -4025,6 +4117,8 @@ class BirdDetectionGUI(QMainWindow):
 
         def _on_fail(msg: str) -> None:
             self.wm_run_btn.setEnabled(True)
+            if hasattr(self, "_eta_label"):
+                self._eta_label.setText("预计剩余：失败")
             QMessageBox.critical(self, "水印生成失败", msg)
 
         th.progress.connect(_on_prog)
@@ -4427,6 +4521,10 @@ class BirdDetectionGUI(QMainWindow):
 
     def _reset_eta_model(self) -> None:
         self._eta_phases = []
+        self._eta_phase_rates: Dict[str, Optional[float]] = {}
+        self._eta_phase_t0: Dict[str, Optional[float]] = {}
+        self._eta_phase_done: Dict[str, int] = {}
+        self._eta_phase_total: Dict[str, int] = {}
         self._eta_species_t0 = None
         self._eta_species_done = 0
         self._eta_species_total = 0
@@ -4441,25 +4539,37 @@ class BirdDetectionGUI(QMainWindow):
         for p in self._eta_phases:
             if p.get("done"):
                 continue
+            name = p["name"]
+            est = float(p.get("est", 0.0))
             if not seen_current:
                 seen_current = True
-                name = p["name"]
-                est = float(p.get("est", 0.0))
+                done = self._eta_phase_done.get(name, 0)
+                total = self._eta_phase_total.get(name, 0)
+                rate = self._eta_phase_rates.get(name)
                 if name == "species" and self._eta_species_total > 0:
                     left = max(0, self._eta_species_total - self._eta_species_done)
                     if left <= 0:
                         continue
-                    rate = self._ema_sec_per_species
-                    if rate is not None and self._eta_species_done > 0:
-                        rem += left * rate
+                    sp_rate = self._ema_sec_per_species
+                    if sp_rate is not None and self._eta_species_done > 0:
+                        rem += left * sp_rate
                     else:
                         rem += est * (left / max(1, self._eta_species_total))
+                elif total > 0 and done > 0 and rate is not None:
+                    left_items = max(0, total - done)
+                    rem += left_items * rate
                 else:
-                    t0 = p.get("t0")
-                    if t0 is None:
+                    t0 = self._eta_phase_t0.get(name) or p.get("t0")
+                    if t0 is None or done <= 0:
                         rem += est
                     else:
-                        rem += max(0.0, est - (mono - t0))
+                        elapsed_in_phase = mono - t0
+                        if done >= total:
+                            pass
+                        else:
+                            frac = done / max(1, total)
+                            total_phase_est = elapsed_in_phase / max(0.001, frac)
+                            rem += max(0.0, total_phase_est - elapsed_in_phase)
             else:
                 rem += float(p.get("est", 0.0))
         return max(0.0, rem)
@@ -4469,23 +4579,32 @@ class BirdDetectionGUI(QMainWindow):
         if kind == "start":
             self._reset_eta_model()
             for p in d.get("phases") or []:
+                nm = p["name"]
                 self._eta_phases.append(
                     {
-                        "name": p["name"],
+                        "name": nm,
                         "est": float(p.get("est", 1.0)),
                         "done": False,
                         "t0": None,
                     }
                 )
+                self._eta_phase_rates[nm] = None
+                self._eta_phase_t0[nm] = None
+                self._eta_phase_done[nm] = 0
+                self._eta_phase_total[nm] = 0
             return
         if kind == "phase_begin":
             name = d.get("phase")
+            t0 = time.monotonic()
             for p in self._eta_phases:
                 if p["name"] == name:
-                    p["t0"] = time.monotonic()
-                    if name == "species":
-                        self._eta_species_t0 = p["t0"]
+                    p["t0"] = t0
                     break
+            self._eta_phase_t0[name] = t0
+            self._eta_phase_done[name] = 0
+            self._eta_phase_rates[name] = None
+            if name == "species":
+                self._eta_species_t0 = t0
             return
         if kind == "phase_done":
             name = d.get("phase")
@@ -4493,6 +4612,22 @@ class BirdDetectionGUI(QMainWindow):
                 if p["name"] == name:
                     p["done"] = True
                     break
+            return
+        if kind == "phase_tick":
+            name = d.get("phase")
+            done = int(d.get("done", 0))
+            total = max(1, int(d.get("total", 1)))
+            self._eta_phase_done[name] = done
+            self._eta_phase_total[name] = total
+            t0 = self._eta_phase_t0.get(name)
+            if t0 is not None and done > 0:
+                inst = (time.monotonic() - t0) / float(done)
+                a = getattr(self, "_eta_ema_alpha", 0.3)
+                cur = self._eta_phase_rates.get(name)
+                if cur is None:
+                    self._eta_phase_rates[name] = inst
+                else:
+                    self._eta_phase_rates[name] = (1.0 - a) * cur + a * inst
             return
         if kind == "species_begin":
             n = int(d.get("n", 0))
@@ -4504,20 +4639,25 @@ class BirdDetectionGUI(QMainWindow):
                 if p["name"] == "species":
                     p["est"] = max(8.0, n * per) if n > 0 else 3.0
                     break
+            self._eta_phase_total["species"] = n
+            self._eta_phase_done["species"] = 0
             return
         if kind == "species_tick":
             done = int(d.get("done", 0))
             total = max(1, int(d.get("total", 1)))
             self._eta_species_done = done
+            self._eta_phase_done["species"] = done
+            self._eta_phase_total["species"] = total
             if self._eta_species_t0 is not None and done > 0:
                 inst = (time.monotonic() - self._eta_species_t0) / float(done)
-                a = self._eta_ema_alpha
+                a = getattr(self, "_eta_ema_alpha", 0.3)
                 if self._ema_sec_per_species is None:
                     self._ema_sec_per_species = inst
                 else:
                     self._ema_sec_per_species = (
                         (1.0 - a) * self._ema_sec_per_species + a * inst
                     )
+                self._eta_phase_rates["species"] = self._ema_sec_per_species
 
     def _refresh_process_time_labels(self):
         """已用时间 + 预计剩余（阶段预估 + 物种逐张 EMA 修正）。"""
@@ -4695,27 +4835,14 @@ class BirdDetectionGUI(QMainWindow):
         self._refresh_process_time_labels()
     
     def stop_processing(self):
-        """停止处理"""
+        """停止处理（异步：设置标志位后立即返回，UI 不阻塞；
+        worker 线程在下一个检查点退出后通过 finished 信号触发 processing_finished 统一清理）"""
         if self.worker_thread and self.worker_thread.isRunning():
             self.worker_thread.stop()
-            self.worker_thread.wait()
-            self.add_log("✗ 处理已中止")
-            self._process_time_timer.stop()
-            if self._process_start_monotonic is not None:
-                elapsed = time.monotonic() - self._process_start_monotonic
-                self._elapsed_label.setText(
-                    f"已用时间：{self._format_duration_hms(elapsed)}（已中止）"
-                )
-            self._process_start_monotonic = None
-            self._eta_label.setText("预计剩余：—")
-            self._reset_eta_model()
-            self.start_btn.setEnabled(True)
-            self.stop_btn.setEnabled(False)
-            try:
-                self._sync_config_from_ui()
-                self._save_config()
-            except Exception as e:
-                print(f"中止后保存配置失败: {e}")
+            self.add_log("✗ 正在中止处理，等待当前步骤完成...")
+            self.stop_btn.setEnabled(False)  # 防止重复点击
+            # 开始按钮保持禁用，直到 processing_finished 被调用
+            # UI 状态（计时器、elapsed、eta、按钮）由 processing_finished 统一清理
     
     def update_progress(self, value: int):
         """更新进度条"""
@@ -4746,41 +4873,49 @@ class BirdDetectionGUI(QMainWindow):
         QMessageBox.critical(self, "处理出错", error_msg)
     
     def processing_finished(self, results: Dict):
-        """处理完成"""
+        """处理完成（或已中止）"""
+        aborted = bool(results.get("_aborted", False))
         self.add_log("\n" + "=" * 60)
-        self.add_log("✓ 处理完成！")
+        self.add_log("✓ 处理已中止" if aborted else "✓ 处理完成！")
         self.add_log("=" * 60)
 
-        self.stats_table.setRowCount(0)
-        for i, (key, value) in enumerate(
-            _build_processing_stats(results, self.config)
-        ):
-            self.stats_table.insertRow(i)
-            self.stats_table.setItem(i, 0, QTableWidgetItem(str(key)))
-            self.stats_table.setItem(i, 1, QTableWidgetItem(str(value)))
+        if not aborted:
+            self.stats_table.setRowCount(0)
+            for i, (key, value) in enumerate(
+                _build_processing_stats(results, self.config)
+            ):
+                self.stats_table.insertRow(i)
+                self.stats_table.setItem(i, 0, QTableWidgetItem(str(key)))
+                self.stats_table.setItem(i, 1, QTableWidgetItem(str(value)))
 
-        path_lines = _build_output_path_logs(results, self.config)
-        if path_lines:
-            self.add_log("")
-            for line in path_lines:
-                self.add_log(line)
-        
+            path_lines = _build_output_path_logs(results, self.config)
+            if path_lines:
+                self.add_log("")
+                for line in path_lines:
+                    self.add_log(line)
+
         # 恢复UI状态
         self._process_time_timer.stop()
         if self._process_start_monotonic is not None:
             elapsed = time.monotonic() - self._process_start_monotonic
-            self._elapsed_label.setText(f"已用时间：{self._format_duration_hms(elapsed)}")
+            suffix = "（已中止）" if aborted else ""
+            self._elapsed_label.setText(
+                f"已用时间：{self._format_duration_hms(elapsed)}{suffix}"
+            )
         self._process_start_monotonic = None
-        self._eta_label.setText("预计剩余：0秒")
+        self._eta_label.setText("预计剩余：—" if aborted else "预计剩余：0秒")
         self._reset_eta_model()
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         try:
             self._sync_config_from_ui()
             self._save_config()
-            self._refresh_track_map_path_ui()
+            if not aborted:
+                self._refresh_track_map_path_ui()
         except Exception as e:
             print(f"完成后保存配置失败: {e}")
+        if aborted:
+            return
         done_parts: List[str] = []
         flags = results.get("_flow_flags") or _flow_enabled_flags(self.config)
         if "total_images" in results:
@@ -4853,6 +4988,8 @@ class BirdDetectionGUI(QMainWindow):
         self.config["burst_keep_ratio"] = float(self.burst_keep_ratio_input.value())
         self.config["burst_keep_min"] = int(self.burst_keep_min_input.value())
         self.config["keep_top_n"] = int(self.config["burst_keep_min"])
+        self.config["focus_score_weight"] = float(self.focus_score_weight_input.value())
+        self.config["area_score_weight"] = float(self.area_score_weight_input.value())
         self.config["enable_burst_detection"] = (
             self.enable_burst_detection_checkbox.isChecked()
         )
@@ -5043,6 +5180,12 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.burst_keep_min_input.setValue(
             int(self.config.get('burst_keep_min', self.config.get('keep_top_n', 2)))
+        )
+        self.focus_score_weight_input.setValue(
+            float(self.config.get('focus_score_weight', 9.0))
+        )
+        self.area_score_weight_input.setValue(
+            float(self.config.get('area_score_weight', 1.0))
         )
         self.enable_burst_detection_checkbox.setChecked(
             self.config.get("enable_burst_detection", True)
