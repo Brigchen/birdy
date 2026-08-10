@@ -298,9 +298,17 @@ def _observation_date_label(
             beijing_times.append(_to_beijing_wall(ph.when, exif_tz))
     if not beijing_times:
         t = datetime.now(MAP_DISPLAY_TZ).replace(tzinfo=None)
-    else:
+        return f"{t.year}年{t.month}月{t.day}日"
+    days = {(t.year, t.month, t.day) for t in beijing_times}
+    if len(days) <= 1:
         t = min(beijing_times)
-    return f"{t.year}年{t.month}月{t.day}日"
+        return f"{t.year}年{t.month}月{t.day}日"
+    t0, t1 = min(beijing_times), max(beijing_times)
+    if t0.year == t1.year and t0.month == t1.month:
+        return f"{t0.year}年{t0.month}月{t0.day}日-{t1.day}日"
+    if t0.year == t1.year:
+        return f"{t0.year}年{t0.month}月{t0.day}日-{t1.month}月{t1.day}日"
+    return f"{t0.year}年{t0.month}月{t0.day}日-{t1.year}年{t1.month}月{t1.day}日"
 
 
 def _observation_time_range_label(
@@ -725,7 +733,7 @@ def _pick_title_anchor(
     obstacles: Sequence[Tuple[float, float, float, float]],
     y_top: float,
 ) -> Tuple[float, str]:
-    """左上 → 右上（右对齐）→ 水平微调，避让鸟图/鸟名。"""
+    """左上 → 右上 → 中上，避让鸟图/鸟名。"""
     gap = TITLE_GAP_AXES
     step = 0.022
     margin_x = MAP_MARGIN_TITLE_X
@@ -741,9 +749,9 @@ def _pick_title_anchor(
     if fits(box):
         return x0, "left"
 
-    for i in range(1, 28):
+    for i in range(1, 16):
         x0 = margin_x + i * step
-        if x0 + block_w > 0.54:
+        if x0 + block_w > 0.48:
             break
         box = (x0, y_top - block_h, x0 + block_w, y_top)
         if fits(box):
@@ -754,13 +762,18 @@ def _pick_title_anchor(
     if fits(box):
         return x_right, "right"
 
-    for i in range(1, 28):
+    for i in range(1, 16):
         x_right = max_x_right - i * step
-        if x_right - block_w < 0.46:
+        if x_right - block_w < 0.52:
             break
         box = (x_right - block_w, y_top - block_h, x_right, y_top)
         if fits(box):
             return x_right, "right"
+
+    x_center = max(margin_x, min(0.5 - block_w * 0.5, max_x_right - block_w))
+    box = (x_center, y_top - block_h, x_center + block_w, y_top)
+    if fits(box):
+        return 0.5, "center"
 
     return margin_x, "left"
 
@@ -818,7 +831,7 @@ def _draw_map_inset_title(
         obstacles=obstacles,
         y_top=y_top,
     )
-    logo_align = (1, 1) if ha == "right" else (0, 1)
+    logo_align = (0.5, 1) if ha == "center" else ((1, 1) if ha == "right" else (0, 1))
     y = y_top
 
     if date_label:
@@ -1562,6 +1575,91 @@ def _collect_lonlats(
     return lons, lats
 
 
+_GPS_CLUSTER_MAX_COLS = 5
+
+
+def _gps_cluster_key(lat: float, lon: float) -> Tuple[float, float]:
+    return (round(float(lat), 5), round(float(lon), 5))
+
+
+def _cluster_side_from_anchor(ax, anchor_x: float) -> int:
+    """+1 鸟图放 GPS 圆点右侧，-1 放左侧（选可视范围较大一侧）。"""
+    x0, x1 = ax.get_xlim()
+    if x1 <= x0:
+        return 1
+    space_left = anchor_x - x0
+    space_right = x1 - anchor_x
+    return 1 if space_right >= space_left else -1
+
+
+def _layout_cluster_thumb_grid(
+    ax,
+    anchor: Tuple[float, float],
+    count: int,
+    side: int,
+    thumb_diameter: int,
+) -> List[Tuple[float, float]]:
+    """GPS 圆点左/右侧横向排列，每行最多 5 张，超出换行。"""
+    if count <= 0:
+        return []
+    ax_x, ax_y = anchor
+    max_cols = _GPS_CLUSTER_MAX_COLS
+    n_rows = (count + max_cols - 1) // max_cols
+    step_pt = float(thumb_diameter) * 1.06
+    row_step_pt = float(thumb_diameter) * 1.14
+    base_pt = float(thumb_diameter) * 0.58
+    out: List[Tuple[float, float]] = []
+    for i in range(count):
+        row = i // max_cols
+        col = i % max_cols
+        dx_pt = side * (base_pt + col * step_pt)
+        dy_pt = (row - (n_rows - 1) * 0.5) * row_step_pt
+        ox, oy = _offset_points_to_data(ax, ax_x, ax_y, dx_pt, dy_pt)
+        out.append((ox, oy))
+    return out
+
+
+def _cluster_label_xytext(
+    idx: int, label_fs: float, thumb_diameter: int
+) -> Tuple[float, float, str, str]:
+    """鸟名在鸟图上方/下方交错，减轻文字重叠。"""
+    gap = max(float(label_fs) * 0.65, float(thumb_diameter) * 0.24)
+    if idx % 2 == 0:
+        return 0.0, gap, "center", "bottom"
+    return 0.0, -gap, "center", "top"
+
+
+def _label_box_axes_frac_at(
+    ax,
+    dx: float,
+    dy: float,
+    name: str,
+    ox_pt: float,
+    oy_pt: float,
+    label_fs: float,
+    ha: str,
+    va: str,
+) -> Tuple[float, float, float, float]:
+    tx, ty = _offset_points_to_data(ax, dx, dy, ox_pt, oy_pt)
+    w = _text_width_data(ax, name, label_fs)
+    h = _text_height_axes_frac(ax, label_fs) * max(
+        ax.get_ylim()[1] - ax.get_ylim()[0], 1e-9
+    )
+    if ha == "center":
+        x0, x1 = tx - w * 0.5, tx + w * 0.5
+    elif ha == "right":
+        x0, x1 = tx - w, tx
+    else:
+        x0, x1 = tx, tx + w
+    if va == "bottom":
+        y0, y1 = ty, ty + h
+    elif va == "top":
+        y0, y1 = ty - h, ty
+    else:
+        y0, y1 = ty - h * 0.5, ty + h * 0.5
+    return _data_box_to_axes_frac(ax, x0, y0, x1, y1)
+
+
 def _add_photo_markers(
     ax,
     photos: Sequence[BirdPhoto],
@@ -1577,102 +1675,104 @@ def _add_photo_markers(
     shown = list(photos)
     if max_markers is not None:
         shown = shown[: max(0, max_markers)]
-    anchors: List[Tuple[float, float]] = []
-    items: List[BirdPhoto] = []
+
+    entries: List[Tuple[BirdPhoto, float, float]] = []
     for ph in shown:
         if ph.lat is None or ph.lon is None:
             continue
         ax_x, ax_y = _map_xy(ph.lon, ph.lat, use_gcj=use_gcj)
-        anchors.append((ax_x, ax_y))
-        items.append(ph)
+        entries.append((ph, ax_x, ax_y))
 
-    if not anchors:
+    if not entries:
         return MapMarkerLayout([], [], [])
 
-    displays = (
-        _layout_marker_displays(anchors, ax, thumb_diameter, max_overlap=0.04)
-        if resolve_overlaps and len(anchors) > 1
-        else list(anchors)
-    )
+    clusters: Dict[Tuple[float, float], List[Tuple[BirdPhoto, float, float]]] = {}
+    cluster_order: List[Tuple[float, float]] = []
+    for ph, ax_x, ax_y in entries:
+        key = _gps_cluster_key(ph.lat, ph.lon)  # type: ignore[arg-type]
+        if key not in clusters:
+            clusters[key] = []
+            cluster_order.append(key)
+        clusters[key].append((ph, ax_x, ax_y))
 
     label_fs = _map_typography(ax)["species_pt"]
     r_thumb = _thumb_radius_data(ax, thumb_diameter)
     label_color, _, use_stroke = _map_ink(basemap_style, on_basemap=on_basemap)
     label_effects = _map_text_effects(use_stroke=use_stroke)
-    leader_color = "#DDDDDD" if use_stroke else MAP_INK_GREEN
-    label_layouts = _layout_species_labels(
-        ax, items, displays, r_thumb, label_fs, thumb_diameter
-    )
+
+    flat_displays: List[Tuple[float, float]] = []
     label_boxes_axes: List[Tuple[float, float, float, float]] = []
-    thumb_boxes_axes = [
-        _circle_box_axes_frac(ax, dx, dy, r_thumb) for dx, dy in displays
-    ]
-    for idx, (ph, (dx, dy)) in enumerate(zip(items, displays)):
-        side, label_off_x, label_off_y = label_layouts[idx]
-        label_boxes_axes.append(
-            _label_box_axes_frac(
-                ax,
-                dx,
-                dy,
+    thumb_boxes_axes: List[Tuple[float, float, float, float]] = []
+
+    for key in cluster_order:
+        group = clusters[key]
+        _, ax_x, ax_y = group[0]
+        anchor = (ax_x, ax_y)
+        side = _cluster_side_from_anchor(ax, ax_x)
+        positions = _layout_cluster_thumb_grid(
+            ax, anchor, len(group), side, thumb_diameter
+        )
+
+        ax.scatter(
+            [ax_x],
+            [ax_y],
+            s=max(14, thumb_diameter // 3),
+            c="#E67E22",
+            edgecolors="white",
+            linewidths=0.6,
+            zorder=7,
+        )
+
+        for idx, ((ph, _, _), (dx, dy)) in enumerate(zip(group, positions)):
+            flat_displays.append((dx, dy))
+            thumb_boxes_axes.append(_circle_box_axes_frac(ax, dx, dy, r_thumb))
+            ox_pt, oy_pt, ha, va = _cluster_label_xytext(
+                idx, label_fs, thumb_diameter
+            )
+            label_boxes_axes.append(
+                _label_box_axes_frac_at(
+                    ax,
+                    dx,
+                    dy,
+                    ph.species_cn,
+                    ox_pt,
+                    oy_pt,
+                    label_fs,
+                    ha,
+                    va,
+                )
+            )
+            try:
+                arr = _circular_thumb_rgba(ph.path, thumb_diameter)
+                zoom = thumb_diameter / max(arr.shape[0], arr.shape[1])
+                imagebox = OffsetImage(arr, zoom=zoom)
+                ab = AnnotationBbox(
+                    imagebox,
+                    (dx, dy),
+                    frameon=False,
+                    pad=0,
+                    zorder=8,
+                )
+                ax.add_artist(ab)
+            except Exception:
+                ax.scatter([dx], [dy], c="#E67E22", s=28, zorder=8)
+            ax.annotate(
                 ph.species_cn,
-                side,
-                label_off_x,
-                label_off_y,
-                label_fs,
-            )
-        )
-    for idx, (ph, (ax_x, ax_y), (dx, dy)) in enumerate(
-        zip(items, anchors, displays)
-    ):
-        shifted = math.hypot(dx - ax_x, dy - ax_y) > max(r_thumb * 0.04, 1e-9)
-        if shifted:
-            ax.plot(
-                [ax_x, dx],
-                [ax_y, dy],
-                color=leader_color,
-                linewidth=1.0,
-                alpha=0.82,
-                zorder=6,
-                solid_capstyle="round",
-            )
-            ax.scatter(
-                [ax_x],
-                [ax_y],
-                s=max(14, thumb_diameter // 3),
-                c="#E67E22",
-                edgecolors="white",
-                linewidths=0.6,
-                zorder=7,
-            )
-        try:
-            arr = _circular_thumb_rgba(ph.path, thumb_diameter)
-            zoom = thumb_diameter / max(arr.shape[0], arr.shape[1])
-            imagebox = OffsetImage(arr, zoom=zoom)
-            ab = AnnotationBbox(
-                imagebox,
                 (dx, dy),
-                frameon=False,
-                pad=0,
-                zorder=8,
+                textcoords="offset points",
+                xytext=(ox_pt, oy_pt),
+                ha=ha,
+                va=va,
+                fontsize=label_fs,
+                color=label_color,
+                path_effects=label_effects,
+                zorder=9,
             )
-            ax.add_artist(ab)
-        except Exception:
-            ax.scatter([dx], [dy], c="#E67E22", s=28, zorder=8)
-        side, label_off_x, label_off_y = label_layouts[idx]
-        ax.annotate(
-            ph.species_cn,
-            (dx, dy),
-            textcoords="offset points",
-            xytext=(side * label_off_x, label_off_y),
-            ha="left" if side > 0 else "right",
-            va="center",
-            fontsize=label_fs,
-            color=label_color,
-            path_effects=label_effects,
-            zorder=9,
-        )
+
+    _ = compact_labels
+    _ = resolve_overlaps
     return MapMarkerLayout(
-        displays=list(displays),
+        displays=flat_displays,
         label_boxes_axes=label_boxes_axes,
         thumb_boxes_axes=thumb_boxes_axes,
     )

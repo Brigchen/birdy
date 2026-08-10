@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.36",
+  "version": "2.0.37",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -37,6 +37,9 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.37": [
+      "轨迹图：同 GPS 位点鸟图在圆点左/右侧横向网格排列（每行最多 5 张）；鸟名上下交错；多日日期显示为起止格式；标题优先左上/右上/中上"
+    ],
     "2.0.36": [
       "修复 GUI 启动闪退：恢复误删的 _track_map_photo_folder（v2.0.35 重构 GPS 批量写入时引入）"
     ],
