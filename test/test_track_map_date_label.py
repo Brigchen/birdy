@@ -13,7 +13,7 @@ if str(_SRC) not in sys.path:
 from gpx_track.track_map import (  # noqa: E402
     _cluster_grid_metrics,
     _cluster_label_xytext,
-    _gps_cluster_key,
+    _cluster_photos_by_radius,
     _layout_cluster_thumb_grid,
     _observation_date_label,
 )
@@ -49,10 +49,32 @@ def test_observation_date_same_month_range():
     assert _observation_date_label([], [p1, p2]) == "2026年8月5日-8日"
 
 
-def test_gps_cluster_key_groups_nearby():
-    assert _gps_cluster_key(24.123456, 118.654321) == _gps_cluster_key(
-        24.123457, 118.654322
-    )
+def test_cluster_photos_by_radius_merges_nearby():
+    """去重半径内不同种应合并为同一布局簇（避免竖条散点）。"""
+    # ~0.2 km apart at lat 25
+    p1 = BirdPhoto("a.jpg", "八哥", None, 25.5000, 119.7800)
+    p2 = BirdPhoto("b.jpg", "黑枕王鹟", None, 25.5015, 119.7802)
+    p3 = BirdPhoto("c.jpg", "暗绿绣眼鸟", None, 25.5030, 119.7801)
+    # far away (~5 km north)
+    p4 = BirdPhoto("d.jpg", "红隼", None, 25.5450, 119.7800)
+    entries = [
+        (p1, 0.1, 0.2),
+        (p2, 0.11, 0.21),
+        (p3, 0.12, 0.22),
+        (p4, 0.5, 0.8),
+    ]
+    groups = _cluster_photos_by_radius(entries, radius_km=1.0)
+    assert len(groups) == 2
+    sizes = sorted(len(g) for g in groups)
+    assert sizes == [1, 3]
+
+
+def test_cluster_photos_by_radius_no_merge_when_far():
+    p1 = BirdPhoto("a.jpg", "A", None, 25.50, 119.78)
+    p2 = BirdPhoto("b.jpg", "B", None, 25.55, 119.78)
+    entries = [(p1, 0.1, 0.2), (p2, 0.5, 0.8)]
+    groups = _cluster_photos_by_radius(entries, radius_km=1.0)
+    assert len(groups) == 2
 
 
 def test_cluster_label_alternates_vertical():

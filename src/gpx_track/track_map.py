@@ -1589,21 +1589,66 @@ class _GpsClusterLayout:
     row_first_indices: List[int]
 
 
-def _gps_cluster_key(lat: float, lon: float) -> Tuple[float, float]:
-    return (round(float(lat), 5), round(float(lon), 5))
+def _cluster_photos_by_radius(
+    entries: Sequence[Tuple[BirdPhoto, float, float]],
+    radius_km: float,
+) -> List[List[Tuple[BirdPhoto, float, float]]]:
+    """
+    按去重半径合并邻近 GPS 为同一布局簇（与物种去重半径一致）。
+    簇内可含多种鸟；锚点取成员经纬度均值对应的地图坐标。
+    """
+    radius_km = max(0.01, float(radius_km))
+    clusters: List[List[Tuple[BirdPhoto, float, float]]] = []
+    centers: List[Tuple[float, float]] = []  # (lat, lon)
+    for ph, ax_x, ay in entries:
+        if ph.lat is None or ph.lon is None:
+            continue
+        lat, lon = float(ph.lat), float(ph.lon)
+        best_i: Optional[int] = None
+        best_d = radius_km
+        for i, (cla, clo) in enumerate(centers):
+            d = haversine_km(lat, lon, cla, clo)
+            if d < best_d:
+                best_d = d
+                best_i = i
+        if best_i is None:
+            clusters.append([(ph, ax_x, ay)])
+            centers.append((lat, lon))
+            continue
+        clusters[best_i].append((ph, ax_x, ay))
+        members = clusters[best_i]
+        centers[best_i] = (
+            sum(float(m[0].lat) for m in members) / len(members),  # type: ignore[arg-type]
+            sum(float(m[0].lon) for m in members) / len(members),  # type: ignore[arg-type]
+        )
+    return clusters
+
+
+def _cluster_anchor_xy(
+    group: Sequence[Tuple[BirdPhoto, float, float]],
+    *,
+    use_gcj: bool,
+) -> Tuple[float, float]:
+    """簇锚点：成员经纬度均值映射到地图坐标。"""
+    if not group:
+        return 0.0, 0.0
+    lat = sum(float(ph.lat) for ph, _, _ in group) / len(group)  # type: ignore[arg-type]
+    lon = sum(float(ph.lon) for ph, _, _ in group) / len(group)  # type: ignore[arg-type]
+    return _map_xy(lon, lat, use_gcj=use_gcj)
 
 
 def _cluster_grid_metrics(
     thumb_diameter: int, label_fs: float
 ) -> Tuple[float, float, float, float, float]:
-    """返回 col_step, row_step, lead_pt, gap_pt, label_h_pt（单位：points）。"""
+    """返回 col_step, row_step, lead_px, gap_px, label_h（显示像素，与鸟图直径同量级）。"""
     d = float(thumb_diameter)
     gap = d * _THUMB_GAP_RATIO
     col_step = d + gap
-    label_h = max(float(label_fs) * 0.92, d * 0.26)
+    # annotate 的 offset points 与显示像素换算约 dpi/72；此处用字号估鸟名占高
+    label_h = max(float(label_fs) * 1.35, d * 0.28)
     row_step = d + gap + label_h
-    lead_pt = d * 0.16 + gap + d * 0.5
-    return col_step, row_step, lead_pt, gap, label_h
+    lead_px = gap + d * 0.5
+    return col_step, row_step, lead_px, gap, label_h
 
 
 def _cluster_side_from_anchor(ax, anchor_x: float) -> int:
@@ -1630,7 +1675,7 @@ def _layout_cluster_thumb_grid(
     ax_x, ax_y = anchor
     max_cols = _GPS_CLUSTER_MAX_COLS
     n_rows = (count + max_cols - 1) // max_cols
-    col_step, row_step, lead_pt, _, _ = _cluster_grid_metrics(
+    col_step, row_step, lead_px, _, _ = _cluster_grid_metrics(
         thumb_diameter, label_fs
     )
     positions: List[Tuple[float, float]] = []
@@ -1640,9 +1685,10 @@ def _layout_cluster_thumb_grid(
         col = i % max_cols
         if col == 0:
             row_first.append(i)
-        dx_pt = side * (lead_pt + col * col_step)
-        dy_pt = (row - (n_rows - 1) * 0.5) * row_step
-        ox, oy = _offset_points_to_data(ax, ax_x, ax_y, dx_pt, dy_pt)
+        # _offset_points_to_data 实际按显示像素偏移（与鸟图直径同坐标系）
+        dx_px = side * (lead_px + col * col_step)
+        dy_px = (row - (n_rows - 1) * 0.5) * row_step
+        ox, oy = _offset_points_to_data(ax, ax_x, ax_y, dx_px, dy_px)
         positions.append((ox, oy))
     return positions, row_first
 
@@ -1863,6 +1909,7 @@ def _add_photo_markers(
     resolve_overlaps: bool = True,
     basemap_style: str = "digital",
     on_basemap: bool = True,
+    radius_km: float = 1.0,
 ) -> MapMarkerLayout:
     shown = list(photos)
     if max_markers is not None:
@@ -1878,14 +1925,8 @@ def _add_photo_markers(
     if not entries:
         return MapMarkerLayout([], [], [])
 
-    clusters: Dict[Tuple[float, float], List[Tuple[BirdPhoto, float, float]]] = {}
-    cluster_order: List[Tuple[float, float]] = []
-    for ph, ax_x, ax_y in entries:
-        key = _gps_cluster_key(ph.lat, ph.lon)  # type: ignore[arg-type]
-        if key not in clusters:
-            clusters[key] = []
-            cluster_order.append(key)
-        clusters[key].append((ph, ax_x, ax_y))
+    # 按去重半径合并邻近定位，再横向网格排布（避免大范围地图上竖条散点）
+    groups = _cluster_photos_by_radius(entries, radius_km)
 
     label_fs = _map_typography(ax)["species_pt"]
     r_thumb = _thumb_radius_data(ax, thumb_diameter)
@@ -1894,11 +1935,9 @@ def _add_photo_markers(
     leader_color = _GPS_DOT_COLOR
 
     cluster_layouts: List[_GpsClusterLayout] = []
-    for key in cluster_order:
-        group = clusters[key]
-        _, ax_x, ax_y = group[0]
-        anchor = (ax_x, ax_y)
-        side = _cluster_side_from_anchor(ax, ax_x)
+    for group in groups:
+        anchor = _cluster_anchor_xy(group, use_gcj=use_gcj)
+        side = _cluster_side_from_anchor(ax, anchor[0])
         positions, row_first = _layout_cluster_thumb_grid(
             ax, anchor, len(group), side, thumb_diameter, label_fs
         )
@@ -1906,19 +1945,20 @@ def _add_photo_markers(
             _GpsClusterLayout(
                 anchor=anchor,
                 side=side,
-                group=group,
+                group=list(group),
                 positions=positions,
                 row_first_indices=row_first,
             )
         )
 
-    _resolve_nearby_cluster_layouts(
-        ax,
-        cluster_layouts,
-        label_fs=label_fs,
-        thumb_diameter=thumb_diameter,
-        r_data=r_thumb,
-    )
+    if resolve_overlaps:
+        _resolve_nearby_cluster_layouts(
+            ax,
+            cluster_layouts,
+            label_fs=label_fs,
+            thumb_diameter=thumb_diameter,
+            r_data=r_thumb,
+        )
 
     flat_displays: List[Tuple[float, float]] = []
     label_boxes_axes: List[Tuple[float, float, float, float]] = []
@@ -2073,6 +2113,7 @@ def _plot_map_ax(
     compact_labels: bool = False,
     resolve_overlaps: bool = True,
     summary_default_y: float = 0.19,
+    radius_km: float = 1.0,
 ) -> str:
     """
     绘制地图子图（高德底图 + GCJ-02 叠加）。
@@ -2081,17 +2122,6 @@ def _plot_map_ax(
     style = (basemap_style or "digital").lower()
     if style in ("none", "off", "grid"):
         _draw_track_on_ax(ax, track, use_gcj=False, on_basemap=False)
-        marker_layout = _add_photo_markers(
-            ax,
-            photos,
-            max_markers=max_markers,
-            thumb_diameter=thumb_diameter,
-            use_gcj=False,
-            compact_labels=compact_labels,
-            resolve_overlaps=resolve_overlaps,
-            basemap_style="none",
-            on_basemap=False,
-        )
         ax.set_xlabel("经度", fontsize=11)
         ax.set_ylabel("纬度", fontsize=11)
         ax.grid(True, linestyle=":", alpha=0.55)
@@ -2105,8 +2135,21 @@ def _plot_map_ax(
         x0, x1, y0, y1 = _expand_lonlat_bounds(
             x0, x1, y0, y1, _subplot_aspect_wh(ax)
         )
+        # 先定视野再排布鸟图，保证像素间距按最终坐标系换算
         ax.set_xlim(x0, x1)
         ax.set_ylim(y0, y1)
+        marker_layout = _add_photo_markers(
+            ax,
+            photos,
+            max_markers=max_markers,
+            thumb_diameter=thumb_diameter,
+            use_gcj=False,
+            compact_labels=compact_labels,
+            resolve_overlaps=resolve_overlaps,
+            basemap_style="none",
+            on_basemap=False,
+            radius_km=radius_km,
+        )
         _draw_map_inset_title(
             ax,
             place,
@@ -2192,6 +2235,7 @@ def _plot_map_ax(
                 compact_labels=compact_labels,
                 resolve_overlaps=resolve_overlaps,
                 summary_default_y=summary_default_y,
+                radius_km=radius_km,
             )
             return "no_key"
     except Exception:
@@ -2216,6 +2260,7 @@ def _plot_map_ax(
             compact_labels=compact_labels,
             resolve_overlaps=resolve_overlaps,
             summary_default_y=summary_default_y,
+            radius_km=radius_km,
         )
         return "fallback"
 
@@ -2238,6 +2283,7 @@ def _plot_map_ax(
         resolve_overlaps=resolve_overlaps,
         basemap_style=style,
         on_basemap=True,
+        radius_km=radius_km,
     )
     _draw_map_inset_title(
         ax,
@@ -3577,6 +3623,7 @@ def generate_track_maps(
     marker_kw = dict(
         compact_labels=False,
         resolve_overlaps=True,
+        radius_km=float(radius_km),
     )
     basemap_status = _plot_map_ax(
         ax_map,
