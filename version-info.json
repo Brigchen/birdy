@@ -37,6 +37,9 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.36": [
+      "修复 GUI 启动闪退：恢复误删的 _track_map_photo_folder（v2.0.35 重构 GPS 批量写入时引入）"
+    ],
     "2.0.35": [
       "轨迹图：取消 GPX 时强制使用照片 EXIF GPS，进度/日志不再提示 GPX 匹配",
       "GPS：「批量写入照片 GPS」按写入方式执行——指定地点统一经纬度或 GPX 时间匹配"
