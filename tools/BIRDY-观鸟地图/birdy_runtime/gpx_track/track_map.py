@@ -1671,15 +1671,17 @@ def _cluster_anchor_xy(
 
 
 def _cluster_grid_metrics(
-    thumb_diameter: int, label_fs: float
+    thumb_diameter: int, label_fs: float, *, dpi: float = EXPORT_DPI
 ) -> Tuple[float, float, float, float, float]:
     """返回 col_step, row_step, lead_px, gap_px, label_h（显示像素）。"""
     d = float(thumb_diameter)
     gap = d * _THUMB_GAP_RATIO
     col_step = d + gap
-    # 鸟名统一在上方，行距需预留鸟名高度
-    label_h = max(float(label_fs) * 1.35, d * 0.28)
-    row_step = d + gap + label_h
+    # 与 _cluster_label_xytext 一致：圆上缘以上再留鸟名高度
+    _, oy_pt, _, _ = _cluster_label_xytext(0, label_fs, thumb_diameter, dpi=dpi)
+    label_clear_px = float(oy_pt) * float(dpi) / 72.0
+    label_h = max(float(label_fs) * dpi / 72.0 * 1.2, d * 0.2)
+    row_step = d + gap + label_clear_px + label_h * 0.5
     lead_px = gap + d * 0.5
     return col_step, row_step, lead_px, gap, label_h
 
@@ -1708,8 +1710,9 @@ def _layout_cluster_thumb_grid(
     ax_x, ax_y = anchor
     max_cols = _GPS_CLUSTER_MAX_COLS
     n_rows = (count + max_cols - 1) // max_cols
+    dpi = float(ax.figure.dpi)
     col_step, row_step, lead_px, _, _ = _cluster_grid_metrics(
-        thumb_diameter, label_fs
+        thumb_diameter, label_fs, dpi=dpi
     )
     positions: List[Tuple[float, float]] = []
     row_first: List[int] = []
@@ -1792,11 +1795,22 @@ def _clamp_positions_into_axes(
 
 
 def _cluster_label_xytext(
-    idx: int, label_fs: float, thumb_diameter: int
+    idx: int,
+    label_fs: float,
+    thumb_diameter: int,
+    *,
+    dpi: float = EXPORT_DPI,
 ) -> Tuple[float, float, str, str]:
-    """鸟名统一放在鸟图上方。"""
+    """
+    鸟名统一放在鸟图上方，且不与圆形重叠。
+    返回 annotate 用的 offset points（pt）：圆半径(px→pt) + 字号余量。
+    """
     _ = idx
-    gap = max(float(label_fs) * 0.65, float(thumb_diameter) * 0.28)
+    dpi = max(float(dpi), 1.0)
+    # OffsetImage 显示约 thumb_diameter 像素；再略加阴影外扩
+    radius_pt = (float(thumb_diameter) * 0.52) * (72.0 / dpi)
+    pad_pt = max(float(label_fs) * 0.35, 4.0)
+    gap = radius_pt + pad_pt
     return 0.0, gap, "center", "bottom"
 
 
@@ -1811,7 +1825,11 @@ def _label_box_axes_frac_at(
     ha: str,
     va: str,
 ) -> Tuple[float, float, float, float]:
-    tx, ty = _offset_points_to_data(ax, dx, dy, ox_pt, oy_pt)
+    # annotate 偏移为 pt；_offset_points_to_data 按显示像素换算
+    dpi = float(ax.figure.dpi)
+    ox_px = float(ox_pt) * dpi / 72.0
+    oy_px = float(oy_pt) * dpi / 72.0
+    tx, ty = _offset_points_to_data(ax, dx, dy, ox_px, oy_px)
     w = _text_width_data(ax, name, label_fs)
     h = _text_height_axes_frac(ax, label_fs) * max(
         ax.get_ylim()[1] - ax.get_ylim()[0], 1e-9
@@ -1926,7 +1944,7 @@ def _add_photo_markers(
             flat_displays.append((dx, dy))
             thumb_boxes_axes.append(_circle_box_axes_frac(ax, dx, dy, r_thumb))
             ox_pt, oy_pt, ha, va = _cluster_label_xytext(
-                idx, label_fs, thumb_diameter
+                idx, label_fs, thumb_diameter, dpi=float(ax.figure.dpi)
             )
             label_boxes_axes.append(
                 _label_box_axes_frac_at(

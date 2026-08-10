@@ -78,16 +78,17 @@ def test_cluster_photos_by_radius_no_merge_when_far():
 
 
 def test_cluster_label_alternates_vertical():
-    a = _cluster_label_xytext(0, 10.0, 44)
-    b = _cluster_label_xytext(1, 10.0, 44)
-    # 鸟名统一在上方
+    a = _cluster_label_xytext(0, 10.0, 44, dpi=120)
+    b = _cluster_label_xytext(1, 10.0, 80, dpi=120)
+    # 鸟名统一在上方，且偏移至少超过圆半径(pt)
     assert a[3] == "bottom" and b[3] == "bottom"
-    assert a[1] > 0 and b[1] > 0
+    assert a[1] > (44 * 0.5) * (72 / 120)
+    assert b[1] > (80 * 0.5) * (72 / 120)
 
 
 def test_cluster_grid_spacing_uses_diameter_plus_fifth():
     d = 50
-    col_step, row_step, _, gap, _ = _cluster_grid_metrics(d, 10.0)
+    col_step, row_step, _, gap, _ = _cluster_grid_metrics(d, 10.0, dpi=120)
     assert gap == d * 0.4
     assert col_step == d + gap
     assert row_step > col_step
