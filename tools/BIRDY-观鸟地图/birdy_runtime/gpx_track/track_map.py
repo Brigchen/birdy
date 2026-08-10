@@ -1589,13 +1589,40 @@ class _GpsClusterLayout:
     row_first_indices: List[int]
 
 
+def _px_as_km_at_view_center(ax, px: float) -> float:
+    """将显示像素距离换算为当前视野中心附近的大致公里数。"""
+    px = abs(float(px))
+    if px < 1e-6:
+        return 0.0
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    cx = 0.5 * (x0 + x1)
+    cy = 0.5 * (y0 + y1)
+    p0 = ax.transData.transform((cx, cy))
+    x2, y2 = ax.transData.inverted().transform((p0[0] + px, p0[1]))
+    x3, y3 = ax.transData.inverted().transform((p0[0], p0[1] + px))
+    # x 为经度、y 为纬度（GCJ/WGS 同形）
+    d_x = haversine_km(cy, cx, cy, x2)
+    d_y = haversine_km(cy, cx, y3, cx)
+    return max(d_x, d_y, 1e-6)
+
+
+def _layout_cluster_radius_km(ax, thumb_diameter: int, radius_km: float) -> float:
+    """
+    布局合并半径：至少为物种去重半径；大范围地图上再按鸟图像素尺寸放大，
+    避免缩略图彼此重叠却未合并成横向网格。
+    """
+    visual_km = _px_as_km_at_view_center(ax, float(thumb_diameter) * 2.8)
+    return max(0.01, float(radius_km), float(visual_km))
+
+
 def _cluster_photos_by_radius(
     entries: Sequence[Tuple[BirdPhoto, float, float]],
     radius_km: float,
 ) -> List[List[Tuple[BirdPhoto, float, float]]]:
     """
-    按去重半径合并邻近 GPS 为同一布局簇（与物种去重半径一致）。
-    簇内可含多种鸟；锚点取成员经纬度均值对应的地图坐标。
+    按半径合并邻近 GPS 为同一布局簇（可含多种鸟）。
+    锚点取成员经纬度均值对应的地图坐标。
     """
     radius_km = max(0.01, float(radius_km))
     clusters: List[List[Tuple[BirdPhoto, float, float]]] = []
@@ -1621,6 +1648,9 @@ def _cluster_photos_by_radius(
             sum(float(m[0].lat) for m in members) / len(members),  # type: ignore[arg-type]
             sum(float(m[0].lon) for m in members) / len(members),  # type: ignore[arg-type]
         )
+    # 簇内按拍摄时间排序，便于横向阅读
+    for g in clusters:
+        g.sort(key=lambda t: t[0].when or datetime.min)
     return clusters
 
 
@@ -1640,11 +1670,10 @@ def _cluster_anchor_xy(
 def _cluster_grid_metrics(
     thumb_diameter: int, label_fs: float
 ) -> Tuple[float, float, float, float, float]:
-    """返回 col_step, row_step, lead_px, gap_px, label_h（显示像素，与鸟图直径同量级）。"""
+    """返回 col_step, row_step, lead_px, gap_px, label_h（显示像素）。"""
     d = float(thumb_diameter)
     gap = d * _THUMB_GAP_RATIO
     col_step = d + gap
-    # annotate 的 offset points 与显示像素换算约 dpi/72；此处用字号估鸟名占高
     label_h = max(float(label_fs) * 1.35, d * 0.28)
     row_step = d + gap + label_h
     lead_px = gap + d * 0.5
@@ -1652,7 +1681,7 @@ def _cluster_grid_metrics(
 
 
 def _cluster_side_from_anchor(ax, anchor_x: float) -> int:
-    """+1 鸟图放 GPS 圆点右侧，-1 放左侧（选可视范围较大一侧）。"""
+    """+1 右侧，-1 左侧（选可视范围较大一侧）。"""
     x0, x1 = ax.get_xlim()
     if x1 <= x0:
         return 1
@@ -1685,7 +1714,6 @@ def _layout_cluster_thumb_grid(
         col = i % max_cols
         if col == 0:
             row_first.append(i)
-        # _offset_points_to_data 实际按显示像素偏移（与鸟图直径同坐标系）
         dx_px = side * (lead_px + col * col_step)
         dy_px = (row - (n_rows - 1) * 0.5) * row_step
         ox, oy = _offset_points_to_data(ax, ax_x, ax_y, dx_px, dy_px)
@@ -1693,168 +1721,70 @@ def _layout_cluster_thumb_grid(
     return positions, row_first
 
 
-def _shift_positions_y_pt(
+def _pick_side_keeping_grid_on_map(
+    ax,
+    anchor: Tuple[float, float],
+    count: int,
+    thumb_diameter: int,
+    label_fs: float,
+) -> int:
+    """优先选能把整块网格留在图内的一侧；否则退回空间较大侧。"""
+    preferred = _cluster_side_from_anchor(ax, anchor[0])
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    pad_x = (x1 - x0) * 0.02
+    pad_y = (y1 - y0) * 0.02
+
+    def _fits(side: int) -> bool:
+        positions, _ = _layout_cluster_thumb_grid(
+            ax, anchor, count, side, thumb_diameter, label_fs
+        )
+        if not positions:
+            return True
+        xs = [p[0] for p in positions]
+        ys = [p[1] for p in positions]
+        return (
+            min(xs) >= x0 + pad_x
+            and max(xs) <= x1 - pad_x
+            and min(ys) >= y0 + pad_y
+            and max(ys) <= y1 - pad_y
+        )
+
+    if _fits(preferred):
+        return preferred
+    other = -preferred
+    if _fits(other):
+        return other
+    return preferred
+
+
+def _clamp_positions_into_axes(
     ax,
     positions: Sequence[Tuple[float, float]],
-    dy_pt: float,
+    thumb_diameter: int,
 ) -> List[Tuple[float, float]]:
-    if abs(dy_pt) < 1e-6:
-        return list(positions)
-    out: List[Tuple[float, float]] = []
-    for px, py in positions:
-        nx, ny = _offset_points_to_data(ax, px, py, 0.0, dy_pt)
-        out.append((nx, ny))
-    return out
-
-
-def _item_bounds_display(
-    ax,
-    dx: float,
-    dy: float,
-    name: str,
-    ox_pt: float,
-    oy_pt: float,
-    label_fs: float,
-    ha: str,
-    va: str,
-    r_data: float,
-) -> Tuple[float, float, float, float]:
-    cbox = _circle_box_display(ax, dx, dy, r_data)
-    tx, ty = _offset_points_to_data(ax, dx, dy, ox_pt, oy_pt)
-    w, h = _text_size_display(name, label_fs, ax.figure.dpi)
-    if ha == "center":
-        lx0, lx1 = tx - w * 0.5, tx + w * 0.5
-    elif ha == "right":
-        lx0, lx1 = tx - w, tx
-    else:
-        lx0, lx1 = tx, tx + w
-    if va == "bottom":
-        ly0, ly1 = ty, ty + h
-    elif va == "top":
-        ly0, ly1 = ty - h, ty
-    else:
-        ly0, ly1 = ty - h * 0.5, ty + h * 0.5
-    return (
-        min(cbox[0], lx0),
-        min(cbox[1], ly0),
-        max(cbox[2], lx1),
-        max(cbox[3], ly1),
+    """将鸟图中心钳制在图内，避免被裁切消失。"""
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    # 约半个鸟图直径的边距（数据坐标）
+    p0 = ax.transData.transform((0.5 * (x0 + x1), 0.5 * (y0 + y1)))
+    q = ax.transData.inverted().transform(
+        (p0[0] + float(thumb_diameter) * 0.55, p0[1])
     )
+    margin_x = abs(q[0] - 0.5 * (x0 + x1))
+    q2 = ax.transData.inverted().transform(
+        (p0[0], p0[1] + float(thumb_diameter) * 0.55)
+    )
+    margin_y = abs(q2[1] - 0.5 * (y0 + y1))
+    lo_x, hi_x = x0 + margin_x, x1 - margin_x
+    lo_y, hi_y = y0 + margin_y, y1 - margin_y
+    if hi_x <= lo_x or hi_y <= lo_y:
+        return list(positions)
+    return [
+        (min(max(px, lo_x), hi_x), min(max(py, lo_y), hi_y))
+        for px, py in positions
+    ]
 
-
-def _cluster_bounds_display(
-    ax,
-    layout: _GpsClusterLayout,
-    *,
-    label_fs: float,
-    thumb_diameter: int,
-    r_data: float,
-) -> Tuple[float, float, float, float]:
-    boxes: List[Tuple[float, float, float, float]] = []
-    for idx, ((ph, _, _), (dx, dy)) in enumerate(
-        zip(layout.group, layout.positions)
-    ):
-        ox_pt, oy_pt, ha, va = _cluster_label_xytext(
-            idx, label_fs, thumb_diameter
-        )
-        boxes.append(
-            _item_bounds_display(
-                ax,
-                dx,
-                dy,
-                ph.species_cn,
-                ox_pt,
-                oy_pt,
-                label_fs,
-                ha,
-                va,
-                r_data,
-            )
-        )
-    if not boxes:
-        ax_x, ax_y = layout.anchor
-        return _circle_box_display(ax, ax_x, ax_y, r_data * 0.5)
-    x0 = min(b[0] for b in boxes)
-    y0 = min(b[1] for b in boxes)
-    x1 = max(b[2] for b in boxes)
-    y1 = max(b[3] for b in boxes)
-    return (x0, y0, x1, y1)
-
-
-def _resolve_nearby_cluster_layouts(
-    ax,
-    layouts: List[_GpsClusterLayout],
-    *,
-    label_fs: float,
-    thumb_diameter: int,
-    r_data: float,
-) -> None:
-    """邻近 GPS 位点的鸟图块在垂直方向错开，间距与行距一致。"""
-    if len(layouts) <= 1:
-        return
-    _, row_step, _, gap, _ = _cluster_grid_metrics(thumb_diameter, label_fs)
-    nudge_pt = row_step + gap
-    placed: List[Tuple[float, float, float, float]] = []
-    for layout in layouts:
-        bounds = _cluster_bounds_display(
-            ax,
-            layout,
-            label_fs=label_fs,
-            thumb_diameter=thumb_diameter,
-            r_data=r_data,
-        )
-        if not placed:
-            placed.append(bounds)
-            continue
-        best_dy = 0.0
-        best_overlap = 1e18
-        for n in range(0, 24):
-            for sign in (-1.0, 1.0):
-                dy_pt = sign * n * nudge_pt
-                trial_positions = _shift_positions_y_pt(
-                    ax, layout.positions, dy_pt
-                )
-                trial = _GpsClusterLayout(
-                    anchor=layout.anchor,
-                    side=layout.side,
-                    group=layout.group,
-                    positions=trial_positions,
-                    row_first_indices=layout.row_first_indices,
-                )
-                tb = _cluster_bounds_display(
-                    ax,
-                    trial,
-                    label_fs=label_fs,
-                    thumb_diameter=thumb_diameter,
-                    r_data=r_data,
-                )
-                overlap = 0.0
-                for ob in placed:
-                    if _rect_overlap_display(tb, ob, margin=gap * 0.35):
-                        overlap += _rect_overlap_fraction(
-                            _inflate_display_box(tb),
-                            _inflate_display_box(ob),
-                        )
-                if overlap < best_overlap:
-                    best_overlap = overlap
-                    best_dy = dy_pt
-                if overlap <= 0.0:
-                    break
-            if best_overlap <= 0.0:
-                break
-        if abs(best_dy) > 1e-6:
-            layout.positions = _shift_positions_y_pt(
-                ax, layout.positions, best_dy
-            )
-        placed.append(
-            _cluster_bounds_display(
-                ax,
-                layout,
-                label_fs=label_fs,
-                thumb_diameter=thumb_diameter,
-                r_data=r_data,
-            )
-        )
 
 
 def _cluster_label_xytext(
@@ -1925,22 +1855,28 @@ def _add_photo_markers(
     if not entries:
         return MapMarkerLayout([], [], [])
 
-    # 按去重半径合并邻近定位，再横向网格排布（避免大范围地图上竖条散点）
-    groups = _cluster_photos_by_radius(entries, radius_km)
+    # 合并半径 = max(去重半径, 约 2.8 个鸟图直径对应的公里)
+    merge_km = _layout_cluster_radius_km(ax, thumb_diameter, radius_km)
+    groups = _cluster_photos_by_radius(entries, merge_km)
 
     label_fs = _map_typography(ax)["species_pt"]
     r_thumb = _thumb_radius_data(ax, thumb_diameter)
     label_color, _, use_stroke = _map_ink(basemap_style, on_basemap=on_basemap)
     label_effects = _map_text_effects(use_stroke=use_stroke)
     leader_color = _GPS_DOT_COLOR
+    _ = compact_labels
+    _ = resolve_overlaps
 
     cluster_layouts: List[_GpsClusterLayout] = []
     for group in groups:
         anchor = _cluster_anchor_xy(group, use_gcj=use_gcj)
-        side = _cluster_side_from_anchor(ax, anchor[0])
+        side = _pick_side_keeping_grid_on_map(
+            ax, anchor, len(group), thumb_diameter, label_fs
+        )
         positions, row_first = _layout_cluster_thumb_grid(
             ax, anchor, len(group), side, thumb_diameter, label_fs
         )
+        positions = _clamp_positions_into_axes(ax, positions, thumb_diameter)
         cluster_layouts.append(
             _GpsClusterLayout(
                 anchor=anchor,
@@ -1949,15 +1885,6 @@ def _add_photo_markers(
                 positions=positions,
                 row_first_indices=row_first,
             )
-        )
-
-    if resolve_overlaps:
-        _resolve_nearby_cluster_layouts(
-            ax,
-            cluster_layouts,
-            label_fs=label_fs,
-            thumb_diameter=thumb_diameter,
-            r_data=r_thumb,
         )
 
     flat_displays: List[Tuple[float, float]] = []
@@ -1969,10 +1896,10 @@ def _add_photo_markers(
         ax.scatter(
             [ax_x],
             [ax_y],
-            s=max(14, thumb_diameter // 3),
+            s=max(18, thumb_diameter // 2),
             c=_GPS_DOT_COLOR,
             edgecolors="white",
-            linewidths=0.6,
+            linewidths=0.7,
             zorder=7,
         )
         for row_idx in layout.row_first_indices:
@@ -1983,10 +1910,11 @@ def _add_photo_markers(
                 [ax_x, fx],
                 [ax_y, fy],
                 color=leader_color,
-                linewidth=1.0,
-                alpha=0.88,
+                linewidth=1.35,
+                alpha=0.92,
                 zorder=6,
                 solid_capstyle="round",
+                clip_on=False,
             )
 
         for idx, ((ph, _, _), (dx, dy)) in enumerate(
@@ -2020,10 +1948,19 @@ def _add_photo_markers(
                     frameon=False,
                     pad=0,
                     zorder=8,
+                    annotation_clip=False,
                 )
+                ab.set_clip_on(False)
                 ax.add_artist(ab)
             except Exception:
-                ax.scatter([dx], [dy], c=_GPS_DOT_COLOR, s=28, zorder=8)
+                ax.scatter(
+                    [dx],
+                    [dy],
+                    c=_GPS_DOT_COLOR,
+                    s=max(28, thumb_diameter),
+                    zorder=8,
+                    clip_on=False,
+                )
             ax.annotate(
                 ph.species_cn,
                 (dx, dy),
@@ -2035,10 +1972,10 @@ def _add_photo_markers(
                 color=label_color,
                 path_effects=label_effects,
                 zorder=9,
+                annotation_clip=False,
+                clip_on=False,
             )
 
-    _ = compact_labels
-    _ = resolve_overlaps
     return MapMarkerLayout(
         displays=flat_displays,
         label_boxes_axes=label_boxes_axes,

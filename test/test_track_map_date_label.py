@@ -105,3 +105,44 @@ def test_layout_cluster_row_first_indices():
     assert len(positions) == 7
     assert row_first == [0, 5]
     assert positions[0][0] < positions[1][0] < positions[2][0]
+
+
+def test_island_scale_markers_stay_on_map():
+    """大范围视野下全部鸟图应落在坐标轴内（不被推到画布外）。"""
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+    from PIL import Image
+    import tempfile
+    from gpx_track.track_map import _add_photo_markers
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_is_"))
+    photos = []
+    for i in range(10):
+        p = td / f"s{i}.jpg"
+        Image.new("RGB", (80, 80), (i * 20, 90, 140)).save(p)
+        photos.append(
+            BirdPhoto(
+                str(p),
+                f"种{i}",
+                datetime(2026, 8, 7, 10, i),
+                25.48 + 0.005 * i,
+                119.82,
+            )
+        )
+    fig, ax = plt.subplots(figsize=(9, 16), dpi=100)
+    ax.set_xlim(119.70, 119.90)
+    ax.set_ylim(25.40, 25.60)
+    layout = _add_photo_markers(
+        ax,
+        photos,
+        thumb_diameter=80,
+        use_gcj=False,
+        radius_km=1.0,
+        basemap_style="none",
+        on_basemap=False,
+    )
+    plt.close(fig)
+    assert len(layout.displays) == 10
+    x0, x1 = 119.70, 119.90
+    y0, y1 = 25.40, 25.60
+    assert all(x0 <= x <= x1 and y0 <= y <= y1 for x, y in layout.displays)
