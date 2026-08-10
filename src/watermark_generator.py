@@ -59,6 +59,16 @@ class WatermarkOptions:
     # 水印前自动生态显影（与 RAW 入库显影同源逻辑）；逐张微调见 enhance_overrides_path
     enable_auto_enhance: bool = True
     enhance_overrides_path: str = ""  # 临时 JSON，含 by_relpath → strength / exposure_fine
+    # AI 增强（水印前预处理，与 auto_enhance 独立）
+    # 流水线顺序：自动曝光 → AI 降噪 → AI 锐化
+    enable_ai_exposure: bool = False  # 基于鸟体测光的自动曝光（避免剪影）
+    ai_exposure_strength: float = 1.0  # 0=原图，1=完全调整
+    enable_ai_denoise: bool = False
+    enable_ai_sharpen: bool = False
+    ai_denoise_model: str = "realesrgan"  # "realesrgan" 或 "nafnet"
+    ai_denoise_strength: float = 0.5  # 0=原图，1=完全降噪
+    ai_sharpen_strength: float = 0.5  # 0=原图，1=完全锐化
+    ai_tile_size: int = 512  # 分块大小，越大越快但越吃显存
 
 
 def _safe_open_image(path: str) -> Optional[Image.Image]:
@@ -103,6 +113,55 @@ def apply_watermark_photo_pipeline(
     try:
         return apply_auto_enhance_pil(img, ov)
     except Exception:
+        return img
+
+
+# ---- AI 增强（Real-ESRGAN 降噪 + OmniSR 锐化）----
+_ai_enhancer_cache = None
+
+
+def _ai_enhance_image(img: Image.Image, options: WatermarkOptions) -> Image.Image:
+    """水印前 AI 增强，顺序：自动曝光 → AI 降噪 → AI 锐化。降级时返回原图。"""
+    # 1) 自动曝光（基于鸟体测光）
+    if getattr(options, "enable_ai_exposure", False):
+        try:
+            from auto_exposure import auto_expose_pil
+            img = auto_expose_pil(
+                img,
+                strength=float(getattr(options, "ai_exposure_strength", 1.0)),
+                detect=True,
+            )
+        except Exception as e:
+            print(f"[watermark] 自动曝光失败，跳过: {e}", flush=True)
+
+    # 2) AI 降噪 + 3) AI 锐化
+    if not (options.enable_ai_denoise or options.enable_ai_sharpen):
+        return img
+    global _ai_enhancer_cache
+    if _ai_enhancer_cache is not None:
+        enhancer = _ai_enhancer_cache
+    else:
+        try:
+            from ai_enhance import AIEnhancer
+
+            enhancer = AIEnhancer(tile_size=getattr(options, "ai_tile_size", 512))
+        except Exception as e:
+            print(f"[watermark] ai_enhance 模块不可用: {e}", flush=True)
+            enhancer = None
+        _ai_enhancer_cache = enhancer
+    if enhancer is None:
+        return img
+    try:
+        return enhancer.enhance_pil(
+            img,
+            denoise=options.enable_ai_denoise,
+            denoise_strength=options.ai_denoise_strength,
+            sharpen=options.enable_ai_sharpen,
+            sharpen_strength=options.ai_sharpen_strength,
+            denoise_model=getattr(options, "ai_denoise_model", "realesrgan"),
+        )
+    except Exception as e:
+        print(f"[watermark] AI 增强失败，使用原图: {e}", flush=True)
         return img
 
 
@@ -755,6 +814,8 @@ def generate_watermarks(
                 except Exception:
                     pass
             continue
+        if options.enable_ai_exposure or options.enable_ai_denoise or options.enable_ai_sharpen:
+            img = _ai_enhance_image(img, options)
         img = apply_watermark_photo_pipeline(
             img, options, img_path, source_folder, ov_map
         )
@@ -814,6 +875,8 @@ def render_watermark_for_image(
     img = _safe_open_image(image_path)
     if img is None:
         return None
+    if options.enable_ai_exposure or options.enable_ai_denoise or options.enable_ai_sharpen:
+        img = _ai_enhance_image(img, options)
     ov_map: Dict[str, dict] = {}
     if getattr(options, "enable_auto_enhance", True) and getattr(
         options, "enhance_overrides_path", ""

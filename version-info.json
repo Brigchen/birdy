@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.14",
+  "version": "2.0.34",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-07-30",
+  "release_date": "2026-08-03",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,70 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.34": [
+      "裁剪规格调整：(1) 单实例裁剪新增宽高比约束 [9:16, 16:9]，与多体合图一致。提取通用函数 _apply_aspect_constraint（以中心点为锚点：过宽则加高，过高则加宽），_bird_expanded_bbox 扩边后调用该函数约束宽高比，_union_boxes_margin_aspect 也复用该函数消除重复代码。(2) 单实例 margin_ratio 默认值从 1.0 调整为 0.5（四周各扩 50% 框尺寸），crop_species / process_directory / argparse --margin 三处同步修改"
+    ],
+    "2.0.33": [
+      "修复 GPX 批量写入 GPS 时 Screened_images 目录已存在仍报'目录不存在'的问题：_gpx_target_photo_folder 路径拼接未做 normpath 规范化，末尾斜杠/反斜杠可能导致 os.path.isdir 判断失败。改为返回 os.path.normpath 规范化路径。错误提示增加实际检查路径、UI 输出目录、config 输出目录的详细信息以辅助诊断。batch_write_gps_from_gpx 和 batch_write_gps_exif 新增 DNG 文件支持（.dng 扩展名加入扫描列表），新增 write_gps_exif_dng 函数通过 exiftool 写入 DNG GPS（piexif.insert 仅支持 JPEG 无法写入 DNG/TIFF），未安装 exiftool 时跳过 DNG 并提示"
+    ],
+    "2.0.32": [
+      "修复裁剪鸟图 EXIF 丢失问题：_write_crop_jpeg_with_exif 原先用 piexif.dump(完整EXIF) 序列化 DNG 源文件的完整 EXIF，但 DNG 含 piexif 无法序列化的标签（struct.error: required argument is not an integer），except Exception: pass 静默吞掉错误导致裁剪图完全无 EXIF。改为构建最小 EXIF（只提取 Make/Model/DateTime/ExposureTime/FNumber/ISO/DateTimeOriginal/FocalLength/LensModel/GPS 等关键字段），piexif.dump 成功序列化。同时保留原始 Make 标签（不再覆盖为 BirdDetection-Cropped），移除静默吞错误改为打印日志。水印模块从裁剪图读取 EXIF 链路验证通过：相机参数 'ILCE-7RM6 f/9.0 1/500s 800mm ISO250'、日期 '2026-08-05'"
+    ],
+    "2.0.31": [
+      "修复物种检测/裁剪阶段 DNG 仍用嵌入式 JPEG 缩略图的问题：read_raw_bgr 优先调用 raw.extract_thumb() 取嵌入式 JPEG（DNG 内嵌缩略图仅 1024x683），导致 Screened_images 和 classification 裁剪图画质极差。新增 read_raw_bgr_full 函数强制走 raw.postprocess() 全 demosaic（6560x4372 完整分辨率），detect_bird_and_eye.py 的 load_image/read_raw_thumbnail 改用 read_raw_bgr_full。detect 方法返回 original_image 供 crop_species 复用，birdy_gui.py 避免对同一张 DNG 重复 demosaic（detect 一次即可，裁剪复用 original_image）"
+    ],
+    "2.0.30": [
+      "Screened_images 改用 DNG 格式保存 RAW：copy_kept_images_to_screened 对筛选保留的 RAW 优先调用 Adobe DNG Converter 转 DNG，直接复制 DNG 文件到 Screened_images（保留完整原始数据，便于后续美化处理）；DNG 不可用时 fallback 到 JPG（全 demosaic + 生态显影 + EXIF 复制）。screened_paths_for_kept_images 同步适配：DNG 可用时 RAW 映射为 .dng，否则 .jpg。batch_write_gps_exif 对 DNG 文件跳过 GPS 写入（PIL 无法保存 DNG 格式），打印提示；DNG 的 EXIF 已在转换时从原 RAW 继承。物种检测/裁剪阶段通过 rawpy 读取 DNG，piexif 从 DNG 复制完整 EXIF 到裁剪 JPG（DateTimeOriginal/相机型号/曝光参数等）"
+    ],
+    "2.0.29": [
+      "RAW→JPG 导出新增 DNG 转换路径与 EXIF 保留：copy_kept_images_to_screened 对筛选保留的 RAW 优先调用 Adobe DNG Converter 转 DNG 再用 rawpy 全 demosaic（画质远优于嵌入式 JPEG 缩略图，解决 A7R VI ARW 缩略图糊的问题）；DNG 不可用时 fallback 到 read_raw_bgr（嵌入式 JPEG）；DNG 缓存存于原 RAW 同目录 .dng_cache/ 并按 mtime 复用避免重复转换。RAW→JPG 后用 piexif 从原始 ARW 复制完整 EXIF（拍摄时间/相机型号/曝光参数/GPS）到 JPEG，修复裁剪鸟图只剩 GPS 无原始拍摄时间的问题。image_io.py 新增 find_dng_converter/convert_raw_to_dng/read_raw_bgr_via_dng/copy_exif_from_raw_to_jpeg 四个函数"
+    ],
+    "2.0.28": [
+      "RAW 读取兼容新相机：rawpy 0.27.0 打包的 LibRaw 不支持 Sony A7R VI 等新相机的 ARW 压缩格式（抛 LibRawFileUnsupportedError）。新增 _extract_embedded_jpeg fallback：rawpy 失败时直接扫描 ARW 文件中的 FFD8 JPEG SOI 标记，解码所有嵌入式 JPEG 预览图块（跳过 <1KB 小缩略图），取最大分辨率图像。A7R VI 实测可提取 6528x4352 全分辨率 JPEG 预览图，鸟检/对焦评分/水印均可正常工作。旧相机仍走 rawpy 原路径不受影响"
+    ],
+    "2.0.27": [
+      "抑制 Ultralytics AutoInstall：在 detect_bird_and_eye.py 和 burst_grouping.py 顶部设置 YOLO_AUTOINSTALL=False 环境变量，避免处理 ARW/JPG 时因缺失 pi-heif（Windows 上需 MSYS2 编译，构建失败）而每次联网尝试安装导致卡顿"
+    ],
+    "2.0.26": [
+      "连拍快速模式简化：去掉粗筛阶段（全图对焦分排序），直接按 1/3 等步长采样作为候选集。采样数 = max(N/3, keep_count, 3)，等步长分布覆盖整组（如 N=9 → 采样索引 0/3/6）；仅对候选集跑 YOLO 鸟检+对焦评分，非候选集 bird_area=0 被 select_best_images 自动过滤；N>3 触发采样，小连拍组保持全量；移除原 fast_sample 的 use_bird_detection 限制条件，鸟检/无鸟检场景统一走采样逻辑"
+    ],
+    "2.0.25": [
+      "连拍快速模式修复：实现真正的 1/3 粗筛+精筛两阶段流程。原逻辑因 fast_sample 条件含 not use_bird_detection 导致默认鸟检开启时 1/3 采样被短路，全量跑 YOLO。改为：快速模式+鸟检时先对全部 N 张算全图对焦分（轻量无 YOLO），取 Top max(N/3, keep_count, 3) 作为候选集，仅对候选集跑 YOLO 鸟检+鸟体 ROI 对焦精筛；非候选集图 bird_area=0 被 select_best_images 自动过滤。N>6 且 keep_top_n>0 时触发粗筛，小连拍组保持全量。快速模式+无鸟检保持原 1/3 采样稀疏化逻辑不变"
+    ],
+    "2.0.24": [
+      "自动曝光提亮增强：测光改用 Y 通道 30% 分位数（捕捉鸟体暗部，避免被框内高光/明亮背景稀释）；目标 luma 0.5→0.6（让主体明显提亮看清细节）；gamma 范围 [0.3,3.0]→[0.2,5.0]（支持更强提亮）；新增首次调用诊断日志（打印鸟体框/测光 luma/gamma/strength，便于排查检测命中与提亮力度）"
+    ],
+    "2.0.23": [
+      "新增自动曝光功能：基于鸟体检测测光（YOLO 检测最大鸟体框 + YCrCb Y 通道平均亮度），用 gamma 校正提亮暗部/压暗亮部，目标 luma=0.5，避免逆光剪影；新增 auto_exposure.py 模块（懒加载 BirdAndEyeDetector 单例，无检测时退化为全图测光）；WatermarkOptions 增加 enable_ai_exposure/ai_exposure_strength 字段；水印前流水线顺序改为 自动曝光 → AI 降噪 → AI 锐化；GUI 水印卡片增加「水印前自动曝光」复选框与曝光强度滑条（默认 1.0），未启用时禁用滑条"
+    ],
+    "2.0.22": [
+      "水印预览：渲染改为后台 QThread 执行（_WatermarkRenderWorker + pyqtSignal），AI 降噪/锐化推理不再阻塞 Qt 主事件循环；渲染期间禁用上一张/下一张按钮并显示「渲染中…」状态；快速切换图片时记录最新 pending，当前渲染完成后自动续接；对话框关闭时清理线程避免泄露"
+    ],
+    "2.0.21": [
+      "AI 增强：修复 Real-ESRGAN 权重加载失败——realesr-general-x4v3.pth 实为 SRVGGNetCompact 架构（body.0~66，PReLU 激活，num_conv=32，upscale=4），而非 RRDBNet（23 RDB 块）。新增自包含 SRVGGNetCompact 类，_get_denoise_model 改用正确架构；_denoise_bgr 改用 _tile_inference + 缩回原尺寸 + strength 混合（与 NAFNet 风格一致），移除 basicsr/realesrgan 依赖"
+    ],
+    "2.0.20": [
+      "水印：移除「水印前自动生态显影」选项（效果远不如 LRC，简化界面），仅保留 AI 降噪/锐化",
+      "水印：AI 降噪/锐化复选框文字简化，去除括号说明；降噪模型下拉项文字精简",
+      "水印：预览弹窗放大至 1400×920，移除上方文字说明与自动显影滑条，图片预览区增大（最小高度 700），导航栏直接显示文件名"
+    ],
+    "2.0.19": [
+      "AI 增强：修复 NAFNet 权重加载失败——_NAFNet_LayerNorm2d 参数名由 gamma/beta 改为官方 weight/bias（shape 由 (1,C,1,1) 改为 (C,)），与 basicsr arch_util.LayerNorm2d 完全对齐，兼容 NAFNet-SIDD-width64.pth 官方预训练权重"
+    ],
+    "2.0.18": [
+      "AI 增强：水印卡片新增 AI 降噪与 AI 锐化开关、降噪模型下拉（Real-ESRGAN / NAFNet）与强度滑条（0~1.00）；配置键 wm_enable_ai_denoise/wm_enable_ai_sharpen/wm_ai_denoise_model/wm_ai_denoise_strength/wm_ai_sharpen_strength/wm_ai_tile_size 持久化；降噪未启用时联动禁用模型与强度控件"
+    ],
+    "2.0.17": [
+      "AI 增强：降噪模型新增 NAFNet（SIDD width64）可选，与 Real-ESRGAN 并列；NAFNet 原生降噪更干净无油画感",
+      "AI 增强：WatermarkOptions 新增 ai_denoise_model 字段（realesrgan/nafnet），CLI 支持 --denoise-model 参数"
+    ],
+    "2.0.16": [
+      "AI 增强：新增 ai_enhance.py 模块，支持 Real-ESRGAN 降噪 + OmniSR 锐化（不放大）串联流水线",
+      "AI 增强：水印模块集成降噪/锐化开关，水印前自动预处理；支持 tile 分块避免爆显存；EXIF 传递"
+    ],
+    "2.0.15": [
+      "连拍快速模式：select_best_images 跳过鸟体面积维度，仅按对焦分数（+鸟眼加分）排序"
+    ],
     "2.0.14": [
       "主流程停止：改为异步停止（移除阻塞的 wait），UI 立即响应不再无响应",
       "主流程停止：连拍、水印循环新增取消检查点，当前组/张完成后立即退出；阶段间补全检查点",

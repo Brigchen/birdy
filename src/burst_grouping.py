@@ -13,6 +13,8 @@
 版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import os
+# 禁止 Ultralytics 自动联网安装依赖（避免 pi-heif 等包在 Windows 构建失败导致卡顿）
+os.environ.setdefault("YOLO_AUTOINSTALL", "False")
 import cv2
 import json
 import time
@@ -739,11 +741,14 @@ def evaluate_focus_for_group(
     eye_model=None,
     fast_mode: bool = False,
     min_bird_area: int = MIN_BIRD_AREA,
+    keep_top_n: int = 0,
 ) -> BurstGroup:
     """
     评估连拍组对焦。启用鸟检时：先检鸟；对焦在最大鸟体框 ROI 上按 FOCUS_METRIC_MODE 计分；
     无有效鸟体则对焦记 0（后续筛选一票否决）。
-    快速模式与鸟检同时开启时不对焦采样（避免误用邻帧分数）。
+
+    快速模式：1/3 等步长采样作为候选集，仅对候选集跑 YOLO 鸟检 + 对焦评分。
+    非候选集图 focus_score=0、bird_area=0，后续 select_best_images 自动过滤。
     """
     print(f"\n  评估连拍组 {group.group_id}，共 {len(group.images)} 张图片")
 
@@ -758,8 +763,27 @@ def evaluate_focus_for_group(
         if eye_model is None:
             use_eye_detection = False
 
+    n = len(group.images)
+
+    # ---- 快速模式：1/3 等步长采样候选集 ----
+    # 采样数 = max(N/3, keep_top_n, 3)，等步长分布覆盖整组
+    fast_sample = fast_mode and n > 3
+    sample_indices: Optional[Set[int]] = None
+    if fast_sample:
+        sample_count = min(max(n // 3, keep_top_n, 3), n)
+        step = n / sample_count
+        sample_indices = {
+            int(round(i * step)) for i in range(sample_count)
+        }
+        sample_indices = {i for i in sample_indices if 0 <= i < n}
+        sample_indices = set(sorted(sample_indices))
+        print(f"    快速模式：{n} 张等步长采样 {len(sample_indices)} 张作为候选集")
+
+    # ---- 鸟检（快速模式仅候选集；否则全量）----
     if use_bird_detection and model:
-        for img_info in group.images:
+        for i, img_info in enumerate(group.images):
+            if sample_indices is not None and i not in sample_indices:
+                continue  # 快速模式：跳过非候选，不跑 YOLO
             print(f"    鸟检: {Path(img_info.path).name}")
             _detect_birds_yolo(img_info, model)
             if use_eye_detection and eye_model is not None:
@@ -772,20 +796,9 @@ def evaluate_focus_for_group(
                     f"      鸟眼有效检出: {img_info.eye_count}（仅统计落在鸟体框内）"
                 )
 
-    fast_sample = fast_mode and (not use_bird_detection) and len(group.images) > 3
-    sample_indices: Optional[Set[int]] = None
-    if fast_sample:
-        total_images = len(group.images)
-        sample_count = max(3, total_images // 3)
-        step = total_images / sample_count
-        sample_indices = {
-            int(round(i * step)) for i in range(sample_count)
-        }
-        sample_indices = {i for i in sample_indices if 0 <= i < total_images}
-        sample_indices = set(sorted(sample_indices))
-
+    # ---- 对焦评分（快速模式仅候选集；否则全量）----
     for i, img_info in enumerate(group.images):
-        if fast_sample and sample_indices is not None and i not in sample_indices:
+        if sample_indices is not None and i not in sample_indices:
             continue
         print(f"    对焦: {Path(img_info.path).name}")
         if use_bird_detection:
@@ -806,17 +819,6 @@ def evaluate_focus_for_group(
             fs = calculate_focus_score(img_info.path)
             img_info.focus_score = fs
             print(f"      全图对焦评分: {fs:.2f}")
-
-    if fast_sample and sample_indices is not None:
-        for i, img_info in enumerate(group.images):
-            if i in sample_indices:
-                continue
-            closest_idx = min(sample_indices, key=lambda x: abs(x - i))
-            img_info.focus_score = group.images[closest_idx].focus_score * 0.95
-            print(
-                f"    对焦(近似): {Path(img_info.path).name} "
-                f"← 邻帧 ×0.95 = {img_info.focus_score:.2f}"
-            )
 
     return group
 
@@ -840,6 +842,7 @@ def select_best_images(
     use_bird_detection: bool = False,
     focus_score_weight: float = FOCUS_SCORE_WEIGHT,
     area_score_weight: float = AREA_SCORE_WEIGHT,
+    fast_mode: bool = False,
 ) -> BurstGroup:
     """
     在连拍组内保留对焦最优的 keep_top_n 张。
@@ -847,6 +850,8 @@ def select_best_images(
 
     标准化打分：对焦和面积各自在组内做 min-max 标准化到 0-10，
     再按 focus_score_weight : area_score_weight 加权求和（默认 9:1）。
+
+    快速模式：跳过鸟体面积维度，仅按对焦分数（+鸟眼加分）排序。
     """
     if not group.images:
         return group
@@ -868,9 +873,7 @@ def select_best_images(
 
     # --- min-max 标准化到 0-10 ---
     focus_vals = [im.focus_score for im in eligible]
-    area_vals = [im.bird_area for im in eligible]
     f_min, f_max = min(focus_vals), max(focus_vals)
-    a_min, a_max = min(area_vals), max(area_vals)
 
     def _norm(val: float, lo: float, hi: float) -> float:
         if hi <= lo:
@@ -878,38 +881,69 @@ def select_best_images(
         return 10.0 * (val - lo) / (hi - lo)
 
     fw = float(focus_score_weight)
-    aw = float(area_score_weight)
 
-    def _composite(im: ImageInfo) -> float:
-        nf = _norm(im.focus_score, f_min, f_max)
-        na = _norm(im.bird_area, a_min, a_max)
-        eye_bonus = float(EYE_BONUS_WEIGHT) if bool(getattr(im, "has_eye", False)) else 0.0
-        return fw * nf + aw * na + eye_bonus
+    if fast_mode:
+        # 快速模式：仅按对焦分数排序，不计算鸟体面积维度
+        def _composite(im: ImageInfo) -> float:
+            nf = _norm(im.focus_score, f_min, f_max)
+            eye_bonus = float(EYE_BONUS_WEIGHT) if bool(getattr(im, "has_eye", False)) else 0.0
+            return fw * nf + eye_bonus
 
-    sorted_eligible = sorted(eligible, key=_composite, reverse=True)
-    take = min(keep_top_n, len(sorted_eligible))
-    for im in sorted_eligible[:take]:
-        im.keep = True
-        tag = "鸟体ROI对焦" if use_bird_detection else "全图对焦"
-        nf = _norm(im.focus_score, f_min, f_max)
-        na = _norm(im.bird_area, a_min, a_max)
-        comp = _composite(im)
-        print(
-            f"    保留: {Path(im.path).name} - {tag} "
-            f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
-            f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
-            f"综合: {comp:.2f})"
-        )
-    for im in sorted_eligible[take:]:
-        nf = _norm(im.focus_score, f_min, f_max)
-        na = _norm(im.bird_area, a_min, a_max)
-        comp = _composite(im)
-        print(
-            f"    丢弃: {Path(im.path).name} - 组内排名靠后 "
-            f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
-            f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
-            f"综合: {comp:.2f})"
-        )
+        sorted_eligible = sorted(eligible, key=_composite, reverse=True)
+        take = min(keep_top_n, len(sorted_eligible))
+        for im in sorted_eligible[:take]:
+            im.keep = True
+            tag = "鸟体ROI对焦" if use_bird_detection else "全图对焦"
+            nf = _norm(im.focus_score, f_min, f_max)
+            comp = _composite(im)
+            print(
+                f"    保留: {Path(im.path).name} - {tag} "
+                f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+                f"综合: {comp:.2f})"
+            )
+        for im in sorted_eligible[take:]:
+            nf = _norm(im.focus_score, f_min, f_max)
+            comp = _composite(im)
+            print(
+                f"    丢弃: {Path(im.path).name} - 组内排名靠后 "
+                f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+                f"综合: {comp:.2f})"
+            )
+    else:
+        area_vals = [im.bird_area for im in eligible]
+        a_min, a_max = min(area_vals), max(area_vals)
+        aw = float(area_score_weight)
+
+        def _composite(im: ImageInfo) -> float:
+            nf = _norm(im.focus_score, f_min, f_max)
+            na = _norm(im.bird_area, a_min, a_max)
+            eye_bonus = float(EYE_BONUS_WEIGHT) if bool(getattr(im, "has_eye", False)) else 0.0
+            return fw * nf + aw * na + eye_bonus
+
+        sorted_eligible = sorted(eligible, key=_composite, reverse=True)
+        take = min(keep_top_n, len(sorted_eligible))
+        for im in sorted_eligible[:take]:
+            im.keep = True
+            tag = "鸟体ROI对焦" if use_bird_detection else "全图对焦"
+            nf = _norm(im.focus_score, f_min, f_max)
+            na = _norm(im.bird_area, a_min, a_max)
+            comp = _composite(im)
+            print(
+                f"    保留: {Path(im.path).name} - {tag} "
+                f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+                f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
+                f"综合: {comp:.2f})"
+            )
+        for im in sorted_eligible[take:]:
+            nf = _norm(im.focus_score, f_min, f_max)
+            na = _norm(im.bird_area, a_min, a_max)
+            comp = _composite(im)
+            print(
+                f"    丢弃: {Path(im.path).name} - 组内排名靠后 "
+                f"(对焦: {im.focus_score:.2f}→标准{nf:.1f}, "
+                f"面积: {im.bird_area:.0f}→标准{na:.1f}, "
+                f"综合: {comp:.2f})"
+            )
     for im in group.images:
         if not _eligible(im):
             print(
@@ -1026,6 +1060,7 @@ def process_folder(
                     eye_model=eye_model,
                     fast_mode=fast_mode,
                     min_bird_area=MIN_BIRD_AREA,
+                    keep_top_n=keep_count,
                 )
                 group = select_best_images(
                     group,
@@ -1034,6 +1069,7 @@ def process_folder(
                     use_bird_detection=use_bird_detection,
                     focus_score_weight=focus_score_weight,
                     area_score_weight=area_score_weight,
+                    fast_mode=fast_mode,
                 )
             
             # 保存结果
@@ -1226,15 +1262,21 @@ def screened_paths_for_kept_images(
 ) -> List[str]:
     """
     将 get_kept_images 返回的「原库绝对路径」映射为 copy_kept_images_to_screened
-    写入后的路径（与复制逻辑一致：RAW → 同相对路径下 .jpg）。
+    写入后的路径。
 
-    物种阶段应使用本列表，以便读取 Screened_images 中已写入的 GPS EXIF，
+    映射规则（与 copy_kept_images_to_screened 一致）：
+      - RAW + Adobe DNG Converter 可用 → 同相对路径下 .dng
+      - RAW + DNG 不可用 → 同相对路径下 .jpg
+      - 非 RAW → 原相对路径
+
+    物种阶段应使用本列表，以便读取 Screened_images 中的 EXIF（含 GPS），
     从而启用基于坐标的地理约束；仅返回磁盘上存在的路径。
     """
-    from image_io import is_raw_path
+    from image_io import is_raw_path, find_dng_converter
 
     image_folder = os.path.abspath(image_folder)
     screened_dir = os.path.abspath(screened_dir)
+    dng_available = find_dng_converter() is not None
     out: List[str] = []
     for src in get_kept_images(result):
         abs_p = os.path.abspath(src)
@@ -1245,13 +1287,25 @@ def screened_paths_for_kept_images(
         rel = rel.replace("\\", "/")
         dest = os.path.join(screened_dir, rel)
         if is_raw_path(abs_p):
-            cand = os.path.splitext(dest)[0] + ".jpg"
+            # DNG 可用 → 优先查 .dng，其次 .jpg（fallback 路径）
+            if dng_available:
+                cand_dng = os.path.splitext(dest)[0] + ".dng"
+                cand_jpg = os.path.splitext(dest)[0] + ".jpg"
+                if os.path.isfile(cand_dng):
+                    out.append(cand_dng)
+                elif os.path.isfile(cand_jpg):
+                    out.append(cand_jpg)
+                elif os.path.isfile(dest):
+                    out.append(dest)
+            else:
+                cand = os.path.splitext(dest)[0] + ".jpg"
+                if os.path.isfile(cand):
+                    out.append(cand)
+                elif os.path.isfile(dest):
+                    out.append(dest)
         else:
-            cand = dest
-        if os.path.isfile(cand):
-            out.append(cand)
-        elif is_raw_path(abs_p) and os.path.isfile(dest):
-            out.append(dest)
+            if os.path.isfile(dest):
+                out.append(dest)
     return out
 
 
@@ -1289,14 +1343,30 @@ def copy_kept_images_to_screened(
     """
     将连拍筛选保留的图片复制到 screened_dir（通常为 输出目录/Screened_images），
     尽量保持相对 image_folder 的子目录结构以避免重名覆盖。
-    RAW：解码后经生态向显影导出为同路径名的 .jpg（便于后续 GPS EXIF）。
-    返回成功处理的文件数（含 RAW→JPEG）。
+
+    RAW 处理策略（按优先级）：
+      1. Adobe DNG Converter 可用 → 转 DNG，直接复制 DNG 到 screened_images
+         （DNG 保留完整原始数据，便于后续美化处理；Adobe DNG Converter 转换时
+          自动从原 RAW 复制完整 EXIF）
+      2. DNG 不可用或转换失败 → fallback 到 JPEG（全 demosaic + 生态显影），
+         并用 piexif 从原 RAW 复制 EXIF 到 JPEG
+
+    返回成功处理的文件数。
     """
     from ecology_jpeg_develop import develop_bgr_ecology_wildlife
-    from image_io import is_raw_path, read_raw_bgr
+    from image_io import (
+        is_raw_path,
+        read_raw_bgr,
+        convert_raw_to_dng,
+        find_dng_converter,
+        copy_exif_from_raw_to_jpeg,
+    )
 
     image_folder = os.path.abspath(image_folder)
     os.makedirs(screened_dir, exist_ok=True)
+    dng_available = find_dng_converter() is not None
+    if dng_available:
+        print("  [DNG] 检测到 Adobe DNG Converter，RAW 将转为 DNG 保存到 Screened_images")
     n = 0
     for path in get_kept_images(result):
         abs_p = os.path.abspath(path)
@@ -1310,6 +1380,20 @@ def copy_kept_images_to_screened(
         if dest_dir:
             os.makedirs(dest_dir, exist_ok=True)
         if is_raw_path(abs_p):
+            # 策略 1：DNG 转换 → 直接复制 DNG 到 screened_images
+            if dng_available:
+                dng_cache_dir = os.path.join(
+                    os.path.dirname(abs_p), ".dng_cache"
+                )
+                dng_path = convert_raw_to_dng(abs_p, dng_cache_dir)
+                if dng_path is not None:
+                    dest_dng = os.path.splitext(dest)[0] + ".dng"
+                    shutil.copy2(dng_path, dest_dng)
+                    print(f"  [DNG] {os.path.basename(abs_p)} → {os.path.basename(dest_dng)}")
+                    n += 1
+                    continue
+                print(f"  [DNG] 转换失败 {os.path.basename(abs_p)}，fallback 到 JPEG")
+            # 策略 2：fallback 到 JPEG（全 demosaic + 生态显影 + EXIF 复制）
             try:
                 bgr = read_raw_bgr(abs_p, half_size=False)
                 bgr = develop_bgr_ecology_wildlife(bgr)
@@ -1321,9 +1405,11 @@ def copy_kept_images_to_screened(
                 )
                 if not ok:
                     raise OSError("cv2.imwrite 返回 False")
+                # 从原始 RAW 复制 EXIF 到 JPEG（保留拍摄时间、相机参数、GPS 等）
+                copy_exif_from_raw_to_jpeg(abs_p, dest_jpg)
             except Exception as e:
                 print(
-                    f"  RAW 导出 JPEG 失败 ({os.path.basename(abs_p)}): {e}，已回退为原文件复制。"
+                    f"  RAW 导出失败 ({os.path.basename(abs_p)}): {e}，已回退为原文件复制。"
                 )
                 shutil.copy2(abs_p, dest)
         else:

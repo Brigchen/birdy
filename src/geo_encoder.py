@@ -637,6 +637,88 @@ def write_gps_exif(image_path: str, latitude: float, longitude: float, altitude:
         return False
 
 
+def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altitude: Optional[float] = None, verbose: bool = False) -> bool:
+    """将 GPS 坐标写入 DNG 文件（通过 exiftool 或 sidecar）。
+
+    DNG 基于 TIFF 格式，piexif.insert 仅支持 JPEG 无法直接写入 DNG。
+    本函数优先尝试 exiftool（如果安装），否则跳过并提示。
+
+    Args:
+        image_path:  DNG 文件路径
+        latitude:    纬度 (-90 ~ 90)
+        longitude:   经度 (-180 ~ 180)
+        altitude:    海拔（可选，单位米）
+        verbose:     是否打印详细信息
+
+    Returns:
+        True 成功，False 失败/跳过
+    """
+    import subprocess
+    import shutil as _shutil
+
+    try:
+        image_path = Path(image_path)
+        # 尝试 exiftool
+        exiftool = _shutil.which("exiftool")
+        if exiftool is None:
+            # 检查常见安装路径
+            for p in (
+                r"C:\Program Files\exiftool\exiftool.exe",
+                r"C:\exiftool\exiftool.exe",
+                r"C:\Tools\exiftool\exiftool.exe",
+            ):
+                if os.path.isfile(p):
+                    exiftool = p
+                    break
+
+        if exiftool is None:
+            if verbose:
+                print(
+                    f"[SKIP] DNG GPS 写入需要 exiftool，未找到。"
+                    f"请安装 exiftool 或对 JPEG 文件写入 GPS: {image_path.name}"
+                )
+            return False
+
+        # exiftool 写入 GPS
+        lat_ref = "S" if latitude < 0 else "N"
+        lon_ref = "W" if longitude < 0 else "E"
+        cmd = [
+            exiftool,
+            "-overwrite_original",
+            f"-GPSLatitude={abs(latitude):.6f}",
+            f"-GPSLatitudeRef={lat_ref}",
+            f"-GPSLongitude={abs(longitude):.6f}",
+            f"-GPSLongitudeRef={lon_ref}",
+        ]
+        if altitude is not None:
+            alt_ref = "1" if altitude < 0 else "0"
+            cmd.extend([
+                f"-GPSAltitude={abs(altitude):.1f}",
+                f"-GPSAltitudeRef={alt_ref}",
+            ])
+        cmd.append(str(image_path))
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            if verbose:
+                print(f"[OK] DNG GPS write success: {image_path.name}")
+            return True
+        else:
+            if verbose:
+                print(f"[ERROR] exiftool 失败: {result.stderr.strip()}")
+            return False
+
+    except Exception as e:
+        if verbose:
+            print(f"[ERROR] DNG GPS write failed: {image_path.name} - {e}")
+        return False
+
+
 def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, altitude: Optional[float] = None, max_workers: int = None) -> int:
     """
     批量将 GPS 坐标写入文件夹中所有 JPEG 的 EXIF（递归子目录）。
@@ -657,20 +739,18 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
     if not folder.exists():
         print(f"错误: 文件夹不存在: {image_folder}")
         return 0
-    
-    # 仅 JPEG（与 piexif 写入方式一致；RAW 应在入库前转为 .jpg）
-    image_extensions = {".jpg", ".jpeg"}
 
+    # JPEG 用 write_gps_exif，DNG 用 write_gps_exif_dng
     image_files = [
         f
         for f in folder.rglob("*")
-        if f.is_file() and f.suffix.lower() in image_extensions
+        if f.is_file() and f.suffix.lower() in (".jpg", ".jpeg", ".dng")
     ]
-    
+
     if not image_files:
         print(f"警告: 文件夹中没有发现图片文件: {image_folder}")
         return 0
-    
+
     print(f"开始批量写入 GPS EXIF...")
     print(f"文件夹: {image_folder}")
     print(f"坐标: ({latitude:.6f}, {longitude:.6f})")
@@ -682,11 +762,16 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
     
     # 使用线程池并行处理
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 提交所有任务
-        future_to_file = {
-            executor.submit(write_gps_exif, str(img_file), latitude, longitude, altitude, verbose=False): img_file
-            for img_file in sorted(image_files)
-        }
+        # 提交所有任务（DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif）
+        future_to_file = {}
+        for img_file in sorted(image_files):
+            if img_file.suffix.lower() == ".dng":
+                fn = write_gps_exif_dng
+            else:
+                fn = write_gps_exif
+            future_to_file[
+                executor.submit(fn, str(img_file), latitude, longitude, altitude, verbose=False)
+            ] = img_file
         
         # 收集结果
         for future in concurrent.futures.as_completed(future_to_file):

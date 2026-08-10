@@ -318,9 +318,10 @@ def match_photos_to_track(
 
 
 try:
-    from geo_encoder import write_gps_exif
+    from geo_encoder import write_gps_exif, write_gps_exif_dng
 except ImportError:
     write_gps_exif = None  # type: ignore
+    write_gps_exif_dng = None  # type: ignore
 
 
 def batch_write_gps_from_gpx(
@@ -348,7 +349,7 @@ def batch_write_gps_from_gpx(
     if not folder.is_dir():
         raise FileNotFoundError(f"文件夹不存在: {folder}")
 
-    exts = {".jpg", ".jpeg"}
+    exts = {".jpg", ".jpeg", ".dng"}
     files: List[str] = []
     it = folder.rglob("*") if recursive else folder.iterdir()
     for f in it:
@@ -384,7 +385,12 @@ def batch_write_gps_from_gpx(
             endpoint_matched += 1
         lat, lon, _ = _resolve_lat_lon(path, lat, lon)
         matched += 1
-        if write_gps_exif(path, lat, lon, ele, verbose=False):
+        # DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif
+        if path.lower().endswith(".dng"):
+            fn = write_gps_exif_dng
+        else:
+            fn = write_gps_exif
+        if fn is not None and fn(path, lat, lon, ele, verbose=False):
             written += 1
 
     if endpoint_matched > 0:

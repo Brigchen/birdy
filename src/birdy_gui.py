@@ -18,7 +18,6 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, List, Any, Tuple
-from dataclasses import replace
 
 try:
     from PyQt5.QtWidgets import (
@@ -30,7 +29,7 @@ try:
         QCompleter,
         QSizePolicy, QSlider, QShortcut, QProgressDialog, QListWidget,
     )
-    from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
+    from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QUrl, QObject
     from PyQt5.QtGui import QColor, QTextCursor, QIcon, QPalette, QDesktopServices, QKeySequence
 except ImportError:
     print("错误: 未安装PyQt5。请运行: pip install PyQt5")
@@ -82,12 +81,6 @@ from watermark_generator import (
     render_watermark_for_image,
 )
 from image_io import all_supported_extensions, file_filter_all_images
-from watermark_enhance import (
-    override_store_path,
-    save_overrides_json,
-    load_overrides_json,
-    rel_key,
-)
 from dual_format import extensions_for_dual_mode
 from burst_webp_dialog import open_burst_webp_dialog
 from video_stabilize_dialog import open_video_stabilize_dialog
@@ -100,6 +93,38 @@ def _open_local_file(path: str) -> None:
         os.startfile(path)
     else:
         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+
+class _WatermarkRenderWorker(QObject):
+    """水印渲染后台 worker：在独立 QThread 中执行 render_watermark_for_image。
+
+    避免在预览时阻塞 Qt 主事件循环（启用 AI 降噪/锐化时单张可达数秒）。
+    通过 pyqtSignal 把 PIL.Image（或 None）回传主线程。
+    """
+
+    finished = pyqtSignal(object)  # PIL.Image | None
+    failed = pyqtSignal(str)
+
+    def __init__(self, image_path: str, source_folder: str, opts: "WatermarkOptions"):
+        super().__init__()
+        self._image_path = image_path
+        self._source_folder = source_folder
+        self._opts = opts
+
+    @pyqtSlot()
+    def run(self) -> None:
+        try:
+            out = render_watermark_for_image(
+                image_path=self._image_path,
+                source_folder=self._source_folder,
+                options=self._opts,
+                prefer_folder_name_as_species=True,
+            )
+            self.finished.emit(out)
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            self.failed.emit(str(e))
+
 
 
 def _count_images_for_eta(folder: str, dual_format_mode: str = "off") -> int:
@@ -839,8 +864,12 @@ class WorkerThread(QThread):
                             if detection_results.get('birds'):
                                 province = detection_results.get("province")
                                 city = detection_results.get("city")
+                                # 复用 detect 已加载的原图，避免对 DNG/RAW 重复 demosaic
+                                orig_img = detection_results.get("original_image")
+                                if orig_img is None:
+                                    orig_img = detector.load_image(image_file)
                                 saved_paths = detector.crop_species(
-                                    image=detector.load_image(image_file),
+                                    image=orig_img,
                                     birds=detection_results['birds'],
                                     output_dir=output_root,
                                     source_path=image_file,
@@ -1030,10 +1059,14 @@ class WorkerThread(QThread):
                         config.get("watermark_output_folder", "").strip()
                         or os.path.join(config.get("output_folder", "./outputs"), "watermarked")
                     )
-                    _wm_auto = bool(config.get("wm_enable_auto_enhance", True))
                     _wm_st = str(config.get("wm_watermark_style", "frame") or "frame")
                     if _wm_st not in ("frame", "inline"):
                         _wm_st = "frame"
+                    _wm_ai_dn_model = str(
+                        config.get("wm_ai_denoise_model", "realesrgan") or "realesrgan"
+                    )
+                    if _wm_ai_dn_model not in ("realesrgan", "nafnet"):
+                        _wm_ai_dn_model = "realesrgan"
                     wopt = WatermarkOptions(
                         enable_location=bool(config.get("wm_enable_location", True)),
                         location_text=str(config.get("wm_location_text", "") or ""),
@@ -1044,12 +1077,15 @@ class WorkerThread(QThread):
                         logo_path=str(config.get("wm_logo_path", "") or ""),
                         logo_width_ratio=float(config.get("wm_logo_width_ratio", 0.30)),
                         watermark_style=_wm_st,  # type: ignore[arg-type]
-                        enable_auto_enhance=_wm_auto,
-                        enhance_overrides_path=(
-                            override_store_path(source_folder)
-                            if _wm_auto
-                            else ""
-                        ),
+                        enable_auto_enhance=False,
+                        enable_ai_exposure=bool(config.get("wm_enable_ai_exposure", False)),
+                        ai_exposure_strength=float(config.get("wm_ai_exposure_strength", 1.0)),
+                        enable_ai_denoise=bool(config.get("wm_enable_ai_denoise", False)),
+                        enable_ai_sharpen=bool(config.get("wm_enable_ai_sharpen", False)),
+                        ai_denoise_model=_wm_ai_dn_model,
+                        ai_denoise_strength=float(config.get("wm_ai_denoise_strength", 0.5)),
+                        ai_sharpen_strength=float(config.get("wm_ai_sharpen_strength", 0.5)),
+                        ai_tile_size=int(config.get("wm_ai_tile_size", 512)),
                     )
                     wm_result = generate_watermarks(
                         source_folder=source_folder,
@@ -1655,8 +1691,16 @@ class BirdDetectionGUI(QMainWindow):
             'wm_enable_species': True,
             'wm_enable_camera': True,
             'wm_logo_width_ratio': 0.30,
-            'wm_enable_auto_enhance': True,
             'wm_watermark_style': 'frame',
+            # AI 增强（水印前曝光/降噪/锐化，流水线顺序：曝光→降噪→锐化）
+            'wm_enable_ai_exposure': False,
+            'wm_ai_exposure_strength': 1.0,
+            'wm_enable_ai_denoise': False,
+            'wm_enable_ai_sharpen': False,
+            'wm_ai_denoise_model': 'realesrgan',  # "realesrgan" 或 "nafnet"
+            'wm_ai_denoise_strength': 0.5,
+            'wm_ai_sharpen_strength': 0.5,
+            'wm_ai_tile_size': 512,
             # 观鸟记录导出（主流程自动导出默认关闭）
             'enable_record_export_auto': False,
             'record_export_classification_folder': '',
@@ -2377,15 +2421,113 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_camera_checkbox.setChecked(self.config.get("wm_enable_camera", True))
         wm_layout.addRow("", self.wm_camera_checkbox)
 
-        self.wm_auto_enhance_checkbox = QCheckBox("水印前自动生态显影（与 RAW 入库显影同源，可按张微调）")
-        self.wm_auto_enhance_checkbox.setChecked(
-            self.config.get("wm_enable_auto_enhance", True)
+        # 自动曝光（水印前；基于鸟体测光，避免剪影）
+        self.wm_ai_exposure_checkbox = QCheckBox("水印前自动曝光")
+        self.wm_ai_exposure_checkbox.setChecked(
+            self.config.get("wm_enable_ai_exposure", False)
         )
-        self.wm_auto_enhance_checkbox.setToolTip(
-            "对每张图自动做曝光与局部明暗优化；在「预览一张」里可按张调节强度与曝光微调，"
-            "参数写入系统临时目录下的 JSON，批量生成时自动套用。"
+        self.wm_ai_exposure_checkbox.setToolTip(
+            "基于鸟体检测测光，自动调整曝光避免剪影。\n流水线顺序：自动曝光 → AI 降噪 → AI 锐化。"
         )
-        wm_layout.addRow("", self.wm_auto_enhance_checkbox)
+        wm_layout.addRow("", self.wm_ai_exposure_checkbox)
+
+        wm_ai_ex_row = QHBoxLayout()
+        self.wm_ai_exposure_slider = QSlider(Qt.Horizontal)
+        self.wm_ai_exposure_slider.setRange(0, 100)
+        self.wm_ai_exposure_slider.setSingleStep(5)
+        self.wm_ai_exposure_slider.setValue(
+            int(float(self.config.get("wm_ai_exposure_strength", 1.0)) * 100)
+        )
+        self.wm_ai_exposure_value_label = QLabel(
+            f"{self.wm_ai_exposure_slider.value() / 100:.2f}"
+        )
+        self.wm_ai_exposure_value_label.setMinimumWidth(34)
+        self.wm_ai_exposure_slider.valueChanged.connect(
+            lambda v: self.wm_ai_exposure_value_label.setText(f"{v / 100:.2f}")
+        )
+        self.wm_ai_exposure_slider.setToolTip("0=原图，1=完全调整；推荐 0.5~1.0。")
+        wm_ai_ex_row.addWidget(self.wm_ai_exposure_slider, 1)
+        wm_ai_ex_row.addWidget(self.wm_ai_exposure_value_label)
+        wm_layout.addRow("曝光强度:", wm_ai_ex_row)
+
+        # AI 降噪（水印前；Real-ESRGAN 或 NAFNet 可选）
+        self.wm_ai_denoise_checkbox = QCheckBox("水印前 AI 降噪")
+        self.wm_ai_denoise_checkbox.setChecked(
+            self.config.get("wm_enable_ai_denoise", False)
+        )
+        wm_layout.addRow("", self.wm_ai_denoise_checkbox)
+
+        self.wm_ai_denoise_model_combo = QComboBox()
+        self.wm_ai_denoise_model_combo.addItem("Real-ESRGAN", "realesrgan")
+        self.wm_ai_denoise_model_combo.addItem("NAFNet", "nafnet")
+        _wm_dm = str(self.config.get("wm_ai_denoise_model", "realesrgan") or "realesrgan")
+        _wm_di = self.wm_ai_denoise_model_combo.findData(_wm_dm)
+        self.wm_ai_denoise_model_combo.setCurrentIndex(_wm_di if _wm_di >= 0 else 0)
+        wm_layout.addRow("降噪模型:", self.wm_ai_denoise_model_combo)
+
+        wm_ai_dn_row = QHBoxLayout()
+        self.wm_ai_denoise_slider = QSlider(Qt.Horizontal)
+        self.wm_ai_denoise_slider.setRange(0, 100)
+        self.wm_ai_denoise_slider.setSingleStep(5)
+        self.wm_ai_denoise_slider.setValue(
+            int(float(self.config.get("wm_ai_denoise_strength", 0.5)) * 100)
+        )
+        self.wm_ai_denoise_value_label = QLabel(
+            f"{self.wm_ai_denoise_slider.value() / 100:.2f}"
+        )
+        self.wm_ai_denoise_value_label.setMinimumWidth(34)
+        self.wm_ai_denoise_slider.valueChanged.connect(
+            lambda v: self.wm_ai_denoise_value_label.setText(f"{v / 100:.2f}")
+        )
+        wm_ai_dn_row.addWidget(self.wm_ai_denoise_slider, 1)
+        wm_ai_dn_row.addWidget(self.wm_ai_denoise_value_label)
+        wm_layout.addRow("降噪强度:", wm_ai_dn_row)
+
+        # AI 锐化（OmniSR；仅锐化不放大）
+        self.wm_ai_sharpen_checkbox = QCheckBox("水印前 AI 锐化")
+        self.wm_ai_sharpen_checkbox.setChecked(
+            self.config.get("wm_enable_ai_sharpen", False)
+        )
+        wm_layout.addRow("", self.wm_ai_sharpen_checkbox)
+
+        wm_ai_sh_row = QHBoxLayout()
+        self.wm_ai_sharpen_slider = QSlider(Qt.Horizontal)
+        self.wm_ai_sharpen_slider.setRange(0, 100)
+        self.wm_ai_sharpen_slider.setSingleStep(5)
+        self.wm_ai_sharpen_slider.setValue(
+            int(float(self.config.get("wm_ai_sharpen_strength", 0.5)) * 100)
+        )
+        self.wm_ai_sharpen_value_label = QLabel(
+            f"{self.wm_ai_sharpen_slider.value() / 100:.2f}"
+        )
+        self.wm_ai_sharpen_value_label.setMinimumWidth(34)
+        self.wm_ai_sharpen_slider.valueChanged.connect(
+            lambda v: self.wm_ai_sharpen_value_label.setText(f"{v / 100:.2f}")
+        )
+        self.wm_ai_sharpen_slider.setToolTip("0=原图，1=完全锐化；推荐 0.3~0.5。")
+        wm_ai_sh_row.addWidget(self.wm_ai_sharpen_slider, 1)
+        wm_ai_sh_row.addWidget(self.wm_ai_sharpen_value_label)
+        wm_layout.addRow("锐化强度:", wm_ai_sh_row)
+
+        # 降噪未启用时禁用降噪模型与强度控件
+        self.wm_ai_denoise_checkbox.toggled.connect(
+            self._update_wm_ai_denoise_enabled
+        )
+        self._update_wm_ai_denoise_enabled()
+        # 锐化未启用时禁用锐化强度滑块
+        self.wm_ai_sharpen_checkbox.toggled.connect(
+            self.wm_ai_sharpen_slider.setEnabled
+        )
+        self.wm_ai_sharpen_slider.setEnabled(
+            self.wm_ai_sharpen_checkbox.isChecked()
+        )
+        # 自动曝光未启用时禁用曝光强度滑块
+        self.wm_ai_exposure_checkbox.toggled.connect(
+            self.wm_ai_exposure_slider.setEnabled
+        )
+        self.wm_ai_exposure_slider.setEnabled(
+            self.wm_ai_exposure_checkbox.isChecked()
+        )
 
         wm_preview_row = QHBoxLayout()
         wm_preview_btn = QPushButton("预览一张效果")
@@ -3127,8 +3269,8 @@ class BirdDetectionGUI(QMainWindow):
                 "output_folder", ""
             )
             if out:
-                return os.path.join(out, "Screened_images")
-        return self.image_folder_input.text().strip()
+                return os.path.normpath(os.path.join(out, "Screened_images"))
+        return os.path.normpath(self.image_folder_input.text().strip())
 
     def _apply_gpx_gps_to_photos(self) -> None:
         gpx_paths = self._gpx_paths_from_ui()
@@ -3137,10 +3279,19 @@ class BirdDetectionGUI(QMainWindow):
             return
         folder = self._gpx_target_photo_folder()
         if not folder or not os.path.isdir(folder):
+            # 显示实际检查的路径，帮助诊断
+            out_raw = self.output_folder_input.text().strip() or self.config.get(
+                "output_folder", ""
+            )
+            screened_checked = self.gpx_apply_screened_checkbox.isChecked()
+            detail = f"实际检查路径: {folder}\n"
+            if screened_checked:
+                detail += f"输出目录(UI): {out_raw!r}\n"
+                detail += f"输出目录(config): {self.config.get('output_folder', '')!r}"
             QMessageBox.warning(
                 self,
                 "提示",
-                "目标照片目录不存在。请设置图片文件夹或输出目录下的 Screened_images。",
+                f"目标照片目录不存在。\n{detail}",
             )
             return
         try:
@@ -3930,13 +4081,21 @@ class BirdDetectionGUI(QMainWindow):
             except Exception as e:
                 print(f"保存 Logo 路径失败: {e}")
 
+    def _update_wm_ai_denoise_enabled(self) -> None:
+        """AI 降噪复选框状态联动：禁用降噪模型与强度控件。"""
+        enabled = self.wm_ai_denoise_checkbox.isChecked()
+        self.wm_ai_denoise_model_combo.setEnabled(enabled)
+        self.wm_ai_denoise_slider.setEnabled(enabled)
+        self.wm_ai_denoise_value_label.setEnabled(enabled)
+
     def _build_watermark_options(self) -> WatermarkOptions:
-        src = self._resolve_watermark_source_folder()
-        auto_on = self.wm_auto_enhance_checkbox.isChecked()
         _style = (
             "inline"
             if self.wm_style_combo.currentIndex() == 1
             else "frame"
+        )
+        _ai_dn_model = str(
+            self.wm_ai_denoise_model_combo.currentData() or "realesrgan"
         )
         return WatermarkOptions(
             enable_location=self.wm_location_checkbox.isChecked(),
@@ -3948,10 +4107,15 @@ class BirdDetectionGUI(QMainWindow):
             logo_path=self.wm_logo_input.text().strip(),
             logo_width_ratio=float(self.wm_logo_width_ratio_input.value()),
             watermark_style=_style,
-            enable_auto_enhance=auto_on,
-            enhance_overrides_path=(
-                override_store_path(src) if auto_on and src else ""
-            ),
+            enable_auto_enhance=False,
+            enable_ai_exposure=self.wm_ai_exposure_checkbox.isChecked(),
+            ai_exposure_strength=self.wm_ai_exposure_slider.value() / 100.0,
+            enable_ai_denoise=self.wm_ai_denoise_checkbox.isChecked(),
+            enable_ai_sharpen=self.wm_ai_sharpen_checkbox.isChecked(),
+            ai_denoise_model=_ai_dn_model,
+            ai_denoise_strength=self.wm_ai_denoise_slider.value() / 100.0,
+            ai_sharpen_strength=self.wm_ai_sharpen_slider.value() / 100.0,
+            ai_tile_size=int(self.config.get("wm_ai_tile_size", 512)),
         )
 
     def _resolve_watermark_source_folder(self) -> str:
@@ -4128,7 +4292,7 @@ class BirdDetectionGUI(QMainWindow):
         th.start()
 
     def _preview_watermark_one(self):
-        """预览水印效果；支持逐张自动显影强度与曝光微调，参数写入临时 JSON。"""
+        """预览水印效果。"""
         source_folder = self._resolve_watermark_source_folder()
         if not source_folder or not os.path.isdir(source_folder):
             QMessageBox.warning(
@@ -4150,8 +4314,6 @@ class BirdDetectionGUI(QMainWindow):
             paths_all = [fp]
 
         nav_state: Dict[str, Any] = {"paths": paths_all, "idx": 0}
-        ov_path = override_store_path(source_folder)
-        by_rel: Dict[str, dict] = dict(load_overrides_json(ov_path))
 
         def _current_path() -> str:
             ps = nav_state["paths"]
@@ -4160,35 +4322,11 @@ class BirdDetectionGUI(QMainWindow):
 
         from PyQt5.QtGui import QImage, QPixmap
 
-        def _options_for_preview(auto_on: bool) -> WatermarkOptions:
-            base = self._build_watermark_options()
-            return replace(
-                base,
-                enable_auto_enhance=bool(auto_on),
-                enhance_overrides_path=(ov_path if auto_on else ""),
-            )
-
-        def _render_to_pixmap(opts: WatermarkOptions) -> Optional[QPixmap]:
-            out_img = render_watermark_for_image(
-                image_path=_current_path(),
-                source_folder=source_folder,
-                options=opts,
-                prefer_folder_name_as_species=True,
-            )
-            if out_img is None:
-                return None
-            arr = np.array(out_img.convert("RGB"))
-            h, w, _ = arr.shape
-            qimg = QImage(arr.data, w, h, 3 * w, QImage.Format_RGB888).copy()
-            return QPixmap.fromImage(qimg)
-
         dlg = QDialog(self)
-        dlg.setWindowTitle("水印与自动显影预览")
-        dlg.resize(1000, 780)
+        dlg.setWindowTitle("水印预览")
+        dlg.resize(1400, 920)
         v = QVBoxLayout(dlg)
-        info = QLabel()
-        info.setWordWrap(True)
-        v.addWidget(info)
+        v.setContentsMargins(8, 8, 8, 8)
 
         nav_row = QHBoxLayout()
         prev_im_btn = QPushButton("上一张")
@@ -4196,7 +4334,7 @@ class BirdDetectionGUI(QMainWindow):
         prev_im_btn.setToolTip("上一张 (←)")
         next_im_btn.setToolTip("下一张 (→)")
         nav_pos_label = QLabel()
-        nav_pos_label.setMinimumWidth(80)
+        nav_pos_label.setMinimumWidth(120)
         nav_pos_label.setAlignment(Qt.AlignCenter)
         nav_row.addWidget(prev_im_btn)
         nav_row.addStretch(1)
@@ -4204,77 +4342,6 @@ class BirdDetectionGUI(QMainWindow):
         nav_row.addStretch(1)
         nav_row.addWidget(next_im_btn)
         v.addLayout(nav_row)
-
-        auto_cb = QCheckBox("水印前自动生态显影（与主界面一致）")
-        auto_cb.setChecked(self.wm_auto_enhance_checkbox.isChecked())
-        v.addWidget(auto_cb)
-
-        def _mini_row(label: str, slider: QSlider, val_lb: QLabel) -> QWidget:
-            row = QWidget()
-            hl = QHBoxLayout(row)
-            hl.setContentsMargins(0, 0, 0, 0)
-            hl.addWidget(QLabel(label))
-            hl.addWidget(slider, 1)
-            hl.addWidget(val_lb)
-            return row
-
-        d_strength = QSlider(Qt.Horizontal)
-        d_strength.setRange(0, 100)
-        d_strength.setToolTip("自动显影结果与原图的混合比例（100 为完全采用自动结果）")
-        d_st_l = QLabel()
-        d_st_l.setMinimumWidth(40)
-        d_st_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        d_strength.valueChanged.connect(lambda x: d_st_l.setText(f"{int(x)}%"))
-        v.addWidget(_mini_row("自动强度", d_strength, d_st_l))
-
-        d_exp = QSlider(Qt.Horizontal)
-        d_exp.setRange(-50, 50)
-        d_exp.setToolTip("在自动结果上的曝光微调（约 ±1/4 档）")
-        d_exp_l = QLabel()
-        d_exp_l.setMinimumWidth(40)
-        d_exp_l.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        d_exp.valueChanged.connect(lambda x: d_exp_l.setText(str(int(x))))
-        v.addWidget(_mini_row("曝光微调", d_exp, d_exp_l))
-
-        reset_btn = QPushButton("本张恢复自动默认")
-        reset_btn.setToolTip("清除本张在临时 JSON 中的记录，恢复为默认自动显影")
-
-        def _ov_from_sliders() -> dict:
-            st = max(0.0, min(1.0, float(d_strength.value()) / 100.0))
-            ef = max(-0.22, min(0.22, (float(d_exp.value()) / 50.0) * 0.22))
-            return {"strength": st, "exposure_fine": ef}
-
-        def _persist_current() -> None:
-            r = rel_key(_current_path(), source_folder)
-            by_rel[r] = _ov_from_sliders()
-            save_overrides_json(ov_path, source_folder, by_rel)
-
-        def _load_sliders_for_current() -> None:
-            r = rel_key(_current_path(), source_folder)
-            ov = by_rel.get(r)
-            if ov:
-                s = float(ov.get("strength", 1.0))
-                ef = float(ov.get("exposure_fine", 0.0))
-            else:
-                s, ef = 1.0, 0.0
-            d_strength.setValue(int(round(max(0.0, min(1.0, s)) * 100.0)))
-            ui_e = int(round((ef / 0.22) * 50.0)) if abs(ef) > 1e-6 else 0
-            d_exp.setValue(max(-50, min(50, ui_e)))
-            d_st_l.setText(f"{d_strength.value()}%")
-            d_exp_l.setText(str(d_exp.value()))
-
-        def _sync_enh_widgets(checked: bool) -> None:
-            for w in (d_strength, d_exp, reset_btn):
-                w.setEnabled(checked)
-
-        row_reset = QHBoxLayout()
-        row_reset.addWidget(reset_btn)
-        row_reset.addStretch(1)
-        v.addLayout(row_reset)
-
-        _load_sliders_for_current()
-        auto_cb.toggled.connect(_sync_enh_widgets)
-        _sync_enh_widgets(auto_cb.isChecked())
 
         tools = QHBoxLayout()
         zoom_out_btn = QPushButton("缩小")
@@ -4287,8 +4354,10 @@ class BirdDetectionGUI(QMainWindow):
         tools.addWidget(one_btn)
         tools.addStretch(1)
         v.addLayout(tools)
+
         sc = QScrollArea(dlg)
         sc.setWidgetResizable(True)
+        sc.setMinimumHeight(700)
         holder = QWidget()
         hv = QVBoxLayout(holder)
         img_lb = QLabel()
@@ -4318,53 +4387,99 @@ class BirdDetectionGUI(QMainWindow):
             zoom_state["scale"] = min(sx, sy, 1.0)
             _apply_scaled()
 
-        debounce = QTimer(dlg)
-        debounce.setSingleShot(True)
-        debounce.setInterval(140)
-
-        def _do_refresh():
-            if auto_cb.isChecked():
-                _persist_current()
-            opts = _options_for_preview(auto_cb.isChecked())
-            pm = _render_to_pixmap(opts)
-            if pm is None:
-                return
-            pix_state["pix"] = pm
-            _apply_scaled()
-
-        def _schedule_refresh():
-            debounce.stop()
-            debounce.start()
-
-        debounce.timeout.connect(_do_refresh)
-        for s in (d_strength, d_exp):
-            s.valueChanged.connect(lambda _v, __f=_schedule_refresh: __f())
-        auto_cb.toggled.connect(lambda _c, __f=_schedule_refresh: __f())
-
-        def _reset_current_default() -> None:
-            r = rel_key(_current_path(), source_folder)
-            by_rel.pop(r, None)
-            save_overrides_json(ov_path, source_folder, by_rel)
-            d_strength.setValue(100)
-            d_exp.setValue(0)
-            d_st_l.setText(f"{d_strength.value()}%")
-            d_exp_l.setText(str(d_exp.value()))
-            _schedule_refresh()
-
-        reset_btn.clicked.connect(_reset_current_default)
+        # ---- 后台渲染（QThread + Worker，避免 AI 推理阻塞 UI） ----
+        render_state: Dict[str, Any] = {"busy": False, "pending": None, "thread": None, "worker": None}
 
         def _update_nav_ui() -> None:
             n = len(nav_state["paths"])
             i = int(nav_state["idx"])
-            prev_im_btn.setEnabled(n > 1 and i > 0)
-            next_im_btn.setEnabled(n > 1 and i < n - 1)
-            nav_pos_label.setText(f"{i + 1} / {n}")
+            busy = bool(render_state["busy"])
+            prev_im_btn.setEnabled(not busy and n > 1 and i > 0)
+            next_im_btn.setEnabled(not busy and n > 1 and i < n - 1)
             cur = _current_path()
-            info.setText(
-                f"预览文件（{i + 1}/{n}）：{os.path.basename(cur)}\n"
-                "自动显影与 RAW 入库显影同源；滑条调节会写入临时 JSON（按相对路径），"
-                "切换图片前会自动保存当前张；「确定」写回主界面开关。"
-            )
+            if busy:
+                nav_pos_label.setText(f"渲染中… {i + 1} / {n}  {os.path.basename(cur)}")
+            else:
+                nav_pos_label.setText(f"{i + 1} / {n}  {os.path.basename(cur)}")
+
+        def _cleanup_render_thread() -> None:
+            th = render_state.get("thread")
+            wk = render_state.get("worker")
+            if wk is not None:
+                try:
+                    wk.deleteLater()
+                except Exception:
+                    pass
+            if th is not None:
+                try:
+                    th.quit()
+                    th.wait(3000)
+                except Exception:
+                    pass
+                try:
+                    th.deleteLater()
+                except Exception:
+                    pass
+            render_state["thread"] = None
+            render_state["worker"] = None
+
+        def _on_render_done(pil_img) -> None:
+            _cleanup_render_thread()
+            render_state["busy"] = False
+            if pil_img is None:
+                img_lb.setText("渲染失败或无水印内容")
+                _update_nav_ui()
+                _consume_pending()
+                return
+            arr = np.array(pil_img.convert("RGB"))
+            h, w, _ = arr.shape
+            qimg = QImage(arr.data, w, h, 3 * w, QImage.Format_RGB888).copy()
+            pix_state["pix"] = QPixmap.fromImage(qimg)
+            _fit_to_view()
+            _update_nav_ui()
+            _consume_pending()
+
+        def _on_render_failed(msg: str) -> None:
+            _cleanup_render_thread()
+            render_state["busy"] = False
+            img_lb.setText(f"渲染失败: {msg}")
+            _update_nav_ui()
+            _consume_pending()
+
+        def _consume_pending() -> None:
+            """当前渲染完成后，若用户在期间点了下一张，则继续处理。"""
+            pending = render_state.get("pending")
+            render_state["pending"] = None
+            if pending is not None:
+                zoom_state["scale"] = 1.0
+                _start_render(idx=int(pending))
+
+        def _start_render(idx: Optional[int] = None) -> None:
+            if idx is not None:
+                nav_state["idx"] = idx
+            if render_state["busy"]:
+                # 当前正在渲染，记录 pending（取最新请求）
+                render_state["pending"] = int(nav_state["idx"])
+                return
+            render_state["busy"] = True
+            _update_nav_ui()
+            opts = self._build_watermark_options()
+            wk = _WatermarkRenderWorker(_current_path(), source_folder, opts)
+            th = QThread()
+            wk.moveToThread(th)
+            th.started.connect(wk.run)
+            wk.finished.connect(_on_render_done)
+            wk.failed.connect(_on_render_failed)
+            wk.finished.connect(th.quit)
+            wk.failed.connect(th.quit)
+            th.finished.connect(wk.deleteLater)
+            th.finished.connect(th.deleteLater)
+            render_state["thread"] = th
+            render_state["worker"] = wk
+            th.start()
+
+        def _do_refresh() -> None:
+            _start_render()
 
         def _step_image(delta: int) -> None:
             n = len(nav_state["paths"])
@@ -4373,15 +4488,10 @@ class BirdDetectionGUI(QMainWindow):
             ni = max(0, min(n - 1, int(nav_state["idx"]) + int(delta)))
             if ni == int(nav_state["idx"]):
                 return
-            if auto_cb.isChecked():
-                _persist_current()
-            nav_state["idx"] = ni
-            _load_sliders_for_current()
             zoom_state["scale"] = 1.0
-            debounce.stop()
+            nav_state["idx"] = ni
             _update_nav_ui()
-            _do_refresh()
-            QTimer.singleShot(0, _fit_to_view)
+            _start_render()
 
         prev_im_btn.clicked.connect(lambda: _step_image(-1))
         next_im_btn.clicked.connect(lambda: _step_image(1))
@@ -4415,20 +4525,13 @@ class BirdDetectionGUI(QMainWindow):
         btns.rejected.connect(dlg.reject)
         v.addWidget(btns)
 
-        _update_nav_ui()
-        _do_refresh()
-        QTimer.singleShot(0, _fit_to_view)
+        # 对话框关闭时清理后台线程，避免泄露
+        dlg.finished.connect(lambda *_: _cleanup_render_thread())
 
-        rc = dlg.exec_()
-        if auto_cb.isChecked():
-            _persist_current()
-        if rc == QDialog.Accepted:
-            self.wm_auto_enhance_checkbox.setChecked(auto_cb.isChecked())
-            try:
-                self._sync_config_from_ui()
-                self._save_config()
-            except Exception as e:
-                print(f"预览确定后保存配置失败: {e}")
+        _update_nav_ui()
+        _start_render()
+
+        dlg.exec_()
     
     def _on_location_text_changed(self, text):
         """地址文本改变时的处理"""
@@ -5022,13 +5125,32 @@ class BirdDetectionGUI(QMainWindow):
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
         )
-        self.config["wm_enable_auto_enhance"] = (
-            self.wm_auto_enhance_checkbox.isChecked()
-        )
         self.config["wm_watermark_style"] = (
             "inline"
             if self.wm_style_combo.currentIndex() == 1
             else "frame"
+        )
+        self.config["wm_enable_ai_exposure"] = (
+            self.wm_ai_exposure_checkbox.isChecked()
+        )
+        self.config["wm_ai_exposure_strength"] = (
+            self.wm_ai_exposure_slider.value() / 100.0
+        )
+        self.config["wm_enable_ai_denoise"] = (
+            self.wm_ai_denoise_checkbox.isChecked()
+        )
+        self.config["wm_enable_ai_sharpen"] = (
+            self.wm_ai_sharpen_checkbox.isChecked()
+        )
+        _wm_ai_dn_model = str(
+            self.wm_ai_denoise_model_combo.currentData() or "realesrgan"
+        )
+        self.config["wm_ai_denoise_model"] = _wm_ai_dn_model
+        self.config["wm_ai_denoise_strength"] = (
+            self.wm_ai_denoise_slider.value() / 100.0
+        )
+        self.config["wm_ai_sharpen_strength"] = (
+            self.wm_ai_sharpen_slider.value() / 100.0
         )
         self.config["use_local_model"] = self.local_model_radio.isChecked()
         _lsm = self.local_species_model_combo.currentData()
@@ -5123,8 +5245,6 @@ class BirdDetectionGUI(QMainWindow):
                 with open(config_file, 'r', encoding='utf-8') as f:
                     saved_config = json.load(f)
                     self.config.update(saved_config)
-                    if "wm_enable_auto_enhance" not in saved_config:
-                        self.config["wm_enable_auto_enhance"] = True
                     if 'burst_keep_min' not in saved_config and 'keep_top_n' in saved_config:
                         self.config['burst_keep_min'] = saved_config['keep_top_n']
                     if 'burst_keep_ratio' not in saved_config:
@@ -5222,8 +5342,38 @@ class BirdDetectionGUI(QMainWindow):
         _wst = str(self.config.get("wm_watermark_style", "frame") or "frame")
         _wi = self.wm_style_combo.findData(_wst)
         self.wm_style_combo.setCurrentIndex(_wi if _wi >= 0 else 0)
-        self.wm_auto_enhance_checkbox.setChecked(
-            self.config.get("wm_enable_auto_enhance", True)
+        # AI 曝光/降噪/锐化（水印前）
+        self.wm_ai_exposure_checkbox.setChecked(
+            bool(self.config.get("wm_enable_ai_exposure", False))
+        )
+        self.wm_ai_denoise_checkbox.setChecked(
+            bool(self.config.get("wm_enable_ai_denoise", False))
+        )
+        self.wm_ai_sharpen_checkbox.setChecked(
+            bool(self.config.get("wm_enable_ai_sharpen", False))
+        )
+        _wm_dm = str(
+            self.config.get("wm_ai_denoise_model", "realesrgan") or "realesrgan"
+        )
+        _wm_di = self.wm_ai_denoise_model_combo.findData(_wm_dm)
+        self.wm_ai_denoise_model_combo.setCurrentIndex(
+            _wm_di if _wm_di >= 0 else 0
+        )
+        self.wm_ai_denoise_slider.setValue(
+            int(float(self.config.get("wm_ai_denoise_strength", 0.5)) * 100)
+        )
+        self.wm_ai_sharpen_slider.setValue(
+            int(float(self.config.get("wm_ai_sharpen_strength", 0.5)) * 100)
+        )
+        self.wm_ai_exposure_slider.setValue(
+            int(float(self.config.get("wm_ai_exposure_strength", 1.0)) * 100)
+        )
+        self._update_wm_ai_denoise_enabled()
+        self.wm_ai_sharpen_slider.setEnabled(
+            self.wm_ai_sharpen_checkbox.isChecked()
+        )
+        self.wm_ai_exposure_slider.setEnabled(
+            self.wm_ai_exposure_checkbox.isChecked()
         )
 
         # 物种识别配置

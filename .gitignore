@@ -95,3 +95,10 @@ data/gpx/*.gpx
 *.log
 *.tmp
 ~$*
+
+# --- 本地依赖与临时测试脚本 ---
+_libs/
+_test_ai_enhance.py
+
+# --- 模型权重压缩包（分发产物，不进仓库） ---
+models/*.zip

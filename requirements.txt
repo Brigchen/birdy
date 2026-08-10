@@ -9,6 +9,11 @@ torch>=1.9.0
 torchvision>=0.10.0
 ultralytics>=8.0.0
 
+# AI 图像增强（水印前降噪/锐化；可选，未安装时自动降级跳过）
+einops>=0.6.0
+basicsr>=1.4.0
+realesrgan>=0.3.0
+
 # 图像与数值
 opencv-python>=4.5.0
 Pillow>=8.0.0

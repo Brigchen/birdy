@@ -17,6 +17,8 @@
 版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import os
+# 禁止 Ultralytics 自动联网安装依赖（避免 pi-heif 等包在 Windows 构建失败导致卡顿）
+os.environ.setdefault("YOLO_AUTOINSTALL", "False")
 import re
 import json
 import cv2
@@ -25,7 +27,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Union, Optional
 from ultralytics import YOLO
 
-from image_io import all_supported_extensions, is_raw_path, rawpy_available, read_raw_bgr
+from image_io import all_supported_extensions, is_raw_path, rawpy_available, read_raw_bgr, read_raw_bgr_full
 
 _RAWPY_AVAILABLE = rawpy_available()
 if not _RAWPY_AVAILABLE:
@@ -1640,6 +1642,37 @@ _CROP_ASPECT_MIN_W_H = 9.0 / 16.0
 _CROP_ASPECT_MAX_W_H = 16.0 / 9.0
 
 
+def _apply_aspect_constraint(
+    x1: float, y1: float, x2: float, y2: float, img_w: int, img_h: int
+) -> Tuple[int, int, int, int]:
+    """对浮点框应用宽高比约束 [9:16, 16:9]（宽/高）并裁入图像范围。
+
+    以中心点为锚点：过宽则加高，过高则加宽，保证不裁掉主体。
+    """
+    W = x2 - x1
+    H = y2 - y1
+    if W <= 0 or H <= 0:
+        return int(x1), int(y1), int(x2), int(y2)
+    ar = W / H
+    cx = (x1 + x2) * 0.5
+    cy = (y1 + y2) * 0.5
+    if ar > _CROP_ASPECT_MAX_W_H:
+        new_h = W / _CROP_ASPECT_MAX_W_H
+        y1 = cy - new_h * 0.5
+        y2 = cy + new_h * 0.5
+    elif ar < _CROP_ASPECT_MIN_W_H:
+        new_w = H * _CROP_ASPECT_MIN_W_H
+        x1 = cx - new_w * 0.5
+        x2 = cx + new_w * 0.5
+    ix1 = int(max(0, min(img_w - 1, np.floor(x1))))
+    iy1 = int(max(0, min(img_h - 1, np.floor(y1))))
+    ix2 = int(max(ix1 + 1, min(img_w, np.ceil(x2))))
+    iy2 = int(max(iy1 + 1, min(img_h, np.ceil(y2))))
+    if ix2 <= ix1 or iy2 <= iy1:
+        return int(x1), int(y1), int(x2), int(y2)
+    return ix1, iy1, ix2, iy2
+
+
 def _bird_expanded_bbox(
     bird: Dict, img_w: int, img_h: int, margin_ratio: float
 ) -> Tuple[int, int, int, int]:
@@ -1648,11 +1681,12 @@ def _bird_expanded_bbox(
     bh = y2 - y1
     mx = int(bw * margin_ratio)
     my = int(bh * margin_ratio)
-    ex1 = max(0, x1 - mx)
-    ey1 = max(0, y1 - my)
-    ex2 = min(img_w, x2 + mx)
-    ey2 = min(img_h, y2 + my)
-    return ex1, ey1, ex2, ey2
+    ex1 = float(max(0, x1 - mx))
+    ey1 = float(max(0, y1 - my))
+    ex2 = float(min(img_w, x2 + mx))
+    ey2 = float(min(img_h, y2 + my))
+    # 强制宽高比在 [9:16, 16:9]，与多体合图一致
+    return _apply_aspect_constraint(ex1, ey1, ex2, ey2, img_w, img_h)
 
 
 def _bird_taxonomy_for_crop(bird: Dict) -> Tuple[str, str, str, Dict, bool]:
@@ -1712,51 +1746,61 @@ def _union_boxes_margin_aspect(
     fy1 = float(y1 - py)
     fx2 = float(x2 + px)
     fy2 = float(y2 + py)
-    W = fx2 - fx1
-    H = fy2 - fy1
-    ar = W / H if H > 0 else _CROP_ASPECT_MAX_W_H
-    cx = (fx1 + fx2) * 0.5
-    cy = (fy1 + fy2) * 0.5
-    if ar > _CROP_ASPECT_MAX_W_H:
-        new_h = W / _CROP_ASPECT_MAX_W_H
-        fy1 = cy - new_h * 0.5
-        fy2 = cy + new_h * 0.5
-    elif ar < _CROP_ASPECT_MIN_W_H:
-        new_w = H * _CROP_ASPECT_MIN_W_H
-        fx1 = cx - new_w * 0.5
-        fx2 = cx + new_w * 0.5
-    ix1 = int(max(0, min(img_w - 1, np.floor(fx1))))
-    iy1 = int(max(0, min(img_h - 1, np.floor(fy1))))
-    ix2 = int(max(ix1 + 1, min(img_w, np.ceil(fx2))))
-    iy2 = int(max(iy1 + 1, min(img_h, np.ceil(fy2))))
-    if ix2 <= ix1 or iy2 <= iy1:
-        return None
-    return ix1, iy1, ix2, iy2
+    return _apply_aspect_constraint(fx1, fy1, fx2, fy2, img_w, img_h)
 
 
 def _write_crop_jpeg_with_exif(
     crop_bgr: np.ndarray, out_path: str, source_path: str
 ) -> None:
+    """保存裁剪 JPEG 并从源文件复制关键 EXIF（拍摄参数、GPS）。
+
+    DNG/ARW 的完整 EXIF 含 piexif.dump 无法序列化的标签（如 DNG 特有 IFD），
+    因此只提取水印和查看所需的关健字段构建最小 EXIF，确保裁剪图始终带参数。
+    """
     cv2.imwrite(out_path, crop_bgr, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if not source_path:
         return
     try:
         import piexif
         from PIL import Image as PIL_Image
-
-        try:
-            exif_dict = piexif.load(source_path)
-            if "0th" in exif_dict:
-                exif_dict["GPS"] = exif_dict.get("GPS", {})
-                if 271 in exif_dict["0th"]:
-                    exif_dict["0th"][271] = b"BirdDetection-Cropped"
-            exif_bytes = piexif.dump(exif_dict)
-            crop_pil = PIL_Image.open(out_path)
-            crop_pil.save(out_path, "JPEG", exif=exif_bytes, quality=95)
-        except Exception:
-            pass
     except ImportError:
-        pass
+        return
+
+    try:
+        src = piexif.load(source_path)
+    except Exception as e:
+        print(f"[crop exif] piexif.load 失败 {source_path}: {e}", flush=True)
+        return
+
+    # 构建最小 EXIF，只保留水印/查看所需的关键字段
+    # 完整 DNG/ARW EXIF 含 piexif.dump 无法序列化的标签会直接报错
+    minimal = {
+        "0th": {},
+        "Exif": {},
+        "GPS": src.get("GPS", {}) or {},
+        "1st": {},
+        "Interop": {},
+        "thumbnail": None,
+    }
+    # 0th IFD: Make(271), Model(272), DateTime(306), Software(305)
+    for tag in (271, 272, 274, 282, 283, 306):
+        v = src.get("0th", {}).get(tag)
+        if v is not None:
+            minimal["0th"][tag] = v
+    # Exif IFD: ExposureTime(33434), FNumber(33437), ExposureProgram(34850),
+    #           ISO(34855), DateTimeOriginal(36867), DateTimeDigitized(36868),
+    #           FocalLength(37386), LensModel(42034)
+    for tag in (33434, 33437, 34850, 34855, 34864, 34866, 36864, 36867, 36868, 37386, 42034):
+        v = src.get("Exif", {}).get(tag)
+        if v is not None:
+            minimal["Exif"][tag] = v
+
+    try:
+        exif_bytes = piexif.dump(minimal)
+        crop_pil = PIL_Image.open(out_path)
+        crop_pil.save(out_path, "JPEG", exif=exif_bytes, quality=95)
+    except Exception as e:
+        print(f"[crop exif] piexif.dump/save 失败 {out_path}: {e}", flush=True)
 
 
 def _save_dir_for_top_species_across_birds(
@@ -1958,7 +2002,7 @@ class BirdAndEyeDetector:
     @staticmethod
     def read_raw_thumbnail(file_path: str) -> np.ndarray:
         """
-        读取RAW文件的内置缩略图
+        读取RAW文件（全 demosaic，不取嵌入式 JPEG 缩略图）
 
         Args:
             file_path: RAW文件路径
@@ -1969,7 +2013,7 @@ class BirdAndEyeDetector:
         if not _RAWPY_AVAILABLE:
             raise RuntimeError("rawpy未安装，无法处理RAW文件。请运行: pip install rawpy")
         try:
-            return read_raw_bgr(file_path, half_size=True)
+            return read_raw_bgr_full(file_path, half_size=False)
         except Exception as e:
             raise RuntimeError(f"无法读取RAW文件 {file_path}: {e}")
 
@@ -1985,7 +2029,7 @@ class BirdAndEyeDetector:
             OpenCV格式的图像 (BGR)
         """
         if BirdAndEyeDetector.is_raw_file(file_path):
-            print(f"  检测到RAW文件，使用内置缩略图")
+            print(f"  检测到RAW文件，使用全 demosaic")
             return BirdAndEyeDetector.read_raw_thumbnail(file_path)
         else:
             # 普通图片格式
@@ -2364,6 +2408,7 @@ class BirdAndEyeDetector:
             "total_eyes":  len(all_eyes),
             "province":    province,
             "city":        city,
+            "original_image": original_image,  # 未标注原图，供 crop_species 复用避免重复加载
         }
 
         return result_image, results
@@ -2556,7 +2601,7 @@ class BirdAndEyeDetector:
         output_dir: str,
         source_path: str = "",
         counter: Optional[Dict] = None,
-        margin_ratio: float = 1.0,
+        margin_ratio: float = 0.5,
         province: Optional[str] = None,
         city: Optional[str] = None,
     ) -> List[str]:
@@ -2749,7 +2794,7 @@ def process_folder(
     enable_eye: bool = False,
     crop_mode: bool = False,
     crop_dir: str = "",
-    margin_ratio: float = 1.0,
+    margin_ratio: float = 0.5,
     geo_mode: str = SPECIES_GEO_MODE_AUTO,
     species_conf: float = 0.5,
     location: Optional[str] = None,
@@ -2976,8 +3021,8 @@ if __name__ == "__main__":
         help="裁剪图根目录（默认为 <output>/crops）",
     )
     parser.add_argument(
-        "--margin", type=float, default=1.0,
-        help="裁剪边距倍率（默认 1.0 = 四周各扩展 100%%框尺寸；0.5 = 50%%）",
+        "--margin", type=float, default=0.5,
+        help="裁剪边距倍率（默认 0.5 = 四周各扩展 50%%框尺寸；1.0 = 100%%）",
     )
 
     args = parser.parse_args()
