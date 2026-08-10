@@ -3368,7 +3368,7 @@ class BirdDetectionGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "写入失败", str(e))
 
-    def _gpx_target_photo_folder(self) -> str:
+    def _track_map_photo_folder(self) -> str:
         override = ""
         if hasattr(self, "track_map_folder_override_input"):
             override = self.track_map_folder_override_input.text().strip()
