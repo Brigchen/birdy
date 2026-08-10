@@ -1577,7 +1577,10 @@ def _collect_lonlats(
 
 _GPS_CLUSTER_MAX_COLS = 5
 _GPS_DOT_COLOR = "#E67E22"
-_THUMB_GAP_RATIO = 0.2  # 圆间距 = 直径的 1/5
+# 同行鸟图圆心距 = 直径 + gap；gap 为直径的 2/5（相对原先 1/5 再加大 1/5）
+_THUMB_GAP_RATIO = 0.4
+# 定位圆点相对历史默认直径放大 100%（面积 ×4）
+_GPS_DOT_AREA_SCALE = 4.0
 
 
 @dataclass
@@ -1674,6 +1677,7 @@ def _cluster_grid_metrics(
     d = float(thumb_diameter)
     gap = d * _THUMB_GAP_RATIO
     col_step = d + gap
+    # 鸟名统一在上方，行距需预留鸟名高度
     label_h = max(float(label_fs) * 1.35, d * 0.28)
     row_step = d + gap + label_h
     lead_px = gap + d * 0.5
@@ -1698,7 +1702,7 @@ def _layout_cluster_thumb_grid(
     thumb_diameter: int,
     label_fs: float,
 ) -> Tuple[List[Tuple[float, float]], List[int]]:
-    """GPS 圆点左/右侧网格；中心距 = 直径 + 直径/5，行距含鸟名高度。"""
+    """GPS 圆点左/右侧网格；中心距 = 直径 + 直径×2/5，行距含上方鸟名高度。"""
     if count <= 0:
         return [], []
     ax_x, ax_y = anchor
@@ -1790,11 +1794,10 @@ def _clamp_positions_into_axes(
 def _cluster_label_xytext(
     idx: int, label_fs: float, thumb_diameter: int
 ) -> Tuple[float, float, str, str]:
-    """鸟名在鸟图上方/下方交错，减轻文字重叠。"""
-    gap = max(float(label_fs) * 0.65, float(thumb_diameter) * 0.24)
-    if idx % 2 == 0:
-        return 0.0, gap, "center", "bottom"
-    return 0.0, -gap, "center", "top"
+    """鸟名统一放在鸟图上方。"""
+    _ = idx
+    gap = max(float(label_fs) * 0.65, float(thumb_diameter) * 0.28)
+    return 0.0, gap, "center", "bottom"
 
 
 def _label_box_axes_frac_at(
@@ -1896,7 +1899,7 @@ def _add_photo_markers(
         ax.scatter(
             [ax_x],
             [ax_y],
-            s=max(18, thumb_diameter // 2),
+            s=max(18, thumb_diameter // 2) * _GPS_DOT_AREA_SCALE,
             c=_GPS_DOT_COLOR,
             edgecolors="white",
             linewidths=0.7,
