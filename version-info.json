@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.34",
+  "version": "2.0.35",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-08-03",
+  "release_date": "2026-08-10",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,10 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.35": [
+      "轨迹图：取消 GPX 时强制使用照片 EXIF GPS，进度/日志不再提示 GPX 匹配",
+      "GPS：「批量写入照片 GPS」按写入方式执行——指定地点统一经纬度或 GPX 时间匹配"
+    ],
     "2.0.34": [
       "裁剪规格调整：(1) 单实例裁剪新增宽高比约束 [9:16, 16:9]，与多体合图一致。提取通用函数 _apply_aspect_constraint（以中心点为锚点：过宽则加高，过高则加宽），_bird_expanded_bbox 扩边后调用该函数约束宽高比，_union_boxes_margin_aspect 也复用该函数消除重复代码。(2) 单实例 margin_ratio 默认值从 1.0 调整为 0.5（四周各扩 50% 框尺寸），crop_species / process_directory / argparse --margin 三处同步修改"
     ],

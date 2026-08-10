@@ -980,12 +980,16 @@ class WorkerThread(QThread):
                             config.get("output_folder", ""), "Screened_images"
                         )
                     gpx_paths = _config_gpx_paths(config)
+                    use_gpx = bool(config.get("track_map_use_gpx", True))
+                    use_exif = bool(config.get("track_map_use_exif", True))
+                    if not use_gpx:
+                        use_exif = True
                     written = generate_track_maps(
                         reports_dir=reports_dir,
-                        gpx_paths=gpx_paths or None,
+                        gpx_paths=gpx_paths if use_gpx else None,
                         photo_folder=photo_folder,
-                        use_gpx_track=bool(config.get("track_map_use_gpx", True)),
-                        use_exif_gps=bool(config.get("track_map_use_exif", True)),
+                        use_gpx_track=use_gpx,
+                        use_exif_gps=use_exif,
                         radius_km=float(config.get("track_map_radius_km", 1.0)),
                         include_elevation=bool(
                             config.get("track_map_include_elevation", True)
@@ -1222,6 +1226,11 @@ class TrackMapThread(QThread):
         import time
 
         self.log_line.emit("轨迹图：已启动生成子进程…")
+        use_gpx_track = bool(self._kwargs.get("use_gpx_track", True))
+        if use_gpx_track:
+            self.log_line.emit("轨迹图：GPX 时间匹配模式")
+        else:
+            self.log_line.emit("轨迹图：照片 EXIF GPS 模式（不使用 GPX）")
         src_dir = Path(__file__).resolve().parent
         try:
             with tempfile.TemporaryDirectory(prefix="birdy_trackmap_") as td:
@@ -1255,12 +1264,15 @@ class TrackMapThread(QThread):
                     **popen_kw,
                 )
                 last_ping = time.monotonic()
+                ping_msg = (
+                    "轨迹图：仍在生成中（匹配 GPX、下载底图、绘制 PNG）…"
+                    if use_gpx_track
+                    else "轨迹图：仍在生成中（读取照片 GPS、下载底图、绘制 PNG）…"
+                )
                 while proc.poll() is None:
                     now = time.monotonic()
                     if now - last_ping >= 3.0:
-                        self.log_line.emit(
-                            "轨迹图：仍在生成中（匹配 GPX、下载底图、绘制 PNG）…"
-                        )
+                        self.log_line.emit(ping_msg)
                         last_ping = now
                     time.sleep(0.25)
                 stdout, stderr = proc.communicate(timeout=30)
@@ -1939,7 +1951,7 @@ class BirdDetectionGUI(QMainWindow):
         geo_gps_hint = QLabel(
             "GPS 写入二选一（勾选「加入主流程」后自动执行）："
             "指定地点统一经纬度，或 GPX 按拍摄时间匹配。"
-            "下方「按 GPX 时间批量写入」可随时单独对任意文件夹执行。"
+            "下方「批量写入照片 GPS」可随时单独对任意文件夹执行（方式与上方写入方式一致）。"
         )
         geo_gps_hint.setWordWrap(True)
         geo_gps_hint.setStyleSheet("color: #555; font-size: 9pt;")
@@ -2065,12 +2077,14 @@ class BirdDetectionGUI(QMainWindow):
         )
         gpx_form.addRow("", self.gpx_apply_screened_checkbox)
 
-        self.gpx_apply_btn = QPushButton("按 GPX 时间批量写入照片 GPS")
+        self.gpx_apply_btn = QPushButton("批量写入照片 GPS")
         self.gpx_apply_btn.setToolTip(
-            "不依赖「开始处理」：对所选文件夹按 GPX 与 EXIF 时间（上方时区）\n"
-            "插值经纬度并写入 JPEG，用于补写或处理其他目录。"
+            "不依赖「开始处理」：对所选文件夹批量写入 GPS。\n"
+            "写入方式与上方「写入方式」一致：\n"
+            "· 指定地点统一写入 → 使用上方经纬度\n"
+            "· GPX 按拍摄时间匹配 → 使用 GPX 与 EXIF 时间（上方时区）"
         )
-        self.gpx_apply_btn.clicked.connect(self._apply_gpx_gps_to_photos)
+        self.gpx_apply_btn.clicked.connect(self._apply_batch_gps_to_photos)
         gpx_form.addRow("", self.gpx_apply_btn)
 
         self.gps_gpx_group.setLayout(gpx_form)
@@ -2593,17 +2607,23 @@ class BirdDetectionGUI(QMainWindow):
         self.track_map_use_gpx_checkbox.setChecked(
             self.config.get("track_map_use_gpx", True)
         )
+        self.track_map_use_gpx_checkbox.stateChanged.connect(
+            self._on_track_map_use_gpx_changed
+        )
         track_layout.addRow("", self.track_map_use_gpx_checkbox)
 
-        self.track_map_use_exif_checkbox = QCheckBox("补充使用照片 EXIF 中的 GPS")
+        self.track_map_use_exif_checkbox = QCheckBox("使用照片 EXIF 中的 GPS")
         self.track_map_use_exif_checkbox.setChecked(
             self.config.get("track_map_use_exif", True)
         )
         self.track_map_use_exif_checkbox.setToolTip(
-            "仅在不使用 GPX 轨迹时生效。\n"
-            "使用 GPX 时：仅绘制与 GPX 时间在 30 分钟内匹配的照片，其余不标注。"
+            "不使用 GPX 时：从鸟图 EXIF 读取 GPS 绘制标记。\n"
+            "使用 GPX 时：与 GPX 插值位置接近时优先采用 EXIF GPS。"
         )
         track_layout.addRow("", self.track_map_use_exif_checkbox)
+        self._on_track_map_use_gpx_changed(
+            Qt.Checked if self.track_map_use_gpx_checkbox.isChecked() else Qt.Unchecked
+        )
 
         self.track_map_source_combo = QComboBox()
         self.track_map_source_combo.addItem("分类归档（物种目录）", "classification")
@@ -3272,14 +3292,10 @@ class BirdDetectionGUI(QMainWindow):
                 return os.path.normpath(os.path.join(out, "Screened_images"))
         return os.path.normpath(self.image_folder_input.text().strip())
 
-    def _apply_gpx_gps_to_photos(self) -> None:
-        gpx_paths = self._gpx_paths_from_ui()
-        if not gpx_paths:
-            QMessageBox.warning(self, "提示", "请先添加至少一个有效的 GPX 文件。")
-            return
+    def _apply_batch_gps_to_photos(self) -> None:
+        self._sync_config_from_ui()
         folder = self._gpx_target_photo_folder()
         if not folder or not os.path.isdir(folder):
-            # 显示实际检查的路径，帮助诊断
             out_raw = self.output_folder_input.text().strip() or self.config.get(
                 "output_folder", ""
             )
@@ -3293,6 +3309,46 @@ class BirdDetectionGUI(QMainWindow):
                 "提示",
                 f"目标照片目录不存在。\n{detail}",
             )
+            return
+
+        use_fixed = self.gps_mode_fixed_radio.isChecked()
+        if use_fixed:
+            try:
+                lat = float(self.lat_input.text().strip())
+                lon = float(self.lon_input.text().strip())
+            except ValueError:
+                QMessageBox.warning(self, "提示", "请填写有效的纬度与经度。")
+                return
+            if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+                QMessageBox.warning(
+                    self, "提示", "纬度须在 [-90, 90]，经度须在 [-180, 180]。"
+                )
+                return
+            try:
+                alt = float(self.config.get("gps_altitude", 0) or 0)
+            except (TypeError, ValueError):
+                alt = 0.0
+            try:
+                count = batch_write_gps_exif(
+                    folder,
+                    latitude=lat,
+                    longitude=lon,
+                    altitude=alt,
+                )
+                msg = (
+                    f"目录: {folder}\n"
+                    f"统一坐标: {lat:.6f}, {lon:.6f}\n"
+                    f"成功写入 GPS: {count}"
+                )
+                self.add_log("指定地点→EXIF GPS:\n" + msg)
+                QMessageBox.information(self, "写入完成", msg)
+            except Exception as e:
+                QMessageBox.critical(self, "写入失败", str(e))
+            return
+
+        gpx_paths = self._gpx_paths_from_ui()
+        if not gpx_paths:
+            QMessageBox.warning(self, "提示", "已选 GPX 模式，请先添加至少一个有效的 GPX 文件。")
             return
         try:
             stats = batch_write_gps_from_gpx(
@@ -3312,7 +3368,7 @@ class BirdDetectionGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "写入失败", str(e))
 
-    def _track_map_photo_folder(self) -> str:
+    def _gpx_target_photo_folder(self) -> str:
         override = ""
         if hasattr(self, "track_map_folder_override_input"):
             override = self.track_map_folder_override_input.text().strip()
@@ -3481,7 +3537,10 @@ class BirdDetectionGUI(QMainWindow):
         if written.get("elevation_png"):
             lines.append(written["elevation_png"])
         align_desc = written.get("time_align_desc")
-        if align_desc:
+        coord_src = written.get("map_coord_source", "")
+        if coord_src == "exif":
+            lines.append("坐标来源：照片 EXIF GPS")
+        elif align_desc:
             lines.append(f"时间匹配：{align_desc}")
         exif_pos = written.get("map_pos_exif_gps")
         if exif_pos:
@@ -3491,9 +3550,12 @@ class BirdDetectionGUI(QMainWindow):
         if skipped_lines:
             lines.extend(skipped_lines)
         elif sk and int(sk) > 0:
-            lines.append(
-                f"未绘制 {sk} 张：与 GPX 时间差超过 1 小时或无拍摄时间"
-            )
+            if coord_src == "exif":
+                lines.append(f"未绘制 {sk} 张：照片中无 EXIF GPS")
+            else:
+                lines.append(
+                    f"未绘制 {sk} 张：与 GPX 时间差超过 1 小时或无拍摄时间"
+                )
         self.add_log("\n".join(lines))
         if preview and main_png and os.path.isfile(main_png):
             map_title = written.get("map_title", "")
@@ -3535,6 +3597,9 @@ class BirdDetectionGUI(QMainWindow):
                 self, "提示", "已勾选使用 GPX，请添加至少一个有效的 GPX 文件。"
             )
             return
+        use_exif = (
+            True if not use_gpx else self.track_map_use_exif_checkbox.isChecked()
+        )
 
         reports_dir = _reports_dir_from_config(self.config)
         kwargs: Dict[str, Any] = dict(
@@ -3542,7 +3607,7 @@ class BirdDetectionGUI(QMainWindow):
             gpx_paths=gpx_paths if use_gpx else None,
             photo_folder=photo_folder,
             use_gpx_track=use_gpx,
-            use_exif_gps=self.track_map_use_exif_checkbox.isChecked(),
+            use_exif_gps=use_exif,
             radius_km=float(self.track_map_radius_input.value()),
             include_elevation=self.track_map_elevation_checkbox.isChecked(),
             basemap_style=str(
@@ -3705,6 +3770,16 @@ class BirdDetectionGUI(QMainWindow):
     def _gpx_match_gpx_tz(self) -> str:
         return read_combo_timezone(self.gpx_match_gpx_tz_combo)
 
+    def _on_track_map_use_gpx_changed(self, state: int) -> None:
+        use_gpx = state == Qt.Checked
+        if not use_gpx:
+            self.track_map_use_exif_checkbox.setChecked(True)
+        self.track_map_use_exif_checkbox.setEnabled(use_gpx)
+        if use_gpx:
+            self.track_map_use_exif_checkbox.setText("补充使用照片 EXIF 中的 GPS")
+        else:
+            self.track_map_use_exif_checkbox.setText("使用照片 EXIF 中的 GPS")
+
     def _on_gps_write_mode_changed(self, *_args) -> None:
         """主流程 GPS 二选一：切换时启用/禁用对应表单项。"""
         use_fixed = self.gps_mode_fixed_radio.isChecked()
@@ -3717,6 +3792,15 @@ class BirdDetectionGUI(QMainWindow):
             self.location_query_btn,
         ):
             w.setEnabled(use_fixed)
+        if hasattr(self, "gpx_apply_btn"):
+            if use_fixed:
+                self.gpx_apply_btn.setToolTip(
+                    "对所选文件夹写入上方统一经纬度（不依赖「开始处理」）。"
+                )
+            else:
+                self.gpx_apply_btn.setToolTip(
+                    "对所选文件夹按 GPX 与 EXIF 时间（上方时区）插值写入 GPS。"
+                )
 
     def _on_gps_write_changed(self, state: int):
         """GPS 写入开关状态变化"""
@@ -5448,6 +5532,9 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.track_map_use_exif_checkbox.setChecked(
             self.config.get("track_map_use_exif", True)
+        )
+        self._on_track_map_use_gpx_changed(
+            Qt.Checked if self.track_map_use_gpx_checkbox.isChecked() else Qt.Unchecked
         )
         _tsrc = self.config.get("track_map_photo_source", "classification")
         _tsi = self.track_map_source_combo.findData(_tsrc)

@@ -60,7 +60,7 @@ PREVIEW_HEIGHT_PX = EXPORT_HEIGHT_PX
 PREVIEW_DPI = EXPORT_DPI
 
 # 照片 EXIF 时刻与 GPX 时间轴相差超过此值（秒）则不绘制记录点
-DEFAULT_GPX_MATCH_MAX_DELTA_S = 30 * 60
+DEFAULT_GPX_MATCH_MAX_DELTA_S = 60 * 60  # 1 小时：GPX 开晚了/关早了仍可按最近端点匹配
 # 正式导出 PNG 时鸟图标注上限（避免画布过大 + 大量缩略图导致内存崩溃）
 EXPORT_MAX_MARKERS = 150
 # 预览模式鸟图标注上限
@@ -446,12 +446,12 @@ MAP_MARGIN_SUMMARY_X = 1.0 / 15.0
 # 海拔内嵌面板占用 map_ax 底部约 [0.03, 0.17]（transAxes）
 ELEV_PANEL_TOP_AXES = 0.17
 # 海拔外框内层绘图区 [left, bottom, width, height]
-_ELEV_INNER_RECT = (0.02, 0.12, 0.96, 0.80)
+_ELEV_INNER_RECT = (0.04, 0.1, 0.92, 0.80)
 # 海拔 data 区相对轨迹 x/y 范围的留白比例
-_ELEV_X_LEFT_FRAC = 0.0
-_ELEV_X_RIGHT_FRAC = 0.09
-_ELEV_Y_BOTTOM_FRAC = 0.04
-_ELEV_Y_TOP_FRAC = 0.18
+_ELEV_X_LEFT_FRAC = 0.00
+_ELEV_X_RIGHT_FRAC = 0.00
+_ELEV_Y_BOTTOM_FRAC = 0.02
+_ELEV_Y_TOP_FRAC = 0.1
 # 鸟种名距海拔绘图区边缘 ≥ 宽/高的 1/50
 _ELEV_LABEL_MARGIN_FRAC = 1 / 50.0
 SUMMARY_GAP_AXES = 0.014
@@ -1205,13 +1205,18 @@ def _label_x_margin_overflow(ax, left: float, right: float) -> float:
     return over
 
 
+# 鸟名相对圆形鸟图边缘的基准间距（相对历史默认值减半）
+_SPECIES_LABEL_GAP_SCALE = 0.5
+
+
 def _species_label_base_off(
     ax, dx: float, dy: float, r_thumb: float, label_fs: float, thumb_diameter: int
 ) -> float:
     edge_pt = _data_span_to_points(ax, dx, dy, r_thumb * 1.08)
+    s = _SPECIES_LABEL_GAP_SCALE
     return max(
-        thumb_diameter * 0.30,
-        edge_pt * 0.78 + max(2.0, label_fs * 0.12),
+        thumb_diameter * 0.30 * s,
+        edge_pt * 0.78 * s + max(2.0, label_fs * 0.12) * s,
     )
 
 
@@ -1244,7 +1249,7 @@ def _layout_species_labels(
             < r_thumb * 2.6
         ),
     )
-    out: List[Tuple[int, float, float]] = [(1, 12.0, 0.0)] * n
+    out: List[Tuple[int, float, float]] = [(1, 6.0, 0.0)] * n
     mults = (1.0, 1.12, 1.28, 1.45, 1.65, 1.9, 2.2, 2.55, 3.0, 3.5, 4.0, 4.6, 5.2)
     dy_offs = (0, 6, -6, 12, -12, 18, -18, 24, -24, 30, -30, 36, -36, 42, -42)
     passes = _label_layout_refine_passes(n)
@@ -2496,7 +2501,7 @@ def _layout_elevation_species_labels(
     layouts: List[Tuple[float, float, float, float, str]] = []
     for i, (ad, ae, name) in enumerate(markers):
         sign = 1.0 if i % 2 == 0 else -1.0
-        le0 = min(max(ae + sign * y_rng * 0.05, y_min + pad_y), y_max - pad_y)
+        le0 = min(max(ae + sign * y_rng * 0.025, y_min + pad_y), y_max - pad_y)
         layouts.append((ad, ae, ad, le0, name))
 
     order = sorted(range(n), key=lambda i: markers[i][0])
@@ -2785,8 +2790,8 @@ def _style_elevation_inset_ax(
     )
 
     ax.text(
-        0.03,
-        0.97,
+        0.0,
+        1.06,
         "海拔(m)",
         transform=ax.transAxes,
         fontsize=label_fs,
@@ -2797,8 +2802,8 @@ def _style_elevation_inset_ax(
         zorder=5,
     )
     ax.text(
-        0.97,
-        0.06,
+        1.00,
+        0.02,
         "里程(km)",
         transform=ax.transAxes,
         fontsize=label_fs,
@@ -3103,6 +3108,12 @@ def generate_track_maps(
     """
     _configure_matplotlib_cjk()
 
+    # 未使用 GPX 时强制走照片 EXIF GPS，并忽略传入的 GPX 路径
+    if not use_gpx_track:
+        use_exif_gps = True
+        gpx_path = None
+        gpx_paths = None
+
     reports = Path(reports_dir).expanduser().resolve()
     reports.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -3143,7 +3154,7 @@ def generate_track_maps(
             gpx_tz=gpx_tz,
         )
         skipped_reason = (
-            "与 GPX 无法对应（与轨迹时刻相差超过 30 分钟、无拍摄时间或无法插值位置）"
+            "与 GPX 无法对应（与轨迹时刻相差超过 1 小时、无拍摄时间或无法插值位置）"
         )
         by_path = {_photo_path_key(m["path"]): m for m in matched_records}
         enriched: List[BirdPhoto] = []
@@ -3289,6 +3300,7 @@ def generate_track_maps(
         "track_png": str(out_path),
         "map_basemap": basemap_status,
         "map_title": title,
+        "map_coord_source": "gpx" if (track and use_gpx_track) else "exif",
     }
     if time_align is not None:
         written["time_align_desc"] = describe_time_alignment(time_align)

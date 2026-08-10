@@ -3108,6 +3108,12 @@ def generate_track_maps(
     """
     _configure_matplotlib_cjk()
 
+    # 未使用 GPX 时强制走照片 EXIF GPS，并忽略传入的 GPX 路径
+    if not use_gpx_track:
+        use_exif_gps = True
+        gpx_path = None
+        gpx_paths = None
+
     reports = Path(reports_dir).expanduser().resolve()
     reports.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -3294,6 +3300,7 @@ def generate_track_maps(
         "track_png": str(out_path),
         "map_basemap": basemap_status,
         "map_title": title,
+        "map_coord_source": "gpx" if (track and use_gpx_track) else "exif",
     }
     if time_align is not None:
         written["time_align_desc"] = describe_time_alignment(time_align)
