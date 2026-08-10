@@ -11,6 +11,7 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 from gpx_track.track_map import (  # noqa: E402
+    _cluster_grid_metrics,
     _cluster_label_xytext,
     _gps_cluster_key,
     _layout_cluster_thumb_grid,
@@ -59,3 +60,26 @@ def test_cluster_label_alternates_vertical():
     b = _cluster_label_xytext(1, 10.0, 44)
     assert a[3] == "bottom" and b[3] == "top"
     assert a[1] > 0 and b[1] < 0
+
+
+def test_cluster_grid_spacing_uses_diameter_plus_fifth():
+    d = 50
+    col_step, row_step, _, gap, _ = _cluster_grid_metrics(d, 10.0)
+    assert gap == d * 0.2
+    assert col_step == d + gap
+    assert row_step > col_step
+
+
+def test_layout_cluster_row_first_indices():
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    positions, row_first = _layout_cluster_thumb_grid(
+        ax, (0.2, 0.5), 7, 1, 40, 9.0
+    )
+    plt.close(fig)
+    assert len(positions) == 7
+    assert row_first == [0, 5]
+    assert positions[0][0] < positions[1][0] < positions[2][0]
