@@ -1,18 +1,110 @@
 # -*- coding: utf-8 -*-
-"""高德地图底图：使用项目 Web 服务 Key（amap_api_config.json）加载瓦片并拼接。"""
+"""高德地图底图：使用项目 Web 服务 Key（amap_api_config.json）加载瓦片并拼接。
+
+矢量主题（幻影黑/月光银等）对应 JS API 的 amap://styles/*；官方未提供同款栅格瓦片，
+故在标准矢量底图上做风格化调色以接近官方主题观感。卫星有/无路网使用真实瓦片图层。
+"""
 
 from __future__ import annotations
 
 import math
 from io import BytesIO
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageOps
 
 TILE_SIZE = 256
 MAX_TILES_PER_AXIS = 40
 TILE_TIMEOUT = 12
+
+# (内部 id, 下拉显示名) — 与高德 JS mapStyle 命名对齐
+BASEMAP_STYLE_CHOICES: Tuple[Tuple[str, str], ...] = (
+    ("normal", "标准（默认）"),
+    ("dark", "幻影黑"),
+    ("light", "月光银"),
+    ("whitesmoke", "远山黛"),
+    ("fresh", "草色青"),
+    ("grey", "雅士灰"),
+    ("graffiti", "涂鸦"),
+    ("macaron", "马卡龙"),
+    ("blue", "靛青蓝"),
+    ("darkblue", "极夜蓝"),
+    ("wine", "酱籽"),
+    ("satellite", "无路网卫星"),
+    ("satellite_roads", "有路网卫星"),
+)
+
+_VECTOR_THEME_IDS = frozenset(
+    {
+        "normal",
+        "digital",  # 旧配置兼容
+        "dark",
+        "light",
+        "whitesmoke",
+        "fresh",
+        "grey",
+        "graffiti",
+        "macaron",
+        "blue",
+        "darkblue",
+        "wine",
+    }
+)
+_DARK_THEME_IDS = frozenset({"dark", "darkblue", "wine", "grey"})
+_SATELLITE_IDS = frozenset(
+    {
+        "satellite",
+        "satellite_roads",
+        "sat",
+        "影像",
+        "卫星",
+        "无路网卫星",
+        "有路网卫星",
+    }
+)
+
+
+def normalize_basemap_style(style: Optional[str]) -> str:
+    """归一化底图风格 id。"""
+    s = (style or "normal").strip().lower()
+    aliases = {
+        "digital": "normal",
+        "amap://styles/normal": "normal",
+        "amap://styles/dark": "dark",
+        "amap://styles/light": "light",
+        "amap://styles/whitesmoke": "whitesmoke",
+        "amap://styles/fresh": "fresh",
+        "amap://styles/grey": "grey",
+        "amap://styles/graffiti": "graffiti",
+        "amap://styles/macaron": "macaron",
+        "amap://styles/blue": "blue",
+        "amap://styles/darkblue": "darkblue",
+        "amap://styles/wine": "wine",
+        "sat": "satellite",
+        "影像": "satellite",
+        "卫星": "satellite",
+        "无路网卫星": "satellite",
+        "有路网卫星": "satellite_roads",
+        "satellite_road": "satellite_roads",
+        "sat_roads": "satellite_roads",
+    }
+    s = aliases.get(s, s)
+    if s.startswith("amap://styles/"):
+        s = s.split("/")[-1]
+    known = {cid for cid, _ in BASEMAP_STYLE_CHOICES}
+    return s if s in known else "normal"
+
+
+def is_satellite_basemap_style(style: Optional[str]) -> bool:
+    s = normalize_basemap_style(style)
+    return s in ("satellite", "satellite_roads")
+
+
+def is_dark_basemap_style(style: Optional[str]) -> bool:
+    """深色底图：标题/标注宜用浅色字。"""
+    s = normalize_basemap_style(style)
+    return s in _DARK_THEME_IDS or is_satellite_basemap_style(s)
 
 
 def get_effective_amap_key() -> str:
@@ -30,19 +122,140 @@ def wgs84_to_map_lonlat(lon: float, lat: float) -> Tuple[float, float]:
     return glon, glat
 
 
-def _tile_url(x: int, y: int, z: int, style: str, api_key: str) -> str:
+def _vector_tile_url(x: int, y: int, z: int, api_key: str) -> str:
     sub = (x + y) % 4 + 1
     key_q = f"&key={api_key}" if api_key else ""
-    s = (style or "digital").lower()
-    if s in ("satellite", "sat", "影像", "卫星"):
-        return (
-            f"https://webst0{sub}.is.autonavi.com/appmaptile"
-            f"?style=6&x={x}&y={y}&z={z}{key_q}"
-        )
     return (
         f"https://webrd0{sub}.is.autonavi.com/appmaptile"
         f"?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}{key_q}"
     )
+
+
+def _satellite_tile_url(x: int, y: int, z: int, api_key: str) -> str:
+    sub = (x + y) % 4 + 1
+    key_q = f"&key={api_key}" if api_key else ""
+    return (
+        f"https://webst0{sub}.is.autonavi.com/appmaptile"
+        f"?style=6&x={x}&y={y}&z={z}{key_q}"
+    )
+
+
+def _road_overlay_tile_url(x: int, y: int, z: int, api_key: str) -> str:
+    """卫星路网注记层（含透明通道，可叠在影像上）。"""
+    sub = (x + y) % 4 + 1
+    key_q = f"&key={api_key}" if api_key else ""
+    return (
+        f"https://webst0{sub}.is.autonavi.com/appmaptile"
+        f"?style=8&x={x}&y={y}&z={z}{key_q}"
+    )
+
+
+def _tile_urls_for_style(
+    x: int, y: int, z: int, style: str, api_key: str
+) -> List[str]:
+    s = normalize_basemap_style(style)
+    if s == "satellite":
+        return [_satellite_tile_url(x, y, z, api_key)]
+    if s == "satellite_roads":
+        return [
+            _satellite_tile_url(x, y, z, api_key),
+            _road_overlay_tile_url(x, y, z, api_key),
+        ]
+    return [_vector_tile_url(x, y, z, api_key)]
+
+
+def _download_tile(session, url: str) -> Image.Image:
+    r = session.get(url, timeout=TILE_TIMEOUT)
+    r.raise_for_status()
+    return Image.open(BytesIO(r.content)).convert("RGBA")
+
+
+def _compose_tile_layers(layers: Sequence[Image.Image]) -> Image.Image:
+    if not layers:
+        return Image.new("RGBA", (TILE_SIZE, TILE_SIZE), (240, 240, 240, 255))
+    out = layers[0]
+    for layer in layers[1:]:
+        if layer.size != out.size:
+            layer = layer.resize(out.size, Image.Resampling.BILINEAR)
+        out = Image.alpha_composite(out, layer)
+    return out
+
+
+def _apply_vector_theme_look(img: Image.Image, style: str) -> Image.Image:
+    """在标准矢量底图上近似高德官方 mapStyle 主题。"""
+    s = normalize_basemap_style(style)
+    if s in ("normal", "satellite", "satellite_roads"):
+        return img
+
+    rgba = img.convert("RGBA")
+    rgb = rgba.convert("RGB")
+    alpha = rgba.getchannel("A")
+
+    if s == "dark":
+        g = ImageOps.grayscale(rgb)
+        inv = ImageOps.invert(g)
+        tinted = ImageOps.colorize(inv, black="#0A1628", white="#A8C4D8")
+        rgb = ImageEnhance.Contrast(tinted).enhance(1.15)
+        rgb = ImageEnhance.Brightness(rgb).enhance(0.92)
+    elif s == "darkblue":
+        g = ImageOps.grayscale(rgb)
+        inv = ImageOps.invert(g)
+        tinted = ImageOps.colorize(inv, black="#020814", white="#6FA8D8")
+        rgb = ImageEnhance.Contrast(tinted).enhance(1.2)
+        rgb = ImageEnhance.Brightness(rgb).enhance(0.88)
+    elif s == "wine":
+        g = ImageOps.grayscale(rgb)
+        inv = ImageOps.invert(g)
+        tinted = ImageOps.colorize(inv, black="#1A080C", white="#D4A090")
+        rgb = ImageEnhance.Contrast(tinted).enhance(1.1)
+        rgb = ImageEnhance.Brightness(rgb).enhance(0.9)
+    elif s == "light":
+        rgb = ImageEnhance.Color(rgb).enhance(0.55)
+        rgb = ImageEnhance.Brightness(rgb).enhance(1.12)
+        rgb = ImageEnhance.Contrast(rgb).enhance(0.92)
+    elif s == "whitesmoke":
+        arr = np.asarray(rgb, dtype=np.float32)
+        grey = arr.mean(axis=2, keepdims=True)
+        arr = grey * 0.72 + arr * 0.28
+        arr[..., 2] = np.clip(arr[..., 2] * 1.04 + 6, 0, 255)
+        arr = np.clip(arr * 1.06 + 8, 0, 255)
+        rgb = Image.fromarray(arr.astype(np.uint8), mode="RGB")
+    elif s == "fresh":
+        arr = np.asarray(rgb, dtype=np.float32)
+        arr[..., 1] = np.clip(arr[..., 1] * 1.18 + 8, 0, 255)
+        arr[..., 0] = np.clip(arr[..., 0] * 0.92, 0, 255)
+        arr[..., 2] = np.clip(arr[..., 2] * 0.95, 0, 255)
+        rgb = Image.fromarray(arr.astype(np.uint8), mode="RGB")
+        rgb = ImageEnhance.Color(rgb).enhance(1.08)
+    elif s == "grey":
+        g = ImageOps.grayscale(rgb)
+        rgb = ImageOps.colorize(g, black="#2A2A2E", white="#E8E8EA")
+        rgb = ImageEnhance.Contrast(rgb).enhance(0.95)
+    elif s == "graffiti":
+        rgb = ImageEnhance.Color(rgb).enhance(1.55)
+        rgb = ImageEnhance.Contrast(rgb).enhance(1.2)
+        arr = np.asarray(rgb, dtype=np.float32)
+        arr[..., 0] = np.clip(arr[..., 0] * 1.06 + 4, 0, 255)
+        rgb = Image.fromarray(arr.astype(np.uint8), mode="RGB")
+    elif s == "macaron":
+        arr = np.asarray(rgb, dtype=np.float32)
+        pastel = np.array([255.0, 230.0, 235.0], dtype=np.float32)
+        arr = arr * 0.62 + pastel * 0.38
+        arr[..., 1] = np.clip(arr[..., 1] * 1.04, 0, 255)
+        rgb = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), mode="RGB")
+        rgb = ImageEnhance.Color(rgb).enhance(0.85)
+        rgb = ImageEnhance.Brightness(rgb).enhance(1.06)
+    elif s == "blue":
+        arr = np.asarray(rgb, dtype=np.float32)
+        arr[..., 2] = np.clip(arr[..., 2] * 1.22 + 12, 0, 255)
+        arr[..., 0] = np.clip(arr[..., 0] * 0.82, 0, 255)
+        arr[..., 1] = np.clip(arr[..., 1] * 0.95 + 4, 0, 255)
+        rgb = Image.fromarray(arr.astype(np.uint8), mode="RGB")
+        rgb = ImageEnhance.Color(rgb).enhance(1.05)
+
+    out = rgb.convert("RGBA")
+    out.putalpha(alpha)
+    return out
 
 
 def _lonlat_to_global_pixel(lon: float, lat: float, zoom: int) -> Tuple[float, float]:
@@ -125,7 +338,7 @@ def fetch_amap_basemap_rgba(
     *,
     width_px: int,
     height_px: int,
-    style: str = "digital",
+    style: str = "normal",
     api_key: Optional[str] = None,
     zoom: Optional[int] = None,
 ) -> Tuple[np.ndarray, Tuple[float, float, float, float]]:
@@ -139,6 +352,8 @@ def fetch_amap_basemap_rgba(
         raise ValueError(
             "高德 API Key 未配置，请编辑 src/amap_api_config.json 填写 api_key"
         )
+
+    style = normalize_basemap_style(style)
 
     lon_min, lon_max, lat_min, lat_max = _pad_bounds(
         lon_min, lon_max, lat_min, lat_max
@@ -183,11 +398,10 @@ def fetch_amap_basemap_rgba(
     failed = 0
     for ty in range(ty0, ty1 + 1):
         for tx in range(tx0, tx1 + 1):
-            url = _tile_url(tx, ty, zoom, style, key)
+            urls = _tile_urls_for_style(tx, ty, zoom, style, key)
             try:
-                r = session.get(url, timeout=TILE_TIMEOUT)
-                r.raise_for_status()
-                tile = Image.open(BytesIO(r.content)).convert("RGBA")
+                layers = [_download_tile(session, u) for u in urls]
+                tile = _compose_tile_layers(layers)
                 mosaic.paste(
                     tile,
                     ((tx - tx0) * TILE_SIZE, (ty - ty0) * TILE_SIZE),
@@ -197,6 +411,9 @@ def fetch_amap_basemap_rgba(
 
     if failed > cols * rows // 2:
         raise RuntimeError("高德底图瓦片下载失败过多，请检查网络与 API Key 权限")
+
+    if style in _VECTOR_THEME_IDS and style not in ("normal", "digital"):
+        mosaic = _apply_vector_theme_look(mosaic, style)
 
     crop_x0 = int(round(px_west - tx0 * TILE_SIZE))
     crop_x1 = int(round(px_east - tx0 * TILE_SIZE))

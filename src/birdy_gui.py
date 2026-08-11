@@ -995,7 +995,7 @@ class WorkerThread(QThread):
                             config.get("track_map_include_elevation", True)
                         ),
                         basemap_style=str(
-                            config.get("track_map_basemap_style", "digital")
+                            config.get("track_map_basemap_style", "normal")
                         ),
                         exif_tz=normalize_tz_name(
                             config.get("gpx_match_exif_tz")
@@ -1102,6 +1102,11 @@ class WorkerThread(QThread):
                             int(d.get("total", 1)),
                         ),
                         should_cancel=lambda: not self.is_running,
+                        random_per_species=(
+                            int(config.get("wm_random_per_species_count", 3))
+                            if config.get("wm_random_per_species", False)
+                            else None
+                        ),
                     )
                     self.status_updated.emit(
                         f"✓ 水印生成完成: 共 {wm_result['total']}，成功 {wm_result['ok']}，失败 {wm_result['fail']}"
@@ -1138,11 +1143,13 @@ class WatermarkBatchThread(QThread):
         output_folder: str,
         options: WatermarkOptions,
         parent=None,
+        random_per_species: Optional[int] = None,
     ):
         super().__init__(parent)
         self._source_folder = source_folder
         self._output_folder = output_folder
         self._options = options
+        self._random_per_species = random_per_species
         self._last_log_pct = -1
         self._t_start: float = 0.0
         self._last_pct: int = -1
@@ -1170,7 +1177,10 @@ class WatermarkBatchThread(QThread):
             k = d.get("kind")
             tot = max(1, int(d.get("total", 1)))
             if k == "start":
-                self.log_line.emit(f"水印批量：开始，共 {tot} 张…")
+                extra = ""
+                if self._random_per_species and int(self._random_per_species) > 0:
+                    extra = f"（每物种目录随机≤{int(self._random_per_species)} 张）"
+                self.log_line.emit(f"水印批量：开始，共 {tot} 张{extra}…")
                 _emit(0, 0, tot)
             elif k == "tick":
                 done = int(d.get("done", 0))
@@ -1189,6 +1199,7 @@ class WatermarkBatchThread(QThread):
                 options=self._options,
                 prefer_folder_name_as_species=True,
                 progress_callback=_cb,
+                random_per_species=self._random_per_species,
             )
             self.log_line.emit(
                 f"水印批量：结束，成功 {r.get('ok', 0)}，失败 {r.get('fail', 0)}。"
@@ -1704,6 +1715,8 @@ class BirdDetectionGUI(QMainWindow):
             'wm_enable_camera': True,
             'wm_logo_width_ratio': 0.30,
             'wm_watermark_style': 'frame',
+            'wm_random_per_species': False,
+            'wm_random_per_species_count': 3,
             # AI 增强（水印前曝光/降噪/锐化，流水线顺序：曝光→降噪→锐化）
             'wm_enable_ai_exposure': False,
             'wm_ai_exposure_strength': 1.0,
@@ -1742,7 +1755,7 @@ class BirdDetectionGUI(QMainWindow):
             'track_map_photo_folder_override': '',
             'track_map_radius_km': 1.0,
             'track_map_include_elevation': True,
-            'track_map_basemap_style': 'digital',
+            'track_map_basemap_style': 'normal',
             'gps_write_mode': 'fixed',
             'gpx_match_exif_tz': DEFAULT_EXIF_TZ,
             'gpx_match_gpx_tz': DEFAULT_GPX_TZ,
@@ -2435,6 +2448,35 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_camera_checkbox.setChecked(self.config.get("wm_enable_camera", True))
         wm_layout.addRow("", self.wm_camera_checkbox)
 
+        self.wm_random_per_species_checkbox = QCheckBox(
+            "每物种目录随机抽若干张（不勾选则全部生成）"
+        )
+        self.wm_random_per_species_checkbox.setChecked(
+            bool(self.config.get("wm_random_per_species", False))
+        )
+        self.wm_random_per_species_checkbox.setToolTip(
+            "按图片所在父目录（通常为物种文件夹）分组，每组随机抽取指定张数生成水印；\n"
+            "未勾选时对目录内全部图片生成水印。主流程与「单独批量水印生成」均生效。"
+        )
+        wm_layout.addRow("", self.wm_random_per_species_checkbox)
+
+        self.wm_random_per_species_count = QSpinBox()
+        self.wm_random_per_species_count.setRange(1, 999)
+        self.wm_random_per_species_count.setValue(
+            max(1, int(self.config.get("wm_random_per_species_count", 3)))
+        )
+        self.wm_random_per_species_count.setSuffix(" 张/物种目录")
+        self.wm_random_per_species_count.setToolTip(
+            "每个物种目录最多随机抽取的张数；目录内不足该数时全部保留。"
+        )
+        wm_layout.addRow("抽样张数:", self.wm_random_per_species_count)
+        self.wm_random_per_species_checkbox.toggled.connect(
+            self.wm_random_per_species_count.setEnabled
+        )
+        self.wm_random_per_species_count.setEnabled(
+            self.wm_random_per_species_checkbox.isChecked()
+        )
+
         # 自动曝光（水印前；基于鸟体测光，避免剪影）
         self.wm_ai_exposure_checkbox = QCheckBox("水印前自动曝光")
         self.wm_ai_exposure_checkbox.setChecked(
@@ -2674,16 +2716,32 @@ class BirdDetectionGUI(QMainWindow):
         track_layout.addRow("物种去重半径:", self.track_map_radius_input)
 
         self.track_map_basemap_combo = QComboBox()
-        self.track_map_basemap_combo.addItem("高德·数字地图", "digital")
-        self.track_map_basemap_combo.addItem("高德·卫星影像", "satellite")
-        _bm = self.config.get("track_map_basemap_style", "digital")
+        try:
+            from gpx_track.amap_basemap import (
+                BASEMAP_STYLE_CHOICES,
+                normalize_basemap_style,
+            )
+            for _sid, _slabel in BASEMAP_STYLE_CHOICES:
+                self.track_map_basemap_combo.addItem(f"高德·{_slabel}", _sid)
+        except Exception:
+            self.track_map_basemap_combo.addItem("高德·标准（默认）", "normal")
+            self.track_map_basemap_combo.addItem("高德·无路网卫星", "satellite")
+            self.track_map_basemap_combo.addItem("高德·有路网卫星", "satellite_roads")
+
+            def normalize_basemap_style(s):  # type: ignore
+                return s or "normal"
+
+        _bm = normalize_basemap_style(
+            self.config.get("track_map_basemap_style", "normal")
+        )
         _bmi = self.track_map_basemap_combo.findData(_bm)
         self.track_map_basemap_combo.setCurrentIndex(_bmi if _bmi >= 0 else 0)
         self.track_map_basemap_combo.setToolTip(
             "轨迹图底图使用高德地图瓦片（与「地理位置」中 amap_api_config.json 的 api_key 相同）。\n"
+            "可选官方主题风格（标准/幻影黑/月光银等）及无路网/有路网卫星影像。\n"
             "生成时需联网；未配置 Key 或加载失败时退回经纬度网格。"
         )
-        track_layout.addRow("底图类型:", self.track_map_basemap_combo)
+        track_layout.addRow("底图风格:", self.track_map_basemap_combo)
 
         self.track_map_elevation_checkbox = QCheckBox("同时生成海拔-距离剖面图")
         self.track_map_elevation_checkbox.setChecked(
@@ -3611,7 +3669,7 @@ class BirdDetectionGUI(QMainWindow):
             radius_km=float(self.track_map_radius_input.value()),
             include_elevation=self.track_map_elevation_checkbox.isChecked(),
             basemap_style=str(
-                self.track_map_basemap_combo.currentData() or "digital"
+                self.track_map_basemap_combo.currentData() or "normal"
             ),
             preview_only=preview,
             preview_max_photos=40,
@@ -4329,7 +4387,17 @@ class BirdDetectionGUI(QMainWindow):
         self.add_log("已启动后台批量水印线程…")
         print("已启动后台批量水印线程…")
 
-        th = WatermarkBatchThread(source_folder, output_folder, options, self)
+        th = WatermarkBatchThread(
+            source_folder,
+            output_folder,
+            options,
+            self,
+            random_per_species=(
+                int(self.wm_random_per_species_count.value())
+                if self.wm_random_per_species_checkbox.isChecked()
+                else None
+            ),
+        )
         self._wm_batch_thread = th
 
         def _on_prog(pct: int, elapsed: int, remaining: int, done: int) -> None:
@@ -5206,6 +5274,12 @@ class BirdDetectionGUI(QMainWindow):
         self.config["wm_enable_date"] = self.wm_date_checkbox.isChecked()
         self.config["wm_enable_species"] = self.wm_species_checkbox.isChecked()
         self.config["wm_enable_camera"] = self.wm_camera_checkbox.isChecked()
+        self.config["wm_random_per_species"] = (
+            self.wm_random_per_species_checkbox.isChecked()
+        )
+        self.config["wm_random_per_species_count"] = int(
+            self.wm_random_per_species_count.value()
+        )
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
         )
@@ -5420,6 +5494,15 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_date_checkbox.setChecked(self.config.get('wm_enable_date', True))
         self.wm_species_checkbox.setChecked(self.config.get('wm_enable_species', True))
         self.wm_camera_checkbox.setChecked(self.config.get('wm_enable_camera', True))
+        self.wm_random_per_species_checkbox.setChecked(
+            bool(self.config.get("wm_random_per_species", False))
+        )
+        self.wm_random_per_species_count.setValue(
+            max(1, int(self.config.get("wm_random_per_species_count", 3)))
+        )
+        self.wm_random_per_species_count.setEnabled(
+            self.wm_random_per_species_checkbox.isChecked()
+        )
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get('wm_logo_width_ratio', 0.30))
         )
@@ -5550,7 +5633,13 @@ class BirdDetectionGUI(QMainWindow):
         self.track_map_elevation_checkbox.setChecked(
             self.config.get("track_map_include_elevation", True)
         )
-        _bm = self.config.get("track_map_basemap_style", "digital")
+        try:
+            from gpx_track.amap_basemap import normalize_basemap_style as _norm_bm
+            _bm = _norm_bm(self.config.get("track_map_basemap_style", "normal"))
+        except Exception:
+            _bm = self.config.get("track_map_basemap_style", "normal")
+            if _bm == "digital":
+                _bm = "normal"
         _bmi = self.track_map_basemap_combo.findData(_bm)
         self.track_map_basemap_combo.setCurrentIndex(_bmi if _bmi >= 0 else 0)
         set_combo_timezone(

@@ -7,9 +7,11 @@
 from __future__ import annotations
 
 import os
+import random
+from collections import defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Callable
+from typing import Dict, List, Literal, Optional, Callable, Sequence
 
 from PIL import Image, ImageDraw, ImageFont, ImageStat
 
@@ -87,6 +89,33 @@ def _collect_images_recursive(root: str) -> List[str]:
 def collect_images_recursive(root: str) -> List[str]:
     """公开：递归收集图片路径。"""
     return _collect_images_recursive(root)
+
+
+def sample_images_per_species_dir(
+    images: Sequence[str],
+    per_dir: int,
+    *,
+    rng: Optional[random.Random] = None,
+) -> List[str]:
+    """
+    按「物种目录」（图片所在父目录）分组，每组随机抽取至多 per_dir 张。
+    per_dir <= 0 时返回原列表副本（不抽样）。
+    """
+    paths = [str(p) for p in images]
+    if per_dir <= 0 or not paths:
+        return list(paths)
+    rnd = rng if rng is not None else random.Random()
+    by_dir: Dict[str, List[str]] = defaultdict(list)
+    for p in paths:
+        by_dir[str(Path(p).parent)].append(p)
+    out: List[str] = []
+    for _dir in sorted(by_dir.keys()):
+        group = by_dir[_dir]
+        if len(group) <= per_dir:
+            out.extend(group)
+        else:
+            out.extend(rnd.sample(group, per_dir))
+    return out
 
 
 def apply_watermark_photo_pipeline(
@@ -773,12 +802,19 @@ def generate_watermarks(
     prefer_folder_name_as_species: bool = True,
     progress_callback: Optional[Callable[[Dict], None]] = None,
     should_cancel: Optional[Callable[[], bool]] = None,
+    random_per_species: Optional[int] = None,
 ) -> Dict[str, int]:
     """
     批量生成水印图。should_cancel 返回 True 时提前中断循环。
+
+    random_per_species:
+        None 或 <=0 → 处理全部图片；
+        正整数 N → 每个物种目录（图片父目录）随机抽至多 N 张。
     """
     os.makedirs(output_folder, exist_ok=True)
     images = _collect_images_recursive(source_folder)
+    if random_per_species is not None and int(random_per_species) > 0:
+        images = sample_images_per_species_dir(images, int(random_per_species))
     logo_img = None
     if options.logo_path and os.path.isfile(options.logo_path):
         try:

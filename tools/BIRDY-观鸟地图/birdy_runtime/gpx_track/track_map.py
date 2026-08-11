@@ -31,6 +31,9 @@ from PIL import Image, ImageDraw, ImageFilter
 
 from .amap_basemap import (
     fetch_amap_basemap_rgba,
+    is_dark_basemap_style,
+    is_satellite_basemap_style,
+    normalize_basemap_style,
     gcj_bounds_from_lonlats,
     regeo_place_label,
     wgs84_to_map_lonlat,
@@ -474,8 +477,7 @@ class MapMarkerLayout:
 
 
 def _is_satellite_basemap(basemap_style: str) -> bool:
-    s = (basemap_style or "digital").lower()
-    return s in ("satellite", "sat", "影像", "卫星")
+    return is_satellite_basemap_style(basemap_style)
 
 
 def _map_ink(
@@ -484,7 +486,7 @@ def _map_ink(
     on_basemap: bool = True,
 ) -> Tuple[str, Tuple[int, int, int], bool]:
     """返回 (文字色, Logo RGB, 是否加暗描边)。"""
-    if on_basemap and _is_satellite_basemap(basemap_style):
+    if on_basemap and is_dark_basemap_style(basemap_style):
         return MAP_INK_WHITE, MAP_INK_WHITE_RGB, True
     return MAP_INK_GREEN, MAP_INK_GREEN_RGB, False
 
@@ -492,6 +494,8 @@ def _map_ink(
 def _map_accent_color(basemap_style: str, *, on_basemap: bool = True) -> str:
     if on_basemap and _is_satellite_basemap(basemap_style):
         return MAP_ACCENT_SATELLITE
+    if on_basemap and is_dark_basemap_style(basemap_style):
+        return "#F5D76E"
     return MAP_INK_GREEN
 
 
@@ -500,7 +504,7 @@ def _map_summary_style(
     *,
     on_basemap: bool = True,
 ) -> Tuple[str, str, List, str]:
-    """左下种数：与标题同色——卫星白字，数字地图深绿。"""
+    """左下种数：与标题同色——深色/卫星白字，浅色数字地图深绿。"""
     num_ff = _resolve_count_num_fontfamily()
     color, _, use_stroke = _map_ink(basemap_style, on_basemap=on_basemap)
     effects = _map_text_effects(use_stroke=use_stroke)
@@ -786,7 +790,7 @@ def _draw_map_inset_title(
     *,
     logo_path: str = "",
     logo_width_ratio: float = 0.30,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
     on_basemap: bool = True,
     marker_layout: Optional[MapMarkerLayout] = None,
     track: Optional[Sequence[GpxPoint]] = None,
@@ -910,7 +914,7 @@ def _draw_map_attribution(
     ax,
     *,
     y_frac: float = 0.006,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
 ) -> None:
     """左下角地图来源（海拔图下方）。"""
     typo = _map_typography(ax)
@@ -964,7 +968,7 @@ def _draw_map_summary(
     track: Sequence[GpxPoint],
     *,
     default_y: float = 0.055,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
     on_basemap: bool = True,
     use_gcj: bool = True,
     elev_panel_top: float = 0.0,
@@ -1858,7 +1862,7 @@ def _add_photo_markers(
     use_gcj: bool = False,
     compact_labels: bool = False,
     resolve_overlaps: bool = True,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
     on_basemap: bool = True,
     radius_km: float = 1.0,
 ) -> MapMarkerLayout:
@@ -2065,7 +2069,7 @@ def _plot_map_ax(
     logo_width_ratio: float = 0.30,
     max_markers: Optional[int] = None,
     thumb_diameter: int = 44,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
     map_width_px: int = 1080,
     map_height_px: int = 1200,
     compact_labels: bool = False,
@@ -2077,8 +2081,9 @@ def _plot_map_ax(
     绘制地图子图（高德底图 + GCJ-02 叠加）。
     返回 basemap 状态：ok / fallback / none / no_key。
     """
-    style = (basemap_style or "digital").lower()
-    if style in ("none", "off", "grid"):
+    raw = (basemap_style or "normal").strip().lower()
+    if raw in ("none", "off", "grid", "无", "网格"):
+        style = "none"
         _draw_track_on_ax(ax, track, use_gcj=False, on_basemap=False)
         ax.set_xlabel("经度", fontsize=11)
         ax.set_ylabel("纬度", fontsize=11)
@@ -2123,6 +2128,7 @@ def _plot_map_ax(
         )
         return "none"
 
+    style = normalize_basemap_style(raw)
     view_bounds = _resolve_map_view_bounds(track, photos)
     if view_bounds is None:
         lons, lats = [], []
@@ -3423,7 +3429,7 @@ def generate_track_maps(
     use_exif_gps: bool = True,
     radius_km: float = 1.0,
     include_elevation: bool = True,
-    basemap_style: str = "digital",
+    basemap_style: str = "normal",
     preview_only: bool = False,
     preview_max_photos: int = PREVIEW_MAX_MARKERS,
     max_gpx_match_delta_s: float = DEFAULT_GPX_MATCH_MAX_DELTA_S,
