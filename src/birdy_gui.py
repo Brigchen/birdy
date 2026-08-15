@@ -80,6 +80,7 @@ from watermark_generator import (
     generate_watermarks,
     render_watermark_for_image,
 )
+from image_clean import ImageCleanOptions, clean_bird_images, clean_image_list
 from image_io import all_supported_extensions, file_filter_all_images
 from dual_format import extensions_for_dual_mode
 from burst_webp_dialog import open_burst_webp_dialog
@@ -834,73 +835,129 @@ class WorkerThread(QThread):
                         self.status_updated.emit(
                             "物种识别/归档：连拍步骤未成功完成，扫描全部输入图片"
                         )
-                    
-                    total_crops = 0
-                    archive_counter = {"n": 0}
-                    n_spec = len(image_files)
-                    self.eta_checkpoint.emit({"kind": "species_begin", "n": n_spec})
-                    def _cfg_geo_str(v):
-                        if v is None:
-                            return None
-                        s = str(v).strip()
-                        return s or None
 
-                    manual_province = _cfg_geo_str(config.get("province"))
-                    manual_city = _cfg_geo_str(config.get("city"))
-
-                    for idx, image_file in enumerate(image_files):
-                        if not self.is_running:
-                            break
-                        
-                        self.status_updated.emit(f"处理中: {os.path.basename(image_file)} ({idx+1}/{len(image_files)})")
-                        
-                        try:
-                            result_image, detection_results = detector.detect(
-                                image_file,
-                                manual_province=manual_province,
-                                manual_city=manual_city,
-                            )
-                            
-                            if detection_results.get('birds'):
-                                province = detection_results.get("province")
-                                city = detection_results.get("city")
-                                # 复用 detect 已加载的原图，避免对 DNG/RAW 重复 demosaic
-                                orig_img = detection_results.get("original_image")
-                                if orig_img is None:
-                                    orig_img = detector.load_image(image_file)
-                                saved_paths = detector.crop_species(
-                                    image=orig_img,
-                                    birds=detection_results['birds'],
-                                    output_dir=output_root,
-                                    source_path=image_file,
-                                    province=province,
-                                    city=city,
-                                    counter=archive_counter,
-                                )
-                                total_crops += len(saved_paths)
-                        except Exception as e:
-                            self.status_updated.emit(f"⚠ {os.path.basename(image_file)}: {str(e)}")
-                        self.eta_checkpoint.emit(
-                            {
-                                "kind": "species_tick",
-                                "done": idx + 1,
-                                "total": max(1, n_spec),
-                            }
+                    if config.get("enable_image_clean_before_species", False) and image_files:
+                        self.status_updated.emit(
+                            f"物种识别前：清洗待识别图片（{len(image_files)} 张）…"
                         )
-                        if n_spec > 0:
-                            _emit_phase_progress("species", idx + 1, n_spec)
-                    
-                    processing_time = time.time() - start_time
-                    self.status_updated.emit(
-                        f"✓ 已输出 {total_crops} 个裁剪归档文件，耗时 {processing_time:.2f} 秒"
-                    )
-                    results_dict = {
-                        'total_crops': total_crops,
-                        'species_method': detector.get_species_method(),
-                        'processing_time': processing_time
-                    }
-                    results['crop_result'] = results_dict
-                    
+
+                        def _clean_prog(d: Dict) -> None:
+                            if d.get("kind") == "tick":
+                                _emit_phase_progress(
+                                    "species",
+                                    int(d.get("done", 0)),
+                                    int(d.get("total", 1)),
+                                )
+
+                        clean_opts = ImageCleanOptions(
+                            remove_no_bird=bool(
+                                config.get("image_clean_remove_no_bird", True)
+                            ),
+                            remove_blurry=bool(
+                                config.get("image_clean_remove_blurry", True)
+                            ),
+                            dedupe=bool(config.get("image_clean_dedupe", True)),
+                            min_clarity=float(
+                                config.get("image_clean_min_clarity", 35)
+                            ),
+                            dup_similarity=float(
+                                config.get("image_clean_dup_similarity", 92)
+                            ),
+                        )
+                        clean_res = clean_image_list(
+                            image_files,
+                            clean_opts,
+                            progress_callback=_clean_prog,
+                            should_cancel=lambda: not self.is_running,
+                        )
+                        image_files = [p for p in image_files if os.path.isfile(p)]
+                        cd = clean_res.as_dict()
+                        results["image_clean_result"] = cd
+                        self.status_updated.emit(
+                            "清洗完成："
+                            f"保留 {cd['kept']}/{cd['total']}，"
+                            f"未检出鸟体 {cd['removed_no_bird']}，"
+                            f"模糊 {cd['removed_blurry']}，"
+                            f"重复 {cd['removed_duplicate']}"
+                        )
+                    if not image_files:
+                        self.status_updated.emit(
+                            "⚠ 清洗后无剩余图片或其他原因导致待识别列表为空，已跳过物种识别。"
+                        )
+                        results["crop_result"] = {
+                            "total_crops": 0,
+                            "processing_time": time.time() - start_time,
+                        }
+                    else:
+                        total_crops = 0
+                        archive_counter = {"n": 0}
+                        n_spec = len(image_files)
+                        self.eta_checkpoint.emit({"kind": "species_begin", "n": n_spec})
+
+                        def _cfg_geo_str(v):
+                            if v is None:
+                                return None
+                            s = str(v).strip()
+                            return s or None
+
+                        manual_province = _cfg_geo_str(config.get("province"))
+                        manual_city = _cfg_geo_str(config.get("city"))
+
+                        for idx, image_file in enumerate(image_files):
+                            if not self.is_running:
+                                break
+
+                            self.status_updated.emit(
+                                f"处理中: {os.path.basename(image_file)} ({idx+1}/{len(image_files)})"
+                            )
+
+                            try:
+                                result_image, detection_results = detector.detect(
+                                    image_file,
+                                    manual_province=manual_province,
+                                    manual_city=manual_city,
+                                )
+
+                                if detection_results.get("birds"):
+                                    province = detection_results.get("province")
+                                    city = detection_results.get("city")
+                                    orig_img = detection_results.get("original_image")
+                                    if orig_img is None:
+                                        orig_img = detector.load_image(image_file)
+                                    saved_paths = detector.crop_species(
+                                        image=orig_img,
+                                        birds=detection_results["birds"],
+                                        output_dir=output_root,
+                                        source_path=image_file,
+                                        province=province,
+                                        city=city,
+                                        counter=archive_counter,
+                                    )
+                                    total_crops += len(saved_paths)
+                            except Exception as e:
+                                self.status_updated.emit(
+                                    f"⚠ {os.path.basename(image_file)}: {str(e)}"
+                                )
+                            self.eta_checkpoint.emit(
+                                {
+                                    "kind": "species_tick",
+                                    "done": idx + 1,
+                                    "total": max(1, n_spec),
+                                }
+                            )
+                            if n_spec > 0:
+                                _emit_phase_progress("species", idx + 1, n_spec)
+
+                        processing_time = time.time() - start_time
+                        self.status_updated.emit(
+                            f"✓ 已输出 {total_crops} 个裁剪归档文件，耗时 {processing_time:.2f} 秒"
+                        )
+                        results["crop_result"] = {
+                            "total_crops": total_crops,
+                            "species_method": detector.get_species_method(),
+                            "processing_time": processing_time,
+                        }
+
                 except Exception as e:
                     self.error_occurred.emit(f"物种检测/归档失败: {str(e)}")
                     traceback.print_exc()
@@ -1209,6 +1266,60 @@ class WatermarkBatchThread(QThread):
             self.failed.emit(str(e))
 
 
+class ImageCleanThread(QThread):
+    """后台清洗鸟图目录，避免阻塞 GUI。"""
+
+    progress = pyqtSignal(int, int)  # done, total
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+
+    def __init__(
+        self,
+        folder: str,
+        options: ImageCleanOptions,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._folder = folder
+        self._options = options
+
+    def run(self) -> None:
+        try:
+            def _cb(d: Dict) -> None:
+                k = d.get("kind")
+                tot = max(1, int(d.get("total", 1)))
+                done = int(d.get("done", 0))
+                if k == "start":
+                    self.log_line.emit(f"图片清洗：开始扫描，共 {tot} 张…")
+                elif k == "tick":
+                    self.progress.emit(done, tot)
+                    if done == tot or done % 10 == 0:
+                        phase = d.get("phase", "")
+                        self.log_line.emit(
+                            f"图片清洗：进度 {done}/{tot}"
+                            + (f"（{phase}）" if phase else "")
+                        )
+                elif k == "done":
+                    self.progress.emit(tot, tot)
+
+            r = clean_bird_images(
+                self._folder,
+                self._options,
+                progress_callback=_cb,
+            )
+            d = r.as_dict()
+            self.log_line.emit(
+                "图片清洗完成："
+                f"总计 {d['total']}，保留 {d['kept']}，"
+                f"无鸟体 {d['removed_no_bird']}，模糊 {d['removed_blurry']}，"
+                f"重复 {d['removed_duplicate']}，失败 {d['failed']}"
+            )
+            self.finished_ok.emit(d)
+        except Exception as e:
+            self.failed.emit(str(e))
+
+
 class TrackMapThread(QThread):
     """子进程生成轨迹图，避免 matplotlib 与 Qt 同线程死锁。"""
 
@@ -1333,6 +1444,7 @@ class BirdDetectionGUI(QMainWindow):
         # 初始化变量
         self.worker_thread: Optional[WorkerThread] = None
         self._wm_batch_thread: Optional[WatermarkBatchThread] = None
+        self._image_clean_thread: Optional[ImageCleanThread] = None
         self._track_map_thread: Optional[TrackMapThread] = None
         self._track_map_progress: Optional[QProgressDialog] = None
         self._track_map_preview_dialog = None
@@ -1692,6 +1804,14 @@ class BirdDetectionGUI(QMainWindow):
             'enable_species_detection': True,
             'enable_crop': True,
             'generate_species_report': False,
+            # 物种识别前 / 分类目录图片清洗
+            'enable_image_clean_before_species': False,
+            'image_clean_remove_no_bird': True,
+            'image_clean_remove_blurry': True,
+            'image_clean_dedupe': True,
+            'image_clean_min_clarity': 35,
+            'image_clean_dup_similarity': 92,
+            'image_clean_folder': '',
             # 物种识别模式配置
             'use_local_model': True,  # 默认使用本地模型
             'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
@@ -2339,7 +2459,123 @@ class BirdDetectionGUI(QMainWindow):
         min_species_row.addWidget(self.min_species_conf_input)
         min_species_row.addStretch()
         species_layout.addRow("未知种类阈值(可选):", min_species_row)
-        
+
+        # ---- 图片清洗（识别前 / 分类目录）----
+        self.image_clean_before_species_checkbox = QCheckBox(
+            "主流程识别前自动清洗"
+        )
+        self.image_clean_before_species_checkbox.setChecked(
+            bool(self.config.get("enable_image_clean_before_species", False))
+        )
+        self.image_clean_before_species_checkbox.setToolTip(
+            "勾选后，「开始处理」在物种识别前，对即将识别的图片"
+            "（通常为 Screened_images）执行清洗并删除不合格文件。"
+        )
+        species_layout.addRow("", self.image_clean_before_species_checkbox)
+
+        self.image_clean_no_bird_checkbox = QCheckBox("去除未检出鸟体的图")
+        self.image_clean_no_bird_checkbox.setChecked(
+            bool(self.config.get("image_clean_remove_no_bird", True))
+        )
+        self.image_clean_no_bird_checkbox.setToolTip(
+            "用鸟体检测模型扫描；未检出鸟体的图片将被删除。"
+        )
+        species_layout.addRow("", self.image_clean_no_bird_checkbox)
+
+        self.image_clean_blurry_checkbox = QCheckBox("去除鸟体模糊的图")
+        self.image_clean_blurry_checkbox.setChecked(
+            bool(self.config.get("image_clean_remove_blurry", True))
+        )
+        species_layout.addRow("", self.image_clean_blurry_checkbox)
+
+        clean_blur_row = QHBoxLayout()
+        self.image_clean_clarity_slider = QSlider(Qt.Horizontal)
+        self.image_clean_clarity_slider.setRange(0, 100)
+        self.image_clean_clarity_slider.setValue(
+            int(self.config.get("image_clean_min_clarity", 35))
+        )
+        self.image_clean_clarity_slider.setToolTip(
+            "最低清晰度（0~100）。数值越大越严格，删除的模糊图越多。\n"
+            "基于鸟体区域 Laplacian 清晰度；多鸟时取最靠近画面中央的个体。\n"
+            "推荐 25~45。"
+        )
+        self.image_clean_clarity_label = QLabel(
+            f"{self.image_clean_clarity_slider.value()}"
+        )
+        self.image_clean_clarity_label.setMinimumWidth(28)
+        self.image_clean_clarity_slider.valueChanged.connect(
+            lambda v: self.image_clean_clarity_label.setText(str(v))
+        )
+        clean_blur_row.addWidget(self.image_clean_clarity_slider, 1)
+        clean_blur_row.addWidget(self.image_clean_clarity_label)
+        species_layout.addRow("模糊阈值:", clean_blur_row)
+        self.image_clean_blurry_checkbox.toggled.connect(
+            self.image_clean_clarity_slider.setEnabled
+        )
+        self.image_clean_clarity_slider.setEnabled(
+            self.image_clean_blurry_checkbox.isChecked()
+        )
+
+        self.image_clean_dedupe_checkbox = QCheckBox("去除高度重复的鸟图")
+        self.image_clean_dedupe_checkbox.setChecked(
+            bool(self.config.get("image_clean_dedupe", True))
+        )
+        self.image_clean_dedupe_checkbox.setToolTip(
+            "同一文件夹内按感知哈希去重，保留更清晰的一张。"
+        )
+        species_layout.addRow("", self.image_clean_dedupe_checkbox)
+
+        clean_dup_row = QHBoxLayout()
+        self.image_clean_dup_slider = QSlider(Qt.Horizontal)
+        self.image_clean_dup_slider.setRange(50, 100)
+        self.image_clean_dup_slider.setValue(
+            int(self.config.get("image_clean_dup_similarity", 92))
+        )
+        self.image_clean_dup_slider.setToolTip(
+            "重复相似度（50~100%）。越高越严格，删除的近似重复图越多。\n"
+            "推荐 88~96。"
+        )
+        self.image_clean_dup_label = QLabel(
+            f"{self.image_clean_dup_slider.value()}%"
+        )
+        self.image_clean_dup_label.setMinimumWidth(36)
+        self.image_clean_dup_slider.valueChanged.connect(
+            lambda v: self.image_clean_dup_label.setText(f"{v}%")
+        )
+        clean_dup_row.addWidget(self.image_clean_dup_slider, 1)
+        clean_dup_row.addWidget(self.image_clean_dup_label)
+        species_layout.addRow("去重阈值:", clean_dup_row)
+        self.image_clean_dedupe_checkbox.toggled.connect(
+            self.image_clean_dup_slider.setEnabled
+        )
+        self.image_clean_dup_slider.setEnabled(
+            self.image_clean_dedupe_checkbox.isChecked()
+        )
+
+        clean_folder_row = QHBoxLayout()
+        self.image_clean_folder_input = QLineEdit()
+        self.image_clean_folder_input.setText(
+            self.config.get("image_clean_folder", "")
+        )
+        self.image_clean_folder_input.setPlaceholderText(
+            "留空则使用分类归档目录（crop / classification）"
+        )
+        clean_folder_btn = QPushButton("浏览...")
+        clean_folder_btn.clicked.connect(
+            lambda: self._select_folder("image_clean_folder")
+        )
+        clean_folder_row.addWidget(self.image_clean_folder_input, 1)
+        clean_folder_row.addWidget(clean_folder_btn)
+        species_layout.addRow("清洗目录:", clean_folder_row)
+
+        self.image_clean_run_btn = QPushButton("清洗选定目录")
+        self.image_clean_run_btn.setToolTip(
+            "立即清洗上方目录（默认分类归档目录），按勾选项删除"
+            "未检出鸟体 / 模糊 / 高度重复图片。不运行完整主流程。"
+        )
+        self.image_clean_run_btn.clicked.connect(self._run_image_clean_batch)
+        species_layout.addRow("", self.image_clean_run_btn)
+
         species_group.setLayout(species_layout)
         layout.addWidget(species_card)
 
@@ -4201,6 +4437,9 @@ class BirdDetectionGUI(QMainWindow):
             elif field_name == 'watermark_output_folder':
                 self.config['watermark_output_folder'] = folder
                 self.wm_output_folder_input.setText(folder)
+            elif field_name == 'image_clean_folder':
+                self.config['image_clean_folder'] = folder
+                self.image_clean_folder_input.setText(folder)
             try:
                 self._sync_config_from_ui()
                 self._save_config()
@@ -4349,6 +4588,95 @@ class BirdDetectionGUI(QMainWindow):
                 return None
             print("[Birdy 动图GUI] 鸟检测器加载成功。", flush=True)
             return self._burst_webp_bird_detector
+
+    def _build_image_clean_options(self) -> ImageCleanOptions:
+        return ImageCleanOptions(
+            remove_no_bird=self.image_clean_no_bird_checkbox.isChecked(),
+            remove_blurry=self.image_clean_blurry_checkbox.isChecked(),
+            dedupe=self.image_clean_dedupe_checkbox.isChecked(),
+            min_clarity=float(self.image_clean_clarity_slider.value()),
+            dup_similarity=float(self.image_clean_dup_slider.value()),
+        )
+
+    def _resolve_image_clean_folder(self) -> str:
+        folder = self.image_clean_folder_input.text().strip()
+        if folder:
+            return folder
+        folder = self.crop_folder_input.text().strip()
+        if folder:
+            return folder
+        return (self.config.get("crop_output_folder") or "").strip()
+
+    def _run_image_clean_batch(self) -> None:
+        """单独清洗选定目录（默认分类归档目录）。"""
+        if self._image_clean_thread is not None and self._image_clean_thread.isRunning():
+            QMessageBox.information(self, "提示", "图片清洗正在运行中，请稍候。")
+            return
+        folder = self._resolve_image_clean_folder()
+        if not folder or not os.path.isdir(folder):
+            QMessageBox.warning(
+                self,
+                "提示",
+                "未找到可清洗的目录。\n"
+                "请填写「清洗目录」，或先设置分类归档目录（classification）。",
+            )
+            return
+        opts = self._build_image_clean_options()
+        if not (opts.remove_no_bird or opts.remove_blurry or opts.dedupe):
+            QMessageBox.warning(self, "提示", "请至少勾选一项清洗规则。")
+            return
+        reply = QMessageBox.question(
+            self,
+            "确认清洗",
+            f"将对以下目录执行清洗，不合格图片会被直接删除：\n\n{folder}\n\n"
+            f"· 未检出鸟体：{'是' if opts.remove_no_bird else '否'}\n"
+            f"· 模糊（清晰度 < {int(opts.min_clarity)}）："
+            f"{'是' if opts.remove_blurry else '否'}\n"
+            f"· 去重（相似度 ≥ {int(opts.dup_similarity)}%）："
+            f"{'是' if opts.dedupe else '否'}\n\n"
+            "确定继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        self._sync_config_from_ui()
+        self._save_config()
+        self.image_clean_run_btn.setEnabled(False)
+        self.add_log(f"已启动图片清洗：{folder}")
+        th = ImageCleanThread(folder, opts, self)
+        self._image_clean_thread = th
+
+        def _on_prog(done: int, total: int) -> None:
+            tot = max(1, total)
+            self.progress_bar.setValue(min(100, int(100 * done / tot)))
+
+        def _on_log(msg: str) -> None:
+            self.add_log(msg)
+
+        def _on_ok(r: Dict) -> None:
+            self.image_clean_run_btn.setEnabled(True)
+            self.progress_bar.setValue(100)
+            QMessageBox.information(
+                self,
+                "清洗完成",
+                f"总计 {r.get('total', 0)}，保留 {r.get('kept', 0)}\n"
+                f"删除：未检出鸟体 {r.get('removed_no_bird', 0)}，"
+                f"模糊 {r.get('removed_blurry', 0)}，"
+                f"重复 {r.get('removed_duplicate', 0)}\n"
+                f"失败 {r.get('failed', 0)}\n\n目录：{folder}",
+            )
+
+        def _on_fail(msg: str) -> None:
+            self.image_clean_run_btn.setEnabled(True)
+            QMessageBox.critical(self, "清洗失败", msg)
+
+        th.progress.connect(_on_prog)
+        th.log_line.connect(_on_log)
+        th.finished_ok.connect(_on_ok)
+        th.failed.connect(_on_fail)
+        th.start()
 
     def _run_watermark_batch(self):
         """仅执行批量水印生成（不触发完整主流程）。"""
@@ -5257,6 +5585,27 @@ class BirdDetectionGUI(QMainWindow):
         self.config["enable_species_detection"] = (
             self.enable_species_checkbox.isChecked()
         )
+        self.config["enable_image_clean_before_species"] = (
+            self.image_clean_before_species_checkbox.isChecked()
+        )
+        self.config["image_clean_remove_no_bird"] = (
+            self.image_clean_no_bird_checkbox.isChecked()
+        )
+        self.config["image_clean_remove_blurry"] = (
+            self.image_clean_blurry_checkbox.isChecked()
+        )
+        self.config["image_clean_dedupe"] = (
+            self.image_clean_dedupe_checkbox.isChecked()
+        )
+        self.config["image_clean_min_clarity"] = int(
+            self.image_clean_clarity_slider.value()
+        )
+        self.config["image_clean_dup_similarity"] = int(
+            self.image_clean_dup_slider.value()
+        )
+        self.config["image_clean_folder"] = (
+            self.image_clean_folder_input.text().strip()
+        )
         _apply_gui_flow_policy(self.config)
         self.config["enable_watermark_generation"] = (
             self.enable_watermark_checkbox.isChecked()
@@ -5478,6 +5827,39 @@ class BirdDetectionGUI(QMainWindow):
         self.enable_species_checkbox.setChecked(
             self.config.get('enable_species_detection', True)
         )
+        self.image_clean_before_species_checkbox.setChecked(
+            bool(self.config.get("enable_image_clean_before_species", False))
+        )
+        self.image_clean_no_bird_checkbox.setChecked(
+            bool(self.config.get("image_clean_remove_no_bird", True))
+        )
+        self.image_clean_blurry_checkbox.setChecked(
+            bool(self.config.get("image_clean_remove_blurry", True))
+        )
+        self.image_clean_dedupe_checkbox.setChecked(
+            bool(self.config.get("image_clean_dedupe", True))
+        )
+        self.image_clean_clarity_slider.setValue(
+            int(self.config.get("image_clean_min_clarity", 35))
+        )
+        self.image_clean_clarity_label.setText(
+            str(self.image_clean_clarity_slider.value())
+        )
+        self.image_clean_clarity_slider.setEnabled(
+            self.image_clean_blurry_checkbox.isChecked()
+        )
+        self.image_clean_dup_slider.setValue(
+            int(self.config.get("image_clean_dup_similarity", 92))
+        )
+        self.image_clean_dup_label.setText(
+            f"{self.image_clean_dup_slider.value()}%"
+        )
+        self.image_clean_dup_slider.setEnabled(
+            self.image_clean_dedupe_checkbox.isChecked()
+        )
+        self.image_clean_folder_input.setText(
+            self.config.get("image_clean_folder", "")
+        )
         self.enable_watermark_checkbox.setChecked(
             self.config.get('enable_watermark_generation', False)
         )
@@ -5691,6 +6073,18 @@ class BirdDetectionGUI(QMainWindow):
                 event.ignore()
                 return
             self._wm_batch_thread.wait()
+        if self._image_clean_thread is not None and self._image_clean_thread.isRunning():
+            reply = QMessageBox.question(
+                self,
+                "确认退出",
+                "图片清洗仍在进行，确定要退出吗？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
+            self._image_clean_thread.wait()
         try:
             self._sync_config_from_ui()
             self._save_config()

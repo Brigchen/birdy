@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.0.44",
+  "version": "2.0.47",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-08-10",
+  "release_date": "2026-08-12",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,15 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.0.47": [
+      "图片清洗：模糊评分先轻度高斯抑噪再算 Laplacian，避免高 ISO 噪点虚高清晰度（如失焦噪点图）"
+    ],
+    "2.0.46": [
+      "图片清洗：去除模糊时若画面有多只鸟，以最靠近中央的鸟体区域计算清晰度"
+    ],
+    "2.0.45": [
+      "物种识别：新增图片清洗（未检出鸟体/模糊/高度重复），支持阈值滑条；可单独清洗选定目录，或勾选后在主流程识别前自动清洗"
+    ],
     "2.0.44": [
       "水印：新增「每物种目录随机抽若干张」选项，张数可自定义；未勾选时仍全部生成"
     ],
