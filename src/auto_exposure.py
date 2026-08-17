@@ -98,6 +98,8 @@ _GAMMA_MIN = 0.2
 _GAMMA_MAX = 5.0
 # 诊断日志：仅首次调用打印一次，避免刷屏
 _diag_logged = False
+# 强度：0=原图，1=自动曝光结果，>1 在自动曝光上继续加档（最大 3 ≈ 再加 2 EV）
+STRENGTH_MAX = 3.0
 
 
 def _compute_subject_luma(bgr: np.ndarray, box: Optional[List[int]]) -> float:
@@ -182,17 +184,39 @@ def _log_diag_once(bgr: np.ndarray, box: Optional[List[int]], luma: float, gamma
     print(f"[auto_exposure]   提示：若提亮仍弱，可增大曝光强度滑条或检查鸟体检测是否命中", flush=True)
 
 
+def apply_exposure_strength(
+    bgr: np.ndarray, corrected: np.ndarray, strength: float
+) -> np.ndarray:
+    """0=原图，1=自动曝光结果，>1 在自动曝光上按 EV 加曝光（2=+1EV，3=+2EV）。"""
+    s = float(np.clip(strength, 0.0, STRENGTH_MAX))
+    if s <= 0.0:
+        return bgr
+    if s < 1.0:
+        orig = bgr.astype(np.float32)
+        corr = corrected.astype(np.float32)
+        mixed = orig + s * (corr - orig)
+        return np.clip(mixed, 0, 255).astype(np.uint8)
+    if abs(s - 1.0) < 1e-6:
+        return corrected
+    extra_ev = s - 1.0
+    gain = 2.0 ** extra_ev
+    out = corrected.astype(np.float32) * gain
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
 def auto_expose_bgr(
     bgr: np.ndarray,
     strength: float = 1.0,
     detect: bool = True,
+    meter_box: Optional[List[int]] = None,
 ) -> np.ndarray:
-    """对 BGR 图像执行自动曝光（基于鸟体测光）。
+    """对 BGR 图像执行自动曝光。
 
     Args:
         bgr: BGR numpy 图像
-        strength: 0=原图，1=完全调整（线性混合原图与 gamma 校正结果）
-        detect: True=检测鸟体作为主体；False=全图平均测光
+        strength: 0=原图，1=按测光算出的自动曝光；>1 在该结果上继续加曝光（最大 3）
+        detect: True=检测鸟体作为主体；False=全图测光（若未给 meter_box）
+        meter_box: 可选测光框 xyxy（像素）。若提供则优先于鸟体检测（如动图裁剪区）。
     Returns:
         调整后的 BGR 图像
     """
@@ -200,7 +224,9 @@ def auto_expose_bgr(
         return bgr
 
     box = None
-    if detect:
+    if meter_box is not None and len(meter_box) == 4:
+        box = [int(meter_box[0]), int(meter_box[1]), int(meter_box[2]), int(meter_box[3])]
+    elif detect:
         boxes = detect_bird_boxes(bgr)
         box = _largest_bird_box(boxes)
 
@@ -208,14 +234,7 @@ def auto_expose_bgr(
     gamma = compute_gamma_for_subject(bgr, box)
     _log_diag_once(bgr, box, luma, gamma, strength)
     corrected = _gamma_correct(bgr, gamma)
-
-    if strength >= 1.0:
-        return corrected
-    # strength 混合
-    orig = bgr.astype(np.float32)
-    corr = corrected.astype(np.float32)
-    mixed = orig + strength * (corr - orig)
-    return np.clip(mixed, 0, 255).astype(np.uint8)
+    return apply_exposure_strength(bgr, corrected, strength)
 
 
 def auto_expose_pil(

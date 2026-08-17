@@ -388,13 +388,48 @@ def calculate_focus_score(
 
 
 def compute_burst_keep_count(n: int, ratio: float, min_keep: int) -> int:
-    """组内共 n 张时实际保留张数：max(最小保留, round(n×比例))，且不超过 n。"""
+    """组内共 n 张时实际保留张数：max(最小保留, round(n×比例))，且不超过 n。
+
+    n 必须是本组总张数。快速模式不得改用 1/3 候选集大小再乘比例。
+    """
     if n <= 0:
         return 0
     r = max(0.01, min(1.0, float(ratio)))
     mk = max(1, int(min_keep))
     by_ratio = max(1, int(round(n * r)))
     return min(n, max(mk, by_ratio))
+
+
+def compute_fast_sample_count(n: int, keep_count: int) -> int:
+    """
+    快速模式候选张数。keep_count 已按全组 n×保留比例算出。
+    候选数至少为保留数（可 2 倍余量便于组内比较），不超过 n。
+    不再使用 N/3，避免保留比例叠在 1/3 子集上变成约 1/30。
+    """
+    if n <= 0:
+        return 0
+    if n <= 3:
+        return n
+    k = max(1, int(keep_count))
+    k = min(k, n)
+    return min(n, max(k * 2, k, 3))
+
+
+def evenly_spaced_indices(n: int, sample_count: int) -> Set[int]:
+    """在 [0, n) 上取 sample_count 个尽量均匀的下标。"""
+    if n <= 0:
+        return set()
+    c = min(max(1, int(sample_count)), n)
+    if c >= n:
+        return set(range(n))
+    step = n / float(c)
+    idx = {int(round(i * step)) for i in range(c)}
+    idx = {i for i in idx if 0 <= i < n}
+    j = 0
+    while len(idx) < c and j < n:
+        idx.add(j)
+        j += 1
+    return idx
 
 
 def detect_birds_in_image(image_path: str, conf: float = 0.25) -> List[Dict]:
@@ -747,8 +782,9 @@ def evaluate_focus_for_group(
     评估连拍组对焦。启用鸟检时：先检鸟；对焦在最大鸟体框 ROI 上按 FOCUS_METRIC_MODE 计分；
     无有效鸟体则对焦记 0（后续筛选一票否决）。
 
-    快速模式：1/3 等步长采样作为候选集，仅对候选集跑 YOLO 鸟检 + 对焦评分。
+    快速模式：按全组保留数等步长抽候选（至少保留数、可 2 倍余量），仅对候选集跑 YOLO + 对焦。
     非候选集图 focus_score=0、bird_area=0，后续 select_best_images 自动过滤。
+    保留张数仍按本组总张数×比例计算，不叠在旧的 1/3 采样上。
     """
     print(f"\n  评估连拍组 {group.group_id}，共 {len(group.images)} 张图片")
 
@@ -765,19 +801,17 @@ def evaluate_focus_for_group(
 
     n = len(group.images)
 
-    # ---- 快速模式：1/3 等步长采样候选集 ----
-    # 采样数 = max(N/3, keep_top_n, 3)，等步长分布覆盖整组
+    # ---- 快速模式：按全组保留数采样候选集 ----
     fast_sample = fast_mode and n > 3
     sample_indices: Optional[Set[int]] = None
     if fast_sample:
-        sample_count = min(max(n // 3, keep_top_n, 3), n)
-        step = n / sample_count
-        sample_indices = {
-            int(round(i * step)) for i in range(sample_count)
-        }
-        sample_indices = {i for i in sample_indices if 0 <= i < n}
-        sample_indices = set(sorted(sample_indices))
-        print(f"    快速模式：{n} 张等步长采样 {len(sample_indices)} 张作为候选集")
+        k = max(1, int(keep_top_n)) if keep_top_n else 1
+        sample_count = compute_fast_sample_count(n, k)
+        sample_indices = evenly_spaced_indices(n, sample_count)
+        print(
+            f"    快速模式：全组 {n} 张，保留 {min(k, n)} 张（按全组比例），"
+            f"等步长抽 {len(sample_indices)} 张做候选"
+        )
 
     # ---- 鸟检（快速模式仅候选集；否则全量）----
     if use_bird_detection and model:
@@ -983,7 +1017,8 @@ def process_folder(
     print(f"图片文件夹: {image_folder}")
     print(f"连拍阈值: {time_threshold}秒")
     print(
-        f"保留策略: 比例 {burst_keep_ratio:.2f}，最少 {burst_keep_min} 张/组（按组分别计算）"
+        f"保留策略: 比例 {burst_keep_ratio:.2f}，最少 {burst_keep_min} 张/组"
+        f"（按本组总张数计算；快速模式不先抽 1/3 再乘比例）"
     )
     print(f"鸟体检测: {'启用' if use_bird_detection else '禁用'}")
     print(f"鸟眼检测: {'启用' if (use_bird_detection and use_eye_detection) else '禁用'}")
@@ -1047,6 +1082,10 @@ def process_folder(
             n_g = len(group.images)
             keep_count = compute_burst_keep_count(
                 n_g, burst_keep_ratio, burst_keep_min
+            )
+            print(
+                f"\n  连拍组 {group.group_id}：全组 {n_g} 张 → 保留 {keep_count} 张"
+                f"（{burst_keep_ratio:.2f}×{n_g}，最少 {burst_keep_min}）"
             )
             skip_scoring = (keep_count >= n_g) and (not use_bird_detection)
             if skip_scoring:

@@ -2267,7 +2267,8 @@ class BirdDetectionGUI(QMainWindow):
             float(self.config.get("burst_keep_ratio", 0.2))
         )
         self.burst_keep_ratio_input.setToolTip(
-            "同一连拍组内张数较多时，按 组内张数×比例 与「最少保留」取较大值后封顶组大小"
+            "同一连拍组内：保留张数 = 组内总张数×比例，再与「最少保留」取较大值、不超过组大小。"
+            "快速模式也按全组总张数计算，不会先抽 1/3 再乘这个比例。"
         )
         process_layout.addRow("连拍保留比例:", self.burst_keep_ratio_input)
         
@@ -2328,6 +2329,10 @@ class BirdDetectionGUI(QMainWindow):
         # 快速模式
         self.use_fast_mode_checkbox = QCheckBox("使用快速模式")
         self.use_fast_mode_checkbox.setChecked(self.config['use_fast_mode'])
+        self.use_fast_mode_checkbox.setToolTip(
+            "只对部分照片跑鸟检/对焦以加速。候选张数按「全组保留数」抽取（可 2 倍余量），"
+            "保留比例仍相对本组总张数（例如 0.1 即约 10%），不会变成 1/3 再乘 0.1。"
+        )
         process_layout.addRow("", self.use_fast_mode_checkbox)
         
         process_group.setLayout(process_layout)
@@ -2834,8 +2839,9 @@ class BirdDetectionGUI(QMainWindow):
         wm_preview_row.addWidget(self.wm_run_btn)
         wm_burst_btn = QPushButton("动图生成")
         wm_burst_btn.setToolTip(
-            "将连拍合成为 WebP 动图或 MP4 视频（白平衡、显影、对齐与裁剪），"
-            "帧间隔默认按拍照时间推断；不支持动图 WebP 的 App 可选用 MP4 导出。"
+            "将连拍合成为 WebP 动图或 MP4 视频（白平衡、按裁剪框自动曝光、定点/跟踪裁剪），"
+            "后续帧用鸟体检测 + 卡尔曼跟踪标定点；帧率按每秒几张设置（默认 2）。"
+            "图片列表与定位自动保存在相片目录的项目文件中；不支持动图 WebP 的 App 可选用 MP4。"
         )
         wm_burst_btn.clicked.connect(self._open_burst_webp_dialog)
         wm_preview_row.addWidget(wm_burst_btn)

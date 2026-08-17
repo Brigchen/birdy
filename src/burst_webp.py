@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-连拍序列 → 动画 WebP 或 MP4：白平衡、生态显影、连拍对齐（人工 ROI：框内 ORB/SIFT/BRISK + 仅平移估计，
-整图随锚点平移、非 ROI 区常量留白；未设 ROI 时边带掩膜 + 相位/ECC + 平滑）、
-中心裁剪、可选叠加水印（连拍时元数据按首张）、按拍照间隔推断帧时长；MP4 便于不支持动图 WebP 的客户端播放。
+连拍序列 → 动画 WebP 或 MP4：白平衡、按裁剪框自动曝光、按每帧标定点+裁剪区裁剪（越界补边）、
+可选叠加水印（连拍时元数据按首张）、按「每秒几张」设置帧时长；MP4 便于不支持动图 WebP 的客户端播放。
 """
 
 from __future__ import annotations
@@ -17,9 +16,13 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from ecology_jpeg_develop import (
-    develop_bgr_ecology_wildlife,
-    develop_bgr_ecology_wildlife_burst_fast,
+from burst_anchor import (
+    FrameLayout,
+    crop_bgr_with_pad,
+    geom_from_first,
+    in_bounds_crop_xyxy,
+    layout_valid,
+    meter_box_in_padded_crop,
 )
 from image_io import imread_bgr
 from watermark_generator import WatermarkOptions, render_watermark_on_pil_image
@@ -267,28 +270,67 @@ def gray_world_white_balance(bgr: np.ndarray) -> np.ndarray:
     return gray_world_white_balance_with_factors(bgr, fb, fg, fr)
 
 
-def _wb_then_ecology_burst_pipeline(
+def _wb_burst_pipeline(
     raw_bgr: List[np.ndarray], opts: BurstWebpBuildOptions
 ) -> List[np.ndarray]:
-    """
-    连拍：首张统计白平衡系数 + 生态显影参数，后续帧套用（与逐张全分析相比显著加速）。
-    """
+    """连拍：首张统计白平衡系数，后续帧套用。"""
     n = len(raw_bgr)
     if n == 0:
         return []
     if opts.enable_white_balance and n >= 2:
         fb, fg, fr = gray_world_balance_factors(raw_bgr[0])
-        wb = [gray_world_white_balance_with_factors(x, fb, fg, fr) for x in raw_bgr]
-    elif opts.enable_white_balance:
-        wb = [gray_world_white_balance(x) for x in raw_bgr]
-    else:
-        wb = [x.copy() for x in raw_bgr]
+        return [gray_world_white_balance_with_factors(x, fb, fg, fr) for x in raw_bgr]
+    if opts.enable_white_balance:
+        return [gray_world_white_balance(x) for x in raw_bgr]
+    return raw_bgr
 
-    if not opts.enable_ecology_develop:
-        return wb
-    if n >= 2:
-        return develop_bgr_ecology_wildlife_burst_fast(wb)
-    return [develop_bgr_ecology_wildlife(wb[0])]
+
+def _crop_frame_maybe_ae(
+    fr: np.ndarray,
+    lay: FrameLayout,
+    geom,
+    opts: BurstWebpBuildOptions,
+) -> np.ndarray:
+    """先按布局裁剪，再按裁剪框内有效区域测光做自动曝光（比全图 gamma 快得多）。"""
+    crop = crop_bgr_with_pad(fr, lay, geom)
+    if not bool(getattr(opts, "enable_auto_exposure", False)):
+        return crop
+    strength = float(
+        np.clip(float(getattr(opts, "auto_exposure_strength", 1.0)), 0.0, 3.0)
+    )
+    if strength <= 0.0:
+        return crop
+    from auto_exposure import auto_expose_bgr
+
+    h, w = fr.shape[:2]
+    box = meter_box_in_padded_crop(lay, geom, w, h)
+    return auto_expose_bgr(crop, strength=strength, detect=False, meter_box=box)
+
+
+def _auto_expose_by_crop_layouts(
+    frames: List[np.ndarray],
+    lays: List[FrameLayout],
+    geom,
+    opts: BurstWebpBuildOptions,
+) -> List[np.ndarray]:
+    """兼容旧路径：对整图按裁剪框测光做自动曝光。导出主路径已改为裁剪后再曝光。"""
+    if not bool(getattr(opts, "enable_auto_exposure", False)):
+        return frames
+    strength = float(
+        np.clip(float(getattr(opts, "auto_exposure_strength", 1.0)), 0.0, 3.0)
+    )
+    if strength <= 0.0:
+        return frames
+    from auto_exposure import auto_expose_bgr
+
+    out: List[np.ndarray] = []
+    for fr, lay in zip(frames, lays):
+        h, w = fr.shape[:2]
+        box = in_bounds_crop_xyxy(lay, geom, w, h)
+        out.append(
+            auto_expose_bgr(fr, strength=strength, detect=False, meter_box=box)
+        )
+    return out
 
 
 def _resize_long_edge(bgr: np.ndarray, max_long: int) -> np.ndarray:
@@ -1347,12 +1389,13 @@ def _align_burst_stack_ecc(
 @dataclass
 class BurstWebpBuildOptions:
     enable_white_balance: bool = True
-    enable_ecology_develop: bool = True
-    enable_align: bool = True
-    stability_center_retention: float = 0.94
-    # 裁剪窗口中心（对齐后、裁剪前的坐标系），与首张同尺寸各帧共用；默认几何中心。
-    crop_center_norm: Tuple[float, float] = (0.5, 0.5)
-    speed_multiplier: float = 1.0
+    enable_auto_exposure: bool = True
+    auto_exposure_strength: float = 1.0
+    # 定点（三脚架）或跟踪：仅影响对话框自动找标定点；导出按 frame_layouts 裁剪。
+    mode: str = "fixed"
+    fps: float = 2.0
+    # 每帧标定点 + 裁剪区（与输入 paths 等长）；可为 FrameLayout 或 dict。
+    frame_layouts: Optional[List[Any]] = None
     max_long_edge: int = 1600
     webp_quality: int = 85
     # 与批量水印一致：在缩放后的每帧上叠加水印（不重复自动显影）。
@@ -1362,11 +1405,33 @@ class BurstWebpBuildOptions:
     prefer_folder_name_as_species: bool = True
     # 叠水印时物种/左侧主题文案；非空则优先于「从水印源文件夹路径推断文件夹名」。
     watermark_species_or_theme: str = ""
-    # 连拍对齐：人工在首张指定的 ROI 归一化矩形 (x0,y0,x1,y1)；None 则用边带自动掩膜。
-    align_track_roi_norm: Optional[Tuple[float, float, float, float]] = None
-    align_feature_detector: str = "ORB"
-    # 测试：导出/预览时每帧叠画对齐 ROI 与判据（ASCII）
-    debug_export_align_overlay: bool = False
+
+
+def _fps_and_frame_duration_ms(opts: BurstWebpBuildOptions) -> Tuple[float, float]:
+    fps = float(np.clip(float(opts.fps if opts.fps is not None else 2.0), 0.1, 60.0))
+    return fps, 1000.0 / fps
+
+
+def _coerce_frame_layouts(raw: Optional[List[Any]], n: int) -> List[FrameLayout]:
+    if not raw:
+        raise ValueError("请先在首图上设置标定点与裁剪区")
+    out: List[FrameLayout] = []
+    last: Optional[FrameLayout] = None
+    for i in range(n):
+        item = raw[i] if i < len(raw) else last
+        if item is None:
+            raise ValueError(f"第 {i + 1} 帧尚未设置标定点与裁剪区")
+        if isinstance(item, FrameLayout):
+            lay = item
+        elif isinstance(item, dict):
+            lay = FrameLayout.from_dict(item)
+        else:
+            raise ValueError("frame_layouts 格式无效")
+        out.append(lay)
+        last = lay
+    if not layout_valid(out[0]):
+        raise ValueError("请先在首图上设置标定点与裁剪区")
+    return out
 
 
 def _bgr_frames_to_pil_with_optional_watermark(
@@ -1429,23 +1494,15 @@ def _burst_prepare_animation_pil_frames(
     meta 含 progress_total（最后一步留给调用方写文件）。
     """
     paths = [p for p in paths if p and os.path.isfile(p)]
-    paths = sort_paths_by_capture_time(paths)
     if len(paths) < 2:
         raise ValueError("至少需要 2 张图片")
 
     n = len(paths)
-    align_ex = max(0, n - 1) if (opts.enable_align and n >= 2) else 0
-    # 勾选「测试：对齐叠加」且已对齐时，多一次 pg（叠画 ROI 判据），须计入总步数以免 cur 长期顶在 tot
-    dbg_align_extra = (
-        1
-        if (
-            opts.debug_export_align_overlay
-            and opts.enable_align
-            and n >= 2
-        )
-        else 0
-    )
-    tot_pg = n + 1 + 1 + align_ex + 2 + n + 1 + dbg_align_extra
+    lays = _coerce_frame_layouts(opts.frame_layouts, n)
+    fps, frame_dur_ms = _fps_and_frame_duration_ms(opts)
+    n_wb = 1 if opts.enable_white_balance else 0
+    # 加载 n + 白平衡(可选) + 裁剪/曝光 n + 缩放 1 + 水印 n + 写出 1
+    tot_pg = n + n_wb + n + 1 + n + 1
     cur_pg = 0
 
     def pg(msg: str) -> None:
@@ -1459,7 +1516,7 @@ def _burst_prepare_animation_pil_frames(
         log_terminal,
         0,
         tot_pg,
-        f"开始：{n} 帧，约 {tot_pg} 步（终端可跟踪进度）",
+        f"开始：{n} 帧，{fps:g} 张/秒，约 {tot_pg} 步（终端可跟踪进度）",
         log_tag,
     )
 
@@ -1471,55 +1528,35 @@ def _burst_prepare_animation_pil_frames(
         raw_bgr.append(im)
         pg(f"加载 {i + 1}/{n}: {os.path.basename(p)}")
 
-    interval_ms, note = infer_shot_interval_ms(paths)
-    spd = max(0.05, float(opts.speed_multiplier))
-    frame_dur_ms = max(1.0, interval_ms / spd)
-
-    pg("连拍：首张统计白平衡与生态显影，后续帧沿用…")
-    proc = _wb_then_ecology_burst_pipeline(raw_bgr, opts)
+    if opts.enable_white_balance:
+        pg("连拍：首张统计白平衡，后续帧沿用…")
+        proc = _wb_burst_pipeline(raw_bgr, opts)
+    else:
+        proc = raw_bgr
 
     h0, w0 = proc[0].shape[:2]
-    for j in range(1, len(proc)):
-        hj, wj = proc[j].shape[:2]
-        if hj != h0 or wj != w0:
-            proc[j] = cv2.resize(proc[j], (w0, h0), interpolation=cv2.INTER_AREA)
-    pg("已统一各帧像素尺寸")
+    geom = geom_from_first(lays[0], w0, h0)
 
-    align_dbg: Optional[List[Dict[str, Any]]] = None
-    if opts.debug_export_align_overlay:
-        align_dbg = []
-
-    if opts.enable_align and len(proc) >= 2:
-        proc = _align_burst_stack_ecc(
-            proc,
-            max_work_edge=1280.0,
-            on_frame=lambda j, jm: pg(f"画面对齐 {j}/{jm}"),
-            align_track_roi_norm=opts.align_track_roi_norm,
-            align_feature_detector=str(opts.align_feature_detector or "ORB"),
-            align_debug=align_dbg,
-        )
-        if opts.debug_export_align_overlay and align_dbg is not None:
-            for ii, fr in enumerate(proc):
-                row = align_dbg[ii] if ii < len(align_dbg) else {}
-                _draw_burst_align_debug_overlay(fr, ii, opts, row)
-            pg("测试：对齐后各帧已叠画 ROI 与判据（裁剪前全图坐标系）。")
-
-    cnx, cny = (
-        float(np.clip(opts.crop_center_norm[0], 0.0, 1.0)),
-        float(np.clip(opts.crop_center_norm[1], 0.0, 1.0)),
-    )
-    ret = float(np.clip(opts.stability_center_retention, 0.25, 1.0))
-    if ret < 0.999:
-        pg(f"按裁剪中心裁剪（保留约 {int(ret * 100)}% 画幅）…")
-        proc = [_center_crop_around_point(x, ret, cnx, cny) for x in proc]
-    else:
-        pg("跳过中心裁剪（100%）")
+    cropped: List[np.ndarray] = []
+    for i, (fr, lay) in enumerate(zip(proc, lays)):
+        cropped.append(_crop_frame_maybe_ae(fr, lay, geom, opts))
+        if opts.enable_auto_exposure:
+            pg(f"裁剪并自动曝光 {i + 1}/{n}")
+        else:
+            pg(f"按布局裁剪 {i + 1}/{n}")
+    proc = cropped
 
     if opts.max_long_edge > 0:
         pg(f"缩放到最长边 {opts.max_long_edge}px …")
         proc = [_resize_long_edge(x, opts.max_long_edge) for x in proc]
     else:
         pg("导出尺寸：不缩放（原分辨率）")
+
+    h1, w1 = proc[0].shape[:2]
+    for j in range(1, len(proc)):
+        hj, wj = proc[j].shape[:2]
+        if hj != h1 or wj != w1:
+            proc[j] = cv2.resize(proc[j], (w1, h1), interpolation=cv2.INTER_AREA)
 
     def _wm_pg(fi: int, fn: int, msg: str) -> None:
         pg(msg)
@@ -1528,14 +1565,16 @@ def _burst_prepare_animation_pil_frames(
         proc, paths, opts, after_each_frame=_wm_pg
     )
 
+    note = f"{fps:g} 张/秒"
     meta = {
-        "interval_ms": interval_ms,
+        "interval_ms": float(frame_dur_ms),
         "interval_note": note,
         "frame_duration_ms": float(frame_dur_ms),
-        "speed_multiplier": spd,
+        "fps": float(fps),
         "n_frames": len(frames_rgb),
         "progress_total": tot_pg,
         "last_progress_cur": cur_pg,
+        "mode": str(opts.mode or "fixed"),
     }
     return frames_rgb, paths, meta
 
@@ -1603,10 +1642,11 @@ def build_animated_webp(
         "interval_ms": meta["interval_ms"],
         "interval_note": meta["interval_note"],
         "frame_duration_ms": float(dur),
-        "speed_multiplier": meta["speed_multiplier"],
+        "fps": float(meta.get("fps", 1000.0 / max(dur, 1))),
         "n_frames": len(frames_rgb),
         "out_path": out_path,
         "format": "webp",
+        "mode": meta.get("mode", "fixed"),
     }
 
 
@@ -1620,7 +1660,7 @@ def build_animated_mp4(
     """
     与 WebP 相同处理链，写出 MP4（MPEG-4 Part 2，fourcc mp4v），便于不支持动图 WebP 的客户端播放。
 
-    帧率由推断间隔与播放倍率决定，限制在 0.25～120 fps。
+    帧率由「每秒几张」决定，限制在 0.25～120 fps。
     """
     log_tag = "[Birdy 视频导出]"
     frames_rgb, _paths_used, meta = _burst_prepare_animation_pil_frames(
@@ -1689,11 +1729,11 @@ def build_animated_mp4(
         "interval_ms": meta["interval_ms"],
         "interval_note": meta["interval_note"],
         "frame_duration_ms": frame_dur_ms,
-        "speed_multiplier": meta["speed_multiplier"],
         "n_frames": len(frames_rgb),
         "out_path": out_path,
         "format": "mp4",
         "fps": fps,
+        "mode": meta.get("mode", "fixed"),
     }
 
 
@@ -1707,43 +1747,39 @@ def build_preview_frames_rgb(
 ) -> Tuple[List[Image.Image], float, str, Optional[np.ndarray]]:
     """
     用于 UI 快速预览：限制帧数与边长，不写盘。
-    返回 (RGB PIL 列表, frame_duration_ms, interval_note, 首张对齐后裁剪前的 BGR)。
-
-    第四项与 crop_center_norm 同一坐标系，供预览画十字与裁剪框；无有效帧时为 None。
+    返回 (RGB PIL 列表, frame_duration_ms, interval_note, 首张裁剪前的 BGR)。
 
     progress(cur, total, msg)：阶段性进度（用于界面与 ETA）。
     log_terminal：是否在终端打印与 progress 同步的简要日志。
     """
-    paths = sort_paths_by_capture_time(list(paths))
-    paths = [p for p in paths if os.path.isfile(p)]
+    paths = [p for p in paths if p and os.path.isfile(p)]
+    fps, frame_dur_ms = _fps_and_frame_duration_ms(opts)
+    note = f"{fps:g} 张/秒"
     if not paths:
-        return [], 200.0, "", None
+        return [], frame_dur_ms, note, None
     take = paths[: max(1, min(len(paths), max_frames))]
-    interval_ms, note = infer_shot_interval_ms(take)
-    spd = max(0.05, float(opts.speed_multiplier))
-    frame_dur_ms = max(1.0, interval_ms / spd)
+    lays_all = _coerce_frame_layouts(opts.frame_layouts, len(paths))
+    lays = lays_all[: len(take)]
 
     o2 = BurstWebpBuildOptions(
         enable_white_balance=opts.enable_white_balance,
-        enable_ecology_develop=opts.enable_ecology_develop,
-        enable_align=opts.enable_align,
-        stability_center_retention=opts.stability_center_retention,
-        speed_multiplier=opts.speed_multiplier,
+        enable_auto_exposure=opts.enable_auto_exposure,
+        auto_exposure_strength=opts.auto_exposure_strength,
+        mode=str(opts.mode or "fixed"),
+        fps=fps,
+        frame_layouts=lays,
         max_long_edge=max_long_edge,
         webp_quality=opts.webp_quality,
         watermark_options=opts.watermark_options,
         watermark_source_folder=opts.watermark_source_folder,
         prefer_folder_name_as_species=opts.prefer_folder_name_as_species,
-        crop_center_norm=opts.crop_center_norm,
         watermark_species_or_theme=opts.watermark_species_or_theme,
-        align_track_roi_norm=opts.align_track_roi_norm,
-        align_feature_detector=str(opts.align_feature_detector or "ORB"),
-        debug_export_align_overlay=opts.debug_export_align_overlay,
     )
 
     nt = len(take)
     raw_bgr: List[np.ndarray] = []
     loaded_paths: List[str] = []
+    loaded_lays: List[FrameLayout] = []
     for i, p in enumerate(take):
         if log_terminal:
             print(
@@ -1755,22 +1791,12 @@ def build_preview_frames_rgb(
             continue
         raw_bgr.append(im)
         loaded_paths.append(p)
+        loaded_lays.append(lays[i])
     if not raw_bgr:
         return [], frame_dur_ms, note, None
 
     n = len(loaded_paths)
-    align_extra = max(0, n - 1) if (o2.enable_align and n >= 2) else 0
-    shared_enh = n >= 2 and (
-        o2.enable_white_balance or o2.enable_ecology_develop
-    )
-    enh_steps = 1 if shared_enh else n
-    dbg_align_extra = (
-        1
-        if (o2.debug_export_align_overlay and o2.enable_align and n >= 2)
-        else 0
-    )
-    # 显影 enh_steps + 对齐 + 裁剪/缩放 2 + 叠水印 n + 可选对齐调试一步（解码见终端）
-    tot_steps = enh_steps + align_extra + 2 + n + dbg_align_extra
+    tot_steps = 1 + 1 + n + 1 + n
     cur_step = 0
 
     def _emit(cur: int, tot: int, msg: str) -> None:
@@ -1788,67 +1814,32 @@ def build_preview_frames_rgb(
         c = min(cur_step, tot_steps)
         _emit(c, tot_steps, msg)
 
-    _emit(
-        0,
-        tot_steps,
-        f"已载入 {n} 帧；后续约 {tot_steps} 步"
-        + ("（连拍：首张显影分析+后续套用；叠水印仍逐帧）" if shared_enh else "")
-        + "。",
-    )
+    _emit(0, tot_steps, f"已载入 {n} 帧；后续约 {tot_steps} 步。")
 
-    proc: List[np.ndarray] = []
-    if shared_enh:
-        tick("连拍：首张统计白平衡与生态显影，其余帧沿用相同参数（加速）…")
-        proc = _wb_then_ecology_burst_pipeline(raw_bgr, o2)
+    if o2.enable_white_balance:
+        tick("连拍：首张统计白平衡，其余帧沿用…")
+        proc = _wb_burst_pipeline(raw_bgr, o2)
     else:
-        for i, bgr in enumerate(raw_bgr):
-            tick(f"白平衡 / 生态显影 {i + 1}/{n}…")
-            x = bgr
-            if o2.enable_white_balance:
-                x = gray_world_white_balance(x)
-            if o2.enable_ecology_develop:
-                x = develop_bgr_ecology_wildlife(x)
-            proc.append(x)
+        proc = raw_bgr
 
+    ref0 = proc[0].copy()
     h0, w0 = proc[0].shape[:2]
-    for j in range(1, len(proc)):
-        hj, wj = proc[j].shape[:2]
-        if hj != h0 or wj != w0:
-            proc[j] = cv2.resize(proc[j], (w0, h0), interpolation=cv2.INTER_AREA)
-
-    align_dbg: Optional[List[Dict[str, Any]]] = None
-    if o2.debug_export_align_overlay:
-        align_dbg = []
-
-    if o2.enable_align and len(proc) >= 2:
-        proc = _align_burst_stack_ecc(
-            proc,
-            max_work_edge=1280.0,
-            on_frame=lambda j, jm: tick(f"连拍对齐 {j}/{jm}…"),
-            align_track_roi_norm=o2.align_track_roi_norm,
-            align_feature_detector=str(o2.align_feature_detector or "ORB"),
-            align_debug=align_dbg,
-        )
-        if o2.debug_export_align_overlay and align_dbg is not None:
-            for ii, fr in enumerate(proc):
-                row = align_dbg[ii] if ii < len(align_dbg) else {}
-                _draw_burst_align_debug_overlay(fr, ii, o2, row)
-            tick("测试：预览对齐后已叠画 ROI 与判据（裁剪前）。")
-
-    align0_bgr = proc[0].copy()
-    cnx, cny = (
-        float(np.clip(o2.crop_center_norm[0], 0.0, 1.0)),
-        float(np.clip(o2.crop_center_norm[1], 0.0, 1.0)),
-    )
-    ret = float(np.clip(o2.stability_center_retention, 0.25, 1.0))
-    if ret < 0.999:
-        tick(f"按裁剪中心裁剪（保留约 {int(ret * 100)}% 画幅）…")
-        proc = [_center_crop_around_point(x, ret, cnx, cny) for x in proc]
-    else:
-        tick("跳过中心裁剪（100%）")
+    geom = geom_from_first(loaded_lays[0], w0, h0)
+    cropped: List[np.ndarray] = []
+    for i, (fr, lay) in enumerate(zip(proc, loaded_lays)):
+        cropped.append(_crop_frame_maybe_ae(fr, lay, geom, o2))
+        if o2.enable_auto_exposure:
+            tick(f"裁剪并自动曝光 {i + 1}/{n}…")
+        else:
+            tick(f"按布局裁剪 {i + 1}/{n}…")
+    proc = cropped
 
     tick(f"缩放到预览最长边 {max_long_edge}px …")
     proc = [_resize_long_edge(x, max_long_edge) for x in proc]
+    h1, w1 = proc[0].shape[:2]
+    for j in range(1, len(proc)):
+        if proc[j].shape[0] != h1 or proc[j].shape[1] != w1:
+            proc[j] = cv2.resize(proc[j], (w1, h1), interpolation=cv2.INTER_AREA)
 
     def _frame_cb(fi: int, fn: int, msg: str) -> None:
         tick(msg)
@@ -1857,4 +1848,4 @@ def build_preview_frames_rgb(
         proc, loaded_paths, o2, after_each_frame=_frame_cb
     )
     _emit(tot_steps, tot_steps, "预览处理完成")
-    return out_pil, frame_dur_ms, note, align0_bgr
+    return out_pil, frame_dur_ms, note, ref0

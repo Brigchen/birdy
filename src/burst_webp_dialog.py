@@ -9,11 +9,10 @@ import shutil
 import time
 from dataclasses import replace
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
-from ecology_jpeg_develop import develop_bgr_ecology_wildlife
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -42,18 +41,35 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QRect, Qt, QTimer, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPainter, QPen, QPixmap
 
+from burst_anchor import (
+    FrameLayout,
+    geom_from_first,
+    in_bounds_crop_xyxy,
+    layout_from_anchor,
+    layout_valid,
+    merge_propagate,
+)
+from burst_project import (
+    PROJECT_SUFFIX,
+    build_project_dict,
+    default_project_path_for_images,
+    is_burst_project_path,
+    load_project_file,
+    match_layout_for_path,
+    save_project_file,
+)
 from burst_webp import (
     BurstWebpBuildOptions,
     build_animated_mp4,
     build_animated_webp,
     build_preview_frames_rgb,
-    crop_window_rect_pixels,
     gray_world_white_balance,
     infer_crop_center_norm_from_birds,
-    infer_shot_interval_ms,
     sort_paths_by_capture_time,
 )
 from image_io import file_filter_all_images, imread_bgr
+
+_DRAG_PX = 8
 
 
 def _burst_gui_log(msg: str) -> None:
@@ -139,22 +155,18 @@ def _burst_webp_dialog_state_legacy_path() -> Path:
     return Path(__file__).resolve().parent / "burst_webp_dialog_state.json"
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(str(tmp), str(path))
+
+
 def _int_safe_combo_data(combo: QComboBox, default: int) -> int:
     try:
         return int(combo.currentData())
     except (TypeError, ValueError):
         return default
-
-
-def _burst_align_roi_valid(
-    roi: Optional[Tuple[float, float, float, float]], min_span: float = 0.02
-) -> bool:
-    if roi is None or len(roi) != 4:
-        return False
-    x0, y0, x1, y1 = (float(t) for t in roi)
-    x0, x1 = sorted((x0, x1))
-    y0, y1 = sorted((y0, y1))
-    return (x1 - x0 >= min_span) and (y1 - y0 >= min_span)
 
 
 def _pil_rgb_to_qimage(pil_img) -> QImage:
@@ -170,31 +182,28 @@ def _pil_rgb_to_qimage(pil_img) -> QImage:
 
 class BurstCropPreviewWidget(QWidget):
     """
-    参考模式：首张 + 红十字（裁剪中心）+ 绿虚线裁剪框 + 可选黄虚线对齐 ROI（拖拽矩形）；
-    播放模式：动效帧。点击行为由「红十字 / ROI」模式切换。
+    设置阶段：当前帧 + 红十字（标定点，单击）+ 绿框（裁剪区，拖拽）。
+    播放模式：动效帧。
     """
 
-    MODE_CROP = 0
-    MODE_TRACK = 1
-
-    center_changed = pyqtSignal(float, float)
-    track_roi_changed = pyqtSignal(float, float, float, float)
+    anchor_changed = pyqtSignal(float, float)
+    crop_changed = pyqtSignal(float, float, float, float)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._base_pix: Optional[QPixmap] = None
-        self._nx = 0.5
-        self._ny = 0.5
-        self._retention = 0.94
+        self._ax = 0.5
+        self._ay = 0.5
+        self._crop: Optional[Tuple[float, float, float, float]] = None
         self._dest = (0, 0, 1, 1)
         self._iw = 1
         self._ih = 1
         self._playback_frames: List[QImage] = []
         self._playback_idx = 0
-        self._mode = BurstCropPreviewWidget.MODE_CROP
-        self._roi_norm: Optional[Tuple[float, float, float, float]] = None
+        self._press: Optional[Tuple[int, int, float, float]] = None
         self._drag_a: Optional[Tuple[float, float]] = None
         self._drag_b: Optional[Tuple[float, float]] = None
+        self._dragging = False
         self.setMinimumSize(420, 320)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setStyleSheet("background-color: #2b2b2b; border: 1px solid #555;")
@@ -225,6 +234,9 @@ class BurstCropPreviewWidget(QWidget):
     def is_playing_back(self) -> bool:
         return len(self._playback_frames) > 0
 
+    def image_wh(self) -> Tuple[int, int]:
+        return int(self._iw), int(self._ih)
+
     def set_reference_bgr(self, bgr: Optional[np.ndarray]) -> None:
         self._base_pix = None
         self._iw = self._ih = 1
@@ -239,49 +251,19 @@ class BurstCropPreviewWidget(QWidget):
         self._base_pix = QPixmap.fromImage(qi)
         self.update()
 
-    def set_center_norm(self, nx: float, ny: float) -> None:
-        self._nx = float(np.clip(nx, 0.0, 1.0))
-        self._ny = float(np.clip(ny, 0.0, 1.0))
+    def set_layout(self, lay: Optional[FrameLayout]) -> None:
+        if lay is None:
+            self._ax, self._ay = 0.5, 0.5
+            self._crop = None
+        else:
+            self._ax = float(np.clip(lay.ax, 0.0, 1.0))
+            self._ay = float(np.clip(lay.ay, 0.0, 1.0))
+            self._crop = (float(lay.x0), float(lay.y0), float(lay.x1), float(lay.y1))
         self.update()
 
-    def set_retention(self, r: float) -> None:
-        self._retention = float(np.clip(r, 0.25, 1.0))
-        self.update()
-
-    def set_interaction_mode(self, mode: int) -> None:
-        self._mode = (
-            BurstCropPreviewWidget.MODE_CROP
-            if int(mode) == BurstCropPreviewWidget.MODE_CROP
-            else BurstCropPreviewWidget.MODE_TRACK
-        )
-        self._drag_a = self._drag_b = None
-        self.update()
-
-    def set_track_roi_norm(
-        self, rect: Optional[Tuple[float, float, float, float]]
-    ) -> None:
-        if rect is None:
-            self._roi_norm = None
-            self.update()
-            return
-        x0, y0, x1, y1 = (float(t) for t in rect)
-        x0, x1 = sorted((max(0.0, min(1.0, x0)), max(0.0, min(1.0, x1))))
-        y0, y1 = sorted((max(0.0, min(1.0, y0)), max(0.0, min(1.0, y1))))
-        min_sp = 0.02
-        if x1 - x0 < min_sp:
-            c = (x0 + x1) * 0.5
-            x0 = max(0.0, c - min_sp * 0.5)
-            x1 = min(1.0, c + min_sp * 0.5)
-        if y1 - y0 < min_sp:
-            c = (y0 + y1) * 0.5
-            y0 = max(0.0, c - min_sp * 0.5)
-            y1 = min(1.0, c + min_sp * 0.5)
-        self._roi_norm = (x0, y0, x1, y1)
-        self.update()
-
-    def clear_track_roi(self) -> None:
-        self._roi_norm = None
-        self._drag_a = self._drag_b = None
+    def set_anchor_norm(self, ax: float, ay: float) -> None:
+        self._ax = float(np.clip(ax, 0.0, 1.0))
+        self._ay = float(np.clip(ay, 0.0, 1.0))
         self.update()
 
     def _norm_from_widget(self, wx: int, wy: int) -> Optional[Tuple[float, float]]:
@@ -313,8 +295,8 @@ class BurstCropPreviewWidget(QWidget):
             p.drawText(
                 self.rect(),
                 Qt.AlignCenter,
-                "添加图片后显示首张：红十字=裁剪中心，黄虚线框=连拍对齐 ROI（下方选「对齐 ROI」后在图上拖拽）。\n"
-                "绿框=裁剪范围。「更新预览」后此处播动效。",
+                "添加图片后：单击设标定点（红十字），拖拽矩形设裁剪区（绿框）。\n"
+                "用上一张/下一张检查各帧；改首图后自动重算未锁定的后续帧。",
             )
             return
 
@@ -335,53 +317,41 @@ class BurstCropPreviewWidget(QWidget):
         self._dest = (dox, doy, dw, dh)
         p.drawPixmap(dox, doy, scal_pix)
 
-        cx_w = dox + int(round(self._nx * dw))
-        cy_w = doy + int(round(self._ny * dh))
-        pen_cross = QPen(QColor(255, 60, 60))
-        pen_cross.setWidth(2)
-        p.setPen(pen_cross)
-        p.drawLine(cx_w, doy, cx_w, doy + dh)
-        p.drawLine(dox, cy_w, dox + dw, cy_w)
-
-        x0, y0, cw, ch = crop_window_rect_pixels(iw, ih, self._retention, self._nx, self._ny)
-        rx0 = dox + int(round(x0 / float(iw) * dw))
-        ry0 = doy + int(round(y0 / float(ih) * dh))
-        rw = max(1, int(round(cw / float(iw) * dw)))
-        rh = max(1, int(round(ch / float(ih) * dh)))
-        pen_rect = QPen(QColor(120, 220, 140))
-        pen_rect.setWidth(2)
-        pen_rect.setStyle(Qt.DashLine)
-        p.setPen(pen_rect)
-        p.setBrush(Qt.NoBrush)
-        p.drawRect(rx0, ry0, rw, rh)
-
-        def _draw_roi_rect(x0n: float, y0n: float, x1n: float, y1n: float) -> None:
+        def _draw_crop(x0n: float, y0n: float, x1n: float, y1n: float) -> None:
             xa = dox + int(round(x0n * dw))
             ya = doy + int(round(y0n * dh))
             xb = dox + int(round(x1n * dw))
             yb = doy + int(round(y1n * dh))
-            pen_tr = QPen(QColor(255, 220, 60))
-            pen_tr.setWidth(2)
-            pen_tr.setStyle(Qt.DashLine)
-            p.setPen(pen_tr)
+            rx = min(xa, xb)
+            ry = min(ya, yb)
+            rw = max(1, abs(xb - xa))
+            rh = max(1, abs(yb - ya))
+            pen_rect = QPen(QColor(120, 220, 140))
+            pen_rect.setWidth(2)
+            p.setPen(pen_rect)
             p.setBrush(Qt.NoBrush)
-            p.drawRect(
-                min(xa, xb),
-                min(ya, yb),
-                max(1, abs(xb - xa)),
-                max(1, abs(yb - ya)),
-            )
+            p.drawRect(rx, ry, rw, rh)
 
-        if self._roi_norm is not None:
-            _draw_roi_rect(*self._roi_norm)
+        crop = self._crop
         if (
-            self._mode == BurstCropPreviewWidget.MODE_TRACK
+            self._dragging
             and self._drag_a is not None
             and self._drag_b is not None
         ):
             x0n, x1n = sorted((self._drag_a[0], self._drag_b[0]))
             y0n, y1n = sorted((self._drag_a[1], self._drag_b[1]))
-            _draw_roi_rect(x0n, y0n, x1n, y1n)
+            _draw_crop(x0n, y0n, x1n, y1n)
+        elif crop is not None:
+            _draw_crop(*crop)
+
+        cx_w = dox + int(round(self._ax * dw))
+        cy_w = doy + int(round(self._ay * dh))
+        arm = max(10, min(dw, dh) // 18)
+        pen_cross = QPen(QColor(255, 60, 60))
+        pen_cross.setWidth(2)
+        p.setPen(pen_cross)
+        p.drawLine(cx_w - arm, cy_w, cx_w + arm, cy_w)
+        p.drawLine(cx_w, cy_w - arm, cx_w, cy_w + arm)
 
     def mousePressEvent(self, e) -> None:
         if self._playback_frames:
@@ -393,52 +363,59 @@ class BurstCropPreviewWidget(QWidget):
         pn = self._norm_from_widget(e.x(), e.y())
         if pn is None:
             return
-        if self._mode == BurstCropPreviewWidget.MODE_TRACK:
-            self._drag_a = pn
-            self._drag_b = pn
-            self.update()
-        else:
-            self.set_center_norm(pn[0], pn[1])
-            self.center_changed.emit(self._nx, self._ny)
+        self._press = (int(e.x()), int(e.y()), pn[0], pn[1])
+        self._drag_a = pn
+        self._drag_b = pn
+        self._dragging = False
 
     def mouseMoveEvent(self, e) -> None:
         if self._playback_frames or self._base_pix is None or self._base_pix.isNull():
             return
-        if self._mode != BurstCropPreviewWidget.MODE_TRACK or self._drag_a is None:
+        if self._press is None:
             return
+        if not (e.buttons() & Qt.LeftButton):
+            return
+        dx = abs(int(e.x()) - self._press[0])
+        dy = abs(int(e.y()) - self._press[1])
+        if dx >= _DRAG_PX or dy >= _DRAG_PX:
+            self._dragging = True
         pn = self._norm_from_widget(e.x(), e.y())
         if pn is None:
             return
-        if e.buttons() & Qt.LeftButton:
-            self._drag_b = pn
+        self._drag_b = pn
+        if self._dragging:
             self.update()
 
     def mouseReleaseEvent(self, e) -> None:
         if self._playback_frames or self._base_pix is None or self._base_pix.isNull():
             return
-        if e.button() != Qt.LeftButton:
-            return
-        if self._mode != BurstCropPreviewWidget.MODE_TRACK or self._drag_a is None:
+        if e.button() != Qt.LeftButton or self._press is None:
             return
         pn = self._norm_from_widget(e.x(), e.y())
         if pn is None:
+            pn = (self._press[2], self._press[3])
+        dragging = self._dragging
+        self._press = None
+        self._dragging = False
+        if dragging and self._drag_a is not None:
+            x0, x1 = sorted((self._drag_a[0], pn[0]))
+            y0, y1 = sorted((self._drag_a[1], pn[1]))
+            min_sp = 0.02
+            if x1 - x0 < min_sp:
+                c = (x0 + x1) * 0.5
+                x0, x1 = max(0.0, c - min_sp * 0.5), min(1.0, c + min_sp * 0.5)
+            if y1 - y0 < min_sp:
+                c = (y0 + y1) * 0.5
+                y0, y1 = max(0.0, c - min_sp * 0.5), min(1.0, c + min_sp * 0.5)
+            self._crop = (x0, y0, x1, y1)
             self._drag_a = self._drag_b = None
+            self.crop_changed.emit(x0, y0, x1, y1)
             self.update()
             return
-        self._drag_b = pn
-        x0, x1 = sorted((self._drag_a[0], self._drag_b[0]))
-        y0, y1 = sorted((self._drag_a[1], self._drag_b[1]))
         self._drag_a = self._drag_b = None
-        min_sp = 0.02
-        if x1 - x0 < min_sp:
-            c = (x0 + x1) * 0.5
-            x0, x1 = max(0.0, c - min_sp * 0.5), min(1.0, c + min_sp * 0.5)
-        if y1 - y0 < min_sp:
-            c = (y0 + y1) * 0.5
-            y0, y1 = max(0.0, c - min_sp * 0.5), min(1.0, c + min_sp * 0.5)
-        self.set_track_roi_norm((x0, y0, x1, y1))
-        if self._roi_norm is not None:
-            self.track_roi_changed.emit(*self._roi_norm)
+        self._ax = float(np.clip(pn[0], 0.0, 1.0))
+        self._ay = float(np.clip(pn[1], 0.0, 1.0))
+        self.anchor_changed.emit(self._ax, self._ay)
         self.update()
 
 
@@ -467,8 +444,10 @@ class BurstWebpBuildWorker(QThread):
             _burst_gui_log(
                 f"导出线程开始（{self._export_format}）：{len(self._paths)} 张 → "
                 f"{os.path.basename(self._out_path)} "
-                f"(WB={self._opts.enable_white_balance}, 显影={self._opts.enable_ecology_develop}, "
-                f"对齐={self._opts.enable_align}, 水印={'开' if self._opts.watermark_options else '关'})"
+                f"(WB={self._opts.enable_white_balance}, "
+                f"自动曝光={self._opts.enable_auto_exposure}×{self._opts.auto_exposure_strength:.2f}, "
+                f"模式={self._opts.mode}, fps={self._opts.fps:g}, "
+                f"水印={'开' if self._opts.watermark_options else '关'})"
             )
 
             def _cb(cur: int, tot: int, msg: str) -> None:
@@ -493,78 +472,33 @@ class BurstWebpBuildWorker(QThread):
 
 class BurstWebpPreviewWorker(QThread):
     progress = pyqtSignal(int, int, str)
-    done = pyqtSignal(object, float, str, object, float, float)
+    done = pyqtSignal(object, float, str)
     failed = pyqtSignal(str)
 
     def __init__(
         self,
         paths: List[str],
         opts: BurstWebpBuildOptions,
-        get_detector: Optional[Callable[[], Optional[object]]] = None,
-        user_touched_center: bool = False,
         parent=None,
     ):
         super().__init__(parent)
         self._paths = list(paths)
         self._opts = opts
-        self._get_detector = get_detector
-        self._user_touched_center = user_touched_center
 
     def run(self) -> None:
         _burst_worker_configure_openmp()
         try:
             _burst_gui_log(
-                f"预览线程开始：{len(self._paths)} 张路径，用户已手调中心={self._user_touched_center}，"
-                f"当前中心=({self._opts.crop_center_norm[0]:.4f},{self._opts.crop_center_norm[1]:.4f})"
+                f"预览线程开始：{len(self._paths)} 张，模式={self._opts.mode}，"
+                f"fps={self._opts.fps:g}"
             )
-
-            opts = self._opts
-            ordered = sort_paths_by_capture_time(
-                [p for p in self._paths if os.path.isfile(p)]
-            )
-            if (
-                self._get_detector is not None
-                and not self._user_touched_center
-                and ordered
-                and abs(opts.crop_center_norm[0] - 0.5) < 1e-4
-                and abs(opts.crop_center_norm[1] - 0.5) < 1e-4
-            ):
-                _burst_gui_log("预览线程：默认中心，尝试首张鸟检以推断裁剪中心…")
-                try:
-                    bgr = imread_bgr(ordered[0], raw_half_size=True)
-                    if bgr is not None and bgr.size:
-                        x = bgr
-                        if opts.enable_white_balance:
-                            x = gray_world_white_balance(x)
-                        if opts.enable_ecology_develop:
-                            x = develop_bgr_ecology_wildlife(x)
-                        det = self._get_detector()
-                        if det is not None:
-                            birds = det.detect_birds(x)
-                            if birds:
-                                nx1, ny1 = infer_crop_center_norm_from_birds(x, birds)
-                                opts = replace(
-                                    opts, crop_center_norm=(float(nx1), float(ny1))
-                                )
-                                _burst_gui_log(
-                                    f"预览线程：鸟检命中 {len(birds)} 框 → 裁剪中心=({nx1:.4f},{ny1:.4f})"
-                                )
-                            else:
-                                _burst_gui_log("预览线程：首张无鸟框，保持中心 (0.5,0.5)。")
-                        else:
-                            _burst_gui_log("预览线程：无鸟检测器，跳过首张鸟检。")
-                except Exception as ex:
-                    _burst_gui_log(f"预览线程：首张鸟检异常（已忽略）：{ex}")
-            else:
-                _burst_gui_log("预览线程：跳过首张鸟检（用户已设中心或中心非默认）。")
 
             def _cb(cur: int, tot: int, msg: str) -> None:
                 self.progress.emit(cur, tot, f"[预览] {msg}")
 
-            _burst_gui_log("预览线程：调用 build_preview_frames_rgb（终端另有 [Birdy 动图预览] 日志）…")
-            pil_list, dur, note, align0 = build_preview_frames_rgb(
+            pil_list, dur, note, _ref0 = build_preview_frames_rgb(
                 self._paths,
-                opts,
+                self._opts,
                 max_long_edge=720,
                 max_frames=20,
                 progress=_cb,
@@ -576,20 +510,106 @@ class BurstWebpPreviewWorker(QThread):
                 _burst_gui_log(f"预览线程：PIL→QImage 失败：{ex}")
                 self.failed.emit(f"预览转图失败（PIL→QImage）：{ex}")
                 return
-            cnx, cny = opts.crop_center_norm
             _burst_gui_log(
-                f"预览线程完成：{len(qimgs)} 张 QImage，间隔≈{dur:.1f} ms，"
-                f"采用裁剪中心=({cnx:.4f},{cny:.4f})"
+                f"预览线程完成：{len(qimgs)} 张 QImage，间隔≈{dur:.1f} ms（{note}）"
             )
-            self.done.emit(qimgs, float(dur), note, align0, float(cnx), float(cny))
+            self.done.emit(qimgs, float(dur), note)
         except Exception as e:
             _burst_gui_log(f"预览线程异常：{e}")
             self.failed.emit(str(e))
 
 
+class BurstAnchorPropagateWorker(QThread):
+    progress = pyqtSignal(int, int, str)
+    done = pyqtSignal(object, int)
+    failed = pyqtSignal(str, int)
+
+    def __init__(
+        self,
+        paths: List[str],
+        layouts: List[Optional[FrameLayout]],
+        mode: str,
+        enable_wb: bool,
+        job_id: int,
+        parent=None,
+        get_detector: Optional[Callable[[], Optional[object]]] = None,
+    ):
+        super().__init__(parent)
+        self._paths = list(paths)
+        self._layouts = list(layouts)
+        self._mode = mode
+        self._enable_wb = bool(enable_wb)
+        self._job_id = int(job_id)
+        self._get_detector = get_detector
+
+    def run(self) -> None:
+        _burst_worker_configure_openmp()
+        jid = self._job_id
+        try:
+            n = len(self._paths)
+            frames: List[np.ndarray] = []
+            for i, p in enumerate(self._paths):
+                if self.isInterruptionRequested():
+                    return
+                self.progress.emit(i + 1, n + 2, f"传播：加载 {i + 1}/{n}")
+                im = imread_bgr(p, raw_half_size=True)
+                if im is None:
+                    raise RuntimeError(f"无法读取：{p}")
+                x = im
+                if self._enable_wb:
+                    x = gray_world_white_balance(x)
+                frames.append(x)
+            detect_fn = None
+            det = None
+            self.progress.emit(n + 1, n + 2, "传播：加载鸟体模型…")
+            if self._get_detector is not None:
+                try:
+                    det = self._get_detector()
+                except Exception as ex:
+                    _burst_gui_log(f"传播：主界面鸟体模型不可用：{ex}")
+                    det = None
+            if det is None:
+                try:
+                    from auto_exposure import _get_bird_detector
+
+                    det = _get_bird_detector()
+                except Exception as ex:
+                    _burst_gui_log(f"传播：鸟体模型加载失败，改用模板匹配：{ex}")
+                    det = None
+            if det is not None and hasattr(det, "detect_birds"):
+
+                def detect_fn(bgr, _det=det):
+                    try:
+                        return _det.detect_birds(bgr) or []
+                    except Exception:
+                        return []
+
+                _burst_gui_log("传播：已启用 YOLO 鸟体跟踪 + 卡尔曼。")
+            else:
+                _burst_gui_log("传播：无鸟体模型，仅模板匹配。")
+
+            def _prog(cur: int, tot: int, msg: str) -> None:
+                if self.isInterruptionRequested():
+                    return
+                self.progress.emit(max(1, cur + 1), max(tot + 1, 1), msg)
+
+            self.progress.emit(n + 2, n + 2, "传播：鸟体追踪 / 模板匹配…")
+            merged = merge_propagate(
+                frames,
+                self._layouts,
+                self._mode,
+                detect_birds_fn=detect_fn,
+                progress=_prog,
+            )
+            self.done.emit(merged, jid)
+        except Exception as e:
+            _burst_gui_log(f"标定点传播失败：{e}")
+            self.failed.emit(str(e), jid)
+
+
 class BurstRefBirdWorker(QThread):
     """
-    首张参考图上的鸟体检测与裁剪中心推断。
+    首张参考图上的鸟体检测，用于建议标定点。
     YOLO/torch 若在 Qt GUI 主线程与 OpenMP 并行库叠加，Windows 上易出现整进程闪退；
     故统一放到后台线程，并通过 job id 丢弃过期结果。
     """
@@ -626,7 +646,7 @@ class BurstRefBirdWorker(QThread):
             birds = det.detect_birds(self._bgr)
             nx, ny = infer_crop_center_norm_from_birds(self._bgr, birds)
             _burst_gui_log(
-                f"首张参考：鸟检线程完成，{len(birds)} 框，中心=({nx:.4f},{ny:.4f})"
+                f"首张参考：鸟检线程完成，{len(birds)} 框，标定点=({nx:.4f},{ny:.4f})"
             )
         except Exception as ex:
             _burst_gui_log(f"首张参考：鸟检线程异常，使用 (0.5,0.5)：{ex}")
@@ -645,27 +665,44 @@ class BurstWebpDialog(QDialog):
         self.resize(min(1240, aw), min(820, ah))
         self._default_dir = default_dir or ""
         self._preview_qimages: List[QImage] = []
-        self._preview_dur_ms = 200.0
+        self._preview_dur_ms = 500.0
         self._preview_idx = 0
         self._pv_worker: Optional[BurstWebpPreviewWorker] = None
         self._build_worker: Optional[BurstWebpBuildWorker] = None
         self._ref_bird_worker: Optional[BurstRefBirdWorker] = None
         self._ref_bird_job_id = 0
-        self._ref_bird_ctx_had_saved = False
-        self._crop_nx = 0.5
-        self._crop_ny = 0.5
-        self._crop_user_touched = False
-        self._ref_bgr_cache: Optional[np.ndarray] = None
-        self._initial_crop_nx = 0.5
-        self._initial_crop_ny = 0.5
-        self._align_roi_norm: Optional[Tuple[float, float, float, float]] = None
+        self._prop_worker: Optional[BurstAnchorPropagateWorker] = None
+        self._prop_job_id = 0
+        self._layouts: List[Optional[FrameLayout]] = []
+        self._layout_paths: List[str] = []
+        self._layout_by_path: Dict[str, FrameLayout] = {}
+        self._frame_idx = 0
+        self._project_path: Optional[Path] = None
+        self._project_path_user_set = False
+        self._project_io_ready = False
+        self._loading_project = False
+        self._project_bulk_update = False
+        self._last_project_path_hint = ""
+        self._bgr_cache: Dict[Tuple[str, bool], np.ndarray] = {}
+        self._ae_corr_cache: Dict[tuple, np.ndarray] = {}
+        self._ref_bird_key: Optional[Tuple[str, bool]] = None
+        self._logged_show_path: Optional[str] = None
+        self._later_anchor_dirty = False
+        self._first_wh: Optional[Tuple[int, int]] = None
+        self._suggested_ax = 0.5
+        self._suggested_ay = 0.5
+        self._anchor_user_touched = False
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._on_preview_tick)
         self._ref_debounce = QTimer(self)
         self._ref_debounce.setSingleShot(True)
         self._ref_debounce.setInterval(200)
-        self._ref_debounce.timeout.connect(self._refresh_ref_from_first_image)
+        self._ref_debounce.timeout.connect(self._show_current_source_frame)
+        self._prop_debounce = QTimer(self)
+        self._prop_debounce.setSingleShot(True)
+        self._prop_debounce.setInterval(350)
+        self._prop_debounce.timeout.connect(self._start_propagate)
 
         # ── 主区域：左（可滚动参数） | 右（可滚动预览 + 底部固定路径/按钮）──
         main_h = QHBoxLayout(self)
@@ -710,29 +747,32 @@ class BurstWebpDialog(QDialog):
         row_btns.addWidget(self.btn_dn)
         left_l.addLayout(row_btns)
 
+        row_proj = QHBoxLayout()
+        self.btn_open_proj = QPushButton("打开项目…")
+        self.btn_open_proj.setToolTip("打开相片目录下的 .birdy-burst.json，恢复图片列表与每帧标定点/裁剪区。")
+        self.btn_open_proj.clicked.connect(self._on_open_project)
+        self.btn_save_proj_as = QPushButton("项目另存为…")
+        self.btn_save_proj_as.setToolTip("复制当前图片列表与定位到指定项目文件；之后自动保存到该文件。")
+        self.btn_save_proj_as.clicked.connect(self._on_save_project_as)
+        row_proj.addWidget(self.btn_open_proj)
+        row_proj.addWidget(self.btn_save_proj_as)
+        left_l.addLayout(row_proj)
+        self.lbl_project = QLabel("项目：导入图片后将自动保存在相片目录")
+        self.lbl_project.setWordWrap(True)
+        self.lbl_project.setStyleSheet("color: #555; font-size: 9pt;")
+        left_l.addWidget(self.lbl_project)
+
         opt_g = QGroupBox("处理与导出")
         fl = QFormLayout(opt_g)
         self.cb_wb = QCheckBox("灰世界白平衡")
         self.cb_wb.setChecked(True)
-        self.cb_eco = QCheckBox("生态显影（曝光 / 分区明暗 / 对比度等，与入库显影同源）")
-        self.cb_eco.setChecked(True)
-        self.cb_align = QCheckBox("连拍对齐（ROI 内特征平移，非 ROI 留白）")
-        self.cb_align.setChecked(True)
-        self.cb_align.setToolTip(
-            "首张在 ROI 内提特征作全局锚；后续帧在 ROI 外扩区内提点。"
-            "自第 3 张起优先与「已对齐全的上一张」配准，再与「只对首张」择优；"
-            "链式单步平移异常大时改首张以免顶夹漂移；每 6 帧强制与首张重锚。"
-            "未设 ROI 时回退边带相位/ECC（自动场景对齐）。"
-        )
-        self.cb_debug_align = QCheckBox(
-            "测试：导出/预览叠画对齐 ROI 与数值（黄虚线框+ASCII，裁剪前）"
-        )
-        self.cb_debug_align.setChecked(False)
-        self.cb_debug_align.setToolTip(
-            "黄虚线=你在首张画的「对齐 ROI」（归一化矩形投到当前分辨率）。\n"
-            "橙虚线=该帧在对齐前用于提 ORB/SIFT/BRISK 的「ROI 外扩矩形」，会按本帧估计平移换算后画在"
-            "「对齐后的整图」上，便于和黄色锚框对照；不是跟踪框，不保证目标始终在橙框内。\n"
-            "字与框线已加粗加大；终端另有 [Birdy 连拍对齐] 每帧位移日志。未设 ROI 的边带 ECC 模式不画黄/橙框。"
+        self.cb_ae = QCheckBox("自动曝光")
+        self.cb_ae.setChecked(True)
+        self.cb_ae.setToolTip(
+            "按每帧裁剪框测光，自动提亮或压暗（与水印前自动曝光同类算法）。\n"
+            "勾选或拖动强度时，当前图立即预览效果。\n"
+            "强度 1=算出的自动曝光；小于 1 减弱；大于 1 在自动曝光上继续加曝光（最大 3）。\n"
+            "未画裁剪区时按全图测光；有裁剪区后按绿框测光（与导出一致）。"
         )
         self.cb_wm = QCheckBox("叠加水印（与主界面「水印与分享」当前选项一致，含布局 / Logo / 文字）")
         self.cb_wm.setChecked(True)
@@ -741,9 +781,25 @@ class BurstWebpDialog(QDialog):
             "画面仍为各帧像素（与连拍白平衡、显影沿用首张参数一致）。单张预览仍按该张元数据。"
         )
         fl.addRow(self.cb_wb)
-        fl.addRow(self.cb_eco)
-        fl.addRow(self.cb_align)
-        fl.addRow(self.cb_debug_align)
+        fl.addRow(self.cb_ae)
+        self.slider_ae = QSlider(Qt.Horizontal)
+        self.slider_ae.setRange(0, 300)
+        self.slider_ae.setSingleStep(5)
+        self.slider_ae.setValue(100)
+        self.slider_ae.setToolTip(
+            "0=原图，1=按裁剪框算出的自动曝光，>1 在此基础上继续加曝光（2≈+1 档，3≈+2 档）。拖动时当前图同步预览。"
+        )
+        self.lbl_ae_strength = QLabel("1.00")
+        self.lbl_ae_strength.setMinimumWidth(34)
+        self.slider_ae.valueChanged.connect(
+            lambda v: self.lbl_ae_strength.setText(f"{v / 100:.2f}")
+        )
+        ae_row = QHBoxLayout()
+        ae_row.addWidget(self.slider_ae, 1)
+        ae_row.addWidget(self.lbl_ae_strength)
+        fl.addRow("曝光强度:", ae_row)
+        self.cb_ae.toggled.connect(self.slider_ae.setEnabled)
+        self.slider_ae.setEnabled(self.cb_ae.isChecked())
         fl.addRow(self.cb_wm)
         self.lbl_wm_theme = QLabel("水印物种 / 动图主题：")
         self.ed_wm_theme = QLineEdit()
@@ -756,26 +812,30 @@ class BurstWebpDialog(QDialog):
         )
         fl.addRow(self.lbl_wm_theme, self.ed_wm_theme)
 
-        self.slider_ret = QSlider(Qt.Horizontal)
-        self.slider_ret.setRange(25, 100)
-        self.slider_ret.setValue(94)
-        self.slider_ret.setToolTip(
-            "保留画幅比例（裁剪窗口大小），约 25%～100%；越小裁边越多、画面越稳。"
-            "裁剪中心由红色十字决定（首张自动鸟检或点击预览图），先对准中心再夹紧到图像内。"
+        self._bg_mode = QButtonGroup(self)
+        self.rb_mode_fixed = QRadioButton("定点模式（三脚架）")
+        self.rb_mode_track = QRadioButton("跟踪模式")
+        self.rb_mode_fixed.setChecked(True)
+        self.rb_mode_fixed.setToolTip(
+            "相机相对固定时：后续帧用鸟体检测跟踪你点的那只鸟（卡尔曼预测位置），"
+            "找不到鸟再退回首图模板匹配。鸟可在裁剪框内移动。"
         )
-        self.lbl_ret = QLabel("保留画幅约 94%（裁剪中心见预览十字）")
-        self.slider_ret.valueChanged.connect(self._on_ret_changed)
-        fl.addRow(self.lbl_ret, self.slider_ret)
+        self.rb_mode_track.setToolTip(
+            "跟拍时：用鸟体 YOLO 检测 + 卡尔曼滤波跟踪标定点（眼/头相对鸟框位置保持不变）；"
+            "漏检时用光流与模板在附近搜索。"
+        )
+        self._bg_mode.addButton(self.rb_mode_fixed)
+        self._bg_mode.addButton(self.rb_mode_track)
+        fl.addRow(self.rb_mode_fixed)
+        fl.addRow(self.rb_mode_track)
 
-        self.spn_speed = QDoubleSpinBox()
-        self.spn_speed.setRange(0.25, 8.0)
-        self.spn_speed.setSingleStep(0.25)
-        self.spn_speed.setDecimals(2)
-        self.spn_speed.setValue(1.0)
-        self.spn_speed.setToolTip(
-            "1.0 = 按推断拍照间隔播放；大于 1 加快，小于 1 减慢。"
-        )
-        fl.addRow("播放加速倍率:", self.spn_speed)
+        self.spn_fps = QDoubleSpinBox()
+        self.spn_fps.setRange(0.25, 30.0)
+        self.spn_fps.setSingleStep(0.5)
+        self.spn_fps.setDecimals(2)
+        self.spn_fps.setValue(2.0)
+        self.spn_fps.setToolTip("播放时每秒显示几张图。默认 2。")
+        fl.addRow("播放帧率（张/秒）:", self.spn_fps)
 
         self.cmb_max = QComboBox()
         self.cmb_max.addItem("最长边 1080", 1080)
@@ -792,9 +852,9 @@ class BurstWebpDialog(QDialog):
         self.spn_q.setValue(85)
         fl.addRow("WebP 质量:", self.spn_q)
 
-        self.lbl_interval = QLabel("推断间隔：—")
-        self.lbl_interval.setWordWrap(True)
-        fl.addRow(self.lbl_interval)
+        self.lbl_fps_hint = QLabel("播放：每秒 2 张 → 每帧约 500 ms")
+        self.lbl_fps_hint.setWordWrap(True)
+        fl.addRow(self.lbl_fps_hint)
 
         left_l.addWidget(opt_g)
         left_l.addStretch(0)
@@ -820,45 +880,39 @@ class BurstWebpDialog(QDialog):
         pv_inner_l.setSpacing(6)
 
         self._pv_canvas = BurstCropPreviewWidget(self)
-        self._pv_canvas.set_retention(self.slider_ret.value() / 100.0)
-        self._pv_canvas.center_changed.connect(self._on_crop_center_from_canvas)
-        self._pv_canvas.track_roi_changed.connect(self._on_track_roi_from_canvas)
+        self._pv_canvas.anchor_changed.connect(self._on_anchor_from_canvas)
+        self._pv_canvas.crop_changed.connect(self._on_crop_from_canvas)
         pv_inner_l.addWidget(self._pv_canvas, stretch=1)
 
-        row_pick = QHBoxLayout()
-        self._bg_pick = QButtonGroup(self)
-        self.rb_pick_crop = QRadioButton("红十字：裁剪中心")
-        self.rb_pick_track = QRadioButton("黄框：对齐 ROI（拖拽矩形）")
-        self.rb_pick_crop.setChecked(True)
-        self._bg_pick.addButton(self.rb_pick_crop)
-        self._bg_pick.addButton(self.rb_pick_track)
-        self.rb_pick_crop.clicked.connect(lambda: self._pv_canvas.set_interaction_mode(0))
-        self.rb_pick_track.clicked.connect(lambda: self._pv_canvas.set_interaction_mode(1))
-        row_pick.addWidget(self.rb_pick_crop)
-        row_pick.addWidget(self.rb_pick_track)
-        pv_inner_l.addLayout(row_pick)
-
-        row_trk = QHBoxLayout()
-        self.lbl_align_feat = QLabel("ROI 特征：")
-        self.cmb_align_feat = QComboBox()
-        self.cmb_align_feat.addItem("ORB（默认）", "ORB")
-        self.cmb_align_feat.addItem("SIFT", "SIFT")
-        self.cmb_align_feat.addItem("BRISK", "BRISK")
-        self.cmb_align_feat.setToolTip(
-            "仅在手动 ROI 内提关键点；首张与当前帧同一像素框内匹配。"
-            "SIFT 需 OpenCV 非 contrib 构建支持；不可用时自动退回 ORB。"
+        self.lbl_pick_hint = QLabel(
+            "单击：标定点（红十字）　拖拽：裁剪区（绿框）。"
+            "后续帧单击后，裁剪区按首图相对位置与大小跟随。"
         )
-        self.cmb_align_feat.currentIndexChanged.connect(self._schedule_burst_state_save)
-        row_trk.addWidget(self.lbl_align_feat)
-        row_trk.addWidget(self.cmb_align_feat, 1)
-        pv_inner_l.addLayout(row_trk)
+        self.lbl_pick_hint.setStyleSheet("color: #666; font-size: 9pt;")
+        pv_inner_l.addWidget(self.lbl_pick_hint)
+
+        row_nav = QHBoxLayout()
+        self.btn_frame_prev = QPushButton("上一张")
+        self.btn_frame_next = QPushButton("下一张")
+        self.lbl_frame_idx = QLabel("当前 — / —")
+        self.btn_recompute = QPushButton("按首图重算后续")
+        self.btn_recompute.setToolTip("解锁后续帧并用当前首图标定点/裁剪区重新自动传播。")
+        self.btn_frame_prev.clicked.connect(lambda: self._step_frame(-1))
+        self.btn_frame_next.clicked.connect(lambda: self._step_frame(1))
+        self.btn_recompute.clicked.connect(self._on_recompute_later)
+        self.list_w.itemClicked.connect(self._on_list_item_clicked)
+        row_nav.addWidget(self.btn_frame_prev)
+        row_nav.addWidget(self.lbl_frame_idx, 1)
+        row_nav.addWidget(self.btn_frame_next)
+        row_nav.addWidget(self.btn_recompute)
+        pv_inner_l.addLayout(row_nav)
 
         row_prev = QHBoxLayout()
         self.btn_prev = QPushButton("更新预览")
         self.btn_prev.clicked.connect(self._start_preview)
         self.btn_reset_view = QPushButton("恢复初始设置")
         self.btn_reset_view.setToolTip(
-            "停止动效预览，回到首张参考图，并将裁剪中心恢复为自动鸟检结果（无鸟则为画面中心）。"
+            "停止动效预览，回到首张，并清除各帧标定点/裁剪区（可再标一次）。"
         )
         self.btn_reset_view.clicked.connect(self._on_reset_initial)
         row_prev.addWidget(self.btn_prev)
@@ -918,66 +972,88 @@ class BurstWebpDialog(QDialog):
 
         self.list_w.model().rowsInserted.connect(self._on_list_changed)
         self.list_w.model().rowsRemoved.connect(self._on_list_changed)
-        self.spn_speed.valueChanged.connect(self._refresh_interval_hint)
-        self.spn_speed.valueChanged.connect(self._log_speed_changed)
-        self.cb_wb.stateChanged.connect(self._schedule_ref_refresh)
-        self.cb_eco.stateChanged.connect(self._schedule_ref_refresh)
+        self.spn_fps.valueChanged.connect(self._refresh_fps_hint)
+        self.spn_fps.valueChanged.connect(self._log_fps_changed)
+        self.cb_wb.stateChanged.connect(self._on_enhance_toggled)
         self.cb_wb.stateChanged.connect(self._log_wb_toggle)
-        self.cb_eco.stateChanged.connect(self._log_eco_toggle)
-        self.cb_align.stateChanged.connect(self._log_align_toggle)
+        self.cb_ae.stateChanged.connect(self._log_ae_toggle)
+        self.cb_ae.stateChanged.connect(self._on_ae_preview_changed)
+        self.slider_ae.valueChanged.connect(self._on_ae_preview_changed)
         self.cb_wm.stateChanged.connect(self._log_wm_toggle)
         self.cmb_max.currentIndexChanged.connect(self._log_export_size_changed)
         self.spn_q.valueChanged.connect(self._log_webp_quality_changed)
+        self.rb_mode_fixed.toggled.connect(self._on_mode_toggled)
+        self.rb_mode_track.toggled.connect(self._on_mode_toggled)
 
         self._state_window_maximized = True
         self._state_window_geometry: Optional[Tuple[int, int, int, int]] = None
-        self._saved_crop_nx = 0.5
-        self._saved_crop_ny = 0.5
-        self._restore_saved_crop_once = False
-        # 必须在 _load_burst_dialog_state 之前：加载状态时会触发控件信号，
-        # 进而 _schedule_burst_state_save，依赖本定时器。
+        self._state_io_ready = False
         self._save_state_timer = QTimer(self)
         self._save_state_timer.setSingleShot(True)
-        self._save_state_timer.setInterval(500)
+        self._save_state_timer.setInterval(400)
         self._save_state_timer.timeout.connect(self._save_burst_dialog_state)
+        self._save_project_timer = QTimer(self)
+        self._save_project_timer.setSingleShot(True)
+        self._save_project_timer.setInterval(600)
+        self._save_project_timer.timeout.connect(self._save_project_now)
         for sig in (
             self.cb_wb.stateChanged,
-            self.cb_eco.stateChanged,
-            self.cb_align.stateChanged,
+            self.cb_ae.stateChanged,
+            self.slider_ae.valueChanged,
             self.cb_wm.stateChanged,
-            self.cb_debug_align.stateChanged,
-            self.slider_ret.valueChanged,
-            self.spn_speed.valueChanged,
+            self.spn_fps.valueChanged,
             self.cmb_max.currentIndexChanged,
             self.spn_q.valueChanged,
+            self.rb_mode_fixed.toggled,
+            self.rb_mode_track.toggled,
         ):
             sig.connect(self._schedule_burst_state_save)
+            sig.connect(self._schedule_project_save)
         self.ed_wm_theme.textChanged.connect(self._schedule_burst_state_save)
+        self.ed_wm_theme.textChanged.connect(self._schedule_project_save)
         self.ed_out.textChanged.connect(self._schedule_burst_state_save)
+        self.ed_out.textChanged.connect(self._schedule_project_save)
+        self._bg_export_fmt.buttonClicked.connect(self._schedule_burst_state_save)
+        self._bg_export_fmt.buttonClicked.connect(self._schedule_project_save)
 
         self._load_burst_dialog_state()
+        self._try_autoload_project_from_default_dir()
+        self._state_io_ready = True
+        self._project_io_ready = True
 
         _burst_gui_log(
             f"动图对话框初始化完成；默认相片目录={self._default_dir or '(空)'}，"
             f"列表中 {self.list_w.count()} 张。"
         )
-        # 推迟到事件循环：避免 __init__ 末尾与 _load 触发的信号链重入同一刷新逻辑导致不稳定
         QTimer.singleShot(0, self._schedule_ref_refresh)
         QTimer.singleShot(0, self._log_wm_toggle)
+        QTimer.singleShot(0, self._refresh_fps_hint)
 
     def _schedule_burst_state_save(self, *_args) -> None:
-        """参数变更后防抖写入，避免只读安装目录或强关窗口时从未落盘。"""
+        """参数变更后防抖写入。初始化加载期间不写盘，避免用默认值覆盖上次设置。"""
+        if not getattr(self, "_state_io_ready", False):
+            return
         self._save_state_timer.stop()
-        self._save_state_timer.start(500)
+        self._save_state_timer.start(400)
+
+    def _schedule_project_save(self, *_args) -> None:
+        if not getattr(self, "_project_io_ready", False):
+            return
+        if getattr(self, "_loading_project", False) or getattr(
+            self, "_project_bulk_update", False
+        ):
+            return
+        self._save_project_timer.stop()
+        self._save_project_timer.start(600)
+
+    def _burst_mode(self) -> str:
+        return "track" if self.rb_mode_track.isChecked() else "fixed"
 
     def _log_wb_toggle(self, _state: int = 0) -> None:
         _burst_gui_log(f"参数：灰世界白平衡 → {'开启' if self.cb_wb.isChecked() else '关闭'}")
 
-    def _log_eco_toggle(self, _state: int = 0) -> None:
-        _burst_gui_log(f"参数：生态显影 → {'开启' if self.cb_eco.isChecked() else '关闭'}")
-
-    def _log_align_toggle(self, _state: int = 0) -> None:
-        _burst_gui_log(f"参数：连拍对齐 → {'开启' if self.cb_align.isChecked() else '关闭'}")
+    def _log_ae_toggle(self, _state: int = 0) -> None:
+        _burst_gui_log(f"参数：自动曝光 → {'开启' if self.cb_ae.isChecked() else '关闭'}")
 
     def _log_wm_toggle(self, _state: int = 0) -> None:
         en = self.cb_wm.isChecked()
@@ -992,63 +1068,221 @@ class BurstWebpDialog(QDialog):
     def _log_webp_quality_changed(self, v: int) -> None:
         _burst_gui_log(f"参数：WebP 质量 → {v}")
 
+    def _log_fps_changed(self, v: float) -> None:
+        _burst_gui_log(f"参数：播放帧率 → {v:g} 张/秒")
+
+    def _on_enhance_toggled(self, *_a) -> None:
+        self._bgr_cache.clear()
+        self._ae_corr_cache.clear()
+        self._schedule_ref_refresh()
+
+    def _on_ae_preview_changed(self, *_a) -> None:
+        """勾选自动曝光或拖动强度时，刷新当前图预览（防抖）。"""
+        self._schedule_ref_refresh()
+
+    def _on_mode_toggled(self, checked: bool) -> None:
+        if not checked:
+            return
+        _burst_gui_log(f"参数：动图模式 → {self._burst_mode()}")
+        if layout_valid(self._layouts[0] if self._layouts else None):
+            self._schedule_propagate()
+
     def _schedule_ref_refresh(self) -> None:
         if self._pv_worker is not None and self._pv_worker.isRunning():
             _burst_gui_log("首张参考刷新已推迟：预览线程占用中。")
             return
-        _burst_gui_log("已安排首张参考图刷新（200ms 防抖）。")
         self._ref_debounce.stop()
         self._ref_debounce.start(200)
 
+    def _flush_layouts_to_sticky(self) -> None:
+        for p, lay in zip(self._layout_paths, self._layouts):
+            if p and lay is not None:
+                self._layout_by_path[p] = lay
+
+    def _sync_layouts_to_list(self) -> None:
+        new_paths = self._collect_paths()
+        self._flush_layouts_to_sticky()
+        if not getattr(self, "_project_bulk_update", False):
+            live = set(new_paths)
+            self._layout_by_path = {
+                k: v for k, v in self._layout_by_path.items() if k in live
+            }
+        old_paths = list(self._layout_paths)
+        old_lays = list(self._layouts)
+        if (
+            new_paths == old_paths
+            and len(old_lays) == len(new_paths)
+            and not getattr(self, "_project_bulk_update", False)
+        ):
+            return
+        new_lays: List[Optional[FrameLayout]] = []
+        for i, p in enumerate(new_paths):
+            if p in self._layout_by_path:
+                new_lays.append(self._layout_by_path[p])
+            elif i < len(old_lays) and i < len(old_paths) and old_paths[i] == p:
+                new_lays.append(old_lays[i])
+            elif not old_paths and i < len(old_lays):
+                new_lays.append(old_lays[i])
+            else:
+                new_lays.append(None)
+        self._layouts = new_lays
+        self._layout_paths = list(new_paths)
+        if self._frame_idx >= len(new_paths):
+            self._frame_idx = max(0, len(new_paths) - 1)
+        if not new_paths:
+            self._frame_idx = 0
+            self._first_wh = None
+
+    def _begin_list_bulk(self) -> None:
+        self._flush_layouts_to_sticky()
+        self._project_bulk_update = True
+
+    def _end_list_bulk(self) -> None:
+        self._project_bulk_update = False
+        self._sync_layouts_to_list()
+        self._refresh_fps_hint()
+        self._schedule_ref_refresh()
+        self._schedule_project_save()
+
     def _on_list_changed(self, *args) -> None:
         del args
+        if getattr(self, "_project_bulk_update", False) or getattr(
+            self, "_loading_project", False
+        ):
+            return
         n = self.list_w.count()
         _burst_gui_log(f"图片列表已变化，当前共 {n} 项。")
-        self._refresh_interval_hint()
+        self._sync_layouts_to_list()
+        self._refresh_fps_hint()
         self._schedule_ref_refresh()
-
-    def _on_ret_changed(self, v: int) -> None:
-        self.lbl_ret.setText(f"保留画幅约 {v}%（裁剪中心见预览十字）")
-        self._pv_canvas.set_retention(v / 100.0)
-        _burst_gui_log(f"参数：保留画幅 → {v}%（参考图绿色虚线框已更新）")
+        self._schedule_project_save()
 
     def _collect_paths(self) -> List[str]:
         return [self.list_w.item(i).text() for i in range(self.list_w.count())]
 
-    def _log_speed_changed(self, v: float) -> None:
-        _burst_gui_log(f"参数：播放加速倍率 → {v:g}×")
-
-    def _refresh_interval_hint(self) -> None:
-        paths = self._collect_paths()
-        if len(paths) < 2:
-            self.lbl_interval.setText("推断间隔：请至少添加 2 张图片")
-            return
-        ordered = sort_paths_by_capture_time(paths)
-        ms, note = infer_shot_interval_ms(ordered)
-        spd = float(self.spn_speed.value())
-        dur = ms / max(0.05, spd)
-        self.lbl_interval.setText(
-            f"推断拍照间隔 ≈ {ms:.0f} ms（{note}）；"
-            f"当前倍率 {spd:g}× → 每帧约 {dur:.0f} ms"
+    def _refresh_fps_hint(self) -> None:
+        fps = float(self.spn_fps.value())
+        dur = 1000.0 / max(0.1, fps)
+        n = self.list_w.count()
+        extra = f"；列表 {n} 张" if n else ""
+        self.lbl_fps_hint.setText(
+            f"播放：每秒 {fps:g} 张 → 每帧约 {dur:.0f} ms{extra}"
         )
+        self._update_frame_nav_label()
+
+    def _update_frame_nav_label(self) -> None:
+        n = self.list_w.count()
+        if n <= 0:
+            self.lbl_frame_idx.setText("当前 — / —")
+            return
+        i = int(np.clip(self._frame_idx, 0, n - 1))
+        lay = self._layouts[i] if i < len(self._layouts) else None
+        tag = ""
+        if lay is not None:
+            if i == 0:
+                tag = " · 首图"
+            elif not lay.auto:
+                if i == self._frame_idx and self._later_anchor_dirty:
+                    tag = " · 待锁定"
+                else:
+                    tag = " · 已锁定"
+            else:
+                tag = f" · 自动 {lay.conf:.2f}"
+        self.lbl_frame_idx.setText(f"当前 {i + 1} / {n}{tag}")
+
+    def _clone_layouts(self) -> List[Optional[FrameLayout]]:
+        out: List[Optional[FrameLayout]] = []
+        for lay in self._layouts:
+            out.append(replace(lay) if lay is not None else None)
+        return out
+
+    def _layout_lock_counts(self) -> Tuple[int, int]:
+        n_auto = 0
+        n_lock = 0
+        for i, lay in enumerate(self._layouts):
+            if i == 0 or lay is None:
+                continue
+            if lay.auto:
+                n_auto += 1
+            else:
+                n_lock += 1
+        return n_auto, n_lock
+
+    def _refresh_lock_status(self, prefix: str = "") -> None:
+        self._update_frame_nav_label()
+        n_auto, n_lock = self._layout_lock_counts()
+        n_later = max(0, len(self._layouts) - 1)
+        body = (
+            f"自动 {n_auto} 张，锁定 {n_lock} 张"
+            + (f"（共 {n_later} 张后续帧）" if n_later else "")
+            + "。可用上一张/下一张检查或改标定点。"
+        )
+        self.lbl_pv_status.setText((prefix + body) if prefix else body)
 
     def _on_add_files(self) -> None:
         _burst_gui_log("操作：添加图片…（文件选择对话框已打开）")
-        start = self._default_dir
-        if not start or not os.path.isdir(start):
-            start = os.path.expanduser("~")
+        start = self._file_dialog_start_dir()
         files, _ = QFileDialog.getOpenFileNames(
-            self, "选择连拍图片", start, file_filter_all_images()
+            self,
+            "选择连拍图片或动图项目",
+            start,
+            f"{file_filter_all_images()};;"
+            f"动图项目 (*{PROJECT_SUFFIX});;"
+            "所有文件 (*.*)",
         )
+        if not files:
+            _burst_gui_log("操作：添加图片取消。")
+            return
+        proj_files = [f for f in files if is_burst_project_path(f)]
+        img_files = [
+            f
+            for f in files
+            if f not in proj_files and os.path.isfile(f)
+        ]
+        if proj_files and not img_files:
+            self._load_project_from_path(Path(proj_files[0]), user_set=True)
+            return
+        self._import_image_paths(img_files)
+
+    def _import_image_paths(self, files: List[str]) -> None:
+        abs_files = [
+            os.path.abspath(fp) for fp in files if fp and os.path.isfile(fp)
+        ]
+        if not abs_files:
+            return
         n0 = self.list_w.count()
+        was_empty = n0 == 0
+        cand = default_project_path_for_images(abs_files)
+        if was_empty and cand is not None and cand.is_file():
+            self._load_project_from_path(
+                cand, user_set=False, warn_missing=False, apply_options=True
+            )
+            have = {os.path.abspath(p) for p in self._collect_paths()}
+            extra = [p for p in abs_files if p not in have]
+            if extra:
+                self._begin_list_bulk()
+                for p in extra:
+                    self.list_w.addItem(p)
+                self._end_list_bulk()
+                self._save_project_now()
+            _burst_gui_log(
+                f"操作：已从项目恢复 {self.list_w.count()} 张（本次选择 {len(abs_files)} 张）。"
+            )
+            return
+        existing = {os.path.abspath(p) for p in self._collect_paths()}
+        self._begin_list_bulk()
         added = 0
-        for fp in files:
-            if fp and os.path.isfile(fp):
-                self.list_w.addItem(fp)
-                added += 1
-        if files and files[0]:
-            self._default_dir = os.path.dirname(os.path.abspath(files[0]))
-        self._refresh_interval_hint()
+        for fp in abs_files:
+            if fp in existing:
+                continue
+            self.list_w.addItem(fp)
+            existing.add(fp)
+            added += 1
+        self._default_dir = os.path.dirname(abs_files[0])
+        self._end_list_bulk()
+        self._ensure_default_project_path()
+        self._hydrate_layouts_from_project_file()
+        self._save_project_now()
         _burst_gui_log(
             f"操作：添加图片结束，本次加入 {added} 张，列表由 {n0} → {self.list_w.count()} 项。"
         )
@@ -1059,18 +1293,21 @@ class BurstWebpDialog(QDialog):
         for it in self.list_w.selectedItems():
             row = self.list_w.row(it)
             self.list_w.takeItem(row)
-        self._refresh_interval_hint()
+        self._refresh_fps_hint()
+        self._schedule_project_save()
         _burst_gui_log(f"操作：移除完成，列表余 {self.list_w.count()} 项。")
 
     def _on_sort_time(self) -> None:
         n = self.list_w.count()
         _burst_gui_log(f"操作：按拍摄时间排序（共 {n} 项）…")
         paths = self._collect_paths()
+        self._begin_list_bulk()
         for _ in range(self.list_w.count()):
             self.list_w.takeItem(0)
         for p in sort_paths_by_capture_time(paths):
             self.list_w.addItem(p)
-        self._refresh_interval_hint()
+        self._frame_idx = 0
+        self._end_list_bulk()
         _burst_gui_log("操作：按拍摄时间排序完成。")
 
     def _move_sel(self, delta: int) -> None:
@@ -1086,81 +1323,479 @@ class BurstWebpDialog(QDialog):
         item = self.list_w.takeItem(row)
         self.list_w.insertItem(nr, item)
         self.list_w.setCurrentRow(nr)
-        self._refresh_interval_hint()
+        self._frame_idx = nr
+        self._refresh_fps_hint()
         self._schedule_ref_refresh()
+        self._schedule_project_save()
 
-    def _refresh_ref_from_first_image(self) -> None:
-        t0 = time.monotonic()
-        _burst_gui_log("首张参考图刷新开始（防抖到期）…")
-        if self._pv_worker is not None and self._pv_worker.isRunning():
-            _burst_gui_log("首张参考图刷新中止：预览线程仍占用。")
+    def _file_dialog_start_dir(self) -> str:
+        if self._project_path is not None:
+            parent = str(self._project_path.parent)
+            if os.path.isdir(parent):
+                return parent
+        hint = str(self._last_project_path_hint or "").strip()
+        if hint:
+            hp = Path(hint)
+            if hp.is_file():
+                return str(hp.parent)
+            if hp.is_dir():
+                return str(hp)
+        start = self._default_dir
+        if start and os.path.isdir(start):
+            return start
+        return os.path.expanduser("~")
+
+    def _update_project_label(self) -> None:
+        if self._project_path is not None:
+            self.lbl_project.setText(f"项目：{self._project_path.name}")
+            self.lbl_project.setToolTip(str(self._project_path))
+        else:
+            self.lbl_project.setText("项目：导入图片后将自动保存在相片目录")
+            self.lbl_project.setToolTip("")
+
+    def _project_options_snapshot(self) -> dict:
+        d = self._collect_burst_dialog_state()
+        keys = (
+            "enable_wb",
+            "enable_auto_exposure",
+            "auto_exposure_strength",
+            "enable_wm",
+            "wm_theme",
+            "burst_mode",
+            "fps",
+            "max_long_edge",
+            "webp_quality",
+            "out_path",
+            "export_format",
+        )
+        return {k: d[k] for k in keys if k in d}
+
+    def _ensure_default_project_path(self) -> None:
+        if self._project_path_user_set:
+            self._update_project_label()
             return
+        paths = self._collect_paths()
+        if not paths:
+            self._project_path = None
+            self._update_project_label()
+            return
+        p = default_project_path_for_images(paths)
+        if p is not None:
+            self._project_path = p
+        self._update_project_label()
+
+    def _try_autoload_project_from_default_dir(self) -> None:
+        d = str(self._default_dir or "").strip()
+        if not d or not os.path.isdir(d):
+            return
+        folder = Path(d)
+        cand = folder / f"{folder.name}{PROJECT_SUFFIX}"
+        if cand.is_file():
+            self._load_project_from_path(
+                cand, user_set=False, warn_missing=False, apply_options=True
+            )
+
+    def _hydrate_layouts_from_project_file(self) -> None:
+        if self._project_path is None or not self._project_path.is_file():
+            return
+        try:
+            data = load_project_file(self._project_path)
+        except Exception as ex:
+            _burst_gui_log(f"读取已有动图项目失败（将新建/覆盖）：{ex}")
+            return
+        entries = list(zip(data.paths, data.layouts))
+        self._sync_layouts_to_list()
+        filled = 0
+        for i, p in enumerate(self._collect_paths()):
+            if i < len(self._layouts) and self._layouts[i] is not None:
+                continue
+            lay = match_layout_for_path(p, entries)
+            if lay is None:
+                continue
+            cloned = replace(lay)
+            self._layouts[i] = cloned
+            self._layout_by_path[p] = cloned
+            filled += 1
+        if layout_valid(self._layouts[0] if self._layouts else None):
+            self._anchor_user_touched = True
+        if filled:
+            _burst_gui_log(f"已从项目文件恢复 {filled} 帧定位：{self._project_path}")
+            self._refresh_lock_status()
+            self._show_current_source_frame()
+        if layout_valid(self._layouts[0] if self._layouts else None) and any(
+            i > 0 and self._layouts[i] is None for i in range(len(self._layouts))
+        ):
+            self._schedule_propagate()
+
+    def _stop_propagate_if_running(self) -> None:
+        w = self._prop_worker
+        if w is not None and w.isRunning():
+            self._prop_job_id += 1
+            w.requestInterruption()
+            w.wait(1500)
+
+    def _on_open_project(self) -> None:
+        _burst_gui_log("操作：打开项目…")
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "打开动图项目",
+            self._file_dialog_start_dir(),
+            f"动图项目 (*{PROJECT_SUFFIX});;JSON (*.json);;所有文件 (*.*)",
+        )
+        if not path:
+            return
+        self._load_project_from_path(Path(path), user_set=True)
+
+    def _ensure_project_suffix(self, path: Path) -> Path:
+        name = path.name
+        lower = name.lower()
+        if lower.endswith(PROJECT_SUFFIX):
+            return path
+        if lower.endswith(".json"):
+            return path.with_name(path.stem + PROJECT_SUFFIX)
+        return path.with_name(name + PROJECT_SUFFIX)
+
+    def _on_save_project_as(self) -> None:
+        paths = self._collect_paths()
+        if not paths:
+            QMessageBox.information(self, "提示", "请先添加图片，再另存项目。")
+            return
+        start = self._project_path
+        if start is None:
+            start = default_project_path_for_images(paths)
+        start_str = str(start) if start is not None else self._file_dialog_start_dir()
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "项目另存为",
+            start_str,
+            f"动图项目 (*{PROJECT_SUFFIX})",
+        )
+        if not path:
+            return
+        dest = self._ensure_project_suffix(Path(path))
+        self._project_path = dest
+        self._project_path_user_set = True
+        self._update_project_label()
+        self._save_project_now()
+        if dest.is_file():
+            _burst_gui_log(f"操作：项目已另存为 {dest}")
+        else:
+            QMessageBox.warning(self, "另存失败", f"无法写入项目文件：\n{dest}")
+
+    def _load_project_from_path(
+        self,
+        path: Path,
+        *,
+        user_set: bool,
+        warn_missing: bool = True,
+        apply_options: bool = True,
+    ) -> None:
+        path = Path(path)
+        try:
+            data = load_project_file(path)
+        except Exception as ex:
+            _burst_gui_log(f"打开动图项目失败：{ex}")
+            if warn_missing:
+                QMessageBox.critical(self, "打开项目失败", str(ex))
+            return
+        self._stop_propagate_if_running()
+        self._loading_project = True
+        self._begin_list_bulk()
+        try:
+            self.list_w.clear()
+            for p in data.paths:
+                self.list_w.addItem(p)
+            self._layouts = [replace(x) if x is not None else None for x in data.layouts]
+            self._layout_paths = list(data.paths)
+            self._layout_by_path = {
+                p: lay
+                for p, lay in zip(self._layout_paths, self._layouts)
+                if p and lay is not None
+            }
+            self._frame_idx = int(data.frame_idx)
+            self._first_wh = None
+            self._later_anchor_dirty = False
+            self._anchor_user_touched = layout_valid(
+                self._layouts[0] if self._layouts else None
+            )
+            self._project_path = path
+            self._project_path_user_set = bool(user_set)
+            self._last_project_path_hint = str(path)
+            self._default_dir = str(path.parent)
+            self._bgr_cache.clear()
+            self._ae_corr_cache.clear()
+            if apply_options and data.options:
+                self._block_option_signals(True)
+                try:
+                    self._apply_burst_dialog_state(data.options)
+                finally:
+                    self._block_option_signals(False)
+            self._update_project_label()
+        finally:
+            self._end_list_bulk()
+            self._loading_project = False
+        miss_n = len(data.missing)
+        _burst_gui_log(
+            f"已打开动图项目：{path}，恢复 {len(data.paths)} 张"
+            + (f"，缺少 {miss_n} 个文件" if miss_n else "")
+        )
+        if warn_missing and data.missing:
+            shown = "\n".join(data.missing[:8])
+            extra = f"\n…共 {len(data.missing)} 个" if len(data.missing) > 8 else ""
+            QMessageBox.warning(
+                self,
+                "部分图片缺失",
+                f"项目中有文件找不到，已跳过：\n{shown}{extra}",
+            )
+        self._show_current_source_frame()
+        self._refresh_lock_status()
+        if layout_valid(self._layouts[0] if self._layouts else None) and any(
+            i > 0 and self._layouts[i] is None for i in range(len(self._layouts))
+        ):
+            self._schedule_propagate()
+
+    def _save_project_now(self) -> None:
+        if not getattr(self, "_project_io_ready", False):
+            return
+        if getattr(self, "_loading_project", False) or getattr(
+            self, "_project_bulk_update", False
+        ):
+            return
+        if self._project_path is None:
+            self._ensure_default_project_path()
+        if self._project_path is None:
+            return
+        paths = self._collect_paths()
+        if not paths:
+            return
+        self._sync_layouts_to_list()
+        try:
+            payload = build_project_dict(
+                paths,
+                self._layouts,
+                project_path=self._project_path,
+                frame_idx=self._frame_idx,
+                options=self._project_options_snapshot(),
+            )
+            save_project_file(self._project_path, payload)
+            self._last_project_path_hint = str(self._project_path)
+            self._update_project_label()
+            _burst_gui_log(f"已保存动图项目：{self._project_path}")
+        except OSError as ex:
+            _burst_gui_log(f"保存动图项目失败：{ex}")
+
+    def _on_list_item_clicked(self, item) -> None:
+        row = self.list_w.row(item)
+        if row >= 0:
+            self._goto_frame(row)
+
+    def _frame_image_wh(self, idx: int) -> Optional[Tuple[int, int]]:
+        if idx == int(self._frame_idx):
+            w, h = self._pv_canvas.image_wh()
+            if w > 1 and h > 1:
+                return w, h
+        paths = self._collect_paths()
+        if idx < 0 or idx >= len(paths):
+            return None
+        bgr = self._load_processed_bgr(paths[idx])
+        if bgr is None:
+            return None
+        return int(bgr.shape[1]), int(bgr.shape[0])
+
+    def _apply_later_anchor(self, idx: int, ax: float, ay: float) -> bool:
+        """后续帧：按首图裁剪相对位置与大小，把绿框放到新标定点上。"""
+        geom = self._geom_ready()
+        if geom is None:
+            return False
+        wh = self._frame_image_wh(idx)
+        if wh is None:
+            return False
+        w, h = wh
+        self._layouts[idx] = layout_from_anchor(
+            ax, ay, geom, w, h, auto=False, conf=1.0
+        )
+        self._later_anchor_dirty = True
+        return True
+
+    def _commit_later_frame_lock(self) -> None:
+        """离开当前后续帧时：若刚指定了标定点，按首图几何确认裁剪区并锁定。"""
+        idx = int(self._frame_idx)
+        if idx <= 0 or idx >= len(self._layouts):
+            return
+        lay = self._layouts[idx]
+        if lay is None:
+            return
+        if self._later_anchor_dirty:
+            if self._apply_later_anchor(idx, float(lay.ax), float(lay.ay)):
+                _burst_gui_log(
+                    f"离开第 {idx + 1} 帧：已锁定，传播将跳过本页（不整段重跑）"
+                )
+            else:
+                lay.auto = False
+            return
+        if not lay.auto:
+            lay.auto = False
+
+    def _goto_frame(self, idx: int) -> None:
+        n = self.list_w.count()
+        if n <= 0:
+            return
+        idx = int(np.clip(idx, 0, n - 1))
+        if idx == int(self._frame_idx):
+            return
+        self._commit_later_frame_lock()
+        self._later_anchor_dirty = False
+        self._stop_playback_keep_edit()
+        self._frame_idx = idx
+        self._show_current_source_frame()
+
+    def _step_frame(self, delta: int) -> None:
+        n = self.list_w.count()
+        if n <= 0:
+            return
+        self._goto_frame(int(self._frame_idx) + int(delta))
+
+    def _stop_playback_keep_edit(self) -> None:
         self._timer.stop()
         self._preview_qimages = []
         self._pv_canvas.stop_playback()
+
+    def _cache_key(self, path: str) -> Tuple[str, bool]:
+        return (path, self.cb_wb.isChecked())
+
+    def _load_processed_bgr(self, path: str) -> Optional[np.ndarray]:
+        key = self._cache_key(path)
+        hit = self._bgr_cache.get(key)
+        if hit is not None:
+            return hit
+        bgr = imread_bgr(path, raw_half_size=True)
+        if bgr is None or bgr.size == 0:
+            return None
+        x = bgr
+        if self.cb_wb.isChecked():
+            x = gray_world_white_balance(x)
+        x = np.ascontiguousarray(x, dtype=np.uint8)
+        self._bgr_cache[key] = x
+        if len(self._bgr_cache) > 24:
+            oldest = next(iter(self._bgr_cache))
+            if oldest != key:
+                self._bgr_cache.pop(oldest, None)
+        return x
+
+    def _current_ae_meter_box(self, bgr: np.ndarray) -> Optional[List[int]]:
+        """当前帧裁剪区的测光框（像素 xyxy）；未画裁剪区则 None（全图测光）。"""
+        idx = int(self._frame_idx)
+        if idx < 0 or idx >= len(self._layouts):
+            return None
+        lay = self._layouts[idx]
+        if lay is None or not layout_valid(lay):
+            return None
+        h, w = bgr.shape[:2]
+        geom = None
+        first = self._layouts[0] if self._layouts else None
+        if first is not None and layout_valid(first) and self._first_wh is not None:
+            w0, h0 = self._first_wh
+            geom = geom_from_first(first, w0, h0)
+        if geom is not None:
+            return in_bounds_crop_xyxy(lay, geom, w, h)
+        x0 = int(np.clip(round(min(lay.x0, lay.x1) * w), 0, w))
+        x1 = int(np.clip(round(max(lay.x0, lay.x1) * w), 0, w))
+        y0 = int(np.clip(round(min(lay.y0, lay.y1) * h), 0, h))
+        y1 = int(np.clip(round(max(lay.y0, lay.y1) * h), 0, h))
+        if x1 - x0 < 2 or y1 - y0 < 2:
+            return None
+        return [x0, y0, x1, y1]
+
+    def _apply_ae_for_display(self, path: str, wb_bgr: np.ndarray) -> np.ndarray:
+        """在白平衡图上套自动曝光，供当前图预览；强度变化复用已算好的 strength=1 结果。"""
+        if not self.cb_ae.isChecked():
+            return wb_bgr
+        strength = float(self.slider_ae.value()) / 100.0
+        if strength <= 0.0:
+            return wb_bgr
+        box = self._current_ae_meter_box(wb_bgr)
+        key = (path, bool(self.cb_wb.isChecked()), tuple(box) if box else None)
+        corr = self._ae_corr_cache.get(key)
+        if corr is None:
+            from auto_exposure import auto_expose_bgr
+
+            corr = auto_expose_bgr(
+                wb_bgr, strength=1.0, detect=False, meter_box=box
+            )
+            self._ae_corr_cache[key] = corr
+            if len(self._ae_corr_cache) > 16:
+                oldest = next(iter(self._ae_corr_cache))
+                if oldest != key:
+                    self._ae_corr_cache.pop(oldest, None)
+        from auto_exposure import apply_exposure_strength
+
+        return apply_exposure_strength(wb_bgr, corr, strength)
+
+    def _invalidate_ae_preview(self) -> None:
+        self._ae_corr_cache.clear()
+        if self.cb_ae.isChecked():
+            self._schedule_ref_refresh()
+
+    def _show_current_source_frame(self) -> None:
+        if self._pv_worker is not None and self._pv_worker.isRunning():
+            _burst_gui_log("当前帧刷新中止：预览线程仍占用。")
+            return
+        self._stop_playback_keep_edit()
+        self._sync_layouts_to_list()
         paths = self._collect_paths()
-        ordered = sort_paths_by_capture_time([p for p in paths if os.path.isfile(p)])
-        if not ordered:
-            _burst_gui_log("首张参考：无有效路径，清空参考图与裁剪中心。")
+        n = len(paths)
+        if n <= 0:
             w0 = getattr(self, "_ref_bird_worker", None)
             if w0 is not None and w0.isRunning():
                 w0.requestInterruption()
                 w0.wait(2000)
-            self._ref_bgr_cache = None
             self._pv_canvas.set_reference_bgr(None)
-            self._pv_canvas.clear_track_roi()
-            self._crop_nx = self._crop_ny = 0.5
-            self._initial_crop_nx = self._initial_crop_ny = 0.5
-            self._crop_user_touched = False
+            self._pv_canvas.set_layout(None)
+            self._first_wh = None
+            self._update_frame_nav_label()
             return
-        first = ordered[0]
-        _burst_gui_log(f"首张参考：排序后首张 → {os.path.basename(first)}")
-        self._crop_user_touched = False
-        _burst_gui_log("首张参考：解码（半尺寸 raw）…")
-        bgr = imread_bgr(first, raw_half_size=True)
-        if bgr is None or bgr.size == 0:
-            _burst_gui_log(f"首张参考：读取失败 → {first}")
-            self._ref_bgr_cache = None
+        self._frame_idx = int(np.clip(self._frame_idx, 0, n - 1))
+        path = paths[self._frame_idx]
+        if path != getattr(self, "_logged_show_path", None):
+            _burst_gui_log(
+                f"显示第 {self._frame_idx + 1}/{n} 张：{os.path.basename(path)}"
+            )
+            self._logged_show_path = path
+        t0 = time.monotonic()
+        wb = self._load_processed_bgr(path)
+        if wb is None:
             self._pv_canvas.set_reference_bgr(None)
+            self.lbl_pv_status.setText(f"无法读取：{path}")
             return
-        h0, w0 = bgr.shape[:2]
-        _burst_gui_log(f"首张参考：解码完成 {w0}×{h0}，用时 {time.monotonic() - t0:.2f}s")
-        x = bgr
-        if self.cb_wb.isChecked():
-            _burst_gui_log("首张参考：灰世界白平衡…")
-            t1 = time.monotonic()
-            x = gray_world_white_balance(x)
-            _burst_gui_log(f"首张参考：白平衡完成，用时 {time.monotonic() - t1:.2f}s")
-        if self.cb_eco.isChecked():
-            _burst_gui_log("首张参考：生态显影（可能较慢）…")
-            t1 = time.monotonic()
-            x = develop_bgr_ecology_wildlife(x)
-            _burst_gui_log(f"首张参考：显影完成，用时 {time.monotonic() - t1:.2f}s")
-        had_saved = bool(self._restore_saved_crop_once)
-        self._ref_bird_ctx_had_saved = had_saved
-        self._initial_crop_nx = 0.5
-        self._initial_crop_ny = 0.5
-        if self._restore_saved_crop_once:
-            self._crop_nx = float(self._saved_crop_nx)
-            self._crop_ny = float(self._saved_crop_ny)
-            self._crop_user_touched = True
-            self._restore_saved_crop_once = False
+        h, w = wb.shape[:2]
+        if self._frame_idx == 0:
+            self._first_wh = (w, h)
+        x = self._apply_ae_for_display(path, wb)
+        self._pv_canvas.set_reference_bgr(x)
+        lay = self._layouts[self._frame_idx] if self._frame_idx < len(self._layouts) else None
+        if lay is not None and (layout_valid(lay) or not lay.auto):
+            self._pv_canvas.set_layout(lay)
         else:
-            self._crop_nx = 0.5
-            self._crop_ny = 0.5
-        self._ref_bgr_cache = np.ascontiguousarray(x, dtype=np.uint8).copy()
-        self._pv_canvas.set_reference_bgr(self._ref_bgr_cache)
-        self._pv_canvas.set_center_norm(self._crop_nx, self._crop_ny)
-        self._pv_canvas.set_retention(self.slider_ret.value() / 100.0)
-        if _burst_align_roi_valid(self._align_roi_norm):
-            self._pv_canvas.set_track_roi_norm(self._align_roi_norm)
-        else:
-            self._pv_canvas.clear_track_roi()
-        _burst_gui_log(
-            f"首张参考图主线程阶段结束，用时 {time.monotonic() - t0:.2f}s；"
-            f"鸟检在后台线程进行；保留比例={self.slider_ret.value()}%。"
-        )
-        self._start_ref_bird_worker(self._ref_bgr_cache.copy())
+            ax, ay = 0.5, 0.5
+            if lay is not None:
+                ax, ay = float(lay.ax), float(lay.ay)
+            elif self._frame_idx == 0:
+                ax, ay = self._suggested_ax, self._suggested_ay
+            self._pv_canvas.set_layout(None)
+            self._pv_canvas.set_anchor_norm(ax, ay)
+        self._update_frame_nav_label()
+        elapsed = time.monotonic() - t0
+        if elapsed >= 0.05:
+            _burst_gui_log(
+                f"当前帧解码完成 {w}×{h}，用时 {elapsed:.2f}s"
+            )
+        if self._frame_idx == 0 and not self._anchor_user_touched:
+            first_lay = self._layouts[0] if self._layouts else None
+            if first_lay is None or not layout_valid(first_lay):
+                bird_key = (path, bool(self.cb_wb.isChecked()))
+                if self._ref_bird_key != bird_key:
+                    self._ref_bird_key = bird_key
+                    self._start_ref_bird_worker(wb.copy())
 
     def _start_ref_bird_worker(self, bgr: np.ndarray) -> None:
         w = self._ref_bird_worker
@@ -1183,50 +1818,222 @@ class BurstWebpDialog(QDialog):
     @pyqtSlot(float, float, int)
     def _on_ref_bird_worker_done(self, nx: float, ny: float, job_id: int) -> None:
         if int(job_id) != int(self._ref_bird_job_id):
-            _burst_gui_log(
-                f"首张参考：忽略过期鸟检结果 job={job_id}（当前={self._ref_bird_job_id}）。"
-            )
             return
-        self._initial_crop_nx = float(nx)
-        self._initial_crop_ny = float(ny)
-        if getattr(self, "_ref_bird_ctx_had_saved", False):
-            _burst_gui_log(
-                f"首张参考：鸟检完成，「恢复初始」将使用该中心（{nx:.4f},{ny:.4f}）；"
-                "当前仍显示上次保存的裁剪位置。"
-            )
+        self._suggested_ax = float(nx)
+        self._suggested_ay = float(ny)
+        if self._anchor_user_touched or self._frame_idx != 0:
             return
-        if self._crop_user_touched:
-            _burst_gui_log(
-                "首张参考：鸟检完成，但用户已调整裁剪中心，不自动覆盖画布。"
-            )
+        first = self._layouts[0] if self._layouts else None
+        if first is not None and layout_valid(first):
             return
-        self._crop_nx = float(nx)
-        self._crop_ny = float(ny)
-        self._pv_canvas.set_center_norm(self._crop_nx, self._crop_ny)
-        _burst_gui_log(f"首张参考：画布已应用鸟检中心（{nx:.4f},{ny:.4f}）。")
+        if first is not None:
+            first.ax = float(nx)
+            first.ay = float(ny)
+        self._pv_canvas.set_anchor_norm(nx, ny)
+        _burst_gui_log(f"首张参考：画布已应用鸟检标定点（{nx:.4f},{ny:.4f}）。")
+
+    def _geom_ready(self) -> Optional[object]:
+        if not self._layouts or not layout_valid(self._layouts[0]):
+            return None
+        if self._first_wh is None:
+            paths = self._collect_paths()
+            if not paths:
+                return None
+            bgr = self._load_processed_bgr(paths[0])
+            if bgr is None:
+                return None
+            self._first_wh = (bgr.shape[1], bgr.shape[0])
+        w0, h0 = self._first_wh
+        return geom_from_first(self._layouts[0], w0, h0)
+
+    def _on_anchor_from_canvas(self, ax: float, ay: float) -> None:
+        self._stop_playback_keep_edit()
+        self._sync_layouts_to_list()
+        idx = self._frame_idx
+        if idx < 0 or idx >= len(self._layouts):
+            return
+        self._anchor_user_touched = True
+        geom = self._geom_ready()
+        prev = self._layouts[idx]
+        if idx == 0:
+            if prev is None:
+                prev = FrameLayout(
+                    ax=ax,
+                    ay=ay,
+                    x0=0.0,
+                    y0=0.0,
+                    x1=0.0,
+                    y1=0.0,
+                    auto=False,
+                )
+            prev.ax = float(ax)
+            prev.ay = float(ay)
+            prev.auto = False
+            self._layouts[0] = prev
+            _burst_gui_log(f"操作：首图标定点 → ({ax:.4f},{ay:.4f})")
+            if layout_valid(prev):
+                self._schedule_propagate()
+        else:
+            if geom is None:
+                QMessageBox.information(self, "提示", "请先在首图上设置标定点与裁剪区。")
+                return
+            if not self._apply_later_anchor(idx, ax, ay):
+                QMessageBox.information(self, "提示", "无法读取当前帧，稍后再指定标定点。")
+                return
+            _burst_gui_log(
+                f"操作：第 {idx + 1} 帧标定点 → ({ax:.4f},{ay:.4f})，"
+                f"裁剪区已按首图相对位置更新（切换其它页后锁定）"
+            )
+        self._pv_canvas.set_layout(self._layouts[idx])
+        self._refresh_lock_status()
+        if idx > 0 and self._later_anchor_dirty:
+            self.lbl_pv_status.setText(
+                "裁剪区已按首图相对位置与大小更新。切换其它页后锁定；"
+                "正在进行的传播会跳过锁定页，不会因此整段重跑。"
+            )
+        self._invalidate_ae_preview()
+        self._schedule_burst_state_save()
+        self._schedule_project_save()
+
+    def _on_crop_from_canvas(
+        self, x0: float, y0: float, x1: float, y1: float
+    ) -> None:
+        self._stop_playback_keep_edit()
+        self._sync_layouts_to_list()
+        idx = self._frame_idx
+        if idx < 0 or idx >= len(self._layouts):
+            return
+        prev = self._layouts[idx]
+        ax = prev.ax if prev is not None else self._suggested_ax
+        ay = prev.ay if prev is not None else self._suggested_ay
+        lay = FrameLayout(
+            ax=float(ax),
+            ay=float(ay),
+            x0=float(x0),
+            y0=float(y0),
+            x1=float(x1),
+            y1=float(y1),
+            auto=False,
+            conf=1.0,
+        )
+        self._layouts[idx] = lay
+        _burst_gui_log(
+            f"操作：第 {idx + 1} 帧裁剪区 → ({x0:.3f},{y0:.3f})–({x1:.3f},{y1:.3f})"
+        )
+        self._pv_canvas.set_layout(lay)
+        self._refresh_lock_status()
+        if idx == 0 and layout_valid(lay):
+            self._schedule_propagate()
+        elif idx > 0:
+            self._later_anchor_dirty = False
+        self._invalidate_ae_preview()
+        self._schedule_burst_state_save()
+        self._schedule_project_save()
+
+    def _on_recompute_later(self) -> None:
+        if not self._layouts or not layout_valid(self._layouts[0]):
+            QMessageBox.information(self, "提示", "请先在首图上设置标定点与裁剪区。")
+            return
+        for i in range(1, len(self._layouts)):
+            if self._layouts[i] is not None:
+                self._layouts[i].auto = True
+        _burst_gui_log("操作：按首图重算后续（已解锁后续帧）。")
+        self._later_anchor_dirty = False
+        self._start_propagate()
 
     def _on_reset_initial(self) -> None:
-        _burst_gui_log(
-            f"操作：恢复初始设置（中心 → {self._initial_crop_nx:.4f},{self._initial_crop_ny:.4f}，停止动效）"
+        _burst_gui_log("操作：恢复初始设置（清除布局，回到首张）")
+        self._stop_playback_keep_edit()
+        self._anchor_user_touched = False
+        self._frame_idx = 0
+        self._layouts = [None] * self.list_w.count()
+        self._layout_paths = self._collect_paths()
+        self._layout_by_path = {}
+        self._suggested_ax = 0.5
+        self._suggested_ay = 0.5
+        self._ae_corr_cache.clear()
+        self._ref_bird_key = None
+        self._logged_show_path = None
+        self._later_anchor_dirty = False
+        self._show_current_source_frame()
+        self._schedule_project_save()
+
+    def _schedule_propagate(self) -> None:
+        self._prop_debounce.stop()
+        self._prop_debounce.start(350)
+
+    def _start_propagate(self) -> None:
+        paths = self._collect_paths()
+        if len(paths) < 2:
+            return
+        self._sync_layouts_to_list()
+        if not layout_valid(self._layouts[0] if self._layouts else None):
+            return
+        w = self._prop_worker
+        if w is not None and w.isRunning():
+            self._prop_job_id += 1
+            w.requestInterruption()
+            w.wait(1500)
+        self._prop_job_id += 1
+        jid = int(self._prop_job_id)
+        self.lbl_pv_status.setText("正在用鸟体检测跟踪后续标定点…")
+        self._prop_worker = BurstAnchorPropagateWorker(
+            paths,
+            self._clone_layouts(),
+            self._burst_mode(),
+            self.cb_wb.isChecked(),
+            jid,
+            parent=self,
+            get_detector=self._get_burst_detector,
         )
-        self._timer.stop()
-        self._preview_qimages = []
-        self._pv_canvas.stop_playback()
-        self._crop_user_touched = False
-        self._crop_nx = float(self._initial_crop_nx)
-        self._crop_ny = float(self._initial_crop_ny)
-        self._align_roi_norm = None
-        self._pv_canvas.clear_track_roi()
-        self.rb_pick_crop.setChecked(True)
-        self._pv_canvas.set_interaction_mode(BurstCropPreviewWidget.MODE_CROP)
-        if self._ref_bgr_cache is not None and getattr(self._ref_bgr_cache, "size", 0) > 0:
-            self._pv_canvas.set_reference_bgr(self._ref_bgr_cache)
-            self._pv_canvas.set_center_norm(self._crop_nx, self._crop_ny)
-            self._pv_canvas.set_retention(self.slider_ret.value() / 100.0)
-            _burst_gui_log("操作：恢复初始设置完成，已回到首张参考 + 十字/虚线框。")
-        else:
-            self._pv_canvas.set_reference_bgr(None)
-            _burst_gui_log("操作：恢复初始设置完成，但无缓存参考图可显示。")
+        self._prop_worker.progress.connect(
+            self._on_preview_progress, Qt.QueuedConnection
+        )
+        self._prop_worker.done.connect(self._on_propagate_done, Qt.QueuedConnection)
+        self._prop_worker.failed.connect(self._on_propagate_fail, Qt.QueuedConnection)
+        self._prop_worker.start()
+        _burst_gui_log(f"标定点传播已启动（job={jid}，模式={self._burst_mode()}）。")
+
+    @pyqtSlot(object, int)
+    def _on_propagate_done(self, layouts, job_id: int) -> None:
+        if int(job_id) != int(self._prop_job_id):
+            return
+        incoming = list(layouts or [])
+        self._sync_layouts_to_list()
+        n = self.list_w.count()
+        merged: List[Optional[FrameLayout]] = []
+        for i in range(n):
+            cur = self._layouts[i] if i < len(self._layouts) else None
+            inc = incoming[i] if i < len(incoming) else None
+            if i == 0:
+                if cur is not None and layout_valid(cur):
+                    merged.append(cur)
+                else:
+                    merged.append(inc)
+                continue
+            # 锁定页跳过：保留用户手改，不采用本次传播结果
+            if cur is not None and not cur.auto:
+                merged.append(cur)
+            else:
+                merged.append(inc)
+        self._layouts = merged
+        self._layout_paths = self._collect_paths()
+        self._flush_layouts_to_sticky()
+        n_auto, n_lock = self._layout_lock_counts()
+        self._refresh_lock_status("后续帧已更新：")
+        _burst_gui_log(
+            f"标定点传播完成：自动={n_auto} 锁定={n_lock}（锁定页已跳过，未整段重跑）"
+        )
+        self._ae_corr_cache.clear()
+        if not self._pv_canvas.is_playing_back():
+            self._show_current_source_frame()
+        self._schedule_project_save()
+
+    @pyqtSlot(str, int)
+    def _on_propagate_fail(self, msg: str, job_id: int) -> None:
+        if int(job_id) != int(self._prop_job_id):
+            return
+        self.lbl_pv_status.setText(f"自动传播失败：{msg}")
 
     def _watermark_opts_and_folder(self):
         if not self.cb_wm.isChecked():
@@ -1243,16 +2050,25 @@ class BurstWebpDialog(QDialog):
                 return None, ""
         return None, ""
 
+    def _export_layouts_or_none(self) -> Optional[List[FrameLayout]]:
+        self._sync_layouts_to_list()
+        n = len(self._layouts)
+        if n < 2 or not layout_valid(self._layouts[0]):
+            return None
+        if any(self._layouts[i] is None for i in range(n)):
+            return None
+        return list(self._layouts)
+
     def _opts_from_ui(self) -> BurstWebpBuildOptions:
-        ret_pct = int(self.slider_ret.value()) / 100.0
         wo, wf = self._watermark_opts_and_folder()
+        lays = self._export_layouts_or_none()
         return BurstWebpBuildOptions(
             enable_white_balance=self.cb_wb.isChecked(),
-            enable_ecology_develop=self.cb_eco.isChecked(),
-            enable_align=self.cb_align.isChecked(),
-            stability_center_retention=ret_pct,
-            crop_center_norm=(float(self._crop_nx), float(self._crop_ny)),
-            speed_multiplier=float(self.spn_speed.value()),
+            enable_auto_exposure=self.cb_ae.isChecked(),
+            auto_exposure_strength=float(self.slider_ae.value()) / 100.0,
+            mode=self._burst_mode(),
+            fps=float(self.spn_fps.value()),
+            frame_layouts=lays,
             max_long_edge=_int_safe_combo_data(self.cmb_max, 1600),
             webp_quality=int(self.spn_q.value()),
             watermark_options=wo,
@@ -1261,15 +2077,6 @@ class BurstWebpDialog(QDialog):
             watermark_species_or_theme=(
                 self.ed_wm_theme.text().strip() if self.cb_wm.isChecked() else ""
             ),
-            align_track_roi_norm=(
-                tuple(float(x) for x in self._align_roi_norm)
-                if _burst_align_roi_valid(self._align_roi_norm)
-                else None
-            ),
-            align_feature_detector=str(
-                self.cmb_align_feat.currentData() or "ORB"
-            ).upper(),
-            debug_export_align_overlay=self.cb_debug_align.isChecked(),
         )
 
     def _get_burst_detector(self):
@@ -1280,23 +2087,6 @@ class BurstWebpDialog(QDialog):
             except Exception:
                 return None
         return None
-
-    def _on_crop_center_from_canvas(self, nx: float, ny: float) -> None:
-        self._crop_user_touched = True
-        self._crop_nx = float(nx)
-        self._crop_ny = float(ny)
-        _burst_gui_log(f"操作：在预览图上点击设置裁剪中心 → ({nx:.4f},{ny:.4f})")
-        self._schedule_burst_state_save()
-
-    def _on_track_roi_from_canvas(
-        self, x0: float, y0: float, x1: float, y1: float
-    ) -> None:
-        self._align_roi_norm = (float(x0), float(y0), float(x1), float(y1))
-        _burst_gui_log(
-            f"操作：设置连拍对齐 ROI → ({x0:.4f},{y0:.4f})—({x1:.4f},{y1:.4f})，"
-            f"特征={self.cmb_align_feat.currentData()}"
-        )
-        self._schedule_burst_state_save()
 
     def _on_preview_progress(self, cur: int, tot: int, msg: str) -> None:
         t0 = getattr(self, "_pv_t0", None)
@@ -1316,6 +2106,13 @@ class BurstWebpDialog(QDialog):
             _burst_gui_log("操作：更新预览取消（列表为空）。")
             QMessageBox.information(self, "提示", "请先添加至少一张图片。")
             return
+        if self._export_layouts_or_none() is None:
+            QMessageBox.information(
+                self,
+                "提示",
+                "请先在首图上单击标定点、拖拽裁剪区，并等待后续帧自动传播完成。",
+            )
+            return
         if self._pv_worker is not None and self._pv_worker.isRunning():
             _burst_gui_log("操作：更新预览忽略（预览线程已在运行）。")
             return
@@ -1327,29 +2124,15 @@ class BurstWebpDialog(QDialog):
         self.btn_prev.setText("预览生成中…")
         self._pv_t0 = time.monotonic()
         opts = self._opts_from_ui()
-        align_note = ""
-        if self.cb_align.isChecked() and not _burst_align_roi_valid(
-            self._align_roi_norm
-        ):
-            align_note = "（未画对齐 ROI：预览将使用边带 ECC 自动对齐；锚点模式请先框 ROI）\n"
         self.lbl_pv_status.setText(
-            align_note
-            + "已开始…\n解码阶段请查看运行 Birdy 的终端窗口（逐张打印文件名）。"
+            "已开始…\n解码阶段请查看运行 Birdy 的终端窗口（逐张打印文件名）。"
         )
         _burst_gui_log(
-            f"预览参数：WB={opts.enable_white_balance}, 显影={opts.enable_ecology_develop}, "
-            f"对齐={opts.enable_align}, 水印={'开' if opts.watermark_options else '关'}, "
-            f"中心=({opts.crop_center_norm[0]:.4f},{opts.crop_center_norm[1]:.4f}), "
-            f"保留={opts.stability_center_retention:.2f}, "
-            f"对齐ROI={opts.align_track_roi_norm}, 特征={opts.align_feature_detector}"
+            f"预览参数：WB={opts.enable_white_balance}, "
+            f"自动曝光={opts.enable_auto_exposure}×{opts.auto_exposure_strength:.2f}, "
+            f"模式={opts.mode}, fps={opts.fps:g}, 水印={'开' if opts.watermark_options else '关'}"
         )
-        self._pv_worker = BurstWebpPreviewWorker(
-            paths,
-            opts,
-            get_detector=self._get_burst_detector,
-            user_touched_center=self._crop_user_touched,
-            parent=self,
-        )
+        self._pv_worker = BurstWebpPreviewWorker(paths, opts, parent=self)
         self._pv_worker.progress.connect(
             self._on_preview_progress, Qt.QueuedConnection
         )
@@ -1357,30 +2140,26 @@ class BurstWebpDialog(QDialog):
         self._pv_worker.failed.connect(self._on_preview_fail, Qt.QueuedConnection)
         self._pv_worker.start()
 
-    def _on_preview_done(
-        self, qimgs, dur_ms: float, _note: str, _align0_bgr, cnx: float, cny: float
-    ) -> None:
+    def _on_preview_done(self, qimgs, dur_ms: float, _note: str) -> None:
         self.btn_prev.setEnabled(True)
         self.btn_prev.setText("更新预览")
-        self._crop_nx = float(cnx)
-        self._crop_ny = float(cny)
         self._preview_qimages = list(qimgs or [])
         self._preview_dur_ms = max(1.0, float(dur_ms))
         self._preview_idx = 0
         if not self._preview_qimages:
-            _burst_gui_log("预览完成回调：无有效帧，将刷新首张参考。")
+            _burst_gui_log("预览完成回调：无有效帧，将刷新当前参考。")
             self.lbl_pv_status.setText("预览失败：无有效帧")
             self._pv_canvas.stop_playback()
             self._schedule_ref_refresh()
             return
         _burst_gui_log(
-            f"预览完成：{len(self._preview_qimages)} 帧，每帧 {self._preview_dur_ms:.0f} ms，"
-            f"裁剪中心=({cnx:.4f},{cny:.4f})；右侧进入动效播放。"
+            f"预览完成：{len(self._preview_qimages)} 帧，每帧 {self._preview_dur_ms:.0f} ms；"
+            "右侧进入动效播放。"
         )
         self._pv_canvas.set_playback_frames(self._preview_qimages)
         self._pv_canvas.set_playback_index(0)
         self._timer.start(max(1, int(round(self._preview_dur_ms))))
-        self._refresh_interval_hint()
+        self._refresh_fps_hint()
 
     def _on_preview_fail(self, msg: str) -> None:
         _burst_gui_log(f"预览失败（GUI 回调）：{msg}")
@@ -1467,13 +2246,16 @@ class BurstWebpDialog(QDialog):
             _burst_gui_log("操作：生成取消（少于 2 张）。")
             QMessageBox.warning(self, "提示", "至少需要 2 张图片才能合成动图。")
             return
-        if self.cb_align.isChecked() and not _burst_align_roi_valid(self._align_roi_norm):
+        if self._export_layouts_or_none() is None:
             QMessageBox.warning(
                 self,
-                "未设置对齐 ROI",
-                "已开启「连拍对齐」。请在预览中切换到「黄框：对齐 ROI」，"
-                "在首张参考图上拖拽画出黄虚线矩形（包住参考物）后再导出。",
+                "未设置标定点/裁剪区",
+                "请在首图上单击设置标定点、拖拽设置裁剪区，"
+                "并等待后续帧自动传播（或点「按首图重算后续」）后再导出。",
             )
+            return
+        if self._prop_worker is not None and self._prop_worker.isRunning():
+            QMessageBox.information(self, "提示", "正在自动查找后续标定点，请稍候再生成。")
             return
         out = self.ed_out.text().strip()
         if not out:
@@ -1502,7 +2284,8 @@ class BurstWebpDialog(QDialog):
         opts = self._opts_from_ui()
         _burst_gui_log(
             f"操作：开始生成 {export_fmt.upper()} → {out}（{len(paths)} 张）；"
-            f"最长边={opts.max_long_edge}, WebP质量={opts.webp_quality}"
+            f"最长边={opts.max_long_edge}, WebP质量={opts.webp_quality}, "
+            f"模式={opts.mode}, fps={opts.fps:g}"
         )
         self.btn_go.setEnabled(False)
         self.btn_go.setText("生成中…")
@@ -1533,7 +2316,7 @@ class BurstWebpDialog(QDialog):
         self.btn_go.setEnabled(True)
         self.btn_go.setText("生成")
         fps_note = ""
-        if r.get("format") == "mp4" and r.get("fps") is not None:
+        if r.get("fps") is not None:
             fps_note = f"，约 {float(r['fps']):.2f} fps"
         self.lbl_pv_status.setText(
             f"导出完成（{fmt}）：{r.get('n_frames', 0)} 帧，每帧约 "
@@ -1555,11 +2338,28 @@ class BurstWebpDialog(QDialog):
         self.lbl_pv_status.setText(f"导出失败：{msg}")
         QMessageBox.critical(self, "生成失败", msg)
 
+    def hideEvent(self, e) -> None:
+        if getattr(self, "_save_project_timer", None) is not None:
+            self._save_project_timer.stop()
+        if getattr(self, "_project_io_ready", False):
+            self._save_project_now()
+        if getattr(self, "_state_io_ready", False):
+            self._save_state_timer.stop()
+            self._save_burst_dialog_state()
+        super().hideEvent(e)
+
     def closeEvent(self, e) -> None:
+        if getattr(self, "_save_project_timer", None) is not None:
+            self._save_project_timer.stop()
+        if getattr(self, "_project_io_ready", False):
+            self._save_project_now()
         self._save_state_timer.stop()
-        self._save_burst_dialog_state()
+        if getattr(self, "_state_io_ready", False):
+            self._save_burst_dialog_state()
         _burst_gui_log("对话框 closeEvent：停止定时器并等待后台线程…")
         self._timer.stop()
+        self._ref_debounce.stop()
+        self._prop_debounce.stop()
         if self._pv_worker and self._pv_worker.isRunning():
             _burst_gui_log("等待预览线程结束（最多 3s）…")
             self._pv_worker.wait(3000)
@@ -1569,61 +2369,129 @@ class BurstWebpDialog(QDialog):
         if self._ref_bird_worker and self._ref_bird_worker.isRunning():
             _burst_gui_log("等待首张鸟检后台线程结束（最多 5s）…")
             self._ref_bird_worker.wait(5000)
+        if self._prop_worker and self._prop_worker.isRunning():
+            self._prop_worker.requestInterruption()
+            self._prop_worker.wait(3000)
         _burst_gui_log("动图对话框关闭流程结束。")
         super().closeEvent(e)
 
     def done(self, result: int) -> None:
+        if getattr(self, "_save_project_timer", None) is not None:
+            self._save_project_timer.stop()
+        if getattr(self, "_project_io_ready", False):
+            self._save_project_now()
         self._save_state_timer.stop()
-        self._save_burst_dialog_state()
+        if getattr(self, "_state_io_ready", False):
+            self._save_burst_dialog_state()
         super().done(result)
 
-    def _load_burst_dialog_state(self) -> None:
-        """恢复上次关闭时的参数（不含待合成图片列表）。"""
-        primary = _burst_webp_dialog_state_path()
-        legacy = _burst_webp_dialog_state_legacy_path()
-        path = primary if primary.is_file() else legacy
-        self._state_window_maximized = True
-        self._state_window_geometry = None
-        self._restore_saved_crop_once = False
-        if not path.is_file():
-            return
+    def _option_state_widgets(self):
+        return (
+            self.cb_wb,
+            self.cb_ae,
+            self.slider_ae,
+            self.cb_wm,
+            self.ed_wm_theme,
+            self.rb_mode_fixed,
+            self.rb_mode_track,
+            self.spn_fps,
+            self.cmb_max,
+            self.spn_q,
+            self.rb_export_webp,
+            self.rb_export_mp4,
+            self.ed_out,
+            self._bg_mode,
+            self._bg_export_fmt,
+        )
+
+    def _block_option_signals(self, blocked: bool) -> None:
+        for w in self._option_state_widgets():
+            w.blockSignals(blocked)
+
+    def _collect_burst_dialog_state(self) -> dict:
+        """当前左侧选项与导出格式（不含待合成图片列表）。"""
         try:
-            raw = json.loads(path.read_text(encoding="utf-8"))
-        except Exception as ex:
-            _burst_gui_log(f"加载上次动图窗口参数失败（将用默认）：{ex}")
-            return
-        if not isinstance(raw, dict):
-            return
-        if int(raw.get("version", 1)) < 1:
-            return
+            maxed = self.isMaximized()
+            rg = self.normalGeometry() if maxed else self.geometry()
+            geom = [int(rg.x()), int(rg.y()), int(rg.width()), int(rg.height())]
+        except Exception:
+            maxed, geom = True, [100, 100, 1240, 820]
+        return {
+            "version": 6,
+            "enable_wb": self.cb_wb.isChecked(),
+            "enable_auto_exposure": self.cb_ae.isChecked(),
+            "auto_exposure_strength": float(self.slider_ae.value()) / 100.0,
+            "enable_wm": self.cb_wm.isChecked(),
+            "wm_theme": self.ed_wm_theme.text(),
+            "burst_mode": self._burst_mode(),
+            "fps": float(self.spn_fps.value()),
+            "max_long_edge": _int_safe_combo_data(self.cmb_max, 1600),
+            "webp_quality": int(self.spn_q.value()),
+            "out_path": self.ed_out.text().strip(),
+            "export_format": ("mp4" if self.rb_export_mp4.isChecked() else "webp"),
+            "window_maximized": bool(maxed),
+            "window_geometry": geom,
+            "last_project_path": (
+                str(self._project_path)
+                if self._project_path is not None
+                else str(self._last_project_path_hint or "")
+            ),
+        }
+
+    def _apply_burst_dialog_state(self, raw: dict) -> None:
+        """把已解析的 JSON 应用到控件；单字段失败不影响其余项。"""
 
         def _b(key: str, default: bool = True) -> bool:
             if key not in raw:
                 return default
             return bool(raw[key])
 
-        self.cb_wb.setChecked(_b("enable_wb", True))
-        self.cb_eco.setChecked(_b("enable_eco", True))
-        self.cb_align.setChecked(_b("enable_align", True))
-        if "debug_align_overlay" in raw:
+        try:
+            self.cb_wb.setChecked(_b("enable_wb", True))
+        except Exception:
+            pass
+        try:
+            self.cb_ae.setChecked(_b("enable_auto_exposure", _b("enable_eco", True)))
+        except Exception:
+            pass
+        if "auto_exposure_strength" in raw:
             try:
-                self.cb_debug_align.setChecked(bool(raw["debug_align_overlay"]))
+                st = float(raw["auto_exposure_strength"])
+                self.slider_ae.setValue(int(np.clip(round(st * 100.0), 0, 300)))
             except (TypeError, ValueError):
                 pass
-        self.cb_wm.setChecked(_b("enable_wm", True))
+        self.slider_ae.setEnabled(self.cb_ae.isChecked())
+        self.lbl_ae_strength.setText(f"{self.slider_ae.value() / 100:.2f}")
+        try:
+            self.cb_wm.setChecked(_b("enable_wm", True))
+        except Exception:
+            pass
         if "wm_theme" in raw and isinstance(raw["wm_theme"], str):
-            self.ed_wm_theme.setText(raw["wm_theme"])
-        if "retention_pct" in raw:
             try:
-                rp = int(raw["retention_pct"])
-                self.slider_ret.setValue(int(np.clip(rp, 25, 100)))
+                self.ed_wm_theme.setText(raw["wm_theme"])
+            except Exception:
+                pass
+        fps_v = raw.get("fps", raw.get("speed"))
+        if fps_v is not None:
+            try:
+                fv = float(fps_v)
+                # 旧版 speed 是倍率（约 0.25–8），新版是张/秒；过大则当旧数据忽略
+                if 0.2 <= fv <= 30.0 and "fps" in raw:
+                    self.spn_fps.setValue(fv)
+                elif "fps" in raw:
+                    self.spn_fps.setValue(float(np.clip(fv, 0.25, 30.0)))
+                else:
+                    self.spn_fps.setValue(2.0)
             except (TypeError, ValueError):
                 pass
-        if "speed" in raw:
-            try:
-                self.spn_speed.setValue(float(raw["speed"]))
-            except (TypeError, ValueError):
-                pass
+        try:
+            mode = str(raw.get("burst_mode", "fixed")).strip().lower()
+            if mode == "track":
+                self.rb_mode_track.setChecked(True)
+            else:
+                self.rb_mode_fixed.setChecked(True)
+        except Exception:
+            pass
         if "max_long_edge" in raw:
             try:
                 want = int(raw["max_long_edge"])
@@ -1645,61 +2513,19 @@ class BurstWebpDialog(QDialog):
             except (TypeError, ValueError):
                 pass
         if "out_path" in raw and isinstance(raw["out_path"], str):
-            self.ed_out.setText(raw["out_path"])
-        if str(raw.get("export_format", "webp")).lower() == "mp4":
-            self.rb_export_mp4.setChecked(True)
-        else:
-            self.rb_export_webp.setChecked(True)
+            try:
+                self.ed_out.setText(raw["out_path"])
+            except Exception:
+                pass
+        try:
+            if str(raw.get("export_format", "webp")).lower() == "mp4":
+                self.rb_export_mp4.setChecked(True)
+            else:
+                self.rb_export_webp.setChecked(True)
+        except Exception:
+            pass
         self._apply_export_path_placeholder()
         self._sync_out_path_extension_to_format()
-        if "crop_nx" in raw and "crop_ny" in raw:
-            try:
-                nx = float(raw["crop_nx"])
-                ny = float(raw["crop_ny"])
-                if 0.0 <= nx <= 1.0 and 0.0 <= ny <= 1.0:
-                    self._saved_crop_nx = nx
-                    self._saved_crop_ny = ny
-                    self._restore_saved_crop_once = bool(
-                        raw.get("restore_crop_on_next_ref", True)
-                    )
-            except (TypeError, ValueError):
-                pass
-        self._align_roi_norm = None
-        roi_raw = raw.get("align_track_roi")
-        if isinstance(roi_raw, (list, tuple)) and len(roi_raw) == 4:
-            try:
-                xr = (
-                    float(roi_raw[0]),
-                    float(roi_raw[1]),
-                    float(roi_raw[2]),
-                    float(roi_raw[3]),
-                )
-                if _burst_align_roi_valid(xr):
-                    self._align_roi_norm = xr
-            except (TypeError, ValueError):
-                pass
-        if self._align_roi_norm is None:
-            if raw.get("align_track_nx") is not None and raw.get("align_track_ny") is not None:
-                try:
-                    tnx = float(raw["align_track_nx"])
-                    tny = float(raw["align_track_ny"])
-                    if 0.0 <= tnx <= 1.0 and 0.0 <= tny <= 1.0:
-                        half = 0.08
-                        self._align_roi_norm = (
-                            max(0.0, tnx - half),
-                            max(0.0, tny - half),
-                            min(1.0, tnx + half),
-                            min(1.0, tny + half),
-                        )
-                except (TypeError, ValueError):
-                    pass
-        if "align_feature_detector" in raw:
-            det = str(raw["align_feature_detector"]).strip().upper()
-            for i in range(self.cmb_align_feat.count()):
-                idat = self.cmb_align_feat.itemData(i)
-                if str(idat).strip().upper() == det:
-                    self.cmb_align_feat.setCurrentIndex(i)
-                    break
         if "window_maximized" in raw:
             self._state_window_maximized = bool(raw["window_maximized"])
         wg = raw.get("window_geometry")
@@ -1710,6 +2536,41 @@ class BurstWebpDialog(QDialog):
                     self._state_window_geometry = (x, y, w, h)
             except (TypeError, ValueError):
                 pass
+        lp = raw.get("last_project_path")
+        if isinstance(lp, str) and lp.strip():
+            self._last_project_path_hint = lp.strip()
+
+    def _load_burst_dialog_state(self) -> None:
+        """恢复上次关闭时的参数（不含待合成图片列表）。"""
+        primary = _burst_webp_dialog_state_path()
+        legacy = _burst_webp_dialog_state_legacy_path()
+        path = primary if primary.is_file() else legacy
+        self._state_window_maximized = True
+        self._state_window_geometry = None
+        if not path.is_file():
+            return
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as ex:
+            _burst_gui_log(f"加载上次动图窗口参数失败（将用默认）：{ex}")
+            return
+        if not isinstance(raw, dict):
+            return
+        try:
+            ver = int(raw.get("version", 1))
+        except (TypeError, ValueError):
+            ver = 1
+        if ver < 1:
+            return
+
+        self._block_option_signals(True)
+        try:
+            self._apply_burst_dialog_state(raw)
+        except Exception as ex:
+            _burst_gui_log(f"应用上次动图窗口参数失败（将用默认）：{ex}")
+        finally:
+            self._block_option_signals(False)
+
         _burst_gui_log(f"已加载上次的动图窗口参数：{path}")
         if path == legacy and not primary.is_file():
             try:
@@ -1718,61 +2579,24 @@ class BurstWebpDialog(QDialog):
             except OSError as ex:
                 _burst_gui_log(f"复制到首选路径失败（不影响本次使用）：{ex}")
         self._log_wm_toggle()
-        self._on_ret_changed(int(self.slider_ret.value()))
-        if _burst_align_roi_valid(self._align_roi_norm):
-            self._pv_canvas.set_track_roi_norm(self._align_roi_norm)
-        else:
-            self._pv_canvas.clear_track_roi()
+        self._refresh_fps_hint()
 
     def _save_burst_dialog_state(self) -> None:
         """写入参数（不含待合成图片列表）；首选本机 AppData，失败则写 src 旁旧路径。"""
+        if not getattr(self, "_state_io_ready", False):
+            return
         primary = _burst_webp_dialog_state_path()
         legacy = _burst_webp_dialog_state_legacy_path()
-        try:
-            maxed = self.isMaximized()
-            rg = self.normalGeometry() if maxed else self.geometry()
-            geom = [int(rg.x()), int(rg.y()), int(rg.width()), int(rg.height())]
-        except Exception:
-            maxed, geom = True, [100, 100, 1240, 820]
-        roi_save = (
-            list(self._align_roi_norm)
-            if _burst_align_roi_valid(self._align_roi_norm)
-            else None
-        )
-        data = {
-            "version": 3,
-            "enable_wb": self.cb_wb.isChecked(),
-            "enable_eco": self.cb_eco.isChecked(),
-            "enable_align": self.cb_align.isChecked(),
-            "debug_align_overlay": self.cb_debug_align.isChecked(),
-            "enable_wm": self.cb_wm.isChecked(),
-            "wm_theme": self.ed_wm_theme.text(),
-            "retention_pct": int(self.slider_ret.value()),
-            "speed": float(self.spn_speed.value()),
-            "max_long_edge": _int_safe_combo_data(self.cmb_max, 1600),
-            "webp_quality": int(self.spn_q.value()),
-            "out_path": self.ed_out.text().strip(),
-            "crop_nx": float(self._crop_nx),
-            "crop_ny": float(self._crop_ny),
-            "align_track_roi": roi_save,
-            "align_feature_detector": str(
-                self.cmb_align_feat.currentData() or "ORB"
-            ).upper(),
-            "export_format": ("mp4" if self.rb_export_mp4.isChecked() else "webp"),
-            "restore_crop_on_next_ref": True,
-            "window_maximized": bool(maxed),
-            "window_geometry": geom,
-        }
+        data = self._collect_burst_dialog_state()
         text = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
         try:
-            primary.parent.mkdir(parents=True, exist_ok=True)
-            primary.write_text(text, encoding="utf-8")
+            _atomic_write_text(primary, text)
             _burst_gui_log(f"已保存动图窗口参数（不含图片列表）：{primary}")
             return
         except OSError as ex1:
             if primary != legacy:
                 try:
-                    legacy.write_text(text, encoding="utf-8")
+                    _atomic_write_text(legacy, text)
                     _burst_gui_log(
                         f"已保存动图窗口参数到备用路径：{legacy}（首选失败：{ex1}）"
                     )

@@ -227,7 +227,7 @@ class BirdDetectionCLI:
             '--burst-keep-ratio',
             type=float,
             dest='burst_keep_ratio',
-            help='连拍组保留比例，如 0.2 约等于 1/5 (默认: 0.2)',
+            help='连拍组保留比例，相对本组总张数，如 0.1 约 10%；快速模式也按全组计算 (默认: 0.2)',
         )
         parser.add_argument(
             '--burst-keep-min',
