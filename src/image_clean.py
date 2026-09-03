@@ -31,6 +31,8 @@ class ImageCleanOptions:
     bird_conf: float = 0.35
     # 删除后清理空目录
     prune_empty_dirs: bool = True
+    # True：整图判清晰度（已是鸟体切割图时用，避免再取中央框）
+    use_full_frame_for_clarity: bool = False
 
 
 @dataclass
@@ -190,6 +192,18 @@ def _clarity_crop(
     return crop if crop is not None else bgr
 
 
+def subject_for_clarity(
+    bgr: np.ndarray,
+    birds: Sequence[Dict],
+    *,
+    use_full_frame: bool = False,
+) -> np.ndarray:
+    """切割图已是单只鸟时用整图；大图仍取中央鸟体。"""
+    if use_full_frame:
+        return bgr
+    return _clarity_crop(bgr, birds)
+
+
 def _emit(cb: ProgressCB, payload: Dict) -> None:
     if not cb:
         return
@@ -317,8 +331,9 @@ def clean_bird_images(
             )
             continue
 
-        # 模糊：多鸟时以最靠近画面中央的鸟体为准
-        crop = _clarity_crop(bgr, birds)
+        crop = subject_for_clarity(
+            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+        )
         clarity = clarity_score_0_100(crop)
 
         if opts.remove_blurry and clarity < float(opts.min_clarity):
@@ -403,7 +418,7 @@ def clean_image_list(
     should_cancel: CancelCB = None,
 ) -> ImageCleanResult:
     """
-    清洗给定文件列表（主流程识别前用）：按父目录分组去重，直接删文件。
+    清洗给定文件列表（主流程切割后再识别时用）：按父目录分组去重，直接删文件。
     返回结果后调用方应刷新残留路径列表。
     """
     opts = options or ImageCleanOptions()
@@ -452,7 +467,9 @@ def clean_image_list(
             )
             continue
 
-        crop = _clarity_crop(bgr, birds)
+        crop = subject_for_clarity(
+            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+        )
         clarity = clarity_score_0_100(crop)
         if opts.remove_blurry and clarity < float(opts.min_clarity):
             if _safe_unlink(path):

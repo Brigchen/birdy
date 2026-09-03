@@ -27,7 +27,14 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Union, Optional
 from ultralytics import YOLO
 
-from image_io import all_supported_extensions, is_raw_path, rawpy_available, read_raw_bgr, read_raw_bgr_full
+from image_io import (
+    all_supported_extensions,
+    imread_bgr,
+    is_raw_path,
+    rawpy_available,
+    read_raw_bgr,
+    read_raw_bgr_full,
+)
 
 _RAWPY_AVAILABLE = rawpy_available()
 if not _RAWPY_AVAILABLE:
@@ -1803,6 +1810,173 @@ def _write_crop_jpeg_with_exif(
         print(f"[crop exif] piexif.dump/save 失败 {out_path}: {e}", flush=True)
 
 
+def save_instance_crops_to_staging(
+    image: np.ndarray,
+    birds: List[Dict],
+    staging_dir: str,
+    source_path: str,
+    *,
+    province: Optional[str] = None,
+    city: Optional[str] = None,
+    margin_ratio: float = 0.5,
+) -> List[Dict]:
+    """把每只鸟扩边裁成一张图，写入暂存目录（尚无物种名）。"""
+    os.makedirs(staging_dir, exist_ok=True)
+    if image is None or not birds:
+        return []
+    img_h, img_w = image.shape[:2]
+    stem = sanitize_filename(Path(source_path).stem if source_path else "frame")
+    key = abs(hash(os.path.normpath(source_path))) % 100000000
+    records: List[Dict] = []
+    for inst_i, bird in enumerate(birds):
+        ex1, ey1, ex2, ey2 = _bird_expanded_bbox(bird, img_w, img_h, margin_ratio)
+        if ex2 <= ex1 or ey2 <= ey1:
+            continue
+        crop = image[ey1:ey2, ex1:ex2].copy()
+        fname = f"{stem}_inst{inst_i + 1:02d}_{key:08d}.jpg"
+        out_path = os.path.join(staging_dir, fname)
+        _write_crop_jpeg_with_exif(crop, out_path, source_path)
+        records.append(
+            {
+                "path": out_path,
+                "source_path": source_path,
+                "bbox": [int(v) for v in bird["bbox"]],
+                "inst": inst_i + 1,
+                "province": province,
+                "city": city,
+            }
+        )
+    return records
+
+
+def archive_identified_crop_file(
+    crop_path: str,
+    bird: Dict,
+    output_dir: str,
+    source_path: str,
+    *,
+    province: Optional[str] = None,
+    city: Optional[str] = None,
+    counter: Optional[Dict] = None,
+    inst_i: int = 0,
+) -> Optional[str]:
+    """把已识别的切割图写入目/科/属/种目录，并删除暂存文件。"""
+    if not crop_path or not os.path.isfile(crop_path):
+        return None
+    crop = imread_bgr(crop_path)
+    if crop is None:
+        return None
+    if counter is None:
+        counter = {"n": 0}
+    os.makedirs(output_dir, exist_ok=True)
+    _key, sci_name, cname, clf, non_bird_dir = _bird_taxonomy_for_crop(bird)
+    order_cn = clf.get("order_cn", "") or "未知目"
+    family_cn = clf.get("family_cn", "") or "未知科"
+    genus_cn = clf.get("genus_cn", "") or "未知属"
+    species_cn = clf.get("species_cn", "") or cname or "未知"
+    if non_bird_dir:
+        save_dir = os.path.join(
+            output_dir,
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+        )
+    else:
+        save_dir = os.path.join(
+            output_dir,
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+            sanitize_filename(genus_cn),
+            sanitize_filename(species_cn),
+        )
+    os.makedirs(save_dir, exist_ok=True)
+    counter["n"] += 1
+    seq = str(counter["n"]).zfill(5)
+    inst_tag = f"inst{int(inst_i):02d}"
+    prov_part = sanitize_filename(province) if province else "未知省"
+    city_part = sanitize_filename(city) if city else "未知市"
+    if non_bird_dir:
+        fname_parts = [
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+            inst_tag,
+            prov_part,
+            city_part,
+            seq,
+        ]
+    else:
+        fname_parts = [
+            sanitize_filename(order_cn),
+            sanitize_filename(family_cn),
+            sanitize_filename(genus_cn),
+            sanitize_filename(species_cn),
+            inst_tag,
+            prov_part,
+            city_part,
+            seq,
+        ]
+    out_path = os.path.join(save_dir, "_".join(fname_parts) + ".jpg")
+    _write_crop_jpeg_with_exif(crop, out_path, source_path)
+    try:
+        os.remove(crop_path)
+    except OSError:
+        pass
+    print(f"  裁剪归档(切割后识别): {os.path.basename(out_path)}")
+    print(f"    路径: {save_dir}")
+    print(f"    物种: {species_cn}（{sci_name}）  位置: {prov_part}{city_part}")
+    return out_path
+
+
+def save_union_crop_for_birds(
+    image: np.ndarray,
+    birds: List[Dict],
+    output_dir: str,
+    source_path: str,
+    *,
+    min_species_accept_confidence: Optional[float],
+    counter: Optional[Dict] = None,
+    margin_ratio: float = 0.5,
+) -> Optional[str]:
+    """同一大图清洗后仍剩至少两只鸟时，另存一张多体合图。"""
+    if image is None or len(birds) < 2:
+        return None
+    img_h, img_w = image.shape[:2]
+    boxes: List[Tuple[int, int, int, int]] = []
+    for bird in birds:
+        bb = _bird_expanded_bbox(bird, img_w, img_h, margin_ratio)
+        if bb[2] > bb[0] and bb[3] > bb[1]:
+            boxes.append(bb)
+    if len(boxes) < 2:
+        return None
+    ur = _union_boxes_margin_aspect(boxes, img_w, img_h)
+    if not ur:
+        return None
+    ux1, uy1, ux2, uy2 = ur
+    crop_all = image[uy1:uy2, ux1:ux2].copy()
+    union_dir = _save_dir_for_top_species_across_birds(
+        birds, output_dir, min_species_accept_confidence
+    )
+    os.makedirs(union_dir, exist_ok=True)
+    if counter is None:
+        counter = {"n": 0}
+    counter["n"] += 1
+    seq = str(counter["n"]).zfill(5)
+    stem = Path(source_path).stem if source_path else "frame"
+    fn = f"{sanitize_filename(stem)}_{seq}_all.jpg"
+    out_union = os.path.join(union_dir, fn)
+    _write_crop_jpeg_with_exif(crop_all, out_union, source_path)
+    print(f"  裁剪保存(多体合图): {fn}")
+    print(f"    路径: {union_dir}")
+    return out_union
+
+
+def group_crop_records_by_source(records: List[Dict]) -> Dict[str, List[Dict]]:
+    grouped: Dict[str, List[Dict]] = {}
+    for rec in records:
+        src = str(rec.get("source_path") or "")
+        grouped.setdefault(src, []).append(rec)
+    return grouped
+
+
 def _save_dir_for_top_species_across_birds(
     birds: List[Dict],
     output_dir: str,
@@ -2136,11 +2310,189 @@ class BirdAndEyeDetector:
             return []
         return species_preds
 
+    def classify_bird_crop(
+        self,
+        bird_crop: np.ndarray,
+        province: Optional[str] = None,
+        city: Optional[str] = None,
+        *,
+        log_index: Optional[int] = None,
+    ) -> Dict:
+        """对已裁好的鸟体图做物种识别，返回可写入 bird 字典的字段。"""
+        species_preds: List[Dict] = []
+        method = "unknown"
+        baidu_raw = None
+        species_debug: Dict[str, Union[str, int, float, bool, None]] = {
+            "raw_candidate_count": 0,
+            "post_geo_count": 0,
+            "species_threshold_enabled": self.min_species_accept_confidence is not None,
+            "candidate_filter_threshold": (
+                None
+                if self.min_species_accept_confidence is None
+                else float(self.min_species_accept_confidence)
+            ),
+            "min_accept_threshold": (
+                None
+                if self.min_species_accept_confidence is None
+                else float(self.min_species_accept_confidence)
+            ),
+            "raw_top1_name": None,
+            "raw_top1_confidence": None,
+            "post_geo_top1_name": None,
+            "post_geo_top1_confidence": None,
+            "unknown_reason": None,
+        }
+        out: Dict = {}
+
+        if self.hybrid_classifier is not None:
+            geo_hint = "中国"
+            if province:
+                geo_hint = f"{province}{city or ''}"
+            species_preds, method = self.hybrid_classifier.predict(
+                bird_crop, top_k=10, geolocation=geo_hint
+            )
+            self.species_method = method
+            if method.startswith("豆包"):
+                out["doubao_raw"] = "使用豆包API进行识别"
+        elif self.species_classifier is not None:
+            species_preds = self.species_classifier.predict(bird_crop, top_k=10)
+            method = "本地模型"
+            self.species_method = method
+
+        if species_preds and any(
+            (p.get("api_source") == "doubao") or str(method).startswith("豆包")
+            for p in species_preds
+        ):
+            species_preds = normalize_api_species_candidates(species_preds)
+
+        raw_preds = list(species_preds or [])
+        species_debug["raw_candidate_count"] = len(raw_preds)
+        if raw_preds:
+            species_debug["raw_top1_name"] = (
+                raw_preds[0].get("chinese_name")
+                or raw_preds[0].get("english_name")
+                or raw_preds[0].get("scientific_name")
+                or "未知"
+            )
+            species_debug["raw_top1_confidence"] = float(
+                raw_preds[0].get("confidence") or 0
+            )
+
+        if species_preds:
+            use_local_strict_geo = method.startswith("本地模型")
+            if use_local_strict_geo and _local_model_geo_forced_unknown(
+                species_preds, province, self.geo_mode
+            ):
+                species_debug["unknown_reason"] = (
+                    "local_top10_no_geo_species_top1_below_0_8"
+                )
+                species_preds = []
+            if species_preds:
+                species_preds = geo_refine_species(
+                    species_preds,
+                    province,
+                    city,
+                    geo_mode=self.geo_mode,
+                    species_conf_threshold=None,
+                    outside_list_conf=(
+                        _LOCAL_GEO_OUTSIDE_CONF if use_local_strict_geo else None
+                    ),
+                )
+            species_debug["post_geo_count"] = len(species_preds)
+            if species_preds:
+                species_debug["post_geo_top1_name"] = (
+                    species_preds[0].get("chinese_name")
+                    or species_preds[0].get("english_name")
+                    or species_preds[0].get("scientific_name")
+                    or "未知"
+                )
+                species_debug["post_geo_top1_confidence"] = float(
+                    species_preds[0].get("confidence") or 0
+                )
+            top0 = species_preds[0] if species_preds else None
+            skip_low_clear = (
+                top0
+                and top0.get("api_source") == "doubao"
+                and top0.get("subject_type") not in (None, "", "bird")
+            )
+            species_preds = self._species_clear_if_top1_below_gui_threshold(
+                species_preds, species_debug, skip_low_clear
+            )
+        else:
+            species_debug["post_geo_count"] = 0
+
+        out["species"] = species_preds
+        out["species_method"] = method
+        out["species_debug"] = species_debug
+        if baidu_raw:
+            out["baidu_raw"] = baidu_raw
+
+        idx_txt = f"鸟 {log_index}: " if log_index is not None else ""
+        if species_preds:
+            top = species_preds[0]
+            print(
+                f"  {idx_txt}物种 = {top['chinese_name']} ({top['english_name']}) "
+                f"置信度={top['confidence']:.2%} [{method}]"
+                + (
+                    f"  [地理约束: {top.get('geo_location','')}]"
+                    if top.get("geo_location")
+                    else ""
+                )
+            )
+        else:
+            if species_debug["unknown_reason"] is None:
+                if int(species_debug["raw_candidate_count"]) == 0:
+                    species_debug["unknown_reason"] = "no_model_candidates"
+                elif int(species_debug["post_geo_count"]) == 0:
+                    species_debug["unknown_reason"] = (
+                        "all_candidates_removed_by_geo_rules"
+                    )
+                else:
+                    species_debug["unknown_reason"] = (
+                        "all_candidates_filtered_after_geo_refine"
+                    )
+            print(
+                f"  {idx_txt}物种 = 未知 [{method}] | 原始候选={species_debug['raw_candidate_count']}, "
+                f"地理后={species_debug['post_geo_count']}, "
+                f"raw_top1_name={species_debug['raw_top1_name']}, "
+                f"raw_top1_conf={species_debug['raw_top1_confidence']}, "
+                f"geo_top1_name={species_debug['post_geo_top1_name']}, "
+                f"geo_top1_conf={species_debug['post_geo_top1_confidence']}, "
+                f"未知种类阈值="
+                f"{'未启用(仅地理)' if self.min_species_accept_confidence is None else f'{float(self.min_species_accept_confidence):.3f}'}, "
+                f"原因={species_debug['unknown_reason']}"
+            )
+
+        if species_preds:
+            top = species_preds[0]
+            if (
+                top.get("api_source") == "doubao"
+                and top.get("subject_type") not in (None, "", "bird")
+            ):
+                root = (top.get("archive_root_cn") or "").strip() or "其它"
+                tag = (top.get("archive_tag_cn") or "未分类").strip()
+                disp = (top.get("chinese_name") or tag).strip() or "未命名"
+                out["classification"] = {
+                    "order_cn": root,
+                    "family_cn": tag,
+                    "genus_cn": "—",
+                    "species_cn": disp,
+                }
+            else:
+                out["classification"] = lookup_classification(
+                    chinese_name=top.get("chinese_name", ""),
+                    scientific_name=top.get("scientific_name", ""),
+                )
+        else:
+            out["classification"] = dict(UNKNOWN_SPECIES_CLASSIFICATION)
+        return out
+
     def detect(
         self,
         image_path: str,
         manual_province: Optional[str] = None,
         manual_city: Optional[str] = None,
+        skip_species: bool = False,
     ) -> Tuple[np.ndarray, Dict]:
         """
         对单张图片进行多阶段检测（含 GPS 解析 + 物种分类补全）
@@ -2149,6 +2501,7 @@ class BirdAndEyeDetector:
             image_path:     图片路径
             manual_province: 无 EXIF GPS 时使用的省名（如界面地图选点反查结果）
             manual_city:     无 EXIF GPS 时使用的市名
+            skip_species:    只检鸟体、不认种（切割后再清洗、再识别时用）
 
         Returns:
             标注后的图像和检测结果字典
@@ -2226,177 +2579,16 @@ class BirdAndEyeDetector:
                 bird["eyes"] = []
 
 
-            # 物种识别
-            if self.enable_species:
-                species_preds = []
-                method = "unknown"
-                baidu_raw = None
-                species_debug: Dict[str, Union[str, int, float, bool, None]] = {
-                    "raw_candidate_count": 0,
-                    "post_geo_count": 0,
-                    "species_threshold_enabled": self.min_species_accept_confidence is not None,
-                    "candidate_filter_threshold": (
-                        None
-                        if self.min_species_accept_confidence is None
-                        else float(self.min_species_accept_confidence)
-                    ),
-                    "min_accept_threshold": (
-                        None
-                        if self.min_species_accept_confidence is None
-                        else float(self.min_species_accept_confidence)
-                    ),
-                    "raw_top1_name": None,
-                    "raw_top1_confidence": None,
-                    "post_geo_top1_name": None,
-                    "post_geo_top1_confidence": None,
-                    "unknown_reason": None,
-                }
-                
-                # 优先使用混合分类器（如果可用）
-                if self.hybrid_classifier is not None:
-                    geo_hint = "中国"
-                    if province:
-                        geo_hint = f"{province}{city or ''}"
-                    species_preds, method = self.hybrid_classifier.predict(
-                        bird_crop, top_k=10, geolocation=geo_hint
+            # 物种识别（切割后再清洗时先跳过，稍后对切割图调用 classify_bird_crop）
+            if self.enable_species and not skip_species:
+                bird.update(
+                    self.classify_bird_crop(
+                        bird_crop, province, city, log_index=i + 1
                     )
-                    self.species_method = method
-                    # 检查是否使用了豆包API
-                    if method.startswith("豆包"):
-                        # 保存豆包API的原始响应
-                        bird["doubao_raw"] = "使用豆包API进行识别"
-                elif self.species_classifier is not None:
-                    # 回退到本地模型
-                    species_preds = self.species_classifier.predict(bird_crop, top_k=10)
-                    method = "本地模型"
-                    self.species_method = method
-
-                # 豆包/API 结果标准化：学名统一中文名 + 补 index 以启用强地理约束
-                if species_preds and any(
-                    (p.get("api_source") == "doubao") or str(method).startswith("豆包")
-                    for p in species_preds
-                ):
-                    species_preds = normalize_api_species_candidates(species_preds)
-
-                raw_preds = list(species_preds or [])
-                species_debug["raw_candidate_count"] = len(raw_preds)
-                if raw_preds:
-                    species_debug["raw_top1_name"] = (
-                        raw_preds[0].get("chinese_name")
-                        or raw_preds[0].get("english_name")
-                        or raw_preds[0].get("scientific_name")
-                        or "未知"
-                    )
-                    species_debug["raw_top1_confidence"] = float(
-                        raw_preds[0].get("confidence") or 0
-                    )
-                
-                if species_preds:
-                    # 本地模型：top10 无地理名单命中且顶一 <0.8 → 直接未知；名单外保留阈值 0.8
-                    use_local_strict_geo = method.startswith("本地模型")
-                    if use_local_strict_geo and _local_model_geo_forced_unknown(
-                        species_preds, province, self.geo_mode
-                    ):
-                        species_debug["unknown_reason"] = (
-                            "local_top10_no_geo_species_top1_below_0_8"
-                        )
-                        species_preds = []
-                    if species_preds:
-                        species_preds = geo_refine_species(
-                            species_preds,
-                            province,
-                            city,
-                            geo_mode=self.geo_mode,
-                            species_conf_threshold=None,
-                            outside_list_conf=(
-                                _LOCAL_GEO_OUTSIDE_CONF
-                                if use_local_strict_geo
-                                else None
-                            ),
-                        )
-                    species_debug["post_geo_count"] = len(species_preds)
-                    if species_preds:
-                        species_debug["post_geo_top1_name"] = (
-                            species_preds[0].get("chinese_name")
-                            or species_preds[0].get("english_name")
-                            or species_preds[0].get("scientific_name")
-                            or "未知"
-                        )
-                        species_debug["post_geo_top1_confidence"] = float(
-                            species_preds[0].get("confidence") or 0
-                        )
-                    top0 = species_preds[0] if species_preds else None
-                    skip_low_clear = (
-                        top0
-                        and top0.get("api_source") == "doubao"
-                        and top0.get("subject_type") not in (None, "", "bird")
-                    )
-                    # GUI 未知种类阈值：在地理规则（含本地加强）之后对顶一再判，与 0.75/0.8 地理门槛叠加
-                    species_preds = self._species_clear_if_top1_below_gui_threshold(
-                        species_preds, species_debug, skip_low_clear
-                    )
-                else:
-                    species_debug["post_geo_count"] = 0
-
-                bird["species"] = species_preds
-                bird["species_method"] = method  # 记录使用的识别方法
-                bird["species_debug"] = species_debug
-                if baidu_raw:
-                    bird["baidu_raw"] = baidu_raw
-                
-                if species_preds:
-                    top = species_preds[0]
-                    print(f"  鸟 {i+1}: 物种 = {top['chinese_name']} ({top['english_name']}) "
-                          f"置信度={top['confidence']:.2%} [{method}]"
-                          + (f"  [地理约束: {top.get('geo_location','')}]" if top.get('geo_location') else ""))
-                else:
-                    if species_debug["unknown_reason"] is None:
-                        if int(species_debug["raw_candidate_count"]) == 0:
-                            species_debug["unknown_reason"] = "no_model_candidates"
-                        elif int(species_debug["post_geo_count"]) == 0:
-                            species_debug["unknown_reason"] = (
-                                "all_candidates_removed_by_geo_rules"
-                            )
-                        else:
-                            species_debug["unknown_reason"] = "all_candidates_filtered_after_geo_refine"
-                    print(
-                        f"  鸟 {i+1}: 物种 = 未知 [{method}] | 原始候选={species_debug['raw_candidate_count']}, "
-                        f"地理后={species_debug['post_geo_count']}, "
-                        f"raw_top1_name={species_debug['raw_top1_name']}, "
-                        f"raw_top1_conf={species_debug['raw_top1_confidence']}, "
-                        f"geo_top1_name={species_debug['post_geo_top1_name']}, "
-                        f"geo_top1_conf={species_debug['post_geo_top1_confidence']}, "
-                        f"未知种类阈值="
-                        f"{'未启用(仅地理)' if self.min_species_accept_confidence is None else f'{float(self.min_species_accept_confidence):.3f}'}, "
-                        f"原因={species_debug['unknown_reason']}"
-                    )
+                )
             else:
                 bird["species"] = []
-                bird["species_method"] = "已禁用"
-
-            # 四级中文分类补全（豆包非鸟：用人像/其它动物/其它 + 子标签归档）
-            sp_list = bird.get("species", [])
-            if sp_list:
-                top = sp_list[0]
-                if (
-                    top.get("api_source") == "doubao"
-                    and top.get("subject_type") not in (None, "", "bird")
-                ):
-                    root = (top.get("archive_root_cn") or "").strip() or "其它"
-                    tag = (top.get("archive_tag_cn") or "未分类").strip()
-                    disp = (top.get("chinese_name") or tag).strip() or "未命名"
-                    bird["classification"] = {
-                        "order_cn": root,
-                        "family_cn": tag,
-                        "genus_cn": "—",
-                        "species_cn": disp,
-                    }
-                else:
-                    bird["classification"] = lookup_classification(
-                        chinese_name=top.get("chinese_name", ""),
-                        scientific_name=top.get("scientific_name", ""),
-                    )
-            else:
+                bird["species_method"] = "已跳过" if skip_species else "已禁用"
                 bird["classification"] = dict(UNKNOWN_SPECIES_CLASSIFICATION)
 
         # 在图像上画框和标注

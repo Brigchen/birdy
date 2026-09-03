@@ -12,6 +12,7 @@ import sys
 import os
 import json
 import time
+import shutil
 import threading
 import traceback
 import numpy as np
@@ -48,8 +49,12 @@ from detect_bird_and_eye import (
     SPECIES_GEO_MODE_CHINA,
     SPECIES_GEO_MODE_NONE,
     SPECIES_GEO_MODE_PROVINCE,
+    archive_identified_crop_file,
+    group_crop_records_by_source,
     normalize_local_species_model,
     normalize_species_geo_mode,
+    save_instance_crops_to_staging,
+    save_union_crop_for_birds,
 )
 from api_config_defaults import ensure_doubao_api_config_file, ensure_amap_api_config_file
 from record_submit import export_from_classification
@@ -81,8 +86,12 @@ from watermark_generator import (
     render_watermark_for_image,
 )
 from image_clean import ImageCleanOptions, clean_bird_images, clean_image_list
-from image_io import all_supported_extensions, file_filter_all_images
+from image_io import all_supported_extensions, file_filter_all_images, imread_bgr
 from dual_format import extensions_for_dual_mode
+from flow_eta import (
+    FlowEtaEstimator,
+    build_eta_phase_estimates,
+)
 from burst_webp_dialog import open_burst_webp_dialog
 from video_stabilize_dialog import open_video_stabilize_dialog
 
@@ -133,32 +142,6 @@ def _count_images_for_eta(folder: str, dual_format_mode: str = "off") -> int:
     if not folder or not os.path.isdir(folder):
         return 0
     return len(_collect_image_paths_under(folder, dual_format_mode))
-
-
-def _build_eta_phase_estimates(config: Dict, n_images: int) -> List[Tuple[str, float]]:
-    """
-    各阶段耗时粗估（秒），用于初始剩余时间与虚拟进度。
-    n_images：输入目录或用于物种步骤的图片数预估。
-    """
-    n = max(0, int(n_images))
-    burst_on = config.get("enable_burst_detection", True)
-    do_species = config.get("enable_species_detection", True)
-    use_local = config.get("use_local_model", True)
-    phases: List[Tuple[str, float]] = []
-    if burst_on:
-        phases.append(("burst", max(18.0, n * 2.8)))
-    if config.get("enable_gps_write"):
-        phases.append(("gps", max(4.0, min(120.0, 6.0 + n * 0.08))))
-    if do_species:
-        per = 5.0 if use_local else 14.0
-        phases.append(("species", max(25.0, n * per)))
-    if config.get("enable_watermark_generation", False):
-        phases.append(("watermark", max(12.0, n * 0.8)))
-    if config.get("enable_record_export_auto", False):
-        phases.append(("record_export", 8.0))
-    if config.get("enable_track_map_auto", False):
-        phases.append(("track_map", 15.0))
-    return phases
 
 
 def _apply_gui_flow_policy(config: Dict) -> None:
@@ -471,6 +454,206 @@ def _main_flow_write_gps(config: Dict, screened_dir: str) -> Tuple[int, str]:
     return int(gps_count), "指定地点统一经纬度"
 
 
+def _run_species_crop_clean_identify(
+    worker: "WorkerThread",
+    detector: BirdAndEyeDetector,
+    image_files: List[str],
+    output_root: str,
+    config: Dict,
+    start_time: float,
+    emit_phase_progress,
+    results: Dict,
+    manual_province: Optional[str],
+    manual_city: Optional[str],
+) -> None:
+    """大图检鸟并切割 → 清洗每张切割图 → 再对留下的切割图认种归档。"""
+    staging_dir = os.path.join(output_root, "_crop_staging")
+    if os.path.isdir(staging_dir):
+        shutil.rmtree(staging_dir, ignore_errors=True)
+    os.makedirs(staging_dir, exist_ok=True)
+
+    n_src = len(image_files)
+    worker.eta_checkpoint.emit({"kind": "species_begin", "n": n_src})
+    records: List[Dict[str, Any]] = []
+
+    for idx, image_file in enumerate(image_files):
+        if not worker.is_running:
+            break
+        worker.status_updated.emit(
+            f"切割鸟体: {os.path.basename(image_file)} ({idx + 1}/{n_src})"
+        )
+        try:
+            _vis, detection_results = detector.detect(
+                image_file,
+                manual_province=manual_province,
+                manual_city=manual_city,
+                skip_species=True,
+            )
+            birds = detection_results.get("birds") or []
+            orig_img = detection_results.get("original_image")
+            if orig_img is None:
+                orig_img = detector.load_image(image_file)
+            recs = save_instance_crops_to_staging(
+                orig_img,
+                birds,
+                staging_dir,
+                image_file,
+                province=detection_results.get("province"),
+                city=detection_results.get("city"),
+            )
+            records.extend(recs)
+        except Exception as e:
+            worker.status_updated.emit(
+                f"⚠ 切割失败 {os.path.basename(image_file)}: {e}"
+            )
+        worker.eta_checkpoint.emit(
+            {
+                "kind": "species_tick",
+                "done": idx + 1,
+                "total": max(1, n_src),
+            }
+        )
+        emit_phase_progress("species", idx + 1, max(1, n_src * 3))
+
+    crop_paths = [r["path"] for r in records if os.path.isfile(r.get("path") or "")]
+    worker.status_updated.emit(
+        f"大图切割完成：{len(crop_paths)} 张切割图，开始清洗…"
+    )
+
+    def _clean_prog(d: Dict) -> None:
+        if d.get("kind") == "tick":
+            emit_phase_progress(
+                "species",
+                n_src + int(d.get("done", 0)),
+                max(1, n_src * 3),
+            )
+
+    clean_opts = ImageCleanOptions(
+        remove_no_bird=bool(config.get("image_clean_remove_no_bird", True)),
+        remove_blurry=bool(config.get("image_clean_remove_blurry", True)),
+        dedupe=bool(config.get("image_clean_dedupe", True)),
+        min_clarity=float(config.get("image_clean_min_clarity", 35)),
+        dup_similarity=float(config.get("image_clean_dup_similarity", 92)),
+        use_full_frame_for_clarity=True,
+    )
+    clean_res = clean_image_list(
+        crop_paths,
+        clean_opts,
+        progress_callback=_clean_prog,
+        should_cancel=lambda: not worker.is_running,
+    )
+    cd = clean_res.as_dict()
+    results["image_clean_result"] = cd
+    worker.status_updated.emit(
+        "切割图清洗完成："
+        f"保留 {cd['kept']}/{cd['total']}，"
+        f"未检出鸟体 {cd['removed_no_bird']}，"
+        f"模糊 {cd['removed_blurry']}，"
+        f"重复 {cd['removed_duplicate']}"
+    )
+
+    records = [r for r in records if os.path.isfile(r.get("path") or "")]
+    if not records:
+        worker.status_updated.emit("⚠ 清洗后无切割图，已跳过物种识别。")
+        results["crop_result"] = {
+            "total_crops": 0,
+            "processing_time": time.time() - start_time,
+        }
+        shutil.rmtree(staging_dir, ignore_errors=True)
+        return
+
+    n_id = len(records)
+    worker.eta_checkpoint.emit({"kind": "species_begin", "n": n_id})
+    archive_counter = {"n": 0}
+    total_crops = 0
+    kept_for_union: List[Dict[str, Any]] = []
+
+    for idx, rec in enumerate(records):
+        if not worker.is_running:
+            break
+        crop_path = rec["path"]
+        worker.status_updated.emit(
+            f"识别切割图: {os.path.basename(crop_path)} ({idx + 1}/{n_id})"
+        )
+        try:
+            crop_bgr = imread_bgr(crop_path)
+            if crop_bgr is None:
+                raise ValueError("无法读取切割图")
+            identified = detector.classify_bird_crop(
+                crop_bgr,
+                rec.get("province") or manual_province,
+                rec.get("city") or manual_city,
+                log_index=idx + 1,
+            )
+            rec.update(identified)
+            saved = archive_identified_crop_file(
+                crop_path,
+                rec,
+                output_root,
+                rec.get("source_path") or "",
+                province=rec.get("province"),
+                city=rec.get("city"),
+                counter=archive_counter,
+                inst_i=int(rec.get("inst") or 1),
+            )
+            if saved:
+                total_crops += 1
+                kept_for_union.append(rec)
+        except Exception as e:
+            worker.status_updated.emit(
+                f"⚠ 识别失败 {os.path.basename(crop_path)}: {e}"
+            )
+        worker.eta_checkpoint.emit(
+            {
+                "kind": "species_tick",
+                "done": idx + 1,
+                "total": max(1, n_id),
+            }
+        )
+        emit_phase_progress("species", n_src * 2 + idx + 1, max(1, n_src * 3))
+
+    for source, recs in group_crop_records_by_source(kept_for_union).items():
+        if len(recs) < 2:
+            continue
+        orig = None
+        if source and os.path.isfile(source):
+            try:
+                orig = detector.load_image(source)
+            except Exception:
+                orig = None
+        if orig is None:
+            continue
+        birds = [
+            {
+                "bbox": r.get("bbox") or [0, 0, 1, 1],
+                "species": r.get("species") or [],
+                "classification": r.get("classification") or {},
+            }
+            for r in recs
+        ]
+        union = save_union_crop_for_birds(
+            orig,
+            birds,
+            output_root,
+            source,
+            min_species_accept_confidence=detector.min_species_accept_confidence,
+            counter=archive_counter,
+        )
+        if union:
+            total_crops += 1
+
+    shutil.rmtree(staging_dir, ignore_errors=True)
+    processing_time = time.time() - start_time
+    worker.status_updated.emit(
+        f"✓ 已输出 {total_crops} 个裁剪归档文件，耗时 {processing_time:.2f} 秒"
+    )
+    results["crop_result"] = {
+        "total_crops": total_crops,
+        "species_method": detector.get_species_method(),
+        "processing_time": processing_time,
+    }
+
+
 class WorkerThread(QThread):
     """后台工作线程 - 处理图片分析"""
     
@@ -574,11 +757,16 @@ class WorkerThread(QThread):
                     config.get("image_folder", ""),
                     config.get("dual_format_mode", "off"),
                 )
-            phase_ests = _build_eta_phase_estimates(config, n_eta)
+            phase_ests, eta_meta = build_eta_phase_estimates(config, n_eta)
             self.eta_checkpoint.emit(
                 {
                     "kind": "start",
                     "n_images": n_eta,
+                    "n_species_expected": int(eta_meta.get("n_species_expected") or 0),
+                    "burst_sec_per": eta_meta.get("burst_sec_per"),
+                    "species_sec_per": eta_meta.get("species_sec_per"),
+                    "burst_keep_ratio": eta_meta.get("burst_keep_ratio"),
+                    "burst_keep_min": eta_meta.get("burst_keep_min"),
                     "phases": [
                         {"name": n, "est": float(e)} for n, e in phase_ests
                     ],
@@ -657,6 +845,13 @@ class WorkerThread(QThread):
                         )
                         results.update(burst_result)
                         burst_filter_applied = True
+                        self.eta_checkpoint.emit(
+                            {
+                                "kind": "burst_result",
+                                "total": int(burst_result.get("total_images") or 0),
+                                "kept": int(burst_result.get("kept_images") or 0),
+                            }
+                        )
                         n_raw = int(burst_result.get("raw_companions_copied") or 0)
                         if n_raw:
                             raw_dir = burst_result.get("screened_raw_dir") or ""
@@ -836,72 +1031,45 @@ class WorkerThread(QThread):
                             "物种识别/归档：连拍步骤未成功完成，扫描全部输入图片"
                         )
 
-                    if config.get("enable_image_clean_before_species", False) and image_files:
-                        self.status_updated.emit(
-                            f"物种识别前：清洗待识别图片（{len(image_files)} 张）…"
-                        )
+                    def _cfg_geo_str(v):
+                        if v is None:
+                            return None
+                        s = str(v).strip()
+                        return s or None
 
-                        def _clean_prog(d: Dict) -> None:
-                            if d.get("kind") == "tick":
-                                _emit_phase_progress(
-                                    "species",
-                                    int(d.get("done", 0)),
-                                    int(d.get("total", 1)),
-                                )
+                    manual_province = _cfg_geo_str(config.get("province"))
+                    manual_city = _cfg_geo_str(config.get("city"))
 
-                        clean_opts = ImageCleanOptions(
-                            remove_no_bird=bool(
-                                config.get("image_clean_remove_no_bird", True)
-                            ),
-                            remove_blurry=bool(
-                                config.get("image_clean_remove_blurry", True)
-                            ),
-                            dedupe=bool(config.get("image_clean_dedupe", True)),
-                            min_clarity=float(
-                                config.get("image_clean_min_clarity", 35)
-                            ),
-                            dup_similarity=float(
-                                config.get("image_clean_dup_similarity", 92)
-                            ),
-                        )
-                        clean_res = clean_image_list(
-                            image_files,
-                            clean_opts,
-                            progress_callback=_clean_prog,
-                            should_cancel=lambda: not self.is_running,
-                        )
-                        image_files = [p for p in image_files if os.path.isfile(p)]
-                        cd = clean_res.as_dict()
-                        results["image_clean_result"] = cd
-                        self.status_updated.emit(
-                            "清洗完成："
-                            f"保留 {cd['kept']}/{cd['total']}，"
-                            f"未检出鸟体 {cd['removed_no_bird']}，"
-                            f"模糊 {cd['removed_blurry']}，"
-                            f"重复 {cd['removed_duplicate']}"
-                        )
                     if not image_files:
                         self.status_updated.emit(
-                            "⚠ 清洗后无剩余图片或其他原因导致待识别列表为空，已跳过物种识别。"
+                            "⚠ 待处理图片列表为空，已跳过物种识别。"
                         )
                         results["crop_result"] = {
                             "total_crops": 0,
                             "processing_time": time.time() - start_time,
                         }
+                    elif config.get("enable_image_clean_before_species", False):
+                        self.status_updated.emit(
+                            f"先切割大图中的鸟体（{len(image_files)} 张），"
+                            "再清洗切割图，然后识别鸟种…"
+                        )
+                        _run_species_crop_clean_identify(
+                            self,
+                            detector,
+                            image_files,
+                            output_root,
+                            config,
+                            start_time,
+                            _emit_phase_progress,
+                            results,
+                            manual_province,
+                            manual_city,
+                        )
                     else:
                         total_crops = 0
                         archive_counter = {"n": 0}
                         n_spec = len(image_files)
                         self.eta_checkpoint.emit({"kind": "species_begin", "n": n_spec})
-
-                        def _cfg_geo_str(v):
-                            if v is None:
-                                return None
-                            s = str(v).strip()
-                            return s or None
-
-                        manual_province = _cfg_geo_str(config.get("province"))
-                        manual_city = _cfg_geo_str(config.get("city"))
 
                         for idx, image_file in enumerate(image_files):
                             if not self.is_running:
@@ -1454,6 +1622,7 @@ class BirdDetectionGUI(QMainWindow):
         self._process_time_timer.setInterval(500)
         self._process_time_timer.timeout.connect(self._refresh_process_time_labels)
         self._eta_phases: List[Dict[str, Any]] = []
+        self._flow_eta = FlowEtaEstimator()
         self._eta_species_t0: Optional[float] = None
         self._eta_species_done = 0
         self._eta_species_total = 0
@@ -1804,7 +1973,7 @@ class BirdDetectionGUI(QMainWindow):
             'enable_species_detection': True,
             'enable_crop': True,
             'generate_species_report': False,
-            # 物种识别前 / 分类目录图片清洗
+            # 切割后识别前 / 分类目录图片清洗
             'enable_image_clean_before_species': False,
             'image_clean_remove_no_bird': True,
             'image_clean_remove_blurry': True,
@@ -2465,16 +2634,17 @@ class BirdDetectionGUI(QMainWindow):
         min_species_row.addStretch()
         species_layout.addRow("未知种类阈值(可选):", min_species_row)
 
-        # ---- 图片清洗（识别前 / 分类目录）----
+        # ---- 图片清洗（切割后识别前 / 分类目录）----
         self.image_clean_before_species_checkbox = QCheckBox(
-            "主流程识别前自动清洗"
+            "主流程：切割后、识别前清洗切割图"
         )
         self.image_clean_before_species_checkbox.setChecked(
             bool(self.config.get("enable_image_clean_before_species", False))
         )
         self.image_clean_before_species_checkbox.setToolTip(
-            "勾选后，「开始处理」在物种识别前，对即将识别的图片"
-            "（通常为 Screened_images）执行清洗并删除不合格文件。"
+            "勾选后，先从大图检出并切出每只鸟，再对切割图清洗"
+            "（去掉失焦、无鸟、重复的个体），最后才识别鸟种。\n"
+            "不会删除 Screened_images 里的大图。"
         )
         species_layout.addRow("", self.image_clean_before_species_checkbox)
 
@@ -5110,6 +5280,7 @@ class BirdDetectionGUI(QMainWindow):
 
     def _reset_eta_model(self) -> None:
         self._eta_phases = []
+        self._flow_eta = FlowEtaEstimator()
         self._eta_phase_rates: Dict[str, Optional[float]] = {}
         self._eta_phase_t0: Dict[str, Optional[float]] = {}
         self._eta_phase_done: Dict[str, int] = {}
@@ -5119,137 +5290,82 @@ class BirdDetectionGUI(QMainWindow):
         self._eta_species_total = 0
         self._ema_sec_per_species = None
 
+    def _persist_eta_learned(self) -> None:
+        est = getattr(self, "_flow_eta", None)
+        if est is None or not getattr(est, "learned", None):
+            return
+        try:
+            self.config["_eta_learned"] = est.learned_for_config(self.config)
+        except Exception:
+            pass
+
     def _compute_eta_remaining_sec(self) -> Optional[float]:
-        if not self._eta_phases:
+        est = getattr(self, "_flow_eta", None)
+        if est is None or not est.phases:
             return None
-        mono = time.monotonic()
-        rem = 0.0
-        seen_current = False
-        for p in self._eta_phases:
-            if p.get("done"):
-                continue
-            name = p["name"]
-            est = float(p.get("est", 0.0))
-            if not seen_current:
-                seen_current = True
-                done = self._eta_phase_done.get(name, 0)
-                total = self._eta_phase_total.get(name, 0)
-                rate = self._eta_phase_rates.get(name)
-                if name == "species" and self._eta_species_total > 0:
-                    left = max(0, self._eta_species_total - self._eta_species_done)
-                    if left <= 0:
-                        continue
-                    sp_rate = self._ema_sec_per_species
-                    if sp_rate is not None and self._eta_species_done > 0:
-                        rem += left * sp_rate
-                    else:
-                        rem += est * (left / max(1, self._eta_species_total))
-                elif total > 0 and done > 0 and rate is not None:
-                    left_items = max(0, total - done)
-                    rem += left_items * rate
-                else:
-                    t0 = self._eta_phase_t0.get(name) or p.get("t0")
-                    if t0 is None or done <= 0:
-                        rem += est
-                    else:
-                        elapsed_in_phase = mono - t0
-                        if done >= total:
-                            pass
-                        else:
-                            frac = done / max(1, total)
-                            total_phase_est = elapsed_in_phase / max(0.001, frac)
-                            rem += max(0.0, total_phase_est - elapsed_in_phase)
-            else:
-                rem += float(p.get("est", 0.0))
-        return max(0.0, rem)
+        return float(est.remaining_sec())
 
     def _on_eta_checkpoint(self, d: Dict[str, Any]) -> None:
         kind = d.get("kind")
+        est = getattr(self, "_flow_eta", None)
+        if est is None:
+            est = FlowEtaEstimator()
+            self._flow_eta = est
         if kind == "start":
             self._reset_eta_model()
-            for p in d.get("phases") or []:
-                nm = p["name"]
-                self._eta_phases.append(
-                    {
-                        "name": nm,
-                        "est": float(p.get("est", 1.0)),
-                        "done": False,
-                        "t0": None,
-                    }
-                )
-                self._eta_phase_rates[nm] = None
-                self._eta_phase_t0[nm] = None
-                self._eta_phase_done[nm] = 0
-                self._eta_phase_total[nm] = 0
+            self._flow_eta = FlowEtaEstimator.from_start(
+                list(d.get("phases") or []),
+                n_images=int(d.get("n_images") or 0),
+                n_species_expected=int(d.get("n_species_expected") or 0),
+                burst_sec_per=d.get("burst_sec_per"),
+                species_sec_per=d.get("species_sec_per"),
+                keep_ratio=float(d.get("burst_keep_ratio") or 0.2),
+                keep_min=int(d.get("burst_keep_min") or 2),
+            )
+            self._eta_phases = self._flow_eta.phases
             return
+        est = self._flow_eta
         if kind == "phase_begin":
-            name = d.get("phase")
-            t0 = time.monotonic()
-            for p in self._eta_phases:
-                if p["name"] == name:
-                    p["t0"] = t0
-                    break
-            self._eta_phase_t0[name] = t0
-            self._eta_phase_done[name] = 0
-            self._eta_phase_rates[name] = None
-            if name == "species":
-                self._eta_species_t0 = t0
+            name = str(d.get("phase") or "")
+            if name:
+                est.phase_begin(name)
             return
         if kind == "phase_done":
-            name = d.get("phase")
-            for p in self._eta_phases:
-                if p["name"] == name:
-                    p["done"] = True
-                    break
+            name = str(d.get("phase") or "")
+            if name:
+                est.phase_done(name)
+                self._persist_eta_learned()
             return
         if kind == "phase_tick":
-            name = d.get("phase")
-            done = int(d.get("done", 0))
-            total = max(1, int(d.get("total", 1)))
-            self._eta_phase_done[name] = done
-            self._eta_phase_total[name] = total
-            t0 = self._eta_phase_t0.get(name)
-            if t0 is not None and done > 0:
-                inst = (time.monotonic() - t0) / float(done)
-                a = getattr(self, "_eta_ema_alpha", 0.3)
-                cur = self._eta_phase_rates.get(name)
-                if cur is None:
-                    self._eta_phase_rates[name] = inst
-                else:
-                    self._eta_phase_rates[name] = (1.0 - a) * cur + a * inst
+            name = str(d.get("phase") or "")
+            if name:
+                est.phase_tick(
+                    name,
+                    int(d.get("done", 0)),
+                    max(1, int(d.get("total", 1))),
+                )
+            return
+        if kind == "burst_result":
+            est.burst_result(
+                int(d.get("total") or 0),
+                int(d.get("kept") or 0),
+            )
             return
         if kind == "species_begin":
             n = int(d.get("n", 0))
+            est.species_begin(n)
             self._eta_species_total = n
             self._eta_species_done = 0
-            use_local = self.config.get("use_local_model", True)
-            per = 5.0 if use_local else 14.0
-            for p in self._eta_phases:
-                if p["name"] == "species":
-                    p["est"] = max(8.0, n * per) if n > 0 else 3.0
-                    break
-            self._eta_phase_total["species"] = n
-            self._eta_phase_done["species"] = 0
             return
         if kind == "species_tick":
             done = int(d.get("done", 0))
             total = max(1, int(d.get("total", 1)))
+            est.phase_tick("species", done, total)
             self._eta_species_done = done
-            self._eta_phase_done["species"] = done
-            self._eta_phase_total["species"] = total
-            if self._eta_species_t0 is not None and done > 0:
-                inst = (time.monotonic() - self._eta_species_t0) / float(done)
-                a = getattr(self, "_eta_ema_alpha", 0.3)
-                if self._ema_sec_per_species is None:
-                    self._ema_sec_per_species = inst
-                else:
-                    self._ema_sec_per_species = (
-                        (1.0 - a) * self._ema_sec_per_species + a * inst
-                    )
-                self._eta_phase_rates["species"] = self._ema_sec_per_species
+            self._eta_species_total = total
 
     def _refresh_process_time_labels(self):
-        """已用时间 + 预计剩余（阶段预估 + 物种逐张 EMA 修正）。"""
+        """已用时间 + 预计剩余（分阶段先验，连拍/识别按各自张数与速度校正）。"""
         if self._process_start_monotonic is None:
             return
         elapsed = time.monotonic() - self._process_start_monotonic
@@ -5493,6 +5609,7 @@ class BirdDetectionGUI(QMainWindow):
             )
         self._process_start_monotonic = None
         self._eta_label.setText("预计剩余：—" if aborted else "预计剩余：0秒")
+        self._persist_eta_learned()
         self._reset_eta_model()
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
