@@ -2042,6 +2042,244 @@ def _save_dir_for_top_species_across_birds(
     )
 
 
+# 高像素小目标：整图默认 1280；长边 >5000 再对中心 50% 复检后 NMS 合并。4GB 显存用 FP16，OOM 则降边长。
+BIRD_YOLO_IMGSZ = 1280
+BIRD_YOLO_CENTER_RATIO = 0.5
+BIRD_YOLO_CENTER_MIN_LONG_SIDE = 5000
+BIRD_YOLO_NMS_IOU = 0.5
+BIRD_YOLO_IMGSZ_FALLBACKS = (1280, 960, 640)
+
+
+def box_iou_xyxy(a: List[float], b: List[float]) -> float:
+    ax1, ay1, ax2, ay2 = (float(a[0]), float(a[1]), float(a[2]), float(a[3]))
+    bx1, by1, bx2, by2 = (float(b[0]), float(b[1]), float(b[2]), float(b[3]))
+    ix1, iy1 = max(ax1, bx1), max(ay1, by1)
+    ix2, iy2 = min(ax2, bx2), min(ay2, by2)
+    iw, ih = max(0.0, ix2 - ix1), max(0.0, iy2 - iy1)
+    inter = iw * ih
+    if inter <= 0:
+        return 0.0
+    area_a = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
+    area_b = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
+    denom = area_a + area_b - inter
+    if denom <= 1e-6:
+        return 0.0
+    return inter / denom
+
+
+def merge_detections_nms(
+    dets: List[Dict], iou_thr: float = BIRD_YOLO_NMS_IOU
+) -> List[Dict]:
+    """按置信度从高到低，IoU 达阈值则丢弃后者。"""
+    ordered = sorted(dets, key=lambda d: float(d.get("conf") or 0.0), reverse=True)
+    kept: List[Dict] = []
+    for det in ordered:
+        bb = det.get("bbox") or []
+        if len(bb) < 4:
+            continue
+        if any(box_iou_xyxy(bb, k.get("bbox") or [0, 0, 0, 0]) >= iou_thr for k in kept):
+            continue
+        kept.append(det)
+    return kept
+
+
+def center_crop_origin_size(
+    width: int, height: int, ratio: float = BIRD_YOLO_CENTER_RATIO
+) -> Tuple[int, int, int, int]:
+    """返回中心裁切 (x0, y0, crop_w, crop_h)。"""
+    w = max(1, int(width))
+    h = max(1, int(height))
+    r = min(1.0, max(0.05, float(ratio)))
+    cw = max(1, int(round(w * r)))
+    ch = max(1, int(round(h * r)))
+    x0 = max(0, (w - cw) // 2)
+    y0 = max(0, (h - ch) // 2)
+    if x0 + cw > w:
+        cw = w - x0
+    if y0 + ch > h:
+        ch = h - y0
+    return x0, y0, max(1, cw), max(1, ch)
+
+
+def should_run_center_pass(
+    width: int,
+    height: int,
+    min_long_side: int = BIRD_YOLO_CENTER_MIN_LONG_SIDE,
+) -> bool:
+    return max(int(width), int(height)) > int(min_long_side)
+
+
+def _clip_bbox_to_image(
+    bbox: List[int], width: int, height: int
+) -> Optional[List[int]]:
+    x1, y1, x2, y2 = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+    x1 = max(0, min(width, x1))
+    y1 = max(0, min(height, y1))
+    x2 = max(0, min(width, x2))
+    y2 = max(0, min(height, y2))
+    if x2 <= x1 or y2 <= y1:
+        return None
+    return [x1, y1, x2, y2]
+
+
+def _offset_mask_xy(
+    mask_xy: Optional[List], ox: int, oy: int
+) -> Optional[List]:
+    if not mask_xy:
+        return None
+    out = []
+    for pt in mask_xy:
+        if not pt or len(pt) < 2:
+            continue
+        out.append([float(pt[0]) + ox, float(pt[1]) + oy])
+    return out or None
+
+
+def _to_numpy(val):
+    if hasattr(val, "cpu"):
+        val = val.cpu()
+    if hasattr(val, "numpy"):
+        val = val.numpy()
+    return np.asarray(val)
+
+
+def extract_yolo_detections(
+    results,
+    offset_x: int = 0,
+    offset_y: int = 0,
+    image_size: Optional[Tuple[int, int]] = None,
+) -> List[Dict]:
+    """从 Ultralytics 结果抽出 bbox/conf/mask，可选平移并裁到原图范围。"""
+    birds: List[Dict] = []
+    ox, oy = int(offset_x), int(offset_y)
+    clip_wh = image_size
+    for result in results or []:
+        if result is None or getattr(result, "boxes", None) is None:
+            continue
+        names = getattr(result, "names", None) or {}
+        masks_xy = None
+        if getattr(result, "masks", None) is not None:
+            try:
+                masks_xy = result.masks.xy
+            except Exception:
+                masks_xy = None
+        for det_idx, box in enumerate(result.boxes):
+            x1, y1, x2, y2 = _to_numpy(box.xyxy[0]).tolist()
+            conf = float(_to_numpy(box.conf[0]).reshape(-1)[0])
+            cls = int(_to_numpy(box.cls[0]).reshape(-1)[0])
+            mask_xy = None
+            if masks_xy is not None and det_idx < len(masks_xy):
+                try:
+                    t = masks_xy[det_idx]
+                    arr = np.asarray(
+                        t.cpu().numpy() if hasattr(t, "cpu") else t,
+                        dtype=np.float32,
+                    )
+                    if arr.ndim == 2 and arr.shape[0] >= 3 and arr.shape[1] >= 2:
+                        mask_xy = arr.reshape(-1, 2).tolist()
+                except Exception:
+                    mask_xy = None
+            bbox = [int(x1) + ox, int(y1) + oy, int(x2) + ox, int(y2) + oy]
+            if clip_wh is not None:
+                clipped = _clip_bbox_to_image(bbox, clip_wh[0], clip_wh[1])
+                if clipped is None:
+                    continue
+                bbox = clipped
+            birds.append(
+                {
+                    "bbox": bbox,
+                    "conf": conf,
+                    "class": cls,
+                    "class_name": names.get(cls, "bird") if isinstance(names, dict) else "bird",
+                    "mask_xy": _offset_mask_xy(mask_xy, ox, oy),
+                }
+            )
+    return birds
+
+
+def _yolo_half_ok() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except Exception:
+        return False
+
+
+def yolo_predict_with_imgsz(model, image, conf: float, imgsz: int = BIRD_YOLO_IMGSZ):
+    """CUDA 上 FP16；显存不够则按 1280→960→640 降级。"""
+    import torch
+
+    half = _yolo_half_ok()
+    sizes: List[int] = []
+    for sz in (int(imgsz),) + BIRD_YOLO_IMGSZ_FALLBACKS:
+        if sz > 0 and sz not in sizes:
+            sizes.append(sz)
+    last_err: Optional[BaseException] = None
+    for sz in sizes:
+        try:
+            return model.predict(
+                source=image,
+                conf=float(conf),
+                imgsz=int(sz),
+                verbose=False,
+                half=half,
+            )
+        except RuntimeError as e:
+            last_err = e
+            msg = str(e).lower()
+            if "out of memory" not in msg:
+                raise
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            print(f"鸟体检测: imgsz={sz} 显存不足，尝试更小尺寸…")
+    if last_err is not None:
+        raise last_err
+    return []
+
+
+def run_yolo_birds_full_and_center(
+    model,
+    image: np.ndarray,
+    conf: float,
+    imgsz: int = BIRD_YOLO_IMGSZ,
+    center_ratio: float = BIRD_YOLO_CENTER_RATIO,
+    nms_iou: float = BIRD_YOLO_NMS_IOU,
+    min_long_side: int = BIRD_YOLO_CENTER_MIN_LONG_SIDE,
+) -> List[Dict]:
+    """整图 imgsz 推理；大图再对中心区域复检并 NMS 合并，偏向召回。"""
+    if image is None or getattr(image, "size", 0) == 0:
+        return []
+    h, w = image.shape[:2]
+    results = yolo_predict_with_imgsz(model, image, conf, imgsz)
+    birds = extract_yolo_detections(results, image_size=(w, h))
+    if not should_run_center_pass(w, h, min_long_side):
+        return birds
+    x0, y0, cw, ch = center_crop_origin_size(w, h, center_ratio)
+    crop = image[y0 : y0 + ch, x0 : x0 + cw]
+    if crop.size == 0:
+        return birds
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        pass
+    extra = extract_yolo_detections(
+        yolo_predict_with_imgsz(model, crop, conf, imgsz),
+        offset_x=x0,
+        offset_y=y0,
+        image_size=(w, h),
+    )
+    merged = merge_detections_nms(birds + extra, nms_iou)
+    print(
+        f"鸟体检测: 全图 {len(birds)} + 中心复检 {len(extra)} → 合并 {len(merged)}"
+        f"（imgsz={imgsz}）"
+    )
+    return merged
+
+
 class BirdAndEyeDetector:
     def __init__(
         self,
@@ -2050,7 +2288,7 @@ class BirdAndEyeDetector:
         species_model_path: Optional[str] = None,
         local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
         bird_info_path: str = _BIRD_INFO_PATH,
-        bird_conf: float = 0.5,
+        bird_conf: float = 0.25,
         eye_conf: float = 0.25,
         device: str = None,
         enable_species: bool = True,
@@ -2070,7 +2308,7 @@ class BirdAndEyeDetector:
             species_model_path: 物种识别模型路径（默认由 local_species_model 解析）
             local_species_model: 本地骨干 resnet34 | efficientnet_b0（GUI 下拉）
             bird_info_path:     物种信息 JSON 路径
-            bird_conf:          鸟类检测置信度阈值（默认 0.5）
+            bird_conf:          鸟类检测置信度阈值（默认 0.25，偏向召回）
             eye_conf:           鸟眼检测置信度阈值
             device:             运行设备 (cuda/cpu)
             enable_species:     是否启用物种识别（False 则跳过，加快速度）
@@ -2214,30 +2452,14 @@ class BirdAndEyeDetector:
 
     def detect_birds(self, image: np.ndarray) -> List[Dict]:
         """
-        检测图片中的鸟
+        检测图片中的鸟（imgsz=1280；长边 >5000 再中心 50% 复检后合并）。
 
         Returns:
-            鸟的位置列表，每个元素包含bbox和conf
+            鸟的位置列表，每个元素包含 bbox、conf；seg 模型时含 mask_xy。
         """
-        results = self.bird_model(image, conf=self.bird_conf, verbose=False)
-        birds = []
-
-        for result in results:
-            if result.boxes is None:
-                continue
-            for box in result.boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                conf = float(box.conf[0].cpu().numpy())
-                cls = int(box.cls[0].cpu().numpy())
-
-                birds.append({
-                    "bbox": [int(x1), int(y1), int(x2), int(y2)],
-                    "conf": conf,
-                    "class": cls,
-                    "class_name": result.names.get(cls, "bird"),
-                })
-
-        return birds
+        return run_yolo_birds_full_and_center(
+            self.bird_model, image, float(self.bird_conf)
+        )
 
     def detect_eyes_in_crop(
         self, crop_img: np.ndarray, offset_x: int = 0, offset_y: int = 0

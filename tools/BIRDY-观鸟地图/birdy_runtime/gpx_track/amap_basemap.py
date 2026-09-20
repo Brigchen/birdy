@@ -8,8 +8,9 @@
 from __future__ import annotations
 
 import math
+import re
 from io import BytesIO
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Dict, Any, NamedTuple
 
 import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
@@ -330,6 +331,49 @@ def _pad_bounds(
     )
 
 
+def reserve_south_lat(
+    lon_min: float,
+    lon_max: float,
+    lat_min: float,
+    lat_max: float,
+    bottom_frac: float,
+) -> Tuple[float, float, float, float]:
+    """
+    保持北缘，把南缘下扩，使原 lat_min 落在新视野从下往上 bottom_frac 处。
+    给底部海拔面板留出地图空间，并让缩放按扩大后的范围计算。
+    """
+    frac = min(0.45, max(0.0, float(bottom_frac)))
+    if frac <= 1e-6 or lat_max <= lat_min:
+        return lon_min, lon_max, lat_min, lat_max
+    new_lat_min = (lat_min - frac * lat_max) / (1.0 - frac)
+    if new_lat_min >= lat_min:
+        return lon_min, lon_max, lat_min, lat_max
+    return lon_min, lon_max, new_lat_min, lat_max
+
+
+def fit_lon_to_aspect(
+    lon_min: float,
+    lon_max: float,
+    lat_min: float,
+    lat_max: float,
+    aspect_wh: float,
+) -> Tuple[float, float, float, float]:
+    """
+    保持南北缘，只向两侧加宽经度，使 lon_span/lat_span 与画布宽高比一致。
+    南侧预留下拉纬度后若不加宽，等比例锁轴会在左右留出白边。
+    """
+    aspect_wh = max(float(aspect_wh), 1e-6)
+    h = float(lat_max) - float(lat_min)
+    if h <= 1e-12:
+        return lon_min, lon_max, lat_min, lat_max
+    need_w = h * aspect_wh
+    cur_w = float(lon_max) - float(lon_min)
+    if need_w <= cur_w + 1e-15:
+        return lon_min, lon_max, lat_min, lat_max
+    cx = (float(lon_min) + float(lon_max)) / 2.0
+    return cx - need_w / 2.0, cx + need_w / 2.0, lat_min, lat_max
+
+
 def fetch_amap_basemap_rgba(
     lon_min: float,
     lon_max: float,
@@ -341,6 +385,7 @@ def fetch_amap_basemap_rgba(
     style: str = "normal",
     api_key: Optional[str] = None,
     zoom: Optional[int] = None,
+    south_reserve_frac: float = 0.0,
 ) -> Tuple[np.ndarray, Tuple[float, float, float, float]]:
     """
     下载并裁剪高德瓦片，返回 RGBA [0,1] 与 extent (lon_min, lon_max, lat_min, lat_max)。
@@ -355,9 +400,19 @@ def fetch_amap_basemap_rgba(
 
     style = normalize_basemap_style(style)
 
+    data_lat_min = lat_min
     lon_min, lon_max, lat_min, lat_max = _pad_bounds(
         lon_min, lon_max, lat_min, lat_max
     )
+    if south_reserve_frac > 0 and zoom is None:
+        # 用扩边前的南缘作为“内容底”，避免对称 padding 把预留区吃掉
+        lon_min, lon_max, lat_min, lat_max = reserve_south_lat(
+            lon_min, lon_max, data_lat_min, lat_max, south_reserve_frac
+        )
+        if width_px > 0 and height_px > 0:
+            lon_min, lon_max, lat_min, lat_max = fit_lon_to_aspect(
+                lon_min, lon_max, lat_min, lat_max, width_px / float(height_px)
+            )
     if zoom is None:
         zoom = _pick_zoom(lon_min, lon_max, lat_min, lat_max, width_px, height_px)
 
@@ -438,6 +493,453 @@ def fetch_amap_basemap_rgba(
     arr = np.asarray(cropped, dtype=np.float32) / 255.0
     extent = (out_lon_min, out_lon_max, out_lat_min, out_lat_max)
     return arr, extent
+
+
+_LONLAT_QUERY = re.compile(
+    r"^\s*(-?\d+(?:\.\d+)?)\s*[,，]\s*(-?\d+(?:\.\d+)?)\s*$"
+)
+
+
+def parse_lonlat_query(text: str) -> Optional[Tuple[float, float]]:
+    """解析「纬度,经度」；成功返回 (lat, lon)。"""
+    m = _LONLAT_QUERY.match((text or "").strip())
+    if not m:
+        return None
+    lat = float(m.group(1))
+    lon = float(m.group(2))
+    if -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0:
+        return lat, lon
+    return None
+
+
+def gcj02_to_wgs84_lonlat(lon: float, lat: float) -> Tuple[float, float]:
+    """GCJ-02 (lon, lat) → WGS84 (lon, lat)。"""
+    try:
+        from geo_encoder import gcj02_to_wgs84
+
+        wlat, wlon = gcj02_to_wgs84(lat, lon)
+        return wlon, wlat
+    except Exception:
+        return lon, lat
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dphi / 2.0) ** 2
+        + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2.0) ** 2
+    )
+    return 2.0 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def _strip_admin_suffix(name: str) -> str:
+    s = (name or "").strip()
+    for suf in ("特别行政区", "自治区", "省", "市", "地区", "盟"):
+        if s.endswith(suf) and len(s) > len(suf) + 1:
+            return s[: -len(suf)]
+    return s
+
+
+def region_city_tokens(*parts: str) -> List[str]:
+    """供高德 city / 地址前缀：市、区、标题地点、省，去重保序。"""
+    out: List[str] = []
+    seen = set()
+
+    def add(raw: str) -> None:
+        s = (raw or "").strip()
+        if not s:
+            return
+        for c in (_strip_admin_suffix(s), s):
+            if len(c) < 2:
+                continue
+            key = c.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(c)
+
+    for raw in parts:
+        add(raw)
+        s = (raw or "").strip()
+        if len(s) > 3:
+            add(s[:2])
+    return out
+
+
+def pick_geocode_near_map(
+    candidates: Sequence[Tuple[float, float]],
+    prefer_wgs84: Optional[Tuple[float, float]] = None,
+    *,
+    max_prefer_km: float = 80.0,
+) -> Optional[Tuple[float, float]]:
+    """有地图中心时取最近且不超过 max_prefer_km 的结果，避免重名落到外省。"""
+    if not candidates:
+        return None
+    if prefer_wgs84 is None:
+        return candidates[0]
+    plat, plon = prefer_wgs84
+    best: Optional[Tuple[float, float]] = None
+    best_d = 1e18
+    for lat, lon in candidates:
+        d = _haversine_km(plat, plon, lat, lon)
+        if d < best_d:
+            best_d = d
+            best = (float(lat), float(lon))
+    if best is not None and best_d <= max_prefer_km:
+        return best
+    return None
+
+
+def _amap_gcj_to_wgs84_latlon(loc: str) -> Optional[Tuple[float, float]]:
+    loc = (loc or "").strip()
+    if not loc or "," not in loc:
+        return None
+    try:
+        glon_s, glat_s = loc.split(",", 1)
+        glon, glat = float(glon_s), float(glat_s)
+    except ValueError:
+        return None
+    wlon, wlat = gcj02_to_wgs84_lonlat(glon, glat)
+    return wlat, wlon
+
+
+def _amap_get_json(url: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    try:
+        import requests
+
+        key = get_effective_amap_key()
+    except Exception:
+        return None
+    if not key:
+        return None
+    params = dict(params)
+    params["key"] = key
+    params.setdefault("output", "json")
+    try:
+        r = requests.get(url, params=params, timeout=TILE_TIMEOUT)
+        data = r.json()
+    except Exception:
+        return None
+    if str(data.get("status") or "") != "1":
+        return None
+    return data
+
+
+class PlaceHit(NamedTuple):
+    lat: float
+    lon: float
+    name: str
+    typ: str = ""
+    source: str = ""
+
+
+_POI_WEAK_MARKERS = ("公交", "地铁", "停车", "收费站", "路口")
+_POI_STRONG_MARKERS = ("水库", "湖泊", "风景", "公园", "山", "岩", "望", "顶")
+_POI_PLACE_TYPES = "风景名胜|地名地址信息|体育休闲服务|公共设施"
+_AMAP_PROVINCE_ONLY = frozenset(
+    {
+        "河北",
+        "山西",
+        "辽宁",
+        "吉林",
+        "黑龙江",
+        "江苏",
+        "浙江",
+        "安徽",
+        "福建",
+        "江西",
+        "山东",
+        "河南",
+        "湖北",
+        "湖南",
+        "广东",
+        "海南",
+        "四川",
+        "贵州",
+        "云南",
+        "陕西",
+        "甘肃",
+        "青海",
+        "台湾",
+        "内蒙古",
+        "广西",
+        "西藏",
+        "宁夏",
+        "新疆",
+    }
+)
+
+
+def place_name_match_score(query: str, poi_name: str) -> int:
+    """与高德 App 类似：优先同名地点，公交站等附属 POI 降权。"""
+    q = (query or "").strip()
+    n = (poi_name or "").strip()
+    if not q or not n:
+        return 0
+    if n == q:
+        return 100
+    if n.startswith(q) and not any(m in n for m in _POI_WEAK_MARKERS):
+        return 90
+    if q in n and not any(m in n for m in _POI_WEAK_MARKERS):
+        return 80
+    if q in n:
+        return 45
+    return 0
+
+
+def pick_amap_place_hit(
+    query: str,
+    hits: Sequence[PlaceHit],
+    prefer_wgs84: Optional[Tuple[float, float]] = None,
+    *,
+    max_prefer_km: float = 80.0,
+    require_strong: bool = False,
+) -> Optional[PlaceHit]:
+    """按名称分档（同名 > 前缀 > 包含），同档内取靠近地图的点。
+
+    公交站等弱匹配默认不采用，避免「东山水库」被附近公交站顶替。
+    """
+    ranked: List[Tuple[int, int, float, int, PlaceHit]] = []
+    for i, hit in enumerate(hits):
+        name_score = place_name_match_score(query, hit.name)
+        if name_score <= 0:
+            continue
+        bonus = 0
+        typ = f"{hit.typ}{hit.name}"
+        if any(m in typ for m in _POI_STRONG_MARKERS):
+            bonus += 8
+        if any(m in hit.name for m in _POI_WEAK_MARKERS):
+            bonus -= 20
+        dist = 0.0
+        if prefer_wgs84 is not None:
+            dist = _haversine_km(prefer_wgs84[0], prefer_wgs84[1], hit.lat, hit.lon)
+            if dist > max_prefer_km:
+                continue
+        ranked.append((name_score, bonus, dist, i, hit))
+    if not ranked:
+        return None
+    exact = [row for row in ranked if row[0] >= 100]
+    strong = [row for row in ranked if row[0] >= 80]
+    if exact:
+        pool = exact
+    elif strong:
+        pool = strong
+    elif require_strong:
+        return None
+    else:
+        pool = ranked
+    if prefer_wgs84 is not None:
+        pool.sort(key=lambda row: (row[2], -row[0], -row[1], row[3]))
+    else:
+        pool.sort(key=lambda row: (-row[0], -row[1], row[3]))
+    return pool[0][4]
+
+
+def _place_hit_from_loc(
+    loc: str, name: str, typ: str, source: str
+) -> Optional[PlaceHit]:
+    coords = _amap_gcj_to_wgs84_latlon(loc)
+    if coords is None:
+        return None
+    return PlaceHit(coords[0], coords[1], (name or "").strip(), typ or "", source)
+
+
+def _amap_geocode_geo_hits(address: str, city: str = "") -> List[PlaceHit]:
+    params: Dict[str, Any] = {"address": address}
+    if city:
+        params["city"] = city
+    data = _amap_get_json("https://restapi.amap.com/v3/geocode/geo", params)
+    if not data:
+        return []
+    out: List[PlaceHit] = []
+    for item in data.get("geocodes") or []:
+        formatted = (item or {}).get("formatted_address") or address
+        hit = _place_hit_from_loc(
+            (item or {}).get("location") or "",
+            str(formatted),
+            "",
+            "geo",
+        )
+        if hit is not None:
+            out.append(hit)
+    return out
+
+
+def _amap_place_text_hits(
+    keywords: str,
+    city: str = "",
+    *,
+    citylimit: bool = True,
+    types: str = "",
+) -> List[PlaceHit]:
+    params: Dict[str, Any] = {
+        "keywords": keywords,
+        "offset": 10,
+        "page": 1,
+        "extensions": "base",
+    }
+    if types:
+        params["types"] = types
+    if city:
+        params["city"] = city
+        params["citylimit"] = "true" if citylimit else "false"
+    data = _amap_get_json("https://restapi.amap.com/v3/place/text", params)
+    if not data:
+        return []
+    out: List[PlaceHit] = []
+    for item in data.get("pois") or []:
+        hit = _place_hit_from_loc(
+            (item or {}).get("location") or "",
+            str((item or {}).get("name") or ""),
+            str((item or {}).get("type") or ""),
+            "poi_text",
+        )
+        if hit is not None:
+            out.append(hit)
+    return out
+
+
+def _amap_place_around_hits(
+    keywords: str, glon: float, glat: float, *, radius_m: int = 80000
+) -> List[PlaceHit]:
+    data = _amap_get_json(
+        "https://restapi.amap.com/v3/place/around",
+        {
+            "keywords": keywords,
+            "location": f"{glon:.6f},{glat:.6f}",
+            "radius": int(radius_m),
+            "sortrule": "weight",
+            "offset": 10,
+            "extensions": "base",
+        },
+    )
+    if not data:
+        return []
+    out: List[PlaceHit] = []
+    for item in data.get("pois") or []:
+        hit = _place_hit_from_loc(
+            (item or {}).get("location") or "",
+            str((item or {}).get("name") or ""),
+            str((item or {}).get("type") or ""),
+            "poi_around",
+        )
+        if hit is not None:
+            out.append(hit)
+    return out
+
+
+def _amap_city_params(*parts: str) -> List[str]:
+    """仅用 2～4 字的市/区名作高德 city，避免「厦门东坪山」整段或「福建」当城市。"""
+    out: List[str] = []
+    seen = set()
+    for raw in parts:
+        s = _strip_admin_suffix((raw or "").strip())
+        if not (2 <= len(s) <= 4):
+            continue
+        key = s.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(s)
+    specific = [c for c in out if c not in _AMAP_PROVINCE_ONLY]
+    return specific or out
+
+
+def geocode_address_wgs84(
+    address: str,
+    *,
+    city: str = "",
+    region_hints: Sequence[str] = (),
+    prefer_wgs84: Optional[Tuple[float, float]] = None,
+    max_prefer_km: float = 80.0,
+) -> Optional[Tuple[float, float]]:
+    """地名或「纬度,经度」→ WGS84 (lat, lon)。
+
+    优先高德地点搜索（与 App 一致），按名称匹配选取，不用最近的公交站/门牌顶替。
+    """
+    name = (address or "").strip().strip('"').strip("'")
+    if not name:
+        return None
+    parsed = parse_lonlat_query(name)
+    if parsed is not None:
+        return parsed
+
+    hints = tuple(region_hints or ())
+    cities = _amap_city_params(city, *hints)
+    prefix_hints = region_city_tokens(city, *hints)
+
+    poi_hits: List[PlaceHit] = []
+    seen: set = set()
+
+    def _add(items: Sequence[PlaceHit]) -> None:
+        for hit in items:
+            key = (hit.source, round(hit.lat, 5), round(hit.lon, 5), hit.name)
+            if key in seen:
+                continue
+            seen.add(key)
+            poi_hits.append(hit)
+
+    if prefer_wgs84 is not None:
+        plat, plon = prefer_wgs84
+        glon, glat = wgs84_to_map_lonlat(plon, plat)
+        _add(_amap_place_around_hits(name, glon, glat))
+
+    for c in cities:
+        _add(_amap_place_text_hits(name, city=c, citylimit=True))
+        _add(
+            _amap_place_text_hits(
+                name, city=c, citylimit=True, types=_POI_PLACE_TYPES
+            )
+        )
+
+    regional = bool(cities or prefer_wgs84 is not None)
+    picked = pick_amap_place_hit(
+        name,
+        poi_hits,
+        prefer_wgs84,
+        max_prefer_km=max_prefer_km,
+        require_strong=regional,
+    )
+    if picked is not None:
+        return picked.lat, picked.lon
+
+    geo_hits: List[PlaceHit] = []
+    for c in cities:
+        geo_hits.extend(_amap_geocode_geo_hits(name, city=c))
+        geo_hits.extend(_amap_geocode_geo_hits(f"{c}{name}", city=c))
+    for hint in prefix_hints:
+        q = f"{hint}{name}"
+        if q != name:
+            geo_hits.extend(_amap_geocode_geo_hits(q))
+    geo_picked = pick_amap_place_hit(
+        name,
+        geo_hits,
+        prefer_wgs84,
+        max_prefer_km=max_prefer_km,
+        require_strong=True,
+    )
+    if geo_picked is not None:
+        return geo_picked.lat, geo_picked.lon
+
+    if regional:
+        return None
+
+    fallback = _amap_place_text_hits(name, citylimit=False)
+    picked = pick_amap_place_hit(name, fallback, None, require_strong=True)
+    if picked is not None:
+        return picked.lat, picked.lon
+    geo = _amap_geocode_geo_hits(name)
+    if geo:
+        return geo[0].lat, geo[0].lon
+    try:
+        from geo_encoder import geocode_location
+
+        return geocode_location(name)
+    except Exception:
+        return None
 
 
 def regeo_place_label(lon: float, lat: float) -> Optional[str]:

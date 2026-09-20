@@ -20,6 +20,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "use_exif_gps": True,
     "radius_km": 1.0,
     "include_elevation": True,
+    "show_key_places": False,
+    "key_places_text": "",
     "wm_logo_path": "",
     "wm_logo_width_ratio": 0.30,
     "gpx_match_exif_tz": "Asia/Shanghai",

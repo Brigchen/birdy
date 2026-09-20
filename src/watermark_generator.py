@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import random
+import re
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -55,6 +56,7 @@ class WatermarkOptions:
     enable_species: bool = True
     enable_camera_params: bool = True
     logo_path: str = ""
+    # 相对图片长边（横图为宽、竖图为高）；竖图按宽计算会显得签名过小
     logo_width_ratio: float = 0.30
     # frame：外框 + 底栏文字 + 图内签名；inline：无外框，图内「签名 | 竖线 | 物种/城市地点」两行标签
     watermark_style: WatermarkStyle = "frame"
@@ -77,6 +79,116 @@ def _safe_open_image(path: str) -> Optional[Image.Image]:
     return open_pil_rgb(path, raw_half_size=False)
 
 
+_LOSSLESS_WATERMARK_EXTS = frozenset({".png", ".tif", ".tiff", ".bmp", ".webp"})
+
+
+def watermark_output_suffix(source_path: str) -> str:
+    """PNG/TIFF 等无损源仍出 PNG；JPEG/RAW/其它出 JPEG。"""
+    suf = Path(source_path).suffix.lower()
+    if suf in _LOSSLESS_WATERMARK_EXTS:
+        return ".png"
+    return ".jpg"
+
+
+def unique_watermark_dest(output_folder: str, source_path: str) -> str:
+    """目标目录根下按文件名保存；重名追加序号。"""
+    stem = Path(source_path).stem
+    suf = watermark_output_suffix(source_path)
+    dst = Path(output_folder) / f"{stem}{suf}"
+    if not dst.exists():
+        return str(dst)
+    i = 1
+    while True:
+        cand = Path(output_folder) / f"{stem}_{i}{suf}"
+        if not cand.exists():
+            return str(cand)
+        i += 1
+
+
+def _read_source_icc_profile(source_path: str) -> Optional[bytes]:
+    if not source_path or not os.path.isfile(source_path):
+        return None
+    try:
+        with Image.open(source_path) as im:
+            icc = im.info.get("icc_profile")
+        if isinstance(icc, (bytes, bytearray)) and len(icc) > 0:
+            return bytes(icc)
+    except Exception:
+        return None
+    return None
+
+
+def _watermark_jpeg_exif_bytes(source_path: str) -> Optional[bytes]:
+    """从源图复制拍摄参数/GPS；Orientation 置 1（像素已按 EXIF 转正）。"""
+    if piexif is None or not source_path or not os.path.isfile(source_path):
+        return None
+    try:
+        src = piexif.load(source_path)
+    except Exception:
+        return None
+    minimal = {
+        "0th": {},
+        "Exif": {},
+        "GPS": src.get("GPS", {}) or {},
+        "1st": {},
+        "Interop": {},
+        "thumbnail": None,
+    }
+    for tag in (271, 272, 282, 283, 306):
+        v = src.get("0th", {}).get(tag)
+        if v is not None:
+            minimal["0th"][tag] = v
+    minimal["0th"][274] = 1
+    for tag in (
+        33434,
+        33437,
+        34850,
+        34855,
+        34864,
+        34866,
+        36864,
+        36867,
+        36868,
+        37386,
+        42034,
+    ):
+        v = src.get("Exif", {}).get(tag)
+        if v is not None:
+            minimal["Exif"][tag] = v
+    try:
+        dumped = piexif.dump(minimal)
+        return dumped if dumped else None
+    except Exception:
+        return None
+
+
+def save_watermarked_image(
+    img: Image.Image, dest: str, source_path: str = ""
+) -> None:
+    """接近无损保存：PNG 源出 PNG；其余 JPEG quality=100、4:4:4，并尽量保留 ICC/EXIF。"""
+    rgb = img.convert("RGB")
+    dest_path = Path(dest)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    icc = _read_source_icc_profile(source_path)
+    extra: Dict[str, object] = {}
+    if icc:
+        extra["icc_profile"] = icc
+    suf = dest_path.suffix.lower()
+    if suf == ".png":
+        rgb.save(str(dest_path), "PNG", compress_level=3, **extra)
+        return
+    exif = _watermark_jpeg_exif_bytes(source_path)
+    if exif:
+        extra["exif"] = exif
+    rgb.save(
+        str(dest_path),
+        "JPEG",
+        quality=100,
+        subsampling=0,
+        **extra,
+    )
+
+
 def _collect_images_recursive(root: str) -> List[str]:
     exts = all_supported_extensions()
     out: List[str] = []
@@ -91,30 +203,107 @@ def collect_images_recursive(root: str) -> List[str]:
     return _collect_images_recursive(root)
 
 
+_ALL_IN_STEM = re.compile(r"(?:^|[_\-])all(?:$|[_\-])", re.I)
+
+_wm_bird_detector = None
+
+
+def is_species_collection_image(path: str) -> bool:
+    """文件名带 all 的多鸟合集裁图（如 stem_00001_all.jpg）不参与抽样。"""
+    stem = Path(path).stem
+    return bool(_ALL_IN_STEM.search(stem))
+
+
+def _center_bird_bbox_area(birds: Sequence[dict], w: int, h: int) -> float:
+    """多鸟时取框心最靠近画面中心的个体，返回其包围框面积。"""
+    if not birds or w <= 0 or h <= 0:
+        return 0.0
+    cx, cy = w * 0.5, h * 0.5
+    best_area = 0.0
+    best_dist2 = float("inf")
+    for bird in birds:
+        bb = (bird or {}).get("bbox") or []
+        if len(bb) < 4:
+            continue
+        x1, y1, x2, y2 = (float(bb[0]), float(bb[1]), float(bb[2]), float(bb[3]))
+        if x2 <= x1 or y2 <= y1:
+            continue
+        dist2 = (0.5 * (x1 + x2) - cx) ** 2 + (0.5 * (y1 + y2) - cy) ** 2
+        if dist2 < best_dist2:
+            best_dist2 = dist2
+            best_area = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    return best_area
+
+
+def center_bird_body_area(path: str) -> float:
+    """检出画面中心鸟体包围框面积；读图或检测失败则为 0。"""
+    global _wm_bird_detector
+    try:
+        from image_io import imread_bgr
+
+        bgr = imread_bgr(path)
+    except Exception:
+        return 0.0
+    if bgr is None or getattr(bgr, "size", 0) == 0:
+        return 0.0
+    try:
+        h, w = int(bgr.shape[0]), int(bgr.shape[1])
+    except Exception:
+        return 0.0
+    if h < 8 or w < 8:
+        return 0.0
+    try:
+        if _wm_bird_detector is None:
+            from detect_bird_and_eye import BirdAndEyeDetector
+
+            _wm_bird_detector = BirdAndEyeDetector(
+                enable_species=False,
+                enable_eye=False,
+            )
+        birds = _wm_bird_detector.detect_birds(bgr) or []
+    except Exception:
+        return 0.0
+    return _center_bird_bbox_area(birds, w, h)
+
+
 def sample_images_per_species_dir(
     images: Sequence[str],
     per_dir: int,
     *,
     rng: Optional[random.Random] = None,
+    area_fn: Optional[Callable[[str], float]] = None,
 ) -> List[str]:
     """
-    按「物种目录」（图片所在父目录）分组，每组随机抽取至多 per_dir 张。
-    per_dir <= 0 时返回原列表副本（不抽样）。
+    按「物种目录」（图片所在父目录）分组，每组抽取至多 per_dir 张。
+
+    抽样时：排除文件名含 all 的合集图；一半按中心鸟体从大到小取，
+    剩下一半从其余中随机。目录内不足该数时全部保留（仍排除合集）。
+    per_dir <= 0 时返回原列表副本（不抽样、不排除）。
     """
     paths = [str(p) for p in images]
     if per_dir <= 0 or not paths:
         return list(paths)
     rnd = rng if rng is not None else random.Random()
+    measure = area_fn if area_fn is not None else center_bird_body_area
+    ranked_n = (int(per_dir) + 1) // 2
+    random_n = int(per_dir) - ranked_n
     by_dir: Dict[str, List[str]] = defaultdict(list)
     for p in paths:
+        if is_species_collection_image(p):
+            continue
         by_dir[str(Path(p).parent)].append(p)
     out: List[str] = []
     for _dir in sorted(by_dir.keys()):
         group = by_dir[_dir]
         if len(group) <= per_dir:
             out.extend(group)
-        else:
-            out.extend(rnd.sample(group, per_dir))
+            continue
+        scored = sorted(group, key=lambda p: (-float(measure(p) or 0.0), p))
+        picked = list(scored[:ranked_n])
+        rest = scored[ranked_n:]
+        if random_n > 0 and rest:
+            picked.extend(rnd.sample(rest, min(random_n, len(rest))))
+        out.extend(picked)
     return out
 
 
@@ -406,6 +595,19 @@ def _species_from_path(img_path: str, source_root: str) -> str:
     return str(parts[-1]) or "未知"
 
 
+def _clamp_logo_width_ratio(logo_width_ratio: float) -> float:
+    return min(0.8, max(0.05, float(logo_width_ratio)))
+
+
+def _logo_target_width(img_w: int, img_h: int, logo_width_ratio: float) -> int:
+    """Logo 目标像素宽度：占比相对图片长边，且不超过图片宽度。"""
+    ratio = _clamp_logo_width_ratio(logo_width_ratio)
+    img_w = max(1, int(img_w))
+    img_h = max(1, int(img_h))
+    long_side = max(img_w, img_h)
+    return max(1, min(img_w, max(40, int(long_side * ratio))))
+
+
 def _fit_logo(logo: Image.Image, target_w: int, target_h: int) -> Image.Image:
     lw, lh = logo.size
     if lw <= 0 or lh <= 0:
@@ -533,8 +735,7 @@ def _compose_leica_style(
 
     # 图中 logo（底框上方中间）
     if logo is not None:
-        ratio = min(0.8, max(0.05, float(logo_width_ratio)))
-        area_w = max(40, int(w * ratio))
+        area_w = _logo_target_width(w, h, logo_width_ratio)
         area_h = max(28, int(h * 0.16))
         lg = _fit_logo(logo.convert("RGBA"), area_w, area_h)
         lx = img_x + max(0, (w - lg.size[0]) // 2)
@@ -646,9 +847,9 @@ def _compose_inline_signature_label(
 
     base = img_rgb.convert("RGBA")
     margin = max(8, int(h * 0.02))
-    ratio = min(0.8, max(0.05, float(logo_width_ratio)))
-    # 与外框模式图内签名同一套目标框
-    area_w = max(40, int(w * ratio))
+    ratio = _clamp_logo_width_ratio(logo_width_ratio)
+    # 与外框模式图内签名同一套目标框（宽度相对长边）
+    area_w = _logo_target_width(w, h, logo_width_ratio)
     area_h = max(28, int(h * 0.16))
 
     lg: Optional[Image.Image] = None
@@ -809,7 +1010,7 @@ def generate_watermarks(
 
     random_per_species:
         None 或 <=0 → 处理全部图片；
-        正整数 N → 每个物种目录（图片父目录）随机抽至多 N 张。
+        正整数 N → 每个物种目录抽至多 N 张（排除合集图；一半按中心鸟体大小，一半随机）。
     """
     os.makedirs(output_folder, exist_ok=True)
     images = _collect_images_recursive(source_folder)
@@ -865,21 +1066,8 @@ def generate_watermarks(
                 logo_img,
             )
 
-            # 不再按原目录层级保存，统一直接输出到目标目录根下
-            src = Path(img_path)
-            dst = Path(output_folder) / src.name
-            if dst.exists():
-                # 文件重名时追加序号，避免覆盖
-                stem = src.stem
-                suf = src.suffix or ".jpg"
-                i = 1
-                while True:
-                    cand = Path(output_folder) / f"{stem}_{i}{suf}"
-                    if not cand.exists():
-                        dst = cand
-                        break
-                    i += 1
-            out.save(str(dst), quality=95)
+            dst = unique_watermark_dest(output_folder, img_path)
+            save_watermarked_image(out, dst, img_path)
             ok += 1
         except Exception:
             fail += 1

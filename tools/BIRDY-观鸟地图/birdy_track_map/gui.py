@@ -46,7 +46,10 @@ from .worker import TrackMapWorker
 setup_import_paths()
 
 from gpx_track import TrackMapPreviewPanel, resolve_gpx_path_list  # noqa: E402
-from gpx_track.track_map import iter_skipped_photo_log_lines  # noqa: E402
+from gpx_track.track_map import (  # noqa: E402
+    format_key_place_alerts,
+    iter_skipped_photo_log_lines,
+)
 from gpx_track.gpx_match import DEFAULT_EXIF_TZ, DEFAULT_GPX_TZ  # noqa: E402
 from gpx_track.timezone_util import (  # noqa: E402
     normalize_tz_name,
@@ -381,6 +384,18 @@ class MainWindow(QMainWindow):
         oform.addRow("物种去重半径:", self.radius_input)
         self.elevation_checkbox = QCheckBox("叠加海拔剖面（内嵌于地图底部）")
         oform.addRow("", self.elevation_checkbox)
+        self.show_places_checkbox = QCheckBox("显示关键地点")
+        self.show_places_checkbox.setToolTip(
+            "勾选后按输入地名查询经纬度并标注（按地图所在城市检索，避免重名）。"
+            "也可填「纬度,经度」。蓝色菱形+斜体字，避开鸟图与鸟名。"
+        )
+        oform.addRow("", self.show_places_checkbox)
+        self.key_places_input = QLineEdit()
+        self.key_places_input.setPlaceholderText(
+            "多个地点用逗号、顿号或分号分隔，如：竹屿湖，观景台、东坪山"
+        )
+        self.show_places_checkbox.toggled.connect(self.key_places_input.setEnabled)
+        oform.addRow("关键地点:", self.key_places_input)
         self.exif_tz_combo = self._make_tz_combo()
         self.gpx_tz_combo = self._make_tz_combo()
         oform.addRow("EXIF 时区:", self.exif_tz_combo)
@@ -494,6 +509,9 @@ class MainWindow(QMainWindow):
         self.use_exif_checkbox.setChecked(bool(c.get("use_exif_gps", True)))
         self.radius_input.setValue(float(c.get("radius_km", 1.0)))
         self.elevation_checkbox.setChecked(bool(c.get("include_elevation", True)))
+        self.show_places_checkbox.setChecked(bool(c.get("show_key_places", False)))
+        self.key_places_input.setText(c.get("key_places_text", ""))
+        self.key_places_input.setEnabled(self.show_places_checkbox.isChecked())
         self.logo_input.setText(c.get("wm_logo_path", ""))
         self.logo_ratio_input.setValue(float(c.get("wm_logo_width_ratio", 0.30)))
         set_combo_timezone(
@@ -517,6 +535,8 @@ class MainWindow(QMainWindow):
         c["use_exif_gps"] = self.use_exif_checkbox.isChecked()
         c["radius_km"] = float(self.radius_input.value())
         c["include_elevation"] = self.elevation_checkbox.isChecked()
+        c["show_key_places"] = self.show_places_checkbox.isChecked()
+        c["key_places_text"] = self.key_places_input.text().strip()
         c["wm_logo_path"] = self.logo_input.text().strip()
         c["wm_logo_width_ratio"] = float(self.logo_ratio_input.value())
         c["gpx_match_exif_tz"] = read_combo_timezone(self.exif_tz_combo)
@@ -591,6 +611,8 @@ class MainWindow(QMainWindow):
             preview_only=preview,
             preview_max_photos=40,
             location_name=c.get("location_name", "").strip(),
+            show_key_places=bool(c.get("show_key_places", False)),
+            key_places_text=str(c.get("key_places_text", "") or ""),
             province="",
             city="",
             logo_path=str(c.get("wm_logo_path") or ""),
@@ -667,6 +689,9 @@ class MainWindow(QMainWindow):
         self._show_result_in_preview(main_png)
         if not self._pending_preview:
             QMessageBox.information(self, "完成", "\n".join(lines))
+        alert = format_key_place_alerts(written)
+        if alert:
+            QMessageBox.warning(self, "关键地点提示", alert)
 
     def _on_fail(self, msg: str) -> None:
         self._finish_progress()

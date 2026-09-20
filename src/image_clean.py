@@ -18,6 +18,21 @@ from image_io import all_supported_extensions, imread_bgr
 ProgressCB = Optional[Callable[[Dict], None]]
 CancelCB = Optional[Callable[[], bool]]
 
+# 清晰度统一在该长边尺度上计算，避免小切割图因像素少而虚高
+CLARITY_REF_LONG_SIDE = 640
+# 计分前高斯抑噪：略强于旧版 σ=1.5，压掉高 ISO 颗粒，仍保留羽、眼结构
+CLARITY_DENOISE_SIGMA = 2.2
+# 峰度：高斯噪点 ~3，眼/嘴/羽缘等稀疏真边缘 >3。用于压低「糊+噪」虚高
+CLARITY_KURT_REF = 3.0
+CLARITY_KURT_EXP = 2.4
+CLARITY_KFAC_MIN = 0.40
+CLARITY_KFAC_MAX = 1.55
+# 高 ISO 残差 MAD 惩罚；膝点取 8，避免轻度颗粒（如尚可的 9.jpg）被一票否决
+CLARITY_NOISE_MAD_REF = 8.0
+CLARITY_NPEN_MIN = 0.45
+# 抑噪后 Laplacian 已经很高时视为密边缘（测试条纹/锐利大结构），不再用峰度往下压
+CLARITY_TRUST_LAP_SCORE = 50.0
+
 
 @dataclass
 class ImageCleanOptions:
@@ -81,12 +96,104 @@ def collect_images_recursive(root: str) -> List[str]:
     return sorted(out)
 
 
-def clarity_score_0_100(bgr: np.ndarray) -> float:
+def _map_lap_to_0_100(lap: float) -> float:
+    return float(min(100.0, 100.0 * math.log1p(max(0.0, lap)) / math.log1p(100.0)))
+
+
+def _laplacian_kurtosis(vals: np.ndarray) -> float:
+    if vals.size < 16:
+        return float(CLARITY_KURT_REF)
+    sd = float(vals.std())
+    if sd < 1e-6:
+        return float(CLARITY_KURT_REF)
+    mu = float(vals.mean())
+    return float(np.mean(((vals - mu) / sd) ** 4))
+
+
+def _noise_mad(gray: np.ndarray, core: np.ndarray) -> float:
+    blur = cv2.GaussianBlur(gray, (0, 0), sigmaX=1.0)
+    resid = gray.astype(np.float64) - blur.astype(np.float64)
+    x = resid[core > 0]
+    if x.size < 16:
+        return 0.0
+    med = float(np.median(x))
+    return float(np.median(np.abs(x - med)))
+
+
+def _structure_noise_factors(lap_vals: np.ndarray, gray: np.ndarray, core: np.ndarray) -> Tuple[float, float]:
+    """
+    返回 (kfac, npen)。
+    kfac：Laplacian 峰度，区分稀疏真边缘与近似高斯的颗粒/拖影。
+    npen：高频残差 MAD，高 ISO 颗粒越重越往下压。
+    """
+    kurt = _laplacian_kurtosis(lap_vals)
+    kfac = (max(1e-6, kurt) / float(CLARITY_KURT_REF)) ** float(CLARITY_KURT_EXP)
+    kfac = float(min(CLARITY_KFAC_MAX, max(CLARITY_KFAC_MIN, kfac)))
+    mad = _noise_mad(gray, core)
+    npen = 1.0 / (1.0 + (mad / float(CLARITY_NOISE_MAD_REF)) ** 1.5)
+    npen = float(min(1.0, max(CLARITY_NPEN_MIN, npen)))
+    return kfac, npen
+
+
+def _map_clarity_with_quality(lap_var: float, lap_vals: np.ndarray, gray: np.ndarray, core: np.ndarray) -> float:
+    base = _map_lap_to_0_100(lap_var)
+    if base <= 0.0:
+        return 0.0
+    kfac, npen = _structure_noise_factors(lap_vals, gray, core)
+    if base >= float(CLARITY_TRUST_LAP_SCORE):
+        kfac = max(kfac, 1.0)
+        npen = max(npen, 0.9)
+    return float(min(100.0, max(0.0, base * kfac * npen)))
+
+
+def _scale_gray_and_mask(
+    gray: np.ndarray, mask: Optional[np.ndarray]
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    h, w = gray.shape[:2]
+    max_side = max(h, w)
+    if max_side <= 0:
+        return gray, mask
+    if max_side == CLARITY_REF_LONG_SIDE:
+        return gray, mask
+    if h >= w:
+        nh = CLARITY_REF_LONG_SIDE
+        nw = max(1, int(round(w * CLARITY_REF_LONG_SIDE / float(h))))
+    else:
+        nw = CLARITY_REF_LONG_SIDE
+        nh = max(1, int(round(h * CLARITY_REF_LONG_SIDE / float(w))))
+    interp = cv2.INTER_AREA if max_side > CLARITY_REF_LONG_SIDE else cv2.INTER_LINEAR
+    gray = cv2.resize(gray, (nw, nh), interpolation=interp)
+    if mask is not None and mask.size > 0:
+        mask = cv2.resize(mask, (nw, nh), interpolation=cv2.INTER_NEAREST)
+    return gray, mask
+
+
+def _crop_to_mask_bbox(
+    gray: np.ndarray, mask: np.ndarray, pad: int = 2
+) -> Tuple[np.ndarray, np.ndarray]:
+    """只保留掩膜外接框，再交给 640 缩放，避免整图里小鸟被缩太小、峰度被剪影顶满。"""
+    ys, xs = np.where(mask > 0)
+    if ys.size == 0 or xs.size == 0:
+        return gray, mask
+    h, w = gray.shape[:2]
+    p = max(0, int(pad))
+    y0 = max(0, int(ys.min()) - p)
+    y1 = min(h, int(ys.max()) + 1 + p)
+    x0 = max(0, int(xs.min()) - p)
+    x1 = min(w, int(xs.max()) + 1 + p)
+    if y1 <= y0 or x1 <= x0:
+        return gray, mask
+    return gray[y0:y1, x0:x1], mask[y0:y1, x0:x1]
+
+
+def clarity_score_0_100(
+    bgr: np.ndarray, mask: Optional[np.ndarray] = None
+) -> float:
     """
     清晰度 0~100（越高越清晰）。
 
-    先轻度高斯抑噪再算 Laplacian 方差，避免传感器噪点被当成「锐利边缘」
-    （失焦+高 ISO 噪点图否则会虚高到 80~90，无法用合理阈值剔除）。
+    长边缩放到 CLARITY_REF_LONG_SIDE 后：较强高斯抑噪 → 掩膜内核 Laplacian 方差，
+    再按边缘峰度与高频残差压低「高 ISO 颗粒 / 运动模糊剪影」虚高。
     """
     if bgr is None or bgr.size == 0:
         return 0.0
@@ -94,21 +201,31 @@ def clarity_score_0_100(bgr: np.ndarray) -> float:
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
     else:
         gray = bgr
-    # 过大图缩小，加速且稳定
-    h, w = gray.shape[:2]
-    max_side = max(h, w)
-    if max_side > 640:
-        scale = 640.0 / max_side
-        gray = cv2.resize(
-            gray,
-            (max(1, int(w * scale)), max(1, int(h * scale))),
-            interpolation=cv2.INTER_AREA,
-        )
-    # σ≈1.5：压掉细粒度噪点，保留真正轮廓/羽枝结构
-    gray = cv2.GaussianBlur(gray, (0, 0), sigmaX=1.5)
-    lap = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-    # 抑噪后 lap 量级变小，映射参考取 100
-    return float(min(100.0, 100.0 * math.log1p(lap) / math.log1p(100.0)))
+    if mask is not None:
+        if mask.shape[:2] != gray.shape[:2]:
+            mask = cv2.resize(
+                mask.astype(np.uint8),
+                (gray.shape[1], gray.shape[0]),
+                interpolation=cv2.INTER_NEAREST,
+            )
+        else:
+            mask = mask.astype(np.uint8)
+        if int(mask.sum()) >= 50:
+            gray, mask = _crop_to_mask_bbox(gray, mask)
+    gray, mask = _scale_gray_and_mask(gray, mask)
+    core = np.ones(gray.shape[:2], np.uint8)
+    if mask is not None:
+        m = (mask > 0).astype(np.uint8)
+        if int(m.sum()) >= 80:
+            k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            m_e = cv2.erode(m, k, iterations=1)
+            core = m_e if int(m_e.sum()) >= 50 else m
+    gray_s = cv2.GaussianBlur(gray, (0, 0), sigmaX=float(CLARITY_DENOISE_SIGMA))
+    lap = cv2.Laplacian(gray_s, cv2.CV_64F)
+    vals = lap[core > 0]
+    if vals.size > 1:
+        return _map_clarity_with_quality(float(np.var(vals)), vals, gray, core)
+    return _map_clarity_with_quality(float(lap.var()), lap.reshape(-1), gray, core)
 
 
 def dhash64(bgr: np.ndarray, hash_size: int = 8) -> int:
@@ -156,32 +273,77 @@ def _bird_bbox_crop(
     return bgr[y1:y2, x1:x2]
 
 
-def _center_bird_crop(
-    bgr: np.ndarray, birds: Sequence[Dict]
-) -> Optional[np.ndarray]:
-    """多鸟时取框心最靠近画面中心的个体裁剪，供模糊判定。"""
+def _clip_bbox(bird: Dict, w: int, h: int) -> Optional[Tuple[int, int, int, int]]:
+    bbox = bird.get("bbox") or []
+    if len(bbox) != 4:
+        return None
+    x1, y1, x2, y2 = [int(v) for v in bbox]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(w, x2), min(h, y2)
+    if x2 <= x1 or y2 <= y1:
+        return None
+    return x1, y1, x2, y2
+
+
+def _pick_center_bird(
+    birds: Sequence[Dict], w: int, h: int
+) -> Optional[Dict]:
+    """多鸟时取框心最靠近画面中心的个体。"""
     if not birds:
         return None
-    h, w = bgr.shape[:2]
     cx, cy = w * 0.5, h * 0.5
     best = None
     best_dist2 = float("inf")
     for bird in birds:
-        bbox = bird.get("bbox") or []
-        if len(bbox) != 4:
+        bb = _clip_bbox(bird, w, h)
+        if bb is None:
             continue
-        x1, y1, x2, y2 = [float(v) for v in bbox]
-        if x2 <= x1 or y2 <= y1:
-            continue
+        x1, y1, x2, y2 = bb
         bx = 0.5 * (x1 + x2)
         by = 0.5 * (y1 + y2)
         dist2 = (bx - cx) ** 2 + (by - cy) ** 2
         if dist2 < best_dist2:
             best_dist2 = dist2
             best = bird
-    if best is None:
+    return best
+
+
+def _mask_u8_for_bird(
+    bird: Optional[Dict],
+    img_w: int,
+    img_h: int,
+    roi: Optional[Tuple[int, int, int, int]] = None,
+) -> Optional[np.ndarray]:
+    if not bird:
         return None
-    return _bird_bbox_crop(bgr, best)
+    xy = bird.get("mask_xy") or []
+    if len(xy) < 3:
+        return None
+    m = np.zeros((img_h, img_w), np.uint8)
+    try:
+        pts = np.round(np.asarray(xy, dtype=np.float32)).astype(np.int32)
+        if pts.ndim != 2 or pts.shape[0] < 3 or pts.shape[1] < 2:
+            return None
+        cv2.fillPoly(m, [pts], 1)
+    except Exception:
+        return None
+    if roi is not None:
+        x1, y1, x2, y2 = roi
+        m = m[y1:y2, x1:x2]
+    if m.size == 0 or int(m.sum()) < 50:
+        return None
+    return m
+
+
+def _center_bird_crop(
+    bgr: np.ndarray, birds: Sequence[Dict]
+) -> Optional[np.ndarray]:
+    """多鸟时取框心最靠近画面中心的个体裁剪，供模糊判定。"""
+    h, w = bgr.shape[:2]
+    bird = _pick_center_bird(birds, w, h)
+    if bird is None:
+        return None
+    return _bird_bbox_crop(bgr, bird)
 
 
 def _clarity_crop(
@@ -202,6 +364,29 @@ def subject_for_clarity(
     if use_full_frame:
         return bgr
     return _clarity_crop(bgr, birds)
+
+
+def subject_clarity_score(
+    bgr: np.ndarray,
+    birds: Sequence[Dict],
+    *,
+    use_full_frame: bool = False,
+) -> float:
+    """
+    主体清晰度：优先用分割掩膜在鸟体内计分。
+    切割图（use_full_frame）在整张切割图上套掩膜；大图则取中央鸟框。
+    """
+    h, w = bgr.shape[:2]
+    bird = _pick_center_bird(birds, w, h)
+    if use_full_frame:
+        return clarity_score_0_100(bgr, _mask_u8_for_bird(bird, w, h))
+    if bird is None:
+        return clarity_score_0_100(bgr)
+    roi = _clip_bbox(bird, w, h)
+    crop = _bird_bbox_crop(bgr, bird)
+    if crop is None or roi is None:
+        return clarity_score_0_100(bgr)
+    return clarity_score_0_100(crop, _mask_u8_for_bird(bird, w, h, roi=roi))
 
 
 def _emit(cb: ProgressCB, payload: Dict) -> None:
@@ -334,7 +519,9 @@ def clean_bird_images(
         crop = subject_for_clarity(
             bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
         )
-        clarity = clarity_score_0_100(crop)
+        clarity = subject_clarity_score(
+            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+        )
 
         if opts.remove_blurry and clarity < float(opts.min_clarity):
             if _safe_unlink(path):
@@ -470,7 +657,9 @@ def clean_image_list(
         crop = subject_for_clarity(
             bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
         )
-        clarity = clarity_score_0_100(crop)
+        clarity = subject_clarity_score(
+            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+        )
         if opts.remove_blurry and clarity < float(opts.min_clarity):
             if _safe_unlink(path):
                 result.removed_blurry += 1

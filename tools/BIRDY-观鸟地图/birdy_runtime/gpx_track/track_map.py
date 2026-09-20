@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from bisect import bisect_left
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -31,11 +32,16 @@ from PIL import Image, ImageDraw, ImageFilter
 
 from .amap_basemap import (
     fetch_amap_basemap_rgba,
+    fit_lon_to_aspect,
+    geocode_address_wgs84,
     is_dark_basemap_style,
     is_satellite_basemap_style,
     normalize_basemap_style,
     gcj_bounds_from_lonlats,
+    regeo_address_components,
     regeo_place_label,
+    region_city_tokens,
+    reserve_south_lat,
     wgs84_to_map_lonlat,
 )
 from .gpx_io import GpxPoint, load_gpx_many, resolve_gpx_path_list
@@ -71,8 +77,8 @@ PREVIEW_MAX_MARKERS = 40
 
 # 地图鸟图、物种标注与海拔文字相对原尺寸放大约 1/3
 _MARKER_SIZE_SCALE = 4 / 3
-# 裁圆前取画面中心正方形边长 = min(宽,高) × 此比例（0.5 ≈ 2× 放大鸟体）
-_THUMB_CENTER_CROP_RATIO = 0.5
+# 裁圆前取画面中心正方形边长 = min(宽,高) × 此比例（1.0=短边铺满，避免只剩局部鸟体）
+_THUMB_CENTER_CROP_RATIO = 1.0
 # 物种名距地图左右边界至少为地图宽度的此比例
 _MAP_LABEL_X_MARGIN_FRAC = 1 / 50.0
 # 物种名字号 = 地图轴高度（像素）/ 此除数
@@ -241,6 +247,18 @@ def _track_cumulative_km(track: Sequence[GpxPoint]) -> Tuple[List[float], List[f
     return dist, ele[: len(dist)]
 
 
+def _thumb_square_box(
+    w: int, h: int, ratio: float = _THUMB_CENTER_CROP_RATIO
+) -> Tuple[int, int, int, int]:
+    """中心正方形：默认铺满短边，再裁成圆。"""
+    side = min(max(1, int(w)), max(1, int(h)))
+    crop = max(1, int(round(side * float(ratio))))
+    crop = min(crop, int(w), int(h))
+    left = (int(w) - crop) // 2
+    top = (int(h) - crop) // 2
+    return left, top, left + crop, top + crop
+
+
 def _circular_thumb_rgba(path: str, diameter: int = 44) -> np.ndarray:
     """正圆裁切鸟图 + 柔和阴影，返回 RGBA [0,1]。"""
     d = max(16, int(diameter))
@@ -254,11 +272,8 @@ def _circular_thumb_rgba(path: str, diameter: int = 44) -> np.ndarray:
 
     im = Image.open(path).convert("RGB")
     w, h = im.size
-    side = min(w, h)
-    crop = max(1, int(side * _THUMB_CENTER_CROP_RATIO))
-    left = (w - crop) // 2
-    top = (h - crop) // 2
-    im = im.crop((left, top, left + crop, top + crop))
+    left, top, right, bottom = _thumb_square_box(w, h)
+    im = im.crop((left, top, right, bottom))
     im = im.resize((d, d), Image.Resampling.LANCZOS)
     mask = Image.new("L", (d, d), 0)
     ImageDraw.Draw(mask).ellipse((0, 0, d - 1, d - 1), fill=255)
@@ -267,6 +282,18 @@ def _circular_thumb_rgba(path: str, diameter: int = 44) -> np.ndarray:
     circle.putalpha(mask)
     canvas.paste(circle, (pad, pad), circle)
     return np.asarray(canvas, dtype=np.float32) / 255.0
+
+
+def _thumb_display_px(diameter: int, dpi: float) -> float:
+    """OffsetImage zoom=d/边长 时，画布上的实际像素直径。"""
+    return float(diameter) * max(float(dpi), 1.0) / 72.0
+
+
+def _thumb_offset_zoom(arr: np.ndarray, diameter: int, dpi: float) -> float:
+    """与 2.0.87 前一致：按点缩放，鸟图约 diameter×dpi/72 像素（比锁像素更大）。"""
+    _ = dpi
+    side = max(int(arr.shape[0]), int(arr.shape[1]), 1)
+    return float(diameter) / float(side)
 
 
 def _map_xy(lon: float, lat: float, *, use_gcj: bool) -> Tuple[float, float]:
@@ -456,6 +483,8 @@ MAP_MARGIN_TITLE_Y = 1.0 / 35.0
 MAP_MARGIN_SUMMARY_X = 1.0 / 15.0
 # 海拔内嵌面板占用 map_ax 底部约 [0.03, 0.17]（transAxes）
 ELEV_PANEL_TOP_AXES = 0.17
+# 鸟图半径之外再留一点空隙，避免圆标贴上海拔框
+_ELEV_MAP_THUMB_GAP_AXES = 0.025
 # 海拔外框内层绘图区 [left, bottom, width, height]
 _ELEV_INNER_RECT = (0.04, 0.1, 0.92, 0.80)
 # 海拔 data 区相对轨迹 x/y 范围的留白比例
@@ -466,7 +495,16 @@ _ELEV_Y_TOP_FRAC = 0.1
 # 鸟种名距海拔绘图区边缘 ≥ 宽/高的 1/50
 _ELEV_LABEL_MARGIN_FRAC = 1 / 50.0
 SUMMARY_GAP_AXES = 0.014
-TITLE_GAP_AXES = 0.012
+TITLE_GAP_AXES = 0.018
+# 「N 种鸟」相对标题顶略低，与标题左右对称
+_SUMMARY_BELOW_TITLE = 0.032
+
+
+@dataclass
+class TitleChromeLayout:
+    ha: str
+    y_top: float
+    box: Tuple[float, float, float, float]
 
 
 @dataclass
@@ -474,6 +512,150 @@ class MapMarkerLayout:
     displays: List[Tuple[float, float]]
     label_boxes_axes: List[Tuple[float, float, float, float]]
     thumb_boxes_axes: List[Tuple[float, float, float, float]]
+
+
+@dataclass
+class KeyPlace:
+    name: str
+    lat: float
+    lon: float
+
+
+_KEY_PLACE_SPLIT = re.compile(r"[;；\n、]+")
+_KEY_PLACE_COMMA = re.compile(r"[,，]")
+# 地点标注：钴蓝，区别于鸟名深绿/白字与橙色定位点
+_KEY_PLACE_COLOR = "#1A5276"
+_KEY_PLACE_COLOR_DARK = "#5DADE2"
+_KEY_PLACE_LABEL_HEIGHT_DIV = 86.0  # 小于鸟名除数 → 地名字略大于鸟名
+
+
+def split_key_place_queries(text: str) -> List[str]:
+    """逗号/分号分隔多个地点；「纬度,经度」整段保留。"""
+    raw = (text or "").strip()
+    if not raw:
+        return []
+    out: List[str] = []
+    for chunk in _KEY_PLACE_SPLIT.split(raw.replace("；", ";")):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        from .amap_basemap import parse_lonlat_query
+
+        if parse_lonlat_query(chunk) is not None:
+            out.append(chunk)
+            continue
+        for part in _KEY_PLACE_COMMA.split(chunk):
+            name = part.strip()
+            if name:
+                out.append(name)
+    # 去重且保序
+    seen = set()
+    uniq: List[str] = []
+    for name in out:
+        key = name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        uniq.append(name)
+    return uniq
+
+
+def resolve_key_place_search_region(
+    *,
+    location_name: str = "",
+    province: str = "",
+    city: str = "",
+    track: Sequence[GpxPoint] = (),
+    photos: Sequence[BirdPhoto] = (),
+) -> Tuple[str, str, str, Optional[Tuple[float, float]]]:
+    """关键地点检索用的省/市/区与地图中心 (lat, lon)。"""
+    prov = (province or "").strip()
+    cit = (city or "").strip()
+    dist = ""
+    center: Optional[Tuple[float, float]] = None
+    lons, lats = _collect_lonlats(track, photos)
+    if lons:
+        lon_c = 0.5 * (min(lons) + max(lons))
+        lat_c = 0.5 * (min(lats) + max(lats))
+        center = (lat_c, lon_c)
+        if not (prov and cit):
+            rp, rc, rd = regeo_address_components(lon_c, lat_c)
+            prov = prov or (rp or "")
+            cit = cit or (rc or "")
+            dist = (rd or "").strip()
+    return prov, cit, dist, center
+
+
+def geocode_key_places(
+    text: str,
+    *,
+    city: str = "",
+    province: str = "",
+    location_name: str = "",
+    district: str = "",
+    prefer_wgs84: Optional[Tuple[float, float]] = None,
+    max_prefer_km: float = 80.0,
+) -> Tuple[List[KeyPlace], List[str]]:
+    """按地图所在城市/区域查询地名。返回 (成功列表, 失败地名)。"""
+    found: List[KeyPlace] = []
+    failed: List[str] = []
+    hints = region_city_tokens(city, district, location_name, province)
+    primary_city = (city or "").strip() or (hints[0] if hints else "")
+    for name in split_key_place_queries(text):
+        coords = geocode_address_wgs84(
+            name,
+            city=primary_city,
+            region_hints=hints,
+            prefer_wgs84=prefer_wgs84,
+            max_prefer_km=max_prefer_km,
+        )
+        if coords is None:
+            failed.append(name)
+            continue
+        lat, lon = coords
+        found.append(KeyPlace(name=name, lat=float(lat), lon=float(lon)))
+    return found, failed
+
+
+def partition_key_places_by_view(
+    bounds: Optional[Tuple[float, float, float, float]],
+    places: Sequence[KeyPlace],
+    *,
+    pad_frac: float = 0.02,
+) -> Tuple[List[KeyPlace], List[KeyPlace]]:
+    """按经纬度是否落在当前地图范围内拆分；超范围常见于重名查错。"""
+    if not places:
+        return [], []
+    if bounds is None:
+        return list(places), []
+    x0, x1, y0, y1 = bounds
+    dx = max(x1 - x0, 1e-4) * float(pad_frac)
+    dy = max(y1 - y0, 1e-4) * float(pad_frac)
+    inside: List[KeyPlace] = []
+    outside: List[KeyPlace] = []
+    for place in places:
+        ok = (
+            x0 - dx <= place.lon <= x1 + dx
+            and y0 - dy <= place.lat <= y1 + dy
+        )
+        (inside if ok else outside).append(place)
+    return inside, outside
+
+
+def format_key_place_alerts(written: Mapping[str, str]) -> str:
+    """GUI 弹窗：查无坐标，或经纬不在当前地图范围内。"""
+    parts: List[str] = []
+    failed = (written.get("key_places_failed") or "").strip()
+    if failed:
+        parts.append(f"未能在地图所在城市/区域查到：{failed}")
+    oor = (written.get("key_places_out_of_range") or "").strip()
+    if oor:
+        parts.append(
+            "下列地点不在当前地图范围内，未标注"
+            "（常见原因：地名重名查到了别处坐标）：\n"
+            + oor.replace("；", "\n")
+        )
+    return "\n\n".join(parts)
 
 
 def _is_satellite_basemap(basemap_style: str) -> bool:
@@ -642,6 +824,178 @@ def _track_obstacle_boxes_axes(
     return boxes
 
 
+def _corner_box(
+    ha: str, y_top: float, block_w: float, block_h: float, *, margin_x: float
+) -> Tuple[float, float, float, float]:
+    y0 = y_top - block_h
+    if ha == "right":
+        x1 = 1.0 - margin_x
+        return (x1 - block_w, y0, x1, y_top)
+    if ha == "center":
+        x0 = max(margin_x, 0.5 - block_w * 0.5)
+        return (x0, y0, x0 + block_w, y_top)
+    x0 = margin_x
+    return (x0, y0, x0 + block_w, y_top)
+
+
+def _rect_separation(
+    a: Tuple[float, float, float, float],
+    b: Tuple[float, float, float, float],
+) -> float:
+    if _rect_overlap_axes_frac(a, b):
+        return 0.0
+    dx = max(0.0, max(b[0] - a[2], a[0] - b[2]))
+    dy = max(0.0, max(b[1] - a[3], a[1] - b[3]))
+    if dx > 0 and dy > 0:
+        return math.hypot(dx, dy)
+    return dx + dy
+
+
+def _box_clearance(
+    box: Tuple[float, float, float, float],
+    obstacles: Sequence[Tuple[float, float, float, float]],
+    *,
+    y_min: float,
+    y_max: float,
+) -> float:
+    edge = min(box[0], 1.0 - box[2], box[1] - y_min, y_max - box[3])
+    if obstacles:
+        edge = min(edge, min(_rect_separation(box, ob) for ob in obstacles))
+    return edge
+
+
+def _chrome_obstacles(
+    ax,
+    marker_layout: Optional[MapMarkerLayout],
+    track: Optional[Sequence[GpxPoint]],
+    *,
+    use_gcj: bool,
+    elev_panel_top: float,
+) -> List[Tuple[float, float, float, float]]:
+    obstacles: List[Tuple[float, float, float, float]] = []
+    if marker_layout is not None:
+        obstacles.extend(marker_layout.label_boxes_axes)
+        for tb in marker_layout.thumb_boxes_axes:
+            obstacles.append(
+                (tb[0] - 0.012, tb[1] - 0.012, tb[2] + 0.012, tb[3] + 0.012)
+            )
+    if track:
+        obstacles.extend(
+            _track_obstacle_boxes_axes(
+                ax,
+                track,
+                use_gcj=use_gcj,
+                x_frac_max=1.0,
+                y_frac_min=0.50,
+                y_frac_max=1.0,
+            )
+        )
+    if elev_panel_top > 0.0:
+        obstacles.append((0.0, 0.0, 1.0, elev_panel_top + SUMMARY_GAP_AXES))
+    return obstacles
+
+
+def _try_symmetric_top_chrome(
+    title_w: float,
+    title_h: float,
+    summary_w: float,
+    summary_h: float,
+    obstacles: Sequence[Tuple[float, float, float, float]],
+    y_title_top: float,
+) -> Optional[Tuple[TitleChromeLayout, str, Tuple[float, float, float, float]]]:
+    """标题与种鸟数左右对称：左题右数或右题左数。"""
+    gap = TITLE_GAP_AXES
+    y_sum_top = y_title_top - _SUMMARY_BELOW_TITLE
+    pairs = (("left", "right"), ("right", "left"))
+    for t_ha, s_ha in pairs:
+        t_box = _corner_box(
+            t_ha, y_title_top, title_w, title_h, margin_x=MAP_MARGIN_TITLE_X
+        )
+        s_box = _corner_box(
+            s_ha, y_sum_top, summary_w, summary_h, margin_x=MAP_MARGIN_SUMMARY_X
+        )
+        if (
+            not any(_rect_overlap_axes_frac(t_box, ob, margin=gap) for ob in obstacles)
+            and not any(
+                _rect_overlap_axes_frac(s_box, ob, margin=SUMMARY_GAP_AXES)
+                for ob in obstacles
+            )
+            and not _rect_overlap_axes_frac(t_box, s_box, margin=0.02)
+        ):
+            return TitleChromeLayout(t_ha, y_title_top, t_box), s_ha, s_box
+    return None
+
+
+def _pick_max_clearance_box(
+    block_w: float,
+    block_h: float,
+    obstacles: Sequence[Tuple[float, float, float, float]],
+    *,
+    y_min: float,
+    y_max: float,
+) -> Tuple[str, Tuple[float, float, float, float]]:
+    """在全局可放位置中选周围空白最大的格子。"""
+    margin = MAP_MARGIN_SUMMARY_X
+    span_x = max(1e-6, 1.0 - 2.0 * margin - block_w)
+    span_y = max(1e-6, y_max - y_min - block_h)
+    best_box = (margin, y_min, margin + block_w, y_min + block_h)
+    best_clear = -1.0
+    for ix in range(21):
+        x0 = margin + span_x * ix / 20.0
+        for iy in range(21):
+            y0 = y_min + span_y * iy / 20.0
+            box = (x0, y0, x0 + block_w, y0 + block_h)
+            if any(
+                _rect_overlap_axes_frac(box, ob, margin=SUMMARY_GAP_AXES)
+                for ob in obstacles
+            ):
+                continue
+            clear = _box_clearance(box, obstacles, y_min=y_min, y_max=y_max)
+            if clear > best_clear:
+                best_clear = clear
+                best_box = box
+    return "left", best_box
+
+
+def _pick_summary_placement(
+    block_w: float,
+    block_h: float,
+    obstacles: Sequence[Tuple[float, float, float, float]],
+    *,
+    title_ha: str,
+    title_y_top: float,
+    title_box: Tuple[float, float, float, float],
+    elev_panel_top: float,
+) -> Tuple[str, Tuple[float, float, float, float]]:
+    """优先标题对侧上角（略低）；上方没空则放全局空白最大处。"""
+    y_min = max(0.02, elev_panel_top + SUMMARY_GAP_AXES * 1.5)
+    y_max = 0.98
+    y_sum_top = min(title_y_top - _SUMMARY_BELOW_TITLE, 1.0 - MAP_MARGIN_TITLE_Y - 0.02)
+    opposite = "right" if title_ha == "left" else "left"
+    if title_ha == "center":
+        prefer = ("left", "right")
+    else:
+        prefer = (opposite, title_ha if title_ha in ("left", "right") else "left")
+    obs = list(obstacles) + [title_box]
+    for ha in prefer:
+        for dy in (0.0, 0.03, 0.06, 0.10):
+            yt = y_sum_top - dy
+            box = _corner_box(
+                ha, yt, block_w, block_h, margin_x=MAP_MARGIN_SUMMARY_X
+            )
+            if box[1] < y_min:
+                continue
+            if any(
+                _rect_overlap_axes_frac(box, ob, margin=SUMMARY_GAP_AXES)
+                for ob in obs
+            ):
+                continue
+            return ha, box
+    return _pick_max_clearance_box(
+        block_w, block_h, obs, y_min=y_min, y_max=y_max
+    )
+
+
 def _pick_summary_y(
     ax,
     *,
@@ -722,12 +1076,45 @@ def _measure_title_block(
     logo_path_s = (logo_path or "").strip()
     has_logo = bool(logo_path_s and os.path.isfile(logo_path_s))
     if has_logo:
-        block_h += typo["logo_h_px"] / ax_h_px + 0.004
-        block_w = max(
-            block_w, _map_logo_target_width_frac(logo_width_ratio) + 0.008
-        )
+        lw_frac, lh_frac = _measure_logo_axes_frac(ax, logo_path_s, logo_width_ratio)
+        block_h += lh_frac
+        block_w = max(block_w, lw_frac)
 
     return block_w, block_h, has_logo
+
+
+def _measure_logo_axes_frac(
+    ax, logo_path: str, logo_width_ratio: float = 0.30
+) -> Tuple[float, float]:
+    """签名 Logo 实际占 axes 的宽高（按绘制高度反推宽度）。"""
+    typo = _map_typography(ax)
+    ax_w_px, ax_h_px = _ax_size_px(ax)
+    h_px = typo["logo_h_px"]
+    h_frac = h_px / max(ax_h_px, 1.0) + 0.010
+    w_frac = _map_logo_target_width_frac(logo_width_ratio) + 0.016
+    try:
+        with Image.open(logo_path) as im:
+            lw, lh = im.size
+        if lh > 0 and lw > 0:
+            w_frac = max(w_frac, (h_px * (lw / lh)) / max(ax_w_px, 1.0) + 0.016)
+    except OSError:
+        pass
+    return w_frac, h_frac
+
+
+def _axes_box_overlap_area(
+    box: Tuple[float, float, float, float],
+    obstacles: Sequence[Tuple[float, float, float, float]],
+    *,
+    margin: float,
+) -> float:
+    inflated = (
+        box[0] - margin,
+        box[1] - margin,
+        box[2] + margin,
+        box[3] + margin,
+    )
+    return sum(_rect_intersection_area(inflated, ob) for ob in obstacles)
 
 
 def _pick_title_anchor(
@@ -736,8 +1123,8 @@ def _pick_title_anchor(
     block_h: float,
     obstacles: Sequence[Tuple[float, float, float, float]],
     y_top: float,
-) -> Tuple[float, str]:
-    """左上 → 右上 → 中上，避让鸟图/鸟名。"""
+) -> Tuple[float, str, float]:
+    """左上 → 右上 → 中上，必要时下移整块，避让鸟图/鸟名。"""
     gap = TITLE_GAP_AXES
     step = 0.022
     margin_x = MAP_MARGIN_TITLE_X
@@ -748,38 +1135,59 @@ def _pick_title_anchor(
             not _rect_overlap_axes_frac(box, ob, margin=gap) for ob in obstacles
         )
 
-    x0 = margin_x
-    box = (x0, y_top - block_h, x0 + block_w, y_top)
-    if fits(box):
-        return x0, "left"
-
-    for i in range(1, 16):
-        x0 = margin_x + i * step
-        if x0 + block_w > 0.48:
+    candidates: List[Tuple[float, str, float, Tuple[float, float, float, float]]] = []
+    for y_shift in (0.0, 0.03, 0.06, 0.09, 0.12, 0.16):
+        yt = y_top - y_shift
+        if yt - block_h < 0.40:
             break
-        box = (x0, y_top - block_h, x0 + block_w, y_top)
+        x0 = margin_x
+        candidates.append((x0, "left", yt, (x0, yt - block_h, x0 + block_w, yt)))
+        for i in range(1, 16):
+            x0 = margin_x + i * step
+            if x0 + block_w > 0.50:
+                break
+            candidates.append(
+                (x0, "left", yt, (x0, yt - block_h, x0 + block_w, yt))
+            )
+        x_right = max_x_right
+        candidates.append(
+            (x_right, "right", yt, (x_right - block_w, yt - block_h, x_right, yt))
+        )
+        for i in range(1, 16):
+            x_right = max_x_right - i * step
+            if x_right - block_w < 0.50:
+                break
+            candidates.append(
+                (
+                    x_right,
+                    "right",
+                    yt,
+                    (x_right - block_w, yt - block_h, x_right, yt),
+                )
+            )
+        x_center = max(margin_x, min(0.5 - block_w * 0.5, max_x_right - block_w))
+        candidates.append(
+            (
+                0.5,
+                "center",
+                yt,
+                (x_center, yt - block_h, x_center + block_w, yt),
+            )
+        )
+
+    best: Optional[Tuple[float, str, float]] = None
+    best_ov = 1e18
+    for x_a, ha, yt, box in candidates:
         if fits(box):
-            return x0, "left"
-
-    x_right = max_x_right
-    box = (x_right - block_w, y_top - block_h, x_right, y_top)
-    if fits(box):
-        return x_right, "right"
-
-    for i in range(1, 16):
-        x_right = max_x_right - i * step
-        if x_right - block_w < 0.52:
-            break
-        box = (x_right - block_w, y_top - block_h, x_right, y_top)
-        if fits(box):
-            return x_right, "right"
-
-    x_center = max(margin_x, min(0.5 - block_w * 0.5, max_x_right - block_w))
-    box = (x_center, y_top - block_h, x_center + block_w, y_top)
-    if fits(box):
-        return 0.5, "center"
-
-    return margin_x, "left"
+            return x_a, ha, yt
+        ov = _axes_box_overlap_area(box, obstacles, margin=gap)
+        score = ov + y_top - yt
+        if score < best_ov:
+            best_ov = score
+            best = (x_a, ha, yt)
+    if best is not None:
+        return best
+    return margin_x, "left", y_top
 
 
 def _draw_map_inset_title(
@@ -795,7 +1203,9 @@ def _draw_map_inset_title(
     marker_layout: Optional[MapMarkerLayout] = None,
     track: Optional[Sequence[GpxPoint]] = None,
     use_gcj: bool = True,
-) -> None:
+    elev_panel_top: float = 0.0,
+    preset: Optional[TitleChromeLayout] = None,
+) -> TitleChromeLayout:
     """图内标题：日期（H/50）→ 地点 / 观鸟记录（各 H/35）→ Logo（H/30）。"""
     typo = _map_typography(ax)
     fs_title = typo["title_pt"]
@@ -814,27 +1224,40 @@ def _draw_map_inset_title(
         logo_path=logo_path,
         logo_width_ratio=logo_width_ratio,
     )
-    obstacles: List[Tuple[float, float, float, float]] = []
-    if marker_layout is not None:
-        obstacles.extend(marker_layout.label_boxes_axes)
-        obstacles.extend(marker_layout.thumb_boxes_axes)
-    if track:
-        obstacles.extend(
-            _track_obstacle_boxes_axes(
-                ax,
-                track,
-                use_gcj=use_gcj,
-                x_frac_max=1.0,
-                y_frac_min=0.50,
-                y_frac_max=1.0,
-            )
+    if preset is not None:
+        ha, y_top = preset.ha, preset.y_top
+        if ha == "right":
+            x_anchor = preset.box[2]
+        elif ha == "center":
+            x_anchor = 0.5
+        else:
+            x_anchor = preset.box[0]
+        title_box = preset.box
+    else:
+        obstacles = _chrome_obstacles(
+            ax,
+            marker_layout,
+            track,
+            use_gcj=use_gcj,
+            elev_panel_top=elev_panel_top,
         )
-    x_anchor, ha = _pick_title_anchor(
-        block_w=block_w,
-        block_h=block_h,
-        obstacles=obstacles,
-        y_top=y_top,
-    )
+        x_anchor, ha, y_top = _pick_title_anchor(
+            block_w=block_w,
+            block_h=block_h,
+            obstacles=obstacles,
+            y_top=y_top,
+        )
+        if ha == "right":
+            title_box = (x_anchor - block_w, y_top - block_h, x_anchor, y_top)
+        elif ha == "center":
+            title_box = (
+                0.5 - block_w * 0.5,
+                y_top - block_h,
+                0.5 + block_w * 0.5,
+                y_top,
+            )
+        else:
+            title_box = (x_anchor, y_top - block_h, x_anchor + block_w, y_top)
     logo_align = (0.5, 1) if ha == "center" else ((1, 1) if ha == "right" else (0, 1))
     y = y_top
 
@@ -908,6 +1331,7 @@ def _draw_map_inset_title(
             zorder=41,
         )
         ax.add_artist(ab)
+    return TitleChromeLayout(ha, y_top, title_box)
 
 
 def _draw_map_attribution(
@@ -934,14 +1358,22 @@ def _draw_map_attribution(
     )
 
 
+def _text_width_factor(text: str) -> float:
+    """中文近似方块字，宽度按字号估算，避免避让框偏窄。"""
+    if not text:
+        return 0.90
+    if all(ch.isdigit() or ch in "m.-+ " for ch in text):
+        return 0.62
+    if any("\u4e00" <= ch <= "\u9fff" for ch in text):
+        return 1.08
+    return 0.90
+
+
 def _text_width_axes_frac(ax, text: str, fontsize_pt: float) -> float:
     """文本在 axes 坐标系下的宽度占比（用于排版）。"""
     _, ax_w_px = _ax_size_px(ax)
     dpi = ax.figure.dpi
-    if text and all(ch.isdigit() for ch in text):
-        factor = 0.62
-    else:
-        factor = 0.90
+    factor = _text_width_factor(text)
     w_px = max(1.0, len(text) * fontsize_pt * dpi / 72.0 * factor)
     return w_px / ax_w_px
 
@@ -961,10 +1393,22 @@ def _accent_text_effects() -> List:
     return [pe.withStroke(linewidth=1.8, foreground="#000000", alpha=0.38)]
 
 
+def _summary_block_size(ax, n_sp: int) -> Tuple[float, float, str]:
+    typo = _map_typography(ax)
+    num_s = str(n_sp)
+    block_h = 1.0 / 16.0 + 1.0 / 80.0
+    block_w = (
+        _text_width_axes_frac(ax, num_s, typo["count_num_pt"])
+        + _text_width_axes_frac(ax, "种鸟", typo["count_suffix_pt"])
+        + 0.016
+    )
+    return block_w, block_h, num_s
+
+
 def _draw_map_summary(
     ax,
     photos: Sequence[BirdPhoto],
-    marker_layout: MapMarkerLayout,
+    marker_layout: Optional[MapMarkerLayout],
     track: Sequence[GpxPoint],
     *,
     default_y: float = 0.055,
@@ -973,42 +1417,49 @@ def _draw_map_summary(
     use_gcj: bool = True,
     elev_panel_top: float = 0.0,
     attribution_y: float = 0.006,
+    title_layout: Optional[TitleChromeLayout] = None,
+    preset_ha: Optional[str] = None,
+    preset_box: Optional[Tuple[float, float, float, float]] = None,
 ) -> None:
-    """左下物种汇总：数字 H/16（瘦高字体）+「种鸟」H/80，避让轨迹/鸟图/鸟名。"""
+    """种鸟数：优先与标题左右对称且略低；上方没空则放全局空白最大处。"""
+    _ = default_y
     n_sp = _distinct_species_count(photos)
     if n_sp <= 0:
         return
     typo = _map_typography(ax)
-    x0 = MAP_MARGIN_SUMMARY_X
     num_color, suf_color, effects, num_ff = _map_summary_style(
         basemap_style, on_basemap=on_basemap
     )
-    block_h = 1.0 / 16.0 + 1.0 / 80.0
-    num_s = str(n_sp)
-    block_w = (
-        _text_width_axes_frac(ax, num_s, typo["count_num_pt"])
-        + _text_width_axes_frac(ax, "种鸟", typo["count_suffix_pt"])
-        + 0.016
-    )
-    obstacles: List[Tuple[float, float, float, float]] = []
-    obstacles.extend(marker_layout.label_boxes_axes)
-    obstacles.extend(marker_layout.thumb_boxes_axes)
-    obstacles.extend(_track_obstacle_boxes_axes(ax, track, use_gcj=use_gcj))
-    if elev_panel_top > 0.0:
-        obstacles.append((0.0, 0.0, 1.0, elev_panel_top + SUMMARY_GAP_AXES))
-    attr_h = _text_height_axes_frac(ax, typo["attribution_pt"]) + 0.008
-    obstacles.append((0.0, 0.0, 0.42, attribution_y + attr_h))
-    min_y = max(0.012, elev_panel_top + SUMMARY_GAP_AXES * 1.5)
-    y = _pick_summary_y(
-        ax,
-        x0=x0,
-        block_w=block_w,
-        block_h=block_h,
-        default_y=default_y,
-        obstacles=obstacles,
-        min_y=min_y,
-    )
-    y_mid = y + block_h * 0.48
+    block_w, block_h, num_s = _summary_block_size(ax, n_sp)
+    if preset_ha and preset_box:
+        ha, box = preset_ha, preset_box
+    else:
+        obstacles = _chrome_obstacles(
+            ax,
+            marker_layout,
+            track,
+            use_gcj=use_gcj,
+            elev_panel_top=elev_panel_top,
+        )
+        attr_h = _text_height_axes_frac(ax, typo["attribution_pt"]) + 0.008
+        obstacles.append((0.0, 0.0, 0.42, attribution_y + attr_h))
+        t_ha = title_layout.ha if title_layout else "left"
+        t_top = (
+            title_layout.y_top if title_layout else (1.0 - MAP_MARGIN_TITLE_Y)
+        )
+        t_box = title_layout.box if title_layout else (0.0, 0.86, 0.28, 0.98)
+        ha, box = _pick_summary_placement(
+            block_w,
+            block_h,
+            obstacles,
+            title_ha=t_ha,
+            title_y_top=t_top,
+            title_box=t_box,
+            elev_panel_top=elev_panel_top,
+        )
+    y_mid = box[1] + block_h * 0.48
+    x_anchor = box[2] if ha == "right" else box[0]
+    loc = "center right" if ha == "right" else "center left"
     num_props = {
         "fontsize": typo["count_num_pt"],
         "fontweight": "bold",
@@ -1033,9 +1484,9 @@ def _draw_map_summary(
         sep=sep_pt,
     )
     ab = AnchoredOffsetbox(
-        loc="center left",
+        loc=loc,
         child=pack,
-        bbox_to_anchor=(x0, y_mid),
+        bbox_to_anchor=(x_anchor, y_mid),
         bbox_transform=ax.transAxes,
         frameon=False,
         pad=0.0,
@@ -1043,6 +1494,81 @@ def _draw_map_summary(
     )
     ab.set_zorder(42)
     ax.add_artist(ab)
+
+
+def _draw_map_chrome(
+    ax,
+    place: str,
+    map_title: str,
+    date_label: str,
+    photos: Sequence[BirdPhoto],
+    marker_layout: Optional[MapMarkerLayout],
+    track: Sequence[GpxPoint],
+    *,
+    logo_path: str = "",
+    logo_width_ratio: float = 0.30,
+    basemap_style: str = "normal",
+    on_basemap: bool = True,
+    use_gcj: bool = True,
+    elev_south_frac: float = 0.0,
+) -> None:
+    """标题 / Logo / 种鸟数最后放置：先对称试顶角，再各自避让。"""
+    elev_panel_top = ELEV_PANEL_TOP_AXES if elev_south_frac > 0 else 0.0
+    obstacles = _chrome_obstacles(
+        ax,
+        marker_layout,
+        track,
+        use_gcj=use_gcj,
+        elev_panel_top=elev_panel_top,
+    )
+    title_w, title_h, _ = _measure_title_block(
+        ax,
+        place,
+        map_title,
+        date_label,
+        logo_path=logo_path,
+        logo_width_ratio=logo_width_ratio,
+    )
+    n_sp = _distinct_species_count(photos)
+    y_title_top = 1.0 - MAP_MARGIN_TITLE_Y
+    preset_title: Optional[TitleChromeLayout] = None
+    preset_sum_ha: Optional[str] = None
+    preset_sum_box: Optional[Tuple[float, float, float, float]] = None
+    if n_sp > 0:
+        sum_w, sum_h, _ = _summary_block_size(ax, n_sp)
+        paired = _try_symmetric_top_chrome(
+            title_w, title_h, sum_w, sum_h, obstacles, y_title_top
+        )
+        if paired is not None:
+            preset_title, preset_sum_ha, preset_sum_box = paired
+    title_layout = _draw_map_inset_title(
+        ax,
+        place,
+        map_title,
+        date_label,
+        logo_path=logo_path,
+        logo_width_ratio=logo_width_ratio,
+        basemap_style=basemap_style,
+        on_basemap=on_basemap,
+        marker_layout=marker_layout,
+        track=track,
+        use_gcj=use_gcj,
+        elev_panel_top=elev_panel_top,
+        preset=preset_title,
+    )
+    _draw_map_summary(
+        ax,
+        photos,
+        marker_layout or MapMarkerLayout([], [], []),
+        track,
+        basemap_style=basemap_style,
+        on_basemap=on_basemap,
+        use_gcj=use_gcj,
+        elev_panel_top=elev_panel_top,
+        title_layout=title_layout,
+        preset_ha=preset_sum_ha,
+        preset_box=preset_sum_box,
+    )
 
 
 def _thumb_radius_data(ax, thumb_diameter: int) -> float:
@@ -1402,6 +1928,15 @@ def _layout_species_labels(
     return out
 
 
+def _elevation_south_reserve_frac(
+    thumb_diameter: int, map_height_px: int, *, dpi: float = EXPORT_DPI
+) -> float:
+    """叠加海拔时，地图南侧应预留的 axes 高度比例（含鸟图半径）。"""
+    _ = dpi
+    thumb = float(thumb_diameter) / max(float(map_height_px), 1.0)
+    return min(0.40, ELEV_PANEL_TOP_AXES + 0.5 * thumb + _ELEV_MAP_THUMB_GAP_AXES)
+
+
 def _subplot_aspect_wh(ax) -> float:
     pos = ax.get_position()
     fig = ax.figure
@@ -1538,9 +2073,39 @@ def _intersect_lonlat_bounds(
     return lon_min, lon_max, lat_min, lat_max
 
 
+def _include_nearby_key_places(
+    bounds: Optional[Tuple[float, float, float, float]],
+    places: Sequence[KeyPlace],
+    *,
+    expand: float = 0.55,
+) -> Optional[Tuple[float, float, float, float]]:
+    """把视野附近的关键地点并入范围；过远的不拉远整图。"""
+    extras = [(p.lon, p.lat) for p in places]
+    if not extras:
+        return bounds
+    if bounds is None:
+        lons = [x for x, _ in extras]
+        lats = [y for _, y in extras]
+        return min(lons), max(lons), min(lats), max(lats)
+    x0, x1, y0, y1 = bounds
+    dx = max(x1 - x0, 1e-4) * float(expand)
+    dy = max(y1 - y0, 1e-4) * float(expand)
+    keep = [
+        (lon, lat)
+        for lon, lat in extras
+        if x0 - dx <= lon <= x1 + dx and y0 - dy <= lat <= y1 + dy
+    ]
+    if not keep:
+        return bounds
+    lons = [x0, x1] + [p[0] for p in keep]
+    lats = [y0, y1] + [p[1] for p in keep]
+    return min(lons), max(lons), min(lats), max(lats)
+
+
 def _resolve_map_view_bounds(
     track: Sequence[GpxPoint],
     photos: Sequence[BirdPhoto],
+    key_places: Sequence[KeyPlace] = (),
 ) -> Optional[Tuple[float, float, float, float]]:
     """
     地图可视范围：轨迹 bbox 与匹配鸟图 GPS bbox 的交集。
@@ -1550,12 +2115,34 @@ def _resolve_map_view_bounds(
     photo_b = _photo_lonlat_bounds(photos)
     if track_b and photo_b:
         inter = _intersect_lonlat_bounds(track_b, photo_b)
-        if inter is not None:
-            return inter
-        return photo_b
-    if photo_b:
-        return photo_b
-    return track_b
+        base = inter if inter is not None else photo_b
+    elif photo_b:
+        base = photo_b
+    else:
+        base = track_b
+    # 关键地点不再拉远整图；超范围地点由 partition 后弹窗提示
+    _ = key_places
+    return base
+
+
+def _estimate_map_lonlat_extent(
+    track: Sequence[GpxPoint],
+    photos: Sequence[BirdPhoto],
+    *,
+    width_px: int,
+    height_px: int,
+    elev_south_frac: float = 0.0,
+) -> Optional[Tuple[float, float, float, float]]:
+    """与出图接近的经纬范围（含宽高比扩展），用于判断地点是否落在图内。"""
+    view = _resolve_map_view_bounds(track, photos)
+    if view is None:
+        return None
+    aspect = float(width_px) / max(float(height_px), 1.0)
+    x0, x1, y0, y1 = _expand_lonlat_bounds(*view, aspect)
+    if elev_south_frac > 0:
+        x0, x1, y0, y1 = reserve_south_lat(x0, x1, y0, y1, elev_south_frac)
+        x0, x1, y0, y1 = fit_lon_to_aspect(x0, x1, y0, y1, aspect)
+    return x0, x1, y0, y1
 
 
 def _collect_lonlats(
@@ -1677,7 +2264,7 @@ def _cluster_anchor_xy(
 def _cluster_grid_metrics(
     thumb_diameter: int, label_fs: float, *, dpi: float = EXPORT_DPI
 ) -> Tuple[float, float, float, float, float]:
-    """返回 col_step, row_step, lead_px, gap_px, label_h（显示像素）。"""
+    """返回 col_step, row_step, lead_px, gap_px, label_h（布局像素，与 2.0.87 前一致）。"""
     d = float(thumb_diameter)
     gap = d * _THUMB_GAP_RATIO
     col_step = d + gap
@@ -1777,7 +2364,7 @@ def _clamp_positions_into_axes(
     """将鸟图中心钳制在图内，避免被裁切消失。"""
     x0, x1 = ax.get_xlim()
     y0, y1 = ax.get_ylim()
-    # 约半个鸟图直径的边距（数据坐标）
+    # 约半个鸟图直径的边距（数据坐标，按直径参数而非放大后显示尺寸）
     p0 = ax.transData.transform((0.5 * (x0 + x1), 0.5 * (y0 + y1)))
     q = ax.transData.inverted().transform(
         (p0[0] + float(thumb_diameter) * 0.55, p0[1])
@@ -1797,6 +2384,72 @@ def _clamp_positions_into_axes(
     ]
 
 
+def _min_thumb_sep_px(thumb_diameter: int, dpi: float = EXPORT_DPI) -> float:
+    _ = dpi
+    return float(thumb_diameter) * (1.0 + _THUMB_GAP_RATIO * 0.85)
+
+
+def _count_px_conflicts(
+    ax,
+    positions: Sequence[Tuple[float, float]],
+    occupied: Sequence[Tuple[float, float]],
+    min_sep_px: float,
+) -> int:
+    if not positions or not occupied:
+        return 0
+    pts = [ax.transData.transform((x, y)) for x, y in positions]
+    obs = [ax.transData.transform((x, y)) for x, y in occupied]
+    hits = 0
+    for p in pts:
+        for o in obs:
+            if math.hypot(float(p[0] - o[0]), float(p[1] - o[1])) < min_sep_px:
+                hits += 1
+    return hits
+
+
+def _separate_positions_px(
+    ax,
+    positions: Sequence[Tuple[float, float]],
+    min_sep_px: float,
+    *,
+    max_iters: int = 90,
+) -> List[Tuple[float, float]]:
+    """在显示像素空间推开圆心，避免不同簇鸟图重叠。"""
+    n = len(positions)
+    if n <= 1:
+        return list(positions)
+    pts = [
+        [float(p[0]), float(p[1])]
+        for p in (ax.transData.transform((x, y)) for x, y in positions)
+    ]
+    for _ in range(max_iters):
+        moved = False
+        for j in range(n):
+            for i in range(j):
+                dx = pts[j][0] - pts[i][0]
+                dy = pts[j][1] - pts[i][1]
+                d = math.hypot(dx, dy)
+                if d < 1e-6:
+                    ang = (i * 2.1 + j * 0.9) % (2 * math.pi)
+                    dx, dy, d = math.cos(ang), math.sin(ang), 1.0
+                if d >= min_sep_px:
+                    continue
+                push = (min_sep_px - d) * 0.52
+                nx, ny = dx / d, dy / d
+                pts[j][0] += nx * push
+                pts[j][1] += ny * push
+                pts[i][0] -= nx * push
+                pts[i][1] -= ny * push
+                moved = True
+        if not moved:
+            break
+    inv = ax.transData.inverted()
+    out: List[Tuple[float, float]] = []
+    for p in pts:
+        x, y = inv.transform((p[0], p[1]))
+        out.append((float(x), float(y)))
+    return out
+
 
 def _cluster_label_xytext(
     idx: int,
@@ -1811,7 +2464,7 @@ def _cluster_label_xytext(
     """
     _ = idx
     dpi = max(float(dpi), 1.0)
-    # OffsetImage 显示约 thumb_diameter 像素；再略加阴影外扩
+    # 布局按直径参数计像素，与 2.0.87 前网格一致
     radius_pt = (float(thumb_diameter) * 0.52) * (72.0 / dpi)
     pad_pt = max(float(label_fs) * 0.35, 4.0)
     gap = radius_pt + pad_pt
@@ -1893,15 +2546,30 @@ def _add_photo_markers(
     _ = resolve_overlaps
 
     cluster_layouts: List[_GpsClusterLayout] = []
+    occupied: List[Tuple[float, float]] = []
+    min_sep_px = _min_thumb_sep_px(thumb_diameter, float(ax.figure.dpi))
     for group in groups:
         anchor = _cluster_anchor_xy(group, use_gcj=use_gcj)
-        side = _pick_side_keeping_grid_on_map(
+        preferred = _pick_side_keeping_grid_on_map(
             ax, anchor, len(group), thumb_diameter, label_fs
         )
+        side = preferred
+        best_hits = 10**9
+        for cand in (preferred, -preferred):
+            trial, _ = _layout_cluster_thumb_grid(
+                ax, anchor, len(group), cand, thumb_diameter, label_fs
+            )
+            hits = _count_px_conflicts(ax, trial, occupied, min_sep_px)
+            if hits < best_hits:
+                best_hits = hits
+                side = cand
+                if hits == 0:
+                    break
         positions, row_first = _layout_cluster_thumb_grid(
             ax, anchor, len(group), side, thumb_diameter, label_fs
         )
         positions = _clamp_positions_into_axes(ax, positions, thumb_diameter)
+        occupied.extend(positions)
         cluster_layouts.append(
             _GpsClusterLayout(
                 anchor=anchor,
@@ -1911,6 +2579,20 @@ def _add_photo_markers(
                 row_first_indices=row_first,
             )
         )
+
+    if resolve_overlaps and cluster_layouts:
+        flat_pos: List[Tuple[float, float]] = []
+        spans: List[int] = []
+        for layout in cluster_layouts:
+            spans.append(len(layout.positions))
+            flat_pos.extend(layout.positions)
+        flat_pos = _separate_positions_px(ax, flat_pos, min_sep_px)
+        flat_pos = _clamp_positions_into_axes(ax, flat_pos, thumb_diameter)
+        k = 0
+        for layout, npos in zip(cluster_layouts, spans):
+            layout.positions = list(flat_pos[k : k + npos])
+            k += npos
+        r_thumb = _thumb_radius_data(ax, thumb_diameter)
 
     flat_displays: List[Tuple[float, float]] = []
     label_boxes_axes: List[Tuple[float, float, float, float]] = []
@@ -1965,7 +2647,9 @@ def _add_photo_markers(
             )
             try:
                 arr = _circular_thumb_rgba(ph.path, thumb_diameter)
-                zoom = thumb_diameter / max(arr.shape[0], arr.shape[1])
+                zoom = _thumb_offset_zoom(
+                    arr, thumb_diameter, float(ax.figure.dpi)
+                )
                 imagebox = OffsetImage(arr, zoom=zoom)
                 ab = AnnotationBbox(
                     imagebox,
@@ -2023,18 +2707,16 @@ def _draw_track_on_ax(
         line_color, line_w, pt_c, pt_ec, z = "#E67E22", 2.8, "#FFFFFF", "#E67E22", 7
         start_s, end_s = 72, 72
         edge = "white"
-        dash = (0, (7, 5))
     else:
         line_color, line_w, pt_c, pt_ec, z = "#2980B9", 2.2, "#3498DB", None, 2
         start_s, end_s = 64, 64
         edge = None
-        dash = "solid"
     ax.plot(
         xs,
         ys,
         color=line_color,
         linewidth=line_w,
-        linestyle=dash,
+        linestyle="solid",
         zorder=z,
         solid_capstyle="round",
     )
@@ -2057,6 +2739,156 @@ def _draw_track_on_ax(
     )
 
 
+def _key_place_ink(basemap_style: str, *, on_basemap: bool) -> Tuple[str, bool]:
+    if on_basemap and is_dark_basemap_style(basemap_style):
+        return _KEY_PLACE_COLOR_DARK, True
+    return _KEY_PLACE_COLOR, on_basemap and is_satellite_basemap_style(basemap_style)
+
+
+def _add_key_place_markers(
+    ax,
+    places: Sequence[KeyPlace],
+    marker_layout: MapMarkerLayout,
+    *,
+    use_gcj: bool,
+    thumb_diameter: int,
+    basemap_style: str,
+    on_basemap: bool,
+    elev_south_frac: float = 0.0,
+) -> MapMarkerLayout:
+    """绘制关键地点：蓝色菱形 + 略大于鸟名的地名；地名可 x 重叠、只靠 y 错开。"""
+    if not places:
+        return marker_layout
+    typo = _map_typography(ax)
+    label_fs = _font_pt_for_line_height_px(
+        typo["ax_h_px"] / _KEY_PLACE_LABEL_HEIGHT_DIV, ax.figure.dpi
+    )
+    color, use_stroke = _key_place_ink(basemap_style, on_basemap=on_basemap)
+    effects = _map_text_effects(use_stroke=use_stroke) or [
+        pe.withStroke(linewidth=1.6, foreground="#FFFFFF", alpha=0.72)
+    ]
+    pin_s = max(36, int(thumb_diameter * 0.38))
+    r_pin = _thumb_radius_data(ax, max(12, int(thumb_diameter * 0.28)))
+    y_min = 0.04 + (ELEV_PANEL_TOP_AXES if elev_south_frac > 0 else 0.0)
+    y_max = 0.92
+    x_min, x_max = 0.03, 0.97
+    hard: List[Tuple[float, float, float, float]] = []
+    hard.extend(marker_layout.thumb_boxes_axes)
+    hard.append((0.0, 0.78, 1.0, 1.0))
+    if elev_south_frac > 0:
+        hard.append((0.0, 0.0, 1.0, ELEV_PANEL_TOP_AXES + 0.01))
+    place_labels: List[Tuple[float, float, float, float]] = []
+
+    pin_nudge = (
+        (0.0, 0.0),
+        (8.0, 8.0),
+        (-8.0, 8.0),
+        (8.0, -8.0),
+        (-8.0, -8.0),
+        (12.0, 0.0),
+        (-12.0, 0.0),
+        (0.0, 12.0),
+        (0.0, -12.0),
+    )
+    step_pt = max(label_fs * 1.22, 11.0)
+    y_offs = [step_pt * 0.75]
+    for k in range(1, 18):
+        y_offs.append(step_pt * 0.75 + k * step_pt)
+        y_offs.append(-(step_pt * 0.75 + (k - 1) * step_pt))
+
+    def _inside(box: Tuple[float, float, float, float]) -> bool:
+        return (
+            box[0] >= x_min
+            and box[2] <= x_max
+            and box[1] >= y_min
+            and box[3] <= y_max
+        )
+
+    def _hits_hard(box: Tuple[float, float, float, float]) -> bool:
+        return any(
+            _rect_overlap_axes_frac(box, ob, margin=0.006) for ob in hard
+        )
+
+    def _hits_place_name(box: Tuple[float, float, float, float]) -> bool:
+        return any(
+            _rect_overlap_axes_frac(box, ob, margin=0.002) for ob in place_labels
+        )
+
+    def _pin_free(box: Tuple[float, float, float, float]) -> bool:
+        return all(
+            not _rect_overlap_axes_frac(box, ob, margin=0.008) for ob in hard
+        )
+
+    for pl in places:
+        bx, by = _map_xy(pl.lon, pl.lat, use_gcj=use_gcj)
+        px, py = bx, by
+        pin_box = _circle_box_axes_frac(ax, px, py, r_pin)
+        if not _pin_free(pin_box):
+            for ox, oy in pin_nudge[1:]:
+                nx, ny = _offset_points_to_data(ax, bx, by, ox, oy)
+                cand = _circle_box_axes_frac(ax, nx, ny, r_pin)
+                if _pin_free(cand) and _inside(cand):
+                    px, py = nx, ny
+                    pin_box = cand
+                    break
+        ax.scatter(
+            [px],
+            [py],
+            s=pin_s,
+            marker="D",
+            c=color,
+            edgecolors="white",
+            linewidths=1.15,
+            zorder=10,
+            clip_on=False,
+        )
+        chosen = (0.0, y_offs[0], "center", "bottom")
+        chosen_box = _label_box_axes_frac_at(
+            ax, px, py, pl.name, 0.0, y_offs[0], label_fs, "center", "bottom"
+        )
+        fallback: Optional[Tuple[float, float, str, str, Tuple[float, float, float, float]]] = None
+        for oy in y_offs:
+            va = "bottom" if oy >= 0 else "top"
+            box = _label_box_axes_frac_at(
+                ax, px, py, pl.name, 0.0, oy, label_fs, "center", va
+            )
+            if not _inside(box) or _hits_place_name(box):
+                continue
+            if fallback is None:
+                fallback = (0.0, oy, "center", va, box)
+            if _hits_hard(box) or _rect_overlap_axes_frac(box, pin_box, margin=0.003):
+                continue
+            chosen = (0.0, oy, "center", va)
+            chosen_box = box
+            fallback = None
+            break
+        if fallback is not None:
+            chosen = fallback[:4]
+            chosen_box = fallback[4]
+        ox, oy, ha, va = chosen
+        ax.annotate(
+            pl.name,
+            (px, py),
+            textcoords="offset points",
+            xytext=(ox, oy),
+            ha=ha,
+            va=va,
+            fontsize=label_fs,
+            color=color,
+            fontstyle="italic",
+            path_effects=effects,
+            zorder=11,
+            annotation_clip=False,
+            clip_on=False,
+        )
+        marker_layout.displays.append((px, py))
+        marker_layout.label_boxes_axes.append(chosen_box)
+        marker_layout.thumb_boxes_axes.append(pin_box)
+        place_labels.append(chosen_box)
+        hard.append(pin_box)
+    return marker_layout
+
+
 def _plot_map_ax(
     ax,
     track: Sequence[GpxPoint],
@@ -2076,6 +2908,8 @@ def _plot_map_ax(
     resolve_overlaps: bool = True,
     summary_default_y: float = 0.19,
     radius_km: float = 1.0,
+    elev_south_frac: float = 0.0,
+    key_places: Sequence[KeyPlace] = (),
 ) -> str:
     """
     绘制地图子图（高德底图 + GCJ-02 叠加）。
@@ -2098,6 +2932,11 @@ def _plot_map_ax(
         x0, x1, y0, y1 = _expand_lonlat_bounds(
             x0, x1, y0, y1, _subplot_aspect_wh(ax)
         )
+        if elev_south_frac > 0:
+            x0, x1, y0, y1 = reserve_south_lat(x0, x1, y0, y1, elev_south_frac)
+            x0, x1, y0, y1 = fit_lon_to_aspect(
+                x0, x1, y0, y1, _subplot_aspect_wh(ax)
+            )
         # 先定视野再排布鸟图，保证像素间距按最终坐标系换算
         ax.set_xlim(x0, x1)
         ax.set_ylim(y0, y1)
@@ -2113,18 +2952,30 @@ def _plot_map_ax(
             on_basemap=False,
             radius_km=radius_km,
         )
-        _draw_map_inset_title(
+        marker_layout = _add_key_place_markers(
+            ax,
+            key_places,
+            marker_layout,
+            use_gcj=False,
+            thumb_diameter=thumb_diameter,
+            basemap_style="none",
+            on_basemap=False,
+            elev_south_frac=elev_south_frac,
+        )
+        _draw_map_chrome(
             ax,
             place,
             map_title,
             date_label,
+            photos,
+            marker_layout,
+            track,
             logo_path=logo_path,
             logo_width_ratio=logo_width_ratio,
             basemap_style="none",
             on_basemap=False,
-            marker_layout=marker_layout,
-            track=track,
             use_gcj=False,
+            elev_south_frac=elev_south_frac,
         )
         return "none"
 
@@ -2137,15 +2988,20 @@ def _plot_map_ax(
         lons, lats = [lon_min, lon_max], [lat_min, lat_max]
     if not lons:
         ax.axis("off")
-        _draw_map_inset_title(
+        _draw_map_chrome(
             ax,
             place,
             map_title,
             date_label,
+            photos,
+            None,
+            track,
             logo_path=logo_path,
             logo_width_ratio=logo_width_ratio,
             basemap_style=style,
             on_basemap=True,
+            use_gcj=True,
+            elev_south_frac=elev_south_frac,
         )
         return "fallback"
 
@@ -2167,6 +3023,7 @@ def _plot_map_ax(
             width_px=map_width_px,
             height_px=map_height_px,
             style=style,
+            south_reserve_frac=elev_south_frac,
         )
         ax.imshow(
             img,
@@ -2179,6 +3036,8 @@ def _plot_map_ax(
         ax.set_xlim(extent[0], extent[1])
         ax.set_ylim(extent[2], extent[3])
         basemap_ok = True
+        # 底图已按画布拉伸铺满，勿再用 equal+box 收缩坐标系（会左右留白）
+        ax.set_aspect("auto")
     except ValueError as e:
         if "API Key" in str(e) or "api_key" in str(e):
             ax.clear()
@@ -2200,6 +3059,8 @@ def _plot_map_ax(
                 resolve_overlaps=resolve_overlaps,
                 summary_default_y=summary_default_y,
                 radius_km=radius_km,
+                elev_south_frac=elev_south_frac,
+                key_places=key_places,
             )
             return "no_key"
     except Exception:
@@ -2225,6 +3086,8 @@ def _plot_map_ax(
             resolve_overlaps=resolve_overlaps,
             summary_default_y=summary_default_y,
             radius_km=radius_km,
+            elev_south_frac=elev_south_frac,
+            key_places=key_places,
         )
         return "fallback"
 
@@ -2232,7 +3095,7 @@ def _plot_map_ax(
     ax.set_yticks([])
     ax.set_xlabel("")
     ax.set_ylabel("")
-    ax.set_aspect("equal", adjustable="box")
+    ax.set_aspect("auto")
     for spine in ax.spines.values():
         spine.set_visible(False)
 
@@ -2249,30 +3112,30 @@ def _plot_map_ax(
         on_basemap=True,
         radius_km=radius_km,
     )
-    _draw_map_inset_title(
+    marker_layout = _add_key_place_markers(
+        ax,
+        key_places,
+        marker_layout,
+        use_gcj=True,
+        thumb_diameter=thumb_diameter,
+        basemap_style=style,
+        on_basemap=True,
+        elev_south_frac=elev_south_frac,
+    )
+    _draw_map_chrome(
         ax,
         place,
         map_title,
         date_label,
+        photos,
+        marker_layout,
+        track,
         logo_path=logo_path,
         logo_width_ratio=logo_width_ratio,
         basemap_style=style,
         on_basemap=True,
-        marker_layout=marker_layout,
-        track=track,
         use_gcj=True,
-    )
-    elev_panel_top = ELEV_PANEL_TOP_AXES if summary_default_y >= 0.1 else 0.0
-    _draw_map_summary(
-        ax,
-        photos,
-        marker_layout,
-        track,
-        default_y=summary_default_y,
-        basemap_style=style,
-        on_basemap=True,
-        use_gcj=True,
-        elev_panel_top=elev_panel_top,
+        elev_south_frac=elev_south_frac,
     )
     return "ok"
 
@@ -2311,17 +3174,54 @@ def _elev_label_pads(
     return x_rng * _ELEV_LABEL_MARGIN_FRAC, y_rng * _ELEV_LABEL_MARGIN_FRAC
 
 
-def _elev_text_height_data(ax, fontsize_pt: float) -> float:
-    _, ax_h_px = _ax_size_px(ax)
+def _ensure_ax_display(ax) -> None:
+    """inset 在未 draw 时 bbox 会严重偏小，占空会被放大到整张图。"""
+    try:
+        bbox = ax.get_window_extent()
+    except Exception:
+        bbox = None
+    if bbox is not None and bbox.width >= 8 and bbox.height >= 8:
+        return
+    try:
+        ax.figure.canvas.draw()
+    except Exception:
+        return
+
+
+def _display_px_to_data(ax, dx_px: float, dy_px: float) -> Tuple[float, float]:
+    """把屏幕像素换算成当前 axes 的数据宽高。"""
+    _ensure_ax_display(ax)
+    x0, x1 = ax.get_xlim()
     y0, y1 = ax.get_ylim()
-    h_px = fontsize_pt * ax.figure.dpi / 72.0 * 1.12
-    return h_px / max(ax_h_px, 1.0) * max(y1 - y0, 1e-9)
+    cx = 0.5 * (x0 + x1)
+    cy = 0.5 * (y0 + y1)
+    p0 = ax.transData.transform((cx, cy))
+    x1d, y1d = ax.transData.inverted().transform(
+        (p0[0] + dx_px, p0[1] + dy_px)
+    )
+    return abs(float(x1d) - cx), abs(float(y1d) - cy)
+
+
+def _elev_text_height_data(ax, fontsize_pt: float) -> float:
+    dpi = max(float(ax.figure.dpi), 1.0)
+    h_px = max(1.0, float(fontsize_pt) * dpi / 72.0)
+    _w, h = _display_px_to_data(ax, 0.0, h_px)
+    return max(h, 1e-9)
 
 
 def _elev_label_ha_for_marker(ad: float, data_x_max: float) -> str:
     """左半图左对齐、右半图右对齐，避免鸟名超出绘图区。"""
     mid = max(float(data_x_max), 1e-6) * 0.5
     return "left" if ad <= mid else "right"
+
+
+def _elev_name_size_data(ax, name: str, fontsize_pt: float) -> Tuple[float, float]:
+    """按字号像素换算占空，不再用 inset 的错误 axes 高度去放大。"""
+    dpi = max(float(ax.figure.dpi), 1.0)
+    em_px = max(1.0, float(fontsize_pt) * dpi / 72.0)
+    n = max(len(name or ""), 1)
+    w, h = _display_px_to_data(ax, n * em_px, em_px)
+    return max(w, 1e-9), max(h, 1e-9)
 
 
 def _elev_label_box_data(
@@ -2332,14 +3232,22 @@ def _elev_label_box_data(
     fontsize_pt: float,
     *,
     ha: str = "center",
+    va: str = "center",
 ) -> Tuple[float, float, float, float]:
-    w = _text_width_data(ax, name, fontsize_pt)
-    h = _elev_text_height_data(ax, fontsize_pt)
+    w, h = _elev_name_size_data(ax, name, fontsize_pt)
     if ha == "left":
-        return (lx, ly - h * 0.5, lx + w, ly + h * 0.5)
-    if ha == "right":
-        return (lx - w, ly - h * 0.5, lx, ly + h * 0.5)
-    return (lx - w * 0.5, ly - h * 0.5, lx + w * 0.5, ly + h * 0.5)
+        x0, x1 = lx, lx + w
+    elif ha == "right":
+        x0, x1 = lx - w, lx
+    else:
+        x0, x1 = lx - w * 0.5, lx + w * 0.5
+    if va == "bottom":
+        y0, y1 = ly, ly + h
+    elif va == "top":
+        y0, y1 = ly - h, ly
+    else:
+        y0, y1 = ly - h * 0.5, ly + h * 0.5
+    return (x0, y0, x1, y1)
 
 
 def _rect_overlap_data(
@@ -2374,7 +3282,7 @@ def _box_inside_elev_plot(
     )
 
 
-ELEV_LABEL_MAX_OVERLAP = 0.05
+ELEV_LABEL_MAX_OVERLAP = 0.0
 ELEV_LABEL_REFINE_PASSES_MIN = 6
 ELEV_LABEL_REFINE_PASSES_MAX = 36
 
@@ -2421,7 +3329,7 @@ def _rect_overlap_fraction(
 
 def _inflate_display_box(
     box: Tuple[float, float, float, float],
-    px: float = 2.0,
+    px: float = 4.0,
 ) -> Tuple[float, float, float, float]:
     return (box[0] - px, box[1] - px, box[2] + px, box[3] + px)
 
@@ -2457,11 +3365,16 @@ def _elev_label_box_display(
 def _max_label_overlap_fraction(
     box: Tuple[float, float, float, float],
     others: Sequence[Tuple[float, float, float, float]],
+    *,
+    inflate_px: float = 4.0,
 ) -> float:
-    inflated = _inflate_display_box(box)
+    inflated = _inflate_display_box(box, px=inflate_px)
     worst = 0.0
     for ob in others:
-        worst = max(worst, _rect_overlap_fraction(inflated, _inflate_display_box(ob)))
+        worst = max(
+            worst,
+            _rect_overlap_fraction(inflated, _inflate_display_box(ob, px=inflate_px)),
+        )
     return worst
 
 
@@ -2680,12 +3593,12 @@ def _try_vertical_elev_label(
         return None
     crowd = max(1, len(obstacles))
     step = max(
-        h * 0.34,
-        y_rng * 0.02 / min(3.0, math.sqrt(float(crowd))),
+        h * 0.26,
+        y_rng * 0.015 / min(3.0, math.sqrt(float(crowd))),
     )
     n_slots = max(12, min(200, int((y_hi - y_lo) / step) + 1))
     le_cands = [y_lo + (y_hi - y_lo) * i / max(n_slots - 1, 1) for i in range(n_slots)]
-    le_cands.sort(key=lambda le: (abs(le - ae), le))
+    le_cands.sort(key=lambda le: (0 if le >= ae else 1, abs(le - ae), le))
     for le in le_cands:
         if not _elev_text_fits_in_plot(
             ax,
@@ -2703,7 +3616,7 @@ def _try_vertical_elev_label(
         ):
             continue
         box = _elev_label_box_display(ax, ad, le, name, label_fs, ha=ha)
-        if _max_label_overlap_fraction(box, obstacles) <= ELEV_LABEL_MAX_OVERLAP:
+        if _max_label_overlap_fraction(box, obstacles, inflate_px=1.5) <= ELEV_LABEL_MAX_OVERLAP:
             return ad, le
     return None
 
@@ -2791,6 +3704,125 @@ def _elev_refine_one_marker(
     layouts[idx] = (ad, ae, ld, le, name)
 
 
+def _cluster_elev_marker_groups(
+    ax,
+    markers: Sequence[Tuple[float, float, str]],
+    label_fs: float,
+) -> List[List[int]]:
+    """把横向过近、鸟名框会互相挡住的点收成同一列。"""
+    n = len(markers)
+    if n == 0:
+        return []
+    widths = [_text_width_data(ax, m[2], label_fs) for m in markers]
+    x0, x1 = ax.get_xlim()
+    ax_w_px, _ = _ax_size_px(ax)
+    px_to_data = max(x1 - x0, 1e-9) / max(ax_w_px, 1.0)
+    min_merge = 32.0 * px_to_data
+    order = sorted(range(n), key=lambda i: (markers[i][0], i))
+    groups: List[List[int]] = [[order[0]]]
+    for i in order[1:]:
+        prev = groups[-1][-1]
+        dx = markers[i][0] - markers[prev][0]
+        # 鸟名框允许 x 重叠，近到会叠字的点收成一列、只靠 y 错开
+        thresh = max(min_merge, widths[prev], widths[i])
+        if dx <= thresh:
+            groups[-1].append(i)
+        else:
+            groups.append([i])
+    return groups
+
+
+def _pack_elev_cluster_stack(
+    ax,
+    cluster: Sequence[Tuple[float, float, str]],
+    label_fs: float,
+    *,
+    data_x_max: float,
+    x_min: float,
+    x_max: float,
+    y_min: float,
+    y_max: float,
+    pad_x: float,
+    pad_y: float,
+    blocked_disp: Sequence[Tuple[float, float, float, float]],
+) -> Optional[List[Tuple[float, float]]]:
+    """在簇的共用 x 上、优先点正上方紧密叠放鸟名。返回与 cluster 同序的 (ld, le)。"""
+    n = len(cluster)
+    if n <= 0:
+        return []
+    ads = [float(m[0]) for m in cluster]
+    names = [m[2] for m in cluster]
+    col_x = float(sorted(ads)[n // 2])
+    max_w = max(_text_width_data(ax, name, label_fs) for name in names)
+    ha = _elev_label_ha_for_marker(col_x, data_x_max)
+    if ha == "left":
+        col_x = min(max(col_x, x_min + pad_x), max(x_min + pad_x, x_max - pad_x - max_w))
+    else:
+        col_x = max(min(col_x, x_max - pad_x), min(x_max - pad_x, x_min + pad_x + max_w))
+    ha = _elev_label_ha_for_marker(col_x, data_x_max)
+
+    h = _elev_text_height_data(ax, label_fs)
+    gap = h * 1.08
+    y_lo = y_min + pad_y + h * 0.5
+    y_hi = y_max - pad_y - h * 0.5
+    if y_lo > y_hi:
+        return None
+    if n > 1 and (n - 1) * gap > y_hi - y_lo:
+        gap = max(h * 1.0, (y_hi - y_lo) / (n - 1))
+    need = (n - 1) * gap
+    ae_max = max(float(m[1]) for m in cluster)
+    ae_min = min(float(m[1]) for m in cluster)
+
+    def centers_from_top(top: float) -> List[float]:
+        return [top - i * gap for i in range(n)]
+
+    def stack_ok(centers: Sequence[float]) -> bool:
+        if any(c < y_lo - 1e-6 or c > y_hi + 1e-6 for c in centers):
+            return False
+        for i, c in enumerate(centers):
+            if not _elev_text_fits_in_plot(
+                ax,
+                col_x,
+                c,
+                names[i],
+                label_fs,
+                x_min=x_min,
+                y_min=y_min,
+                x_max=x_max,
+                y_max=y_max,
+                pad_x=pad_x,
+                pad_y=pad_y,
+                ha=ha,
+            ):
+                return False
+            box = _elev_label_box_display(ax, col_x, c, names[i], label_fs, ha=ha)
+            if _max_label_overlap_fraction(box, blocked_disp, inflate_px=1.5) > 0.02:
+                return False
+        return True
+
+    step = max(h * 0.18, (y_hi - y_lo) * 0.01)
+    tops: List[float] = []
+    t = y_hi
+    while t + 1e-9 >= y_lo + need:
+        tops.append(t)
+        t -= step
+
+    def top_score(top: float) -> Tuple[int, float]:
+        cents = centers_from_top(top)
+        bottom = cents[-1]
+        if bottom >= ae_max + h * 0.35:
+            return (0, abs(bottom - (ae_max + h * 0.65)))
+        if cents[0] <= ae_min - h * 0.35:
+            return (2, abs(cents[0] - (ae_min - h * 0.65)))
+        return (1, abs(bottom - ae_max))
+
+    for top in sorted(tops, key=top_score):
+        cents = centers_from_top(top)
+        if stack_ok(cents):
+            return [(col_x, c) for c in cents]
+    return None
+
+
 def _layout_elevation_species_labels(
     ax,
     markers: Sequence[Tuple[float, float, str]],
@@ -2799,128 +3831,99 @@ def _layout_elevation_species_labels(
     data_x_max: float,
     blocked: Sequence[Tuple[float, float, float, float]] = (),
 ) -> List[Tuple[float, float, float, float, str]]:
-    """鸟种名布局：优先垂直列；左半左对齐、右半右对齐，重叠率 ≤5%。"""
+    """每个鸟名先放最高处；与已放的重叠则只改后一个的 y，直到不重叠。"""
     if not markers:
         return []
-    plot_x0, plot_x1 = ax.get_xlim()
+    _ensure_ax_display(ax)
+    _plot_x0, _plot_x1 = ax.get_xlim()
     plot_y0, plot_y1 = ax.get_ylim()
-    x_min, x_max, y_min, y_max = plot_x0, plot_x1, plot_y0, plot_y1
-    pad_x, pad_y = _elev_label_pads(plot_x0, plot_x1, plot_y0, plot_y1)
-    x_rng = max(x_max - x_min, 1e-6)
-    y_rng = max(y_max - y_min, 1e-6)
-    x_tol = x_rng * 0.002
-
-    blocked_disp: List[Tuple[float, float, float, float]] = []
-    for b in blocked:
-        p0 = ax.transData.transform((b[0], b[1]))
-        p1 = ax.transData.transform((b[2], b[3]))
-        blocked_disp.append(
-            _fix_display_box((float(p0[0]), float(p0[1]), float(p1[0]), float(p1[1])))
-        )
-
-    def _layout_boxes(
-        layouts: Sequence[Tuple[float, float, float, float, str]],
-        skip_idx: Optional[int] = None,
-    ) -> List[Tuple[float, float, float, float]]:
-        boxes: List[Tuple[float, float, float, float]] = list(blocked_disp)
-        for j, item in enumerate(layouts):
-            if skip_idx is not None and j == skip_idx:
-                continue
-            ad_j, _, ld_j, le_j, name_j = item
-            ha_j = _elev_label_ha_for_marker(ad_j, data_x_max)
-            boxes.append(
-                _elev_label_box_display(
-                    ax, ld_j, le_j, name_j, label_fs, ha=ha_j
-                )
-            )
-        return boxes
-
-    n = len(markers)
-    layouts: List[Tuple[float, float, float, float, str]] = []
-    for i, (ad, ae, name) in enumerate(markers):
-        sign = 1.0 if i % 2 == 0 else -1.0
-        le0 = min(max(ae + sign * y_rng * 0.025, y_min + pad_y), y_max - pad_y)
-        layouts.append((ad, ae, ad, le0, name))
-
-    order = sorted(range(n), key=lambda i: markers[i][0])
+    _pad_x, pad_y = _elev_label_pads(_plot_x0, _plot_x1, plot_y0, plot_y1)
+    placed_boxes: List[Tuple[float, float, float, float]] = list(blocked)
+    layouts: List[Optional[Tuple[float, float, float, float, str]]] = [None] * len(
+        markers
+    )
+    order = sorted(range(len(markers)), key=lambda i: (markers[i][0], i))
 
     for idx in order:
         ad, ae, name = markers[idx]
-        obstacles = _layout_boxes(layouts, skip_idx=idx)
-        picked = _try_vertical_elev_label(
-            ax,
-            ad,
-            ae,
-            name,
-            label_fs,
-            data_x_max=data_x_max,
-            x_min=x_min,
-            x_max=x_max,
-            y_min=y_min,
-            y_max=y_max,
-            pad_x=pad_x,
-            pad_y=pad_y,
-            obstacles=obstacles,
-        )
-        if picked is not None:
-            layouts[idx] = (ad, ae, picked[0], picked[1], name)
-
-    max_passes = _label_layout_refine_passes(n)
-    polish_left = max(8, n // 10)
-    pass_idx = 0
-    while pass_idx < max_passes or polish_left > 0:
-        if pass_idx == 0:
-            pass_order = order
-        else:
-            pass_order = sorted(
-                range(n),
-                key=lambda i: (
-                    -_elev_layout_overlap_score(
-                        i,
-                        layouts,
-                        ax=ax,
-                        label_fs=label_fs,
-                        data_x_max=data_x_max,
-                        x_min=x_min,
-                        x_max=x_max,
-                        blocked_disp=blocked_disp,
-                    ),
-                    markers[i][0],
-                ),
-            )
-        for idx in pass_order:
-            _elev_refine_one_marker(
-                idx,
-                markers,
-                layouts,
-                ax=ax,
-                label_fs=label_fs,
-                data_x_max=data_x_max,
-                x_min=x_min,
-                x_max=x_max,
-                y_min=y_min,
-                y_max=y_max,
-                pad_x=pad_x,
-                pad_y=pad_y,
-                blocked_disp=blocked_disp,
-                layout_boxes_fn=_layout_boxes,
-            )
-
-        all_boxes = _layout_boxes(layouts)
-        worst = _elev_worst_pairwise_overlap(all_boxes)
-        if worst <= ELEV_LABEL_MAX_OVERLAP:
-            break
-        pass_idx += 1
-        if pass_idx >= max_passes:
-            polish_left -= 1
-
-    for idx in order:
-        ad, ae, ld, le, name = layouts[idx]
         ha = _elev_label_ha_for_marker(ad, data_x_max)
-        if _elev_text_fits_in_plot(
+        _w, h = _elev_name_size_data(ax, name, label_fs)
+        gap = h * 0.12
+        y_hi = plot_y1 - pad_y - h * 0.5
+
+        def _box_at(y: float) -> Tuple[float, float, float, float]:
+            return _elev_label_box_data(ax, ad, y, name, label_fs, ha=ha)
+
+        y = y_hi
+        for _ in range(max(16, len(placed_boxes) * 3 + 8)):
+            hits = [
+                prev
+                for prev in placed_boxes
+                if _rect_overlap_data(_box_at(y), prev)
+            ]
+            if not hits:
+                break
+            y = min(prev[1] for prev in hits) - gap - h * 0.5
+
+        placed_boxes.append(_box_at(y))
+        layouts[idx] = (ad, ae, ad, y, name)
+
+    return [item for item in layouts if item is not None]
+
+
+def _elev_unstick_overlaps(
+    ax,
+    layouts: List[Tuple[float, float, float, float, str]],
+    *,
+    label_fs: float,
+    data_x_max: float,
+    x_min: float,
+    x_max: float,
+    y_min: float,
+    y_max: float,
+    pad_x: float,
+    pad_y: float,
+) -> None:
+    """最后再沿垂直方向推开仍相交的鸟名。"""
+    n = len(layouts)
+    if n <= 1:
+        return
+    h = _elev_text_height_data(ax, label_fs)
+    y_lo = y_min + pad_y + h * 0.5
+    y_hi = y_max - pad_y - h * 0.5
+    if y_lo > y_hi:
+        return
+    step = max(h * 0.55, (y_hi - y_lo) * 0.03)
+    for _ in range(max(16, n * 4)):
+        worst_i = worst_j = -1
+        worst = 0.0
+        for i in range(n):
+            ad_i, _, ld_i, le_i, name_i = layouts[i]
+            ha_i = _elev_label_ha_for_marker(ld_i, data_x_max)
+            bi = _elev_label_box_display(ax, ld_i, le_i, name_i, label_fs, ha=ha_i)
+            for j in range(i + 1, n):
+                ad_j, _, ld_j, le_j, name_j = layouts[j]
+                ha_j = _elev_label_ha_for_marker(ld_j, data_x_max)
+                bj = _elev_label_box_display(
+                    ax, ld_j, le_j, name_j, label_fs, ha=ha_j
+                )
+                ov = _rect_overlap_fraction(
+                    _inflate_display_box(bi), _inflate_display_box(bj)
+                )
+                if ov > worst:
+                    worst = ov
+                    worst_i, worst_j = i, j
+        if worst <= 1e-9 or worst_i < 0:
+            break
+        ad, ae, ld, le, name = layouts[worst_j]
+        other_le = layouts[worst_i][3]
+        direction = 1.0 if le >= other_le else -1.0
+        le_new = min(max(le + direction * step, y_lo), y_hi)
+        ha = _elev_label_ha_for_marker(ld, data_x_max)
+        if not _elev_text_fits_in_plot(
             ax,
             ld,
-            le,
+            le_new,
             name,
             label_fs,
             x_min=x_min,
@@ -2931,50 +3934,8 @@ def _layout_elevation_species_labels(
             pad_y=pad_y,
             ha=ha,
         ):
-            continue
-        other_disp = _layout_boxes(layouts, skip_idx=idx)[len(blocked_disp) :]
-        picked = _try_vertical_elev_label(
-            ax,
-            ad,
-            ae,
-            name,
-            label_fs,
-            data_x_max=data_x_max,
-            x_min=x_min,
-            x_max=x_max,
-            y_min=y_min,
-            y_max=y_max,
-            pad_x=pad_x,
-            pad_y=pad_y,
-            obstacles=list(blocked_disp) + other_disp,
-        )
-        if picked is not None:
-            layouts[idx] = (ad, ae, picked[0], picked[1], name)
-
-    for idx in order:
-        ad, ae, ld, le, name = layouts[idx]
-        if abs(ld - ad) <= x_tol:
-            continue
-        other_disp = _layout_boxes(layouts, skip_idx=idx)[len(blocked_disp) :]
-        picked = _try_vertical_elev_label(
-            ax,
-            ad,
-            ae,
-            name,
-            label_fs,
-            data_x_max=data_x_max,
-            x_min=x_min,
-            x_max=x_max,
-            y_min=y_min,
-            y_max=y_max,
-            pad_x=pad_x,
-            pad_y=pad_y,
-            obstacles=list(blocked_disp) + other_disp,
-        )
-        if picked is not None:
-            layouts[idx] = (ad, ae, picked[0], picked[1], name)
-
-    return layouts
+            le_new = min(max(le - direction * step, y_lo), y_hi)
+        layouts[worst_j] = (ad, ae, ld, le_new, name)
 
 
 def _elev_tick_step(y_range: float) -> int:
@@ -3246,7 +4207,9 @@ def _plot_elevation_ax(
             clip_on=False,
             zorder=5,
         )
-        highlight_blocked.append(_elev_label_box_data(ax, ld, le, label, hl_fs))
+        highlight_blocked.append(
+            _elev_label_box_data(ax, ld, le, label, hl_fs, va="bottom")
+        )
     shown = list(photos)
     if max_markers is not None:
         shown = shown[: max(0, max_markers)]
@@ -3271,7 +4234,7 @@ def _plot_elevation_ax(
     )
     leader_thresh = max(x_max, y_max - y_min) * 0.008
     for ad, ae, ld, le, name in species_layouts:
-        label_ha = _elev_label_ha_for_marker(ad, x_max)
+        label_ha = _elev_label_ha_for_marker(ld, x_max)
         ax.scatter(
             [ad],
             [ae],
@@ -3440,6 +4403,8 @@ def generate_track_maps(
     city: str = "",
     logo_path: str = "",
     logo_width_ratio: float = 0.30,
+    show_key_places: bool = False,
+    key_places_text: str = "",
 ) -> Dict[str, str]:
     """
     生成 PNG。preview_only 时最多标注 preview_max_photos 张鸟图；预览与正式导出均为 1440×2560（2K 竖屏）像素，鸟图比例一致。
@@ -3584,6 +4549,45 @@ def generate_track_maps(
         exif_tz=exif_tz,
         gpx_tz=gpx_tz,
     )
+    key_places: List[KeyPlace] = []
+    key_place_failed: List[str] = []
+    key_places_oor: List[KeyPlace] = []
+    if show_key_places and (key_places_text or "").strip():
+        elev_frac = (
+            _elevation_south_reserve_frac(thumb_map, height_px, dpi=dpi)
+            if has_elev
+            else 0.0
+        )
+        map_extent = _estimate_map_lonlat_extent(
+            track,
+            photos,
+            width_px=width_px,
+            height_px=height_px,
+            elev_south_frac=elev_frac,
+        )
+        rp, rc, rd, center = resolve_key_place_search_region(
+            location_name=location_name or title_place,
+            province=province,
+            city=city,
+            track=track,
+            photos=photos,
+        )
+        max_km = 80.0
+        if map_extent is not None:
+            x0, x1, y0, y1 = map_extent
+            max_km = min(200.0, max(80.0, haversine_km(y0, x0, y1, x1) * 3.0))
+        key_places, key_place_failed = geocode_key_places(
+            key_places_text,
+            city=rc,
+            province=rp,
+            location_name=location_name or title_place,
+            district=rd,
+            prefer_wgs84=center,
+            max_prefer_km=max_km,
+        )
+        key_places, key_places_oor = partition_key_places_by_view(
+            map_extent, key_places
+        )
     marker_kw = dict(
         compact_labels=False,
         resolve_overlaps=True,
@@ -3604,6 +4608,10 @@ def generate_track_maps(
         logo_path=logo_path,
         logo_width_ratio=logo_width_ratio,
         summary_default_y=0.19 if has_elev else 0.055,
+        elev_south_frac=_elevation_south_reserve_frac(thumb_map, height_px, dpi=dpi)
+        if has_elev
+        else 0.0,
+        key_places=key_places,
         **marker_kw,
     )
 
@@ -3668,6 +4676,14 @@ def generate_track_maps(
         written["excluded_at_collect"] = _encode_path_reason_lines(
             excluded_at_collect
         )
+    if show_key_places:
+        written["key_places_drawn"] = str(len(key_places))
+        if key_place_failed:
+            written["key_places_failed"] = "；".join(key_place_failed)
+        if key_places_oor:
+            written["key_places_out_of_range"] = "；".join(
+                f"{p.name} ({p.lat:.5f}, {p.lon:.5f})" for p in key_places_oor
+            )
     if skipped_time_mismatch > 0:
         written["skipped_time_mismatch"] = str(skipped_time_mismatch)
     if skipped_unmapped_paths:

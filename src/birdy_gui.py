@@ -69,7 +69,7 @@ from gpx_track import (
     merge_gpx_files,
     resolve_gpx_path_list,
 )
-from gpx_track.track_map import iter_skipped_photo_log_lines
+from gpx_track.track_map import format_key_place_alerts, iter_skipped_photo_log_lines
 from gpx_track.timezone_util import (
     DEFAULT_EXIF_TZ,
     DEFAULT_GPX_TZ,
@@ -240,6 +240,16 @@ def _collect_image_paths_under(root: str, dual_format_mode: str = "off") -> List
                 if p not in out:
                     out.append(p)
     return out
+
+
+def resolve_species_batch_source(
+    species_input_folder: str, image_folder: str
+) -> str:
+    """单独裁切识别：优先指定目录，否则相片文件夹。"""
+    src = (species_input_folder or "").strip()
+    if src:
+        return src
+    return (image_folder or "").strip()
 
 
 def _session_slug_from_image_folder(image_folder: str) -> str:
@@ -1237,6 +1247,12 @@ class WorkerThread(QThread):
                         logo_width_ratio=float(
                             config.get("wm_logo_width_ratio", 0.30)
                         ),
+                        show_key_places=bool(
+                            config.get("track_map_show_key_places", False)
+                        ),
+                        key_places_text=str(
+                            config.get("track_map_key_places", "") or ""
+                        ),
                         preview_only=False,
                     )
                     for k, p in written.items():
@@ -1404,7 +1420,7 @@ class WatermarkBatchThread(QThread):
             if k == "start":
                 extra = ""
                 if self._random_per_species and int(self._random_per_species) > 0:
-                    extra = f"（每物种目录随机≤{int(self._random_per_species)} 张）"
+                    extra = f"（每物种目录≤{int(self._random_per_species)} 张，半按鸟体大小、半随机）"
                 self.log_line.emit(f"水印批量：开始，共 {tot} 张{extra}…")
                 _emit(0, 0, tot)
             elif k == "tick":
@@ -1430,6 +1446,184 @@ class WatermarkBatchThread(QThread):
                 f"水印批量：结束，成功 {r.get('ok', 0)}，失败 {r.get('fail', 0)}。"
             )
             self.finished_ok.emit(r)
+        except Exception as e:
+            self.failed.emit(str(e))
+
+
+class SpeciesBatchThread(QThread):
+    """单独对指定文件夹做鸟体裁切与物种识别（不走主流程）。"""
+
+    progress = pyqtSignal(int, int, int, int)
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+    status_updated = pyqtSignal(str)
+    eta_checkpoint = pyqtSignal(object)
+
+    def __init__(
+        self,
+        source_folder: str,
+        output_folder: str,
+        config: Dict[str, Any],
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._source_folder = source_folder
+        self._output_folder = output_folder
+        self._config = dict(config)
+        self.is_running = True
+        self._t_start = 0.0
+        self._last_pct = -1
+
+    def stop(self) -> None:
+        self.is_running = False
+
+    def run(self) -> None:
+        import time as _t
+
+        self.is_running = True
+        self._t_start = _t.time()
+        config = self._config
+        source_folder = self._source_folder
+        output_root = self._output_folder
+
+        def _emit(pct: int, done: int, total: int) -> None:
+            pct = max(0, min(100, int(pct)))
+            if pct == self._last_pct and pct < 100:
+                return
+            self._last_pct = pct
+            elapsed = int(_t.time() - self._t_start)
+            if pct > 0:
+                remaining = max(0, int(elapsed / (pct / 100.0) - elapsed))
+            else:
+                remaining = 0
+            self.progress.emit(pct, elapsed, remaining, done)
+
+        def _emit_phase_progress(_phase: str, done: int, total: int) -> None:
+            tot = max(1, int(total))
+            _emit(min(100, (100 * int(done)) // tot), int(done), tot)
+
+        def _log(msg: str) -> None:
+            self.log_line.emit(msg)
+
+        try:
+            Path(output_root).mkdir(parents=True, exist_ok=True)
+            image_files = _collect_image_paths_under(
+                source_folder,
+                str(config.get("dual_format_mode", "off") or "off"),
+            )
+            if not image_files:
+                raise FileNotFoundError(f"目录中没有可处理的图片：{source_folder}")
+
+            doubao_config = None
+            if not config.get("use_local_model", True):
+                import json
+
+                doubao_path = ensure_doubao_api_config_file(
+                    Path(__file__).resolve().parent
+                )
+                with open(doubao_path, "r", encoding="utf-8") as f:
+                    doubao_config = json.load(f)
+
+            min_species_thr = None
+            if config.get("species_conf_threshold_enabled", False):
+                min_species_thr = float(
+                    config.get("min_species_accept_confidence", 0.5)
+                )
+            detector = BirdAndEyeDetector(
+                enable_species=True,
+                use_local_model=config.get("use_local_model", True),
+                local_species_model=config.get(
+                    "local_species_model", LOCAL_SPECIES_MODEL_RESNET34
+                ),
+                doubao_config=doubao_config,
+                geo_mode=normalize_species_geo_mode(
+                    config.get("species_geo_mode", SPECIES_GEO_MODE_AUTO)
+                ),
+                min_species_accept_confidence=min_species_thr,
+            )
+
+            def _cfg_geo_str(v):
+                if v is None:
+                    return None
+                s = str(v).strip()
+                return s or None
+
+            manual_province = _cfg_geo_str(config.get("province"))
+            manual_city = _cfg_geo_str(config.get("city"))
+            results: Dict[str, Any] = {}
+            start_time = _t.time()
+            _log(
+                f"单独裁切识别：开始，共 {len(image_files)} 张 → {output_root}"
+            )
+            _emit(0, 0, len(image_files))
+
+            if config.get("enable_image_clean_before_species", False):
+                _run_species_crop_clean_identify(
+                    self,
+                    detector,
+                    image_files,
+                    output_root,
+                    config,
+                    start_time,
+                    _emit_phase_progress,
+                    results,
+                    manual_province,
+                    manual_city,
+                )
+            else:
+                total_crops = 0
+                archive_counter = {"n": 0}
+                n_spec = len(image_files)
+                for idx, image_file in enumerate(image_files):
+                    if not self.is_running:
+                        break
+                    _log(
+                        f"处理中: {os.path.basename(image_file)} "
+                        f"({idx + 1}/{n_spec})"
+                    )
+                    try:
+                        _vis, detection_results = detector.detect(
+                            image_file,
+                            manual_province=manual_province,
+                            manual_city=manual_city,
+                        )
+                        if detection_results.get("birds"):
+                            orig_img = detection_results.get("original_image")
+                            if orig_img is None:
+                                orig_img = detector.load_image(image_file)
+                            saved_paths = detector.crop_species(
+                                image=orig_img,
+                                birds=detection_results["birds"],
+                                output_dir=output_root,
+                                source_path=image_file,
+                                province=detection_results.get("province"),
+                                city=detection_results.get("city"),
+                                counter=archive_counter,
+                            )
+                            total_crops += len(saved_paths)
+                    except Exception as e:
+                        _log(f"⚠ {os.path.basename(image_file)}: {e}")
+                    _emit_phase_progress("species", idx + 1, n_spec)
+                processing_time = _t.time() - start_time
+                results["crop_result"] = {
+                    "total_crops": total_crops,
+                    "species_method": detector.get_species_method(),
+                    "processing_time": processing_time,
+                }
+                _log(
+                    f"✓ 已输出 {total_crops} 个裁剪归档文件，"
+                    f"耗时 {processing_time:.2f} 秒"
+                )
+
+            if not self.is_running:
+                results["_aborted"] = True
+            cr = results.get("crop_result") or {}
+            cr["total"] = len(image_files)
+            cr["output_folder"] = output_root
+            results["crop_result"] = cr
+            _emit(100, len(image_files), len(image_files))
+            self.finished_ok.emit(results)
         except Exception as e:
             self.failed.emit(str(e))
 
@@ -1612,6 +1806,7 @@ class BirdDetectionGUI(QMainWindow):
         # 初始化变量
         self.worker_thread: Optional[WorkerThread] = None
         self._wm_batch_thread: Optional[WatermarkBatchThread] = None
+        self._species_batch_thread: Optional[SpeciesBatchThread] = None
         self._image_clean_thread: Optional[ImageCleanThread] = None
         self._track_map_thread: Optional[TrackMapThread] = None
         self._track_map_progress: Optional[QProgressDialog] = None
@@ -1981,6 +2176,7 @@ class BirdDetectionGUI(QMainWindow):
             'image_clean_min_clarity': 35,
             'image_clean_dup_similarity': 92,
             'image_clean_folder': '',
+            'species_input_folder': '',
             # 物种识别模式配置
             'use_local_model': True,  # 默认使用本地模型
             'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
@@ -2045,6 +2241,8 @@ class BirdDetectionGUI(QMainWindow):
             'track_map_radius_km': 1.0,
             'track_map_include_elevation': True,
             'track_map_basemap_style': 'normal',
+            'track_map_show_key_places': False,
+            'track_map_key_places': '',
             'gps_write_mode': 'fixed',
             'gpx_match_exif_tz': DEFAULT_EXIF_TZ,
             'gpx_match_gpx_tz': DEFAULT_GPX_TZ,
@@ -2437,7 +2635,7 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.burst_keep_ratio_input.setToolTip(
             "同一连拍组内：保留张数 = 组内总张数×比例，再与「最少保留」取较大值、不超过组大小。"
-            "快速模式也按全组总张数计算，不会先抽 1/3 再乘这个比例。"
+            "快速模式也按全组总张数计算；候选约抽全组一半后再按此比例精选。"
         )
         process_layout.addRow("连拍保留比例:", self.burst_keep_ratio_input)
         
@@ -2483,6 +2681,9 @@ class BirdDetectionGUI(QMainWindow):
         # 启用鸟体检测
         self.use_bird_detection_checkbox = QCheckBox("启用鸟体检测")
         self.use_bird_detection_checkbox.setChecked(self.config['use_bird_detection'])
+        self.use_bird_detection_checkbox.setToolTip(
+            "连拍评分用鸟体框。按 1280 推理；仅当长边大于 5000 时再对画面中心检一次。"
+        )
         self.use_bird_detection_checkbox.toggled.connect(
             self._on_bird_detection_toggled
         )
@@ -2499,8 +2700,8 @@ class BirdDetectionGUI(QMainWindow):
         self.use_fast_mode_checkbox = QCheckBox("使用快速模式")
         self.use_fast_mode_checkbox.setChecked(self.config['use_fast_mode'])
         self.use_fast_mode_checkbox.setToolTip(
-            "只对部分照片跑鸟检/对焦以加速。候选张数按「全组保留数」抽取（可 2 倍余量），"
-            "保留比例仍相对本组总张数（例如 0.1 即约 10%），不会变成 1/3 再乘 0.1。"
+            "只对约一半照片跑鸟检/对焦以加速（等步长抽取，不少于保留数）。"
+            "保留比例仍相对本组总张数（例如 0.1 即约 10%）。"
         )
         process_layout.addRow("", self.use_fast_mode_checkbox)
         
@@ -2514,8 +2715,8 @@ class BirdDetectionGUI(QMainWindow):
         # ═════ 物种识别（可收起；主流程勾选在标题栏）═════
         self.enable_species_checkbox = QCheckBox("加入主流程")
         self.enable_species_checkbox.setToolTip(
-            "勾选：对筛选后照片做物种识别并按鸟体裁剪归档至分类目录。\n"
-            "不勾选：跳过物种识别与裁剪归档。"
+            "勾选：主流程中对筛选后照片做物种识别并按鸟体裁剪归档。\n"
+            "不勾选：主流程跳过识别。仍可用本卡片的「单独裁切并识别」处理指定文件夹。"
         )
         self.enable_species_checkbox.setChecked(
             self.config.get("enable_species_detection", True)
@@ -2530,7 +2731,31 @@ class BirdDetectionGUI(QMainWindow):
         species_layout = QFormLayout()
         species_layout.setSpacing(8)
         species_layout.setContentsMargins(12, 10, 12, 12)
-        
+
+        species_in_row = QHBoxLayout()
+        self.species_input_folder_input = QLineEdit()
+        self.species_input_folder_input.setText(
+            self.config.get("species_input_folder", "")
+        )
+        self.species_input_folder_input.setPlaceholderText(
+            "留空则用上方「相片文件夹」；不加入主流程也可单独裁切识别"
+        )
+        species_in_btn = QPushButton("浏览...")
+        species_in_btn.clicked.connect(
+            lambda: self._select_folder("species_input_folder")
+        )
+        species_in_row.addWidget(self.species_input_folder_input, 1)
+        species_in_row.addWidget(species_in_btn)
+        species_layout.addRow("指定相片文件夹:", species_in_row)
+
+        self.species_run_btn = QPushButton("单独裁切并识别")
+        self.species_run_btn.setToolTip(
+            "对上方指定目录（或相片文件夹）做鸟体裁切与物种识别，写入分类归档目录。\n"
+            "不需要勾选「加入主流程」，也不跑连拍筛选。"
+        )
+        self.species_run_btn.clicked.connect(self._run_species_batch)
+        species_layout.addRow("", self.species_run_btn)
+
         # 模型模式选择 - 使用radiobutton
         model_layout = QHBoxLayout()
         model_layout.setSpacing(12)
@@ -2636,14 +2861,14 @@ class BirdDetectionGUI(QMainWindow):
 
         # ---- 图片清洗（切割后识别前 / 分类目录）----
         self.image_clean_before_species_checkbox = QCheckBox(
-            "主流程：切割后、识别前清洗切割图"
+            "切割后、识别前清洗切割图（主流程与单独识别）"
         )
         self.image_clean_before_species_checkbox.setChecked(
             bool(self.config.get("enable_image_clean_before_species", False))
         )
         self.image_clean_before_species_checkbox.setToolTip(
-            "勾选后，先从大图检出并切出每只鸟，再对切割图清洗"
-            "（去掉失焦、无鸟、重复的个体），最后才识别鸟种。\n"
+            "勾选后，主流程与「单独裁切并识别」都会先切出每只鸟，"
+            "再对切割图清洗（去掉失焦、无鸟、重复的个体），最后才识别鸟种。\n"
             "不会删除 Screened_images 里的大图。"
         )
         species_layout.addRow("", self.image_clean_before_species_checkbox)
@@ -2671,8 +2896,9 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.image_clean_clarity_slider.setToolTip(
             "最低清晰度（0~100）。数值越大越严格，删除的模糊图越多。\n"
-            "基于鸟体区域 Laplacian 清晰度；多鸟时取最靠近画面中央的个体。\n"
-            "推荐 25~45。"
+            "在鸟体分割区域内计分（长边缩放到 640）。\n"
+            "抑噪后结合边缘峰度，减轻高 ISO 噪点与运动模糊把糊图打高。\n"
+            "多鸟时取最靠近画面中央的个体。推荐 25~45。"
         )
         self.image_clean_clarity_label = QLabel(
             f"{self.image_clean_clarity_slider.value()}"
@@ -2812,9 +3038,9 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get("wm_logo_width_ratio", 0.30))
         )
-        self.wm_logo_width_ratio_input.setSuffix(" × 图片宽")
+        self.wm_logo_width_ratio_input.setSuffix(" × 长边")
         self.wm_logo_width_ratio_input.setToolTip(
-            "控制 Logo 宽度占图片宽度比例，默认 0.30（30%）。"
+            "Logo 宽度占图片长边的比例：横图按宽度，竖图按高度，避免竖图签名过小。默认 0.30（30%）。"
         )
         wm_layout.addRow("Logo 宽度占比:", self.wm_logo_width_ratio_input)
 
@@ -2860,13 +3086,14 @@ class BirdDetectionGUI(QMainWindow):
         wm_layout.addRow("", self.wm_camera_checkbox)
 
         self.wm_random_per_species_checkbox = QCheckBox(
-            "每物种目录随机抽若干张（不勾选则全部生成）"
+            "每物种目录抽若干张（不勾选则全部生成）"
         )
         self.wm_random_per_species_checkbox.setChecked(
             bool(self.config.get("wm_random_per_species", False))
         )
         self.wm_random_per_species_checkbox.setToolTip(
-            "按图片所在父目录（通常为物种文件夹）分组，每组随机抽取指定张数生成水印；\n"
+            "按图片所在父目录（通常为物种文件夹）分组，每组抽取指定张数生成水印。\n"
+            "不选文件名带 all 的合集图；一半按画面中心鸟体从大到小取，剩下一半从其余中随机。\n"
             "未勾选时对目录内全部图片生成水印。主流程与「单独批量水印生成」均生效。"
         )
         wm_layout.addRow("", self.wm_random_per_species_checkbox)
@@ -2878,7 +3105,8 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.wm_random_per_species_count.setSuffix(" 张/物种目录")
         self.wm_random_per_species_count.setToolTip(
-            "每个物种目录最多随机抽取的张数；目录内不足该数时全部保留。"
+            "每个物种目录最多抽取的张数（半按中心鸟体大小、半随机，不含合集图）；\n"
+            "目录内不足该数时全部保留（仍排除合集）。"
         )
         wm_layout.addRow("抽样张数:", self.wm_random_per_species_count)
         self.wm_random_per_species_checkbox.toggled.connect(
@@ -3003,7 +3231,8 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_run_btn = QPushButton("单独批量水印生成")
         self.wm_run_btn.setToolTip(
             "仅在本卡片内批量生成水印，不运行「开始处理」主流程；"
-            "与上方「主流程自动水印」无关。"
+            "与上方「主流程自动水印」无关。\n"
+            "保存接近无损：JPEG 为 quality=100、4:4:4 色度；PNG/TIFF 源输出 PNG。"
         )
         self.wm_run_btn.clicked.connect(self._run_watermark_batch)
         wm_preview_row.addWidget(self.wm_run_btn)
@@ -3160,6 +3389,32 @@ class BirdDetectionGUI(QMainWindow):
             self.config.get("track_map_include_elevation", True)
         )
         track_layout.addRow("", self.track_map_elevation_checkbox)
+
+        self.track_map_show_places_checkbox = QCheckBox("显示关键地点")
+        self.track_map_show_places_checkbox.setChecked(
+            self.config.get("track_map_show_key_places", False)
+        )
+        self.track_map_show_places_checkbox.setToolTip(
+            "勾选后按输入地名查询经纬度并标注在地图上。\n"
+            "按当前地图所在城市/区域检索，避免重名查到外地。\n"
+            "多个地点用逗号、顿号或分号分隔；也可直接填「纬度,经度」。\n"
+            "地点为蓝色菱形+斜体字，区别于鸟名；地名可左右重叠、上下错开。"
+        )
+        track_layout.addRow("", self.track_map_show_places_checkbox)
+        self.track_map_key_places_input = QLineEdit()
+        self.track_map_key_places_input.setPlaceholderText(
+            "多个地点用逗号、顿号或分号分隔，如：竹屿湖，观景台、东坪山"
+        )
+        self.track_map_key_places_input.setText(
+            self.config.get("track_map_key_places", "")
+        )
+        self.track_map_key_places_input.setEnabled(
+            self.track_map_show_places_checkbox.isChecked()
+        )
+        self.track_map_show_places_checkbox.toggled.connect(
+            self.track_map_key_places_input.setEnabled
+        )
+        track_layout.addRow("关键地点:", self.track_map_key_places_input)
 
         track_btn_row = QHBoxLayout()
         self.track_preview_btn = QPushButton("预览轨迹图")
@@ -4015,6 +4270,15 @@ class BirdDetectionGUI(QMainWindow):
         exif_pos = written.get("map_pos_exif_gps")
         if exif_pos:
             lines.append(f"地图坐标：{exif_pos} 张使用 EXIF GPS（与 GPX 插值一致时）")
+        drawn_pl = written.get("key_places_drawn")
+        if drawn_pl:
+            lines.append(f"关键地点：已标注 {drawn_pl} 处")
+        failed_pl = written.get("key_places_failed")
+        if failed_pl:
+            lines.append(f"未能查询坐标：{failed_pl}")
+        oor_pl = written.get("key_places_out_of_range")
+        if oor_pl:
+            lines.append(f"地点超出地图范围：{oor_pl}")
         sk = written.get("skipped_time_mismatch")
         skipped_lines = iter_skipped_photo_log_lines(written)
         if skipped_lines:
@@ -4038,6 +4302,9 @@ class BirdDetectionGUI(QMainWindow):
             )
         elif main_png:
             self._show_track_map_saved_dialog(main_png)
+        alert = format_key_place_alerts(written)
+        if alert:
+            QMessageBox.warning(self, "关键地点提示", alert)
 
     def _run_track_map_generation(self, preview: bool = False) -> None:
         if self._track_map_busy():
@@ -4092,6 +4359,8 @@ class BirdDetectionGUI(QMainWindow):
             gpx_tz=self._gpx_match_gpx_tz(),
             logo_path=str(self.config.get("wm_logo_path", "") or ""),
             logo_width_ratio=float(self.config.get("wm_logo_width_ratio", 0.30)),
+            show_key_places=self.track_map_show_places_checkbox.isChecked(),
+            key_places_text=self.track_map_key_places_input.text().strip(),
         )
 
         label = "预览" if preview else "保存"
@@ -4616,6 +4885,9 @@ class BirdDetectionGUI(QMainWindow):
             elif field_name == 'image_clean_folder':
                 self.config['image_clean_folder'] = folder
                 self.image_clean_folder_input.setText(folder)
+            elif field_name == 'species_input_folder':
+                self.config['species_input_folder'] = folder
+                self.species_input_folder_input.setText(folder)
             try:
                 self._sync_config_from_ui()
                 self._save_config()
@@ -4782,6 +5054,138 @@ class BirdDetectionGUI(QMainWindow):
         if folder:
             return folder
         return (self.config.get("crop_output_folder") or "").strip()
+
+    def _resolve_species_source_folder(self) -> str:
+        return resolve_species_batch_source(
+            self.species_input_folder_input.text(),
+            self.image_folder_input.text(),
+        )
+
+    def _run_species_batch(self) -> None:
+        """单独对指定文件夹做鸟体裁切与物种识别（不走主流程）。"""
+        if self.worker_thread is not None and self.worker_thread.isRunning():
+            QMessageBox.information(
+                self, "提示", "主流程正在运行，请等待结束后再单独裁切识别。"
+            )
+            return
+        if (
+            self._species_batch_thread is not None
+            and self._species_batch_thread.isRunning()
+        ):
+            QMessageBox.information(self, "提示", "单独裁切识别正在运行中，请稍候。")
+            return
+        source_folder = self._resolve_species_source_folder()
+        if not source_folder or not os.path.isdir(source_folder):
+            QMessageBox.warning(
+                self,
+                "提示",
+                "未找到可识别的相片目录。\n"
+                "请在物种识别栏选择「指定相片文件夹」，或先设置上方「相片文件夹」。",
+            )
+            return
+        self._sync_config_from_ui()
+        output_folder = (self.config.get("crop_output_folder") or "").strip()
+        if not output_folder:
+            QMessageBox.warning(
+                self,
+                "提示",
+                "请填写「输出根目录」（推荐），或在留空根目录时填写「分类归档文件夹」。",
+            )
+            self._save_config()
+            return
+        try:
+            Path(output_folder).mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            QMessageBox.critical(self, "裁切识别失败", f"无法创建分类归档目录：{e}")
+            return
+
+        self._save_config()
+        self.species_run_btn.setEnabled(False)
+        self.start_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+        self.progress_bar.setValue(0)
+        if hasattr(self, "_elapsed_label"):
+            self._elapsed_label.setText("已用时间：0秒")
+        if hasattr(self, "_eta_label"):
+            self._eta_label.setText("预计剩余：…")
+        self.add_log(
+            f"已启动单独裁切识别：{source_folder} → {output_folder}"
+        )
+
+        th = SpeciesBatchThread(source_folder, output_folder, self.config, self)
+        self._species_batch_thread = th
+
+        def _on_prog(pct: int, elapsed: int, remaining: int, done: int) -> None:
+            self.progress_bar.setValue(pct)
+            if hasattr(self, "_elapsed_label"):
+                self._elapsed_label.setText(
+                    f"已用时间：{self._format_duration_hms(elapsed)}"
+                )
+            if hasattr(self, "_eta_label"):
+                if pct >= 100:
+                    self._eta_label.setText("预计剩余：完成")
+                else:
+                    self._eta_label.setText(
+                        f"预计剩余：{self._format_duration_hms(remaining)}"
+                    )
+
+        def _on_log(msg: str) -> None:
+            self.add_log(msg)
+            print(msg)
+
+        def _restore_btns() -> None:
+            self.species_run_btn.setEnabled(True)
+            self.start_btn.setEnabled(True)
+            self.stop_btn.setEnabled(False)
+
+        def _on_ok(r: Dict) -> None:
+            _restore_btns()
+            self.progress_bar.setValue(100)
+            if hasattr(self, "_eta_label"):
+                self._eta_label.setText("预计剩余：完成")
+            cr = r.get("crop_result") or {}
+            if r.get("_aborted"):
+                QMessageBox.information(
+                    self,
+                    "已中止",
+                    f"单独裁切识别已中止。\n"
+                    f"已处理输入 {cr.get('total', 0)} 张，"
+                    f"输出 {cr.get('total_crops', 0)} 个归档文件。\n"
+                    f"目录：{output_folder}",
+                )
+                return
+            extra = ""
+            ic = r.get("image_clean_result")
+            if isinstance(ic, dict):
+                extra = (
+                    f"\n切割图清洗：保留 {ic.get('kept', 0)}/{ic.get('total', 0)}"
+                )
+            QMessageBox.information(
+                self,
+                "裁切识别完成",
+                f"输入 {cr.get('total', 0)} 张，"
+                f"输出 {cr.get('total_crops', 0)} 个归档文件"
+                f"{extra}\n"
+                f"目录：{output_folder}",
+            )
+            try:
+                self._sync_config_from_ui()
+                self._save_config()
+            except Exception as e:
+                print(f"单独裁切识别完成后保存配置失败: {e}")
+
+        def _on_fail(msg: str) -> None:
+            _restore_btns()
+            if hasattr(self, "_eta_label"):
+                self._eta_label.setText("预计剩余：失败")
+            QMessageBox.critical(self, "裁切识别失败", msg)
+
+        th.progress.connect(_on_prog)
+        th.log_line.connect(_on_log)
+        th.status_updated.connect(_on_log)
+        th.finished_ok.connect(_on_ok)
+        th.failed.connect(_on_fail)
+        th.start()
 
     def _run_image_clean_batch(self) -> None:
         """单独清洗选定目录（默认分类归档目录）。"""
@@ -5421,6 +5825,14 @@ class BirdDetectionGUI(QMainWindow):
 
     def start_processing(self):
         """开始处理"""
+        if (
+            self._species_batch_thread is not None
+            and self._species_batch_thread.isRunning()
+        ):
+            QMessageBox.information(
+                self, "提示", "单独裁切识别正在运行，请等待结束后再启动主流程。"
+            )
+            return
         self._sync_config_from_ui()
         output_folder = self.config["output_folder"].strip()
         if not output_folder or not self.config.get("crop_output_folder", "").strip():
@@ -5548,6 +5960,14 @@ class BirdDetectionGUI(QMainWindow):
             self.stop_btn.setEnabled(False)  # 防止重复点击
             # 开始按钮保持禁用，直到 processing_finished 被调用
             # UI 状态（计时器、elapsed、eta、按钮）由 processing_finished 统一清理
+            return
+        if (
+            self._species_batch_thread is not None
+            and self._species_batch_thread.isRunning()
+        ):
+            self._species_batch_thread.stop()
+            self.add_log("✗ 正在中止单独裁切识别，等待当前图片完成...")
+            self.stop_btn.setEnabled(False)
     
     def update_progress(self, value: int):
         """更新进度条"""
@@ -5640,6 +6060,11 @@ class BirdDetectionGUI(QMainWindow):
             "处理完成",
             f"{summary} 已完成。\n请查看右侧日志与输出路径。",
         )
+        tm_written = results.get("track_map")
+        if isinstance(tm_written, dict):
+            alert = format_key_place_alerts(tm_written)
+            if alert:
+                QMessageBox.warning(self, "关键地点提示", alert)
     
     def add_log(self, message: str):
         """添加日志信息"""
@@ -5728,6 +6153,9 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.config["image_clean_folder"] = (
             self.image_clean_folder_input.text().strip()
+        )
+        self.config["species_input_folder"] = (
+            self.species_input_folder_input.text().strip()
         )
         _apply_gui_flow_policy(self.config)
         self.config["enable_watermark_generation"] = (
@@ -5852,6 +6280,12 @@ class BirdDetectionGUI(QMainWindow):
         _bm = self.track_map_basemap_combo.currentData()
         if _bm:
             self.config["track_map_basemap_style"] = _bm
+        self.config["track_map_show_key_places"] = (
+            self.track_map_show_places_checkbox.isChecked()
+        )
+        self.config["track_map_key_places"] = (
+            self.track_map_key_places_input.text().strip()
+        )
         self.config["gpx_match_exif_tz"] = self._gpx_match_exif_tz()
         self.config["gpx_match_gpx_tz"] = self._gpx_match_gpx_tz()
         self.config["gps_write_mode"] = (
@@ -5982,6 +6416,9 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.image_clean_folder_input.setText(
             self.config.get("image_clean_folder", "")
+        )
+        self.species_input_folder_input.setText(
+            self.config.get("species_input_folder", "")
         )
         self.enable_watermark_checkbox.setChecked(
             self.config.get('enable_watermark_generation', False)
@@ -6147,6 +6584,16 @@ class BirdDetectionGUI(QMainWindow):
                 _bm = "normal"
         _bmi = self.track_map_basemap_combo.findData(_bm)
         self.track_map_basemap_combo.setCurrentIndex(_bmi if _bmi >= 0 else 0)
+        if hasattr(self, "track_map_show_places_checkbox"):
+            self.track_map_show_places_checkbox.setChecked(
+                bool(self.config.get("track_map_show_key_places", False))
+            )
+            self.track_map_key_places_input.setText(
+                self.config.get("track_map_key_places", "")
+            )
+            self.track_map_key_places_input.setEnabled(
+                self.track_map_show_places_checkbox.isChecked()
+            )
         set_combo_timezone(
             self.gpx_match_exif_tz_combo, self._config_gpx_match_exif_tz()
         )
@@ -6196,6 +6643,22 @@ class BirdDetectionGUI(QMainWindow):
                 event.ignore()
                 return
             self._wm_batch_thread.wait()
+        if (
+            self._species_batch_thread is not None
+            and self._species_batch_thread.isRunning()
+        ):
+            reply = QMessageBox.question(
+                self,
+                "确认关闭",
+                "单独裁切识别仍在后台运行，关闭窗口将中止该任务。确定要关闭吗？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
+            self._species_batch_thread.stop()
+            self._species_batch_thread.wait()
         if self._image_clean_thread is not None and self._image_clean_thread.isRunning():
             reply = QMessageBox.question(
                 self,

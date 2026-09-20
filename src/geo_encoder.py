@@ -839,6 +839,16 @@ def wgs84_to_gcj02(lat: float, lon: float) -> Tuple[float, float]:
     return lat + dlat, lon + dlon
 
 
+def gcj02_to_wgs84(lat: float, lon: float) -> Tuple[float, float]:
+    """GCJ-02 → WGS84（迭代反算 wgs84_to_gcj02）。"""
+    wlat, wlon = float(lat), float(lon)
+    for _ in range(8):
+        glat, glon = wgs84_to_gcj02(wlat, wlon)
+        wlat -= glat - lat
+        wlon -= glon - lon
+    return wlat, wlon
+
+
 def read_gps_exif(
     image_path: str, *, quiet: bool = False
 ) -> Optional[Tuple[float, float, Optional[float]]]:

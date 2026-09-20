@@ -42,7 +42,7 @@ def _get_bird_detector():
         _bird_detector = BirdAndEyeDetector(
             enable_species=False,
             enable_eye=False,
-            bird_conf=0.5,
+            bird_conf=0.25,
         )
         return _bird_detector
     except Exception as e:

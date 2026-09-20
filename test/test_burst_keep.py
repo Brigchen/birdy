@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""连拍保留比例：按全组张数计算，快速模式不得叠在 1/3 采样上。"""
+"""连拍保留比例：按全组张数计算；快速模式候选至少全组一半。"""
 
 from __future__ import annotations
 
@@ -33,15 +33,17 @@ def test_keep_ratio_respects_min_and_cap():
     assert compute_burst_keep_count(0, 0.1, min_keep=2) == 0
 
 
-def test_fast_sample_count_based_on_full_group_keep_not_n_over_three():
+def test_fast_sample_count_at_least_half_group():
     n = 30
     keep = compute_burst_keep_count(n, 0.1, min_keep=1)
     sample = compute_fast_sample_count(n, keep)
     assert keep == 3
     assert sample >= keep
-    assert sample < n // 3 or sample == keep * 2
-    assert sample == 6
-    assert sample != n // 3
+    assert sample == 15
+    assert sample >= (n + 1) // 2
+    assert sample > n // 3
+    assert compute_fast_sample_count(9, 2) == 5
+    assert compute_fast_sample_count(8, 6) == 6
 
 
 def test_fast_sample_indices_cover_group_and_enough_for_keep():

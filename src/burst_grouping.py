@@ -403,16 +403,16 @@ def compute_burst_keep_count(n: int, ratio: float, min_keep: int) -> int:
 def compute_fast_sample_count(n: int, keep_count: int) -> int:
     """
     快速模式候选张数。keep_count 已按全组 n×保留比例算出。
-    候选数至少为保留数（可 2 倍余量便于组内比较），不超过 n。
-    不再使用 N/3，避免保留比例叠在 1/3 子集上变成约 1/30。
+    候选至少为全组一半（旧版约 1/3），且不少于保留数，不超过 n。
+    保留张数仍按全组比例计算，不叠在候选子集上。
     """
     if n <= 0:
         return 0
     if n <= 3:
         return n
-    k = max(1, int(keep_count))
-    k = min(k, n)
-    return min(n, max(k * 2, k, 3))
+    k = max(1, min(int(keep_count), n))
+    half = max(1, (n + 1) // 2)
+    return min(n, max(half, k, 3))
 
 
 def evenly_spaced_indices(n: int, sample_count: int) -> Set[int]:
@@ -722,48 +722,27 @@ def _detect_birds_yolo(img_info: ImageInfo, model, conf: Optional[float] = None)
         if img_bgr is None:
             print(f"      鸟体检测跳过：无法读取 {Path(img_info.path).name}")
             return
-        results = model(img_bgr, conf=conf, verbose=False)
-        for result in results:
-            boxes = result.boxes
-            if boxes is None or len(boxes) == 0:
+        from detect_bird_and_eye import run_yolo_birds_full_and_center
+
+        dets = run_yolo_birds_full_and_center(model, img_bgr, conf)
+        coco_birds = [d for d in dets if int(d.get("class", -1)) == 14]
+        use = coco_birds if coco_birds else dets
+        for det in use:
+            bbox = det.get("bbox") or []
+            if len(bbox) < 4:
                 continue
-            masks_xy = None
-            if getattr(result, "masks", None) is not None:
-                try:
-                    masks_xy = result.masks.xy
-                except Exception:
-                    masks_xy = None
-            n = len(boxes)
-            for det_idx in range(n):
-                cls = int(boxes.cls[det_idx].cpu().numpy())
-                if cls != 14:
-                    continue
-                xy = boxes.xyxy[det_idx].cpu().numpy()
-                x1, y1, x2, y2 = float(xy[0]), float(xy[1]), float(xy[2]), float(xy[3])
-                area = calculate_bird_area([int(x1), int(y1), int(x2), int(y2)])
-                c = float(boxes.conf[det_idx].cpu().numpy())
-                mask_xy = None
-                if masks_xy is not None and det_idx < len(masks_xy):
-                    try:
-                        t = masks_xy[det_idx]
-                        arr = np.asarray(
-                            t.cpu().numpy() if hasattr(t, "cpu") else t,
-                            dtype=np.float32,
-                        )
-                        if arr.ndim == 2 and arr.shape[0] >= 3 and arr.shape[1] >= 2:
-                            mask_xy = arr.reshape(-1, 2).tolist()
-                    except Exception:
-                        mask_xy = None
-                img_info.birds.append(
-                    {
-                        "bbox": [int(x1), int(y1), int(x2), int(y2)],
-                        "conf": c,
-                        "area": area,
-                        "mask_xy": mask_xy,
-                    }
-                )
-                if area > img_info.bird_area:
-                    img_info.bird_area = area
+            x1, y1, x2, y2 = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+            area = calculate_bird_area([x1, y1, x2, y2])
+            img_info.birds.append(
+                {
+                    "bbox": [x1, y1, x2, y2],
+                    "conf": float(det.get("conf") or 0.0),
+                    "area": area,
+                    "mask_xy": det.get("mask_xy"),
+                }
+            )
+            if area > img_info.bird_area:
+                img_info.bird_area = area
     except Exception as e:
         print(f"      鸟体检测失败: {e}")
 
@@ -782,9 +761,9 @@ def evaluate_focus_for_group(
     评估连拍组对焦。启用鸟检时：先检鸟；对焦在最大鸟体框 ROI 上按 FOCUS_METRIC_MODE 计分；
     无有效鸟体则对焦记 0（后续筛选一票否决）。
 
-    快速模式：按全组保留数等步长抽候选（至少保留数、可 2 倍余量），仅对候选集跑 YOLO + 对焦。
+    快速模式：等步长抽约全组一半作候选（不少于保留数），仅对候选集跑 YOLO + 对焦。
     非候选集图 focus_score=0、bird_area=0，后续 select_best_images 自动过滤。
-    保留张数仍按本组总张数×比例计算，不叠在旧的 1/3 采样上。
+    保留张数仍按本组总张数×比例计算，不叠在候选子集上。
     """
     print(f"\n  评估连拍组 {group.group_id}，共 {len(group.images)} 张图片")
 
@@ -801,7 +780,7 @@ def evaluate_focus_for_group(
 
     n = len(group.images)
 
-    # ---- 快速模式：按全组保留数采样候选集 ----
+    # ---- 快速模式：等步长抽约全组一半作候选 ----
     fast_sample = fast_mode and n > 3
     sample_indices: Optional[Set[int]] = None
     if fast_sample:
@@ -810,7 +789,7 @@ def evaluate_focus_for_group(
         sample_indices = evenly_spaced_indices(n, sample_count)
         print(
             f"    快速模式：全组 {n} 张，保留 {min(k, n)} 张（按全组比例），"
-            f"等步长抽 {len(sample_indices)} 张做候选"
+            f"等步长抽约一半（{len(sample_indices)} 张）做候选"
         )
 
     # ---- 鸟检（快速模式仅候选集；否则全量）----
@@ -1018,7 +997,7 @@ def process_folder(
     print(f"连拍阈值: {time_threshold}秒")
     print(
         f"保留策略: 比例 {burst_keep_ratio:.2f}，最少 {burst_keep_min} 张/组"
-        f"（按本组总张数计算；快速模式不先抽 1/3 再乘比例）"
+        f"（按本组总张数计算；快速模式候选约全组一半）"
     )
     print(f"鸟体检测: {'启用' if use_bird_detection else '禁用'}")
     print(f"鸟眼检测: {'启用' if (use_bird_detection and use_eye_detection) else '禁用'}")

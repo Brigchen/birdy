@@ -1,0 +1,6 @@
+# clarity-meter — 依赖 Birdy 主项目的 src/ 与 models/bird-seg.pt
+# 安装: python -m pip install -r requirements.txt
+
+PyQt5>=5.15.0
+numpy>=1.19.0
+opencv-python-headless>=4.5.0

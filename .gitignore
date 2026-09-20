@@ -76,6 +76,11 @@ src/burst_webp_dialog_state.json
 tools/BIRDY-观鸟地图/config.json
 tools/BIRDY-观鸟地图/output/*
 !tools/BIRDY-观鸟地图/output/.gitkeep
+tools/MTF-meter/config.json
+tools/MTF-meter/output/*
+!tools/MTF-meter/output/.gitkeep
+tools/clarity-meter/output/*
+!tools/clarity-meter/output/.gitkeep
 tools/**/venv/
 
 # --- 本地测试数据与输出 ---
