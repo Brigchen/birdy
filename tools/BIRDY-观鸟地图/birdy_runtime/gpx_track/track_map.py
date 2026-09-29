@@ -199,6 +199,17 @@ def _photo_path_key(path: str) -> str:
         return str(path)
 
 
+_MULTI_INDIVIDUAL_SPLIT_RE = re.compile(r"[_\-\s]+")
+
+
+def _is_multi_individual_image(path: str) -> bool:
+    """文件名主干含独立 token ``all``（如 ``DSC01036_01239_all.jpg``）
+    时视为多个体拼图，地图标注效果差，应让位于单体鸟图。"""
+    stem = Path(path).stem.lower()
+    tokens = [t for t in _MULTI_INDIVIDUAL_SPLIT_RE.split(stem) if t]
+    return "all" in tokens
+
+
 def _dedupe_photos_by_species_radius(
     photos: Sequence[BirdPhoto],
     radius_km: float,
@@ -207,19 +218,46 @@ def _dedupe_photos_by_species_radius(
 ) -> List[BirdPhoto]:
     radius_km = max(0.01, float(radius_km))
     picked: List[BirdPhoto] = []
-    placed: Dict[str, List[Tuple[float, float]]] = {}
+    # 物种 -> 已放置簇；每簇记录坐标、在 picked 中的下标及代表是否为多个体拼图
+    clusters: Dict[str, List[Dict[str, object]]] = {}
     for ph in photos:
         if ph.lat is None or ph.lon is None:
             continue
         sp = ph.species_cn
-        ok = True
-        for la, lo in placed.get(sp, []):
-            if haversine_km(ph.lat, ph.lon, la, lo) < radius_km:
-                ok = False
+        groups = clusters.setdefault(sp, [])
+        hit: Optional[Dict[str, object]] = None
+        for g in groups:
+            if haversine_km(ph.lat, ph.lon, g["lat"], g["lon"]) < radius_km:
+                hit = g
                 break
-        if ok:
+        cur_multi = _is_multi_individual_image(ph.path)
+        if hit is None:
+            groups.append(
+                {
+                    "lat": ph.lat,
+                    "lon": ph.lon,
+                    "idx": len(picked),
+                    "multi": cur_multi,
+                }
+            )
             picked.append(ph)
-            placed.setdefault(sp, []).append((ph.lat, ph.lon))
+            continue
+        if hit["multi"] and not cur_multi:
+            # 现代表是多个体拼图（all）而当前为单体图：用单体图替换代表。
+            # 注意簇锚点（lat/lon）保持为建簇首图位置不动，否则锚点随代表漂移
+            # 会使原本同簇的照片脱离出去另建新簇，造成同物种重复标注。
+            old_idx = int(hit["idx"])
+            old = picked[old_idx]
+            if dropped is not None:
+                dropped.append(
+                    (
+                        old.path,
+                        f"同种「{sp}」该位点的多个体拼图（文件名含 all），"
+                        "已优先选用单体鸟图",
+                    )
+                )
+            picked[old_idx] = ph
+            hit["multi"] = False
         elif dropped is not None:
             dropped.append(
                 (
@@ -2183,33 +2221,6 @@ class _GpsClusterLayout:
     row_first_indices: List[int]
 
 
-def _px_as_km_at_view_center(ax, px: float) -> float:
-    """将显示像素距离换算为当前视野中心附近的大致公里数。"""
-    px = abs(float(px))
-    if px < 1e-6:
-        return 0.0
-    x0, x1 = ax.get_xlim()
-    y0, y1 = ax.get_ylim()
-    cx = 0.5 * (x0 + x1)
-    cy = 0.5 * (y0 + y1)
-    p0 = ax.transData.transform((cx, cy))
-    x2, y2 = ax.transData.inverted().transform((p0[0] + px, p0[1]))
-    x3, y3 = ax.transData.inverted().transform((p0[0], p0[1] + px))
-    # x 为经度、y 为纬度（GCJ/WGS 同形）
-    d_x = haversine_km(cy, cx, cy, x2)
-    d_y = haversine_km(cy, cx, y3, cx)
-    return max(d_x, d_y, 1e-6)
-
-
-def _layout_cluster_radius_km(ax, thumb_diameter: int, radius_km: float) -> float:
-    """
-    布局合并半径：至少为物种去重半径；大范围地图上再按鸟图像素尺寸放大，
-    避免缩略图彼此重叠却未合并成横向网格。
-    """
-    visual_km = _px_as_km_at_view_center(ax, float(thumb_diameter) * 2.8)
-    return max(0.01, float(radius_km), float(visual_km))
-
-
 def _cluster_photos_by_radius(
     entries: Sequence[Tuple[BirdPhoto, float, float]],
     radius_km: float,
@@ -2533,9 +2544,10 @@ def _add_photo_markers(
     if not entries:
         return MapMarkerLayout([], [], [])
 
-    # 合并半径 = max(去重半径, 约 2.8 个鸟图直径对应的公里)
-    merge_km = _layout_cluster_radius_km(ax, thumb_diameter, radius_km)
-    groups = _cluster_photos_by_radius(entries, merge_km)
+    # 布局分组半径严格等于 GUI「物种去重半径」：标注点（定位圆点）只由该半径
+    # 确定，不再随地图缩放/鸟图像素扩大，避免用户设 0.1km 却按更宽半径吞并
+    # 独立位点。缩略图在像素上的重叠由后续 _separate_positions_px 推开。
+    groups = _cluster_photos_by_radius(entries, radius_km)
 
     label_fs = _map_typography(ax)["species_pt"]
     r_thumb = _thumb_radius_data(ax, thumb_diameter)
@@ -4455,6 +4467,9 @@ def generate_track_maps(
             max_delta_seconds=max_delta,
             exif_tz=exif_tz,
             gpx_tz=gpx_tz,
+            # GPX 模式下以 GPX 插值坐标为准，避免照片中被污染的旧 EXIF GPS
+            # 恰好落在轨迹 2km 内而把所有点固定在同一位置
+            prefer_exif_gps=False,
         )
         skipped_reason = (
             "与 GPX 无法对应（与轨迹时刻相差超过 1 小时、无拍摄时间或无法插值位置）"

@@ -206,7 +206,13 @@ def _resolve_lat_lon(
     path: str,
     lat_gpx: float,
     lon_gpx: float,
+    *,
+    prefer_exif_gps: bool = True,
 ) -> Tuple[float, float, str]:
+    """坐标裁决：默认照片已有 GPS 且距 GPX 插值点 ≤ 阈值时保留照片坐标；
+    prefer_exif_gps=False 时强制使用 GPX 插值结果（用于 GPX 模式覆写被污染的坐标）。"""
+    if not prefer_exif_gps:
+        return lat_gpx, lon_gpx, "gpx_interp"
     gps = _read_photo_gps(path)
     if gps:
         glat, glon = gps
@@ -274,6 +280,7 @@ def match_photos_to_track(
     gpx_path: Optional[str] = None,
     exif_tz: str = DEFAULT_EXIF_TZ,
     gpx_tz: str = DEFAULT_GPX_TZ,
+    prefer_exif_gps: bool = True,
 ) -> List[Dict]:
     if alignment is None:
         if tz_offset_hours is not None:
@@ -299,7 +306,9 @@ def match_photos_to_track(
         lat, lon, ele, delta_s = got
         if delta_s > max_delta_seconds:
             continue
-        lat, lon, pos_src = _resolve_lat_lon(path, lat, lon)
+        lat, lon, pos_src = _resolve_lat_lon(
+            path, lat, lon, prefer_exif_gps=prefer_exif_gps
+        )
         out.append(
             {
                 "path": path,
@@ -333,7 +342,15 @@ def batch_write_gps_from_gpx(
     recursive: bool = True,
     exif_tz: str = DEFAULT_EXIF_TZ,
     gpx_tz: str = DEFAULT_GPX_TZ,
+    prefer_exif_gps: bool = True,
+    progress_cb=None,
+    log_cb=None,
 ) -> Dict[str, int]:
+    def _log(msg: str) -> None:
+        print(msg)
+        if log_cb is not None:
+            log_cb(msg)
+
     if write_gps_exif is None:
         raise RuntimeError("geo_encoder.write_gps_exif 不可用")
 
@@ -356,55 +373,79 @@ def batch_write_gps_from_gpx(
         if f.is_file() and f.suffix.lower() in exts:
             files.append(str(f))
 
+    total = len(files)
+    if progress_cb is not None:
+        progress_cb(0, total, "")
+    _log(
+        f"GPX 时间匹配写入：照片 {total} 张，GPX 轨迹点 {len(track)} 个，"
+        f"时间差阈值 {max_delta_hours:.0f} 小时"
+    )
+
     align = alignment_from_tz(exif_tz, gpx_tz)
     matched = 0
     written = 0
     skipped_no_time = 0
     skipped_delta = 0
     endpoint_matched = 0
+    kept_exif_gps = 0
     max_delta = max_delta_hours * 3600.0
 
     ts_tl, _ = _timeline_index(track, align)
 
-    for path in files:
-        when = _photo_time(path)
-        if when is None:
-            skipped_no_time += 1
-            continue
-        got = interpolate_track_at_aligned(track, when, align)
-        if got is None:
-            skipped_delta += 1
-            continue
-        lat, lon, ele, delta_s = got
-        if delta_s > max_delta:
-            skipped_delta += 1
-            continue
-        # 判断是否为端点匹配（照片时间在 GPX 范围之外）
-        when_tl = align.photo_to_timeline(when)
-        if ts_tl and (when_tl < ts_tl[0] or when_tl > ts_tl[-1]):
-            endpoint_matched += 1
-        lat, lon, _ = _resolve_lat_lon(path, lat, lon)
-        matched += 1
-        # DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif
-        if path.lower().endswith(".dng"):
-            fn = write_gps_exif_dng
-        else:
-            fn = write_gps_exif
-        if fn is not None and fn(path, lat, lon, ele, verbose=False):
-            written += 1
+    for idx, path in enumerate(files, 1):
+        try:
+            when = _photo_time(path)
+            if when is None:
+                skipped_no_time += 1
+                continue
+            got = interpolate_track_at_aligned(track, when, align)
+            if got is None:
+                skipped_delta += 1
+                continue
+            lat, lon, ele, delta_s = got
+            if delta_s > max_delta:
+                skipped_delta += 1
+                continue
+            # 判断是否为端点匹配（照片时间在 GPX 范围之外）
+            when_tl = align.photo_to_timeline(when)
+            if ts_tl and (when_tl < ts_tl[0] or when_tl > ts_tl[-1]):
+                endpoint_matched += 1
+            lat, lon, pos_src = _resolve_lat_lon(
+                path, lat, lon, prefer_exif_gps=prefer_exif_gps
+            )
+            if pos_src == "exif_gps":
+                kept_exif_gps += 1
+            matched += 1
+            # DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif
+            if path.lower().endswith(".dng"):
+                fn = write_gps_exif_dng
+            else:
+                fn = write_gps_exif
+            if fn is not None and fn(path, lat, lon, ele, verbose=False):
+                written += 1
+        finally:
+            if progress_cb is not None:
+                progress_cb(idx, total, os.path.basename(path))
 
     if endpoint_matched > 0:
-        print(
+        _log(
             f"  GPX 匹配：{endpoint_matched} 张照片在 GPX 时间范围外，"
             f"已按最近端点坐标匹配（时间差 ≤ {max_delta_hours:.0f} 小时）"
         )
+    if kept_exif_gps > 0:
+        _log(
+            f"  EXIF GPS：{kept_exif_gps} 张照片已有 GPS 且距轨迹插值点 ≤ 2 公里，"
+            f"已保留照片原有坐标"
+        )
+    _log(f"GPX 匹配写入完成：匹配 {matched}/{total}，成功写入 {written} 张")
 
     return {
-        "total": len(files),
+        "total": total,
         "matched": matched,
         "written": written,
         "skipped": len(files) - matched,
         "skipped_no_time": skipped_no_time,
         "skipped_delta": skipped_delta,
         "endpoint_matched": endpoint_matched,
+        "kept_exif_gps": kept_exif_gps,
     }

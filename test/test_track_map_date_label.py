@@ -11,11 +11,15 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 from gpx_track.track_map import (  # noqa: E402
+    _add_photo_markers,
     _cluster_grid_metrics,
     _cluster_label_xytext,
     _cluster_photos_by_radius,
+    _dedupe_photos_by_species_radius,
+    _is_multi_individual_image,
     _layout_cluster_thumb_grid,
     _observation_date_label,
+    haversine_km,
 )
 from gpx_track.photo_collect import BirdPhoto  # noqa: E402
 
@@ -643,3 +647,222 @@ def test_track_line_is_solid_on_basemap():
     plt.close(fig)
     assert styles
     assert all(s in ("-", "solid") for s in styles)
+
+
+def _mk_photo(name: str, species: str, when: datetime, lat=25.95, lon=119.36):
+    return BirdPhoto(name, species, when, lat, lon)
+
+
+def test_is_multi_individual_image_token_boundary():
+    assert _is_multi_individual_image("DSC01036_01239_all.jpg")
+    assert _is_multi_individual_image("x-all.jpeg")
+    assert _is_multi_individual_image("ALL.png")
+    # 仅独立 token all 命中，ball/wall/install 等不能误判
+    assert not _is_multi_individual_image("ball_game.jpg")
+    assert not _is_multi_individual_image("wall.jpg")
+    assert not _is_multi_individual_image("鸻形目_塍鹬属_inst02_00574.jpg")
+
+
+def test_dedupe_prefers_single_over_all_at_same_site():
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    # all 多个体图时间最早（原逻辑会先选中它），单体图随后出现
+    photos = [
+        _mk_photo("DSC01036_01239_all.jpg", "斑尾塍鹬", base),
+        _mk_photo(
+            "鸻形目_塍鹬属_斑尾塍鹬_inst02_00574.jpg",
+            "斑尾塍鹬",
+            base.replace(minute=2),
+        ),
+        _mk_photo(
+            "鸻形目_塍鹬属_斑尾塍鹬_inst03_00566.jpg",
+            "斑尾塍鹬",
+            base.replace(minute=4),
+        ),
+    ]
+    dropped = []
+    picked = _dedupe_photos_by_species_radius(photos, 1.0, dropped=dropped)
+    assert len(picked) == 1
+    assert not _is_multi_individual_image(picked[0].path)
+    assert "inst02" in picked[0].path
+    # 被替换的 all 图与后续重复图都应记入 dropped
+    assert any("all" in p for p, _ in dropped)
+    assert len(dropped) == 2
+
+
+def test_dedupe_keeps_all_when_only_multi_images():
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    photos = [
+        _mk_photo("DSC01036_01239_all.jpg", "斑尾塍鹬", base),
+        _mk_photo("DSC01208_01250_all.jpg", "斑尾塍鹬", base.replace(minute=5)),
+    ]
+    picked = _dedupe_photos_by_species_radius(photos, 1.0)
+    # 该位点只有多个体图时仍保留一张标注，避免该物种在地图上消失
+    assert len(picked) == 1
+    assert picked[0].path == "DSC01036_01239_all.jpg"
+
+
+def test_dedupe_all_rule_independent_per_species():
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    photos = [
+        _mk_photo("a_all.jpg", "斑尾塍鹬", base, lat=25.950, lon=119.360),
+        _mk_photo("b_inst.jpg", "斑尾塍鹬", base.replace(minute=1), lat=25.950, lon=119.360),
+        # 另一物种同位置只有 all 图，应正常保留
+        _mk_photo("c_all.jpg", "中杓鹬", base.replace(minute=2), lat=25.950, lon=119.360),
+        # 同物种相距 >1km 的位点独立去重
+        _mk_photo("d_all.jpg", "斑尾塍鹬", base.replace(minute=3), lat=26.000, lon=119.400),
+    ]
+    picked = _dedupe_photos_by_species_radius(photos, 1.0)
+    paths = {p.path for p in picked}
+    assert paths == {"b_inst.jpg", "c_all.jpg", "d_all.jpg"}
+
+
+def test_dedupe_cluster_anchor_does_not_drift_on_representative_swap():
+    """单体图替换 all 代表后簇锚点必须保持在首图位置：
+    否则锚点漂移会把围绕原锚点的后续照片挤出簇外，另建第二簇。"""
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    p0 = (25.950, 119.360)
+    # B 距 P0 约 0.99km（同簇，单体替换 all 代表）
+    p_b = (25.9415, 119.363)
+    # C 距 P0 约 0.26km，但距 B 约 1.2km：锚点漂移时会被误建为第二簇
+    p_c = (25.9515, 119.358)
+    assert haversine_km(*p0, *p_b) < 1.0
+    assert haversine_km(*p0, *p_c) < 0.5
+    assert haversine_km(*p_b, *p_c) > 1.0
+
+    photos = [
+        _mk_photo("a_all.jpg", "池鹭", base, lat=p0[0], lon=p0[1]),
+        _mk_photo("b_inst.jpg", "池鹭", base.replace(minute=2), lat=p_b[0], lon=p_b[1]),
+        _mk_photo("c_inst.jpg", "池鹭", base.replace(minute=4), lat=p_c[0], lon=p_c[1]),
+    ]
+    dropped = []
+    picked = _dedupe_photos_by_species_radius(photos, 1.0, dropped=dropped)
+    assert len(picked) == 1
+    assert picked[0].path == "b_inst.jpg"
+    assert any(p == "c_inst.jpg" for p, _ in dropped)
+
+
+def _wide_ax():
+    """构造大视野 ax：80px 鸟图直径对应约 7~8 公里（远大于去重半径），
+    用于验证渲染层不会因像素接近而吞并半径外的独立标注点。"""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+    ax.set_xlim(119.25, 119.45)  # 约 20km 宽
+    ax.set_ylim(25.85, 26.05)
+    return fig, ax
+
+
+def _render(ax, photos, radius_km, thumb=80):
+    return _add_photo_markers(
+        ax,
+        photos,
+        thumb_diameter=thumb,
+        use_gcj=False,
+        basemap_style="none",
+        on_basemap=False,
+        radius_km=radius_km,
+        resolve_overlaps=False,  # 只验证分组/标注点，排除像素推开干扰
+    )
+
+
+def _anchor_dot_count(ax) -> int:
+    """每个布局簇绘制一个带白色描边的定位圆点；缩略图加载失败的 fallback
+    散点无白边，据此只统计定位圆点数（即标注点数）。"""
+    n = 0
+    for c in ax.collections:
+        cols = c.get_edgecolors()
+        if cols is not None and len(cols) and tuple(cols[0])[:3] == (1.0, 1.0, 1.0):
+            n += 1
+    return n
+
+
+def test_markers_strictly_follow_config_radius_not_visual_scale():
+    """同物种两张相距约 1.5km：语义去重半径 1km 下为两个独立标注点。
+    即使在大视野上它们像素间距不足一个鸟图，也必须各自保留定位圆点，
+    不允许渲染层按更宽的视觉半径把它们并成一个点。"""
+    import matplotlib.pyplot as plt
+
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    p1, p2 = (25.950, 119.360), (25.963, 119.362)
+    d = haversine_km(*p1, *p2)
+    assert 1.0 < d < 2.0, d
+    photos = _dedupe_photos_by_species_radius(
+        [
+            _mk_photo("a_inst.jpg", "池鹭", base, lat=p1[0], lon=p1[1]),
+            _mk_photo("b_inst.jpg", "池鹭", base.replace(minute=30), lat=p2[0], lon=p2[1]),
+        ],
+        1.0,
+    )
+    assert len(photos) == 2
+
+    fig, ax = _wide_ax()
+    try:
+        layout = _render(ax, photos, 1.0)
+        assert len(layout.thumb_boxes_axes) == 2
+        # 两个独立标注点各有一个定位圆点，不允许按视觉像素并点
+        assert _anchor_dot_count(ax) == 2
+    finally:
+        plt.close(fig)
+
+
+def test_markers_small_radius_keeps_points_beyond_radius():
+    """半径 0.1km 时，相距约 0.15km 的同种照片（主去重已在更小半径合成过的前提下）
+    必须仍是两个标注点；半径放大到 0.5km 才合并。"""
+    import matplotlib.pyplot as plt
+
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    # 纬度差 0.0014 ≈ 0.156km
+    p1, p2 = (25.9500, 119.3600), (25.9514, 119.3600)
+    d = haversine_km(*p1, *p2)
+    assert 0.1 < d < 0.5, d
+
+    fig, ax = _wide_ax()
+    try:
+        small = _dedupe_photos_by_species_radius(
+            [
+                _mk_photo("a.jpg", "斑嘴鸭", base, lat=p1[0], lon=p1[1]),
+                _mk_photo("b.jpg", "斑嘴鸭", base.replace(minute=5), lat=p2[0], lon=p2[1]),
+            ],
+            0.1,
+        )
+        layout_small = _render(ax, small, 0.1)
+        assert len(layout_small.thumb_boxes_axes) == 2
+        assert _anchor_dot_count(ax) == 2
+
+        ax.cla()
+        ax.set_xlim(119.25, 119.45)
+        ax.set_ylim(25.85, 26.05)
+        large = _dedupe_photos_by_species_radius(
+            [
+                _mk_photo("a.jpg", "斑嘴鸭", base, lat=p1[0], lon=p1[1]),
+                _mk_photo("b.jpg", "斑嘴鸭", base.replace(minute=5), lat=p2[0], lon=p2[1]),
+            ],
+            0.5,
+        )
+        layout_large = _render(ax, large, 0.5)
+        assert len(layout_large.thumb_boxes_axes) == 1
+        assert _anchor_dot_count(ax) == 1
+    finally:
+        plt.close(fig)
+
+
+def test_markers_distinct_species_same_site_share_one_dot():
+    """不同物种在去重半径内同一位点：各自保留鸟图，但共享一个定位圆点
+    （横向网格排布）。"""
+    import matplotlib.pyplot as plt
+
+    base = datetime(2026, 9, 26, 10, 0, 0)
+    photos = [
+        _mk_photo("a_inst.jpg", "池鹭", base, lat=25.950, lon=119.360),
+        _mk_photo("b_inst.jpg", "扇尾沙锥", base.replace(minute=1), lat=25.9501, lon=119.3601),
+    ]
+    fig, ax = _wide_ax()
+    try:
+        layout = _render(ax, photos, 1.0)
+        assert len(layout.thumb_boxes_axes) == 2
+        assert _anchor_dot_count(ax) == 1
+    finally:
+        plt.close(fig)

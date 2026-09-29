@@ -448,6 +448,7 @@ def _main_flow_write_gps(config: Dict, screened_dir: str) -> Tuple[int, str]:
             gpx_paths=gpx_paths,
             exif_tz=normalize_tz_name(config.get("gpx_match_exif_tz", DEFAULT_EXIF_TZ)),
             gpx_tz=normalize_tz_name(config.get("gpx_match_gpx_tz", DEFAULT_GPX_TZ)),
+            prefer_exif_gps=False,
         )
         n = int(stats.get("written", 0))
         detail = (
@@ -1678,6 +1679,66 @@ class ImageCleanThread(QThread):
                 f"重复 {d['removed_duplicate']}，失败 {d['failed']}"
             )
             self.finished_ok.emit(d)
+        except Exception as e:
+            self.failed.emit(str(e))
+
+
+class BatchGpsThread(QThread):
+    """后台批量写入照片 GPS（统一坐标 / GPX 时间匹配），避免阻塞 GUI。"""
+
+    progress = pyqtSignal(int, int, str)  # done, total, filename
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+
+    def __init__(self, params: Dict[str, Any], parent=None):
+        super().__init__(parent)
+        self._params = dict(params)
+        self._total = 0
+
+    def run(self) -> None:
+        try:
+            def _progress(done: int, total: int, name: str) -> None:
+                self._total = int(total)
+                self.progress.emit(int(done), int(total), str(name or ""))
+
+            def _log(msg: str) -> None:
+                self.log_line.emit(str(msg))
+
+            p = self._params
+            if p.get("mode") == "gpx":
+                stats = batch_write_gps_from_gpx(
+                    p["folder"],
+                    gpx_paths=p["gpx_paths"],
+                    exif_tz=p["exif_tz"],
+                    gpx_tz=p["gpx_tz"],
+                    # GPX 模式下以 GPX 插值坐标为准，覆盖照片中已有/被污染的 GPS
+                    prefer_exif_gps=False,
+                    progress_cb=_progress,
+                    log_cb=_log,
+                )
+                stats["mode"] = "gpx"
+                stats["folder"] = p["folder"]
+                self.finished_ok.emit(stats)
+            else:
+                count = batch_write_gps_exif(
+                    p["folder"],
+                    p["lat"],
+                    p["lon"],
+                    p.get("alt"),
+                    progress_cb=_progress,
+                    log_cb=_log,
+                )
+                self.finished_ok.emit(
+                    {
+                        "mode": "fixed",
+                        "folder": p["folder"],
+                        "lat": p["lat"],
+                        "lon": p["lon"],
+                        "written": int(count),
+                        "total": self._total,
+                    }
+                )
         except Exception as e:
             self.failed.emit(str(e))
 
@@ -4018,6 +4079,9 @@ class BirdDetectionGUI(QMainWindow):
         return os.path.normpath(self.image_folder_input.text().strip())
 
     def _apply_batch_gps_to_photos(self) -> None:
+        # 后台写入进行中时忽略重复点击
+        if getattr(self, "_batch_gps_thread", None) is not None:
+            return
         self._sync_config_from_ui()
         folder = self._gpx_target_photo_folder()
         if not folder or not os.path.isdir(folder):
@@ -4037,6 +4101,10 @@ class BirdDetectionGUI(QMainWindow):
             return
 
         use_fixed = self.gps_mode_fixed_radio.isChecked()
+        params: Dict[str, Any] = {
+            "mode": "fixed" if use_fixed else "gpx",
+            "folder": folder,
+        }
         if use_fixed:
             try:
                 lat = float(self.lat_input.text().strip())
@@ -4053,45 +4121,98 @@ class BirdDetectionGUI(QMainWindow):
                 alt = float(self.config.get("gps_altitude", 0) or 0)
             except (TypeError, ValueError):
                 alt = 0.0
-            try:
-                count = batch_write_gps_exif(
-                    folder,
-                    latitude=lat,
-                    longitude=lon,
-                    altitude=alt,
+            params.update(lat=lat, lon=lon, alt=alt)
+        else:
+            gpx_paths = self._gpx_paths_from_ui()
+            if not gpx_paths:
+                QMessageBox.warning(
+                    self, "提示", "已选 GPX 模式，请先添加至少一个有效的 GPX 文件。"
                 )
-                msg = (
-                    f"目录: {folder}\n"
-                    f"统一坐标: {lat:.6f}, {lon:.6f}\n"
-                    f"成功写入 GPS: {count}"
-                )
-                self.add_log("指定地点→EXIF GPS:\n" + msg)
-                QMessageBox.information(self, "写入完成", msg)
-            except Exception as e:
-                QMessageBox.critical(self, "写入失败", str(e))
-            return
-
-        gpx_paths = self._gpx_paths_from_ui()
-        if not gpx_paths:
-            QMessageBox.warning(self, "提示", "已选 GPX 模式，请先添加至少一个有效的 GPX 文件。")
-            return
-        try:
-            stats = batch_write_gps_from_gpx(
-                folder,
+                return
+            params.update(
                 gpx_paths=gpx_paths,
                 exif_tz=self._gpx_match_exif_tz(),
                 gpx_tz=self._gpx_match_gpx_tz(),
             )
+
+        mode_text = "指定地点统一坐标" if use_fixed else "GPX 按拍摄时间匹配"
+        self.add_log(f"批量写入照片 GPS 开始（{mode_text}）：{folder}")
+
+        dlg = QProgressDialog("正在扫描照片并准备写入…", None, 0, 0, self)
+        dlg.setWindowTitle("批量写入照片 GPS")
+        dlg.setWindowModality(Qt.ApplicationModal)
+        dlg.setMinimumDuration(0)
+        dlg.setAutoClose(False)
+        dlg.setAutoReset(False)
+        dlg.setCancelButton(None)
+        dlg.setMinimumWidth(480)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        self._batch_gps_dlg = dlg
+        self.gpx_apply_btn.setEnabled(False)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
+        th = BatchGpsThread(params, self)
+        self._batch_gps_thread = th
+
+        def _on_progress(done: int, total: int, name: str) -> None:
+            if total > 0 and dlg.maximum() != total:
+                dlg.setRange(0, total)
+            dlg.setValue(done)
+            if total > 0 and (done <= 3 or done == total or done % 10 == 0):
+                line = f"正在写入 GPS：{done}/{total}"
+                if name and (done <= 3 or done == total):
+                    line += f"\n{name}"
+                dlg.setLabelText(line)
+
+        def _on_log(msg: str) -> None:
+            self.add_log(msg)
+
+        th.progress.connect(_on_progress)
+        th.log_line.connect(_on_log)
+        th.finished_ok.connect(lambda stats: self._finish_batch_gps(ok=stats))
+        th.failed.connect(lambda msg: self._finish_batch_gps(err=msg))
+        th.finished.connect(th.deleteLater)
+        th.start()
+
+    def _finish_batch_gps(
+        self, *, ok: Optional[Dict[str, Any]] = None, err: Optional[str] = None
+    ) -> None:
+        dlg = getattr(self, "_batch_gps_dlg", None)
+        if dlg is not None:
+            dlg.close()
+        self._batch_gps_dlg = None
+        self._batch_gps_thread = None
+        self.gpx_apply_btn.setEnabled(True)
+        QApplication.restoreOverrideCursor()
+
+        if err is not None:
+            self.add_log("批量写入照片 GPS 失败: " + err)
+            QMessageBox.critical(self, "写入失败", err)
+            return
+
+        stats = ok or {}
+        folder = stats.get("folder", "")
+        if stats.get("mode") == "gpx":
+            kept = int(stats.get("kept_exif_gps", 0))
             msg = (
                 f"目录: {folder}\n"
-                f"JPEG 总数: {stats['total']}\n"
-                f"时间匹配: {stats['matched']}\n"
-                f"成功写入 GPS: {stats['written']}"
+                f"照片总数: {stats.get('total', 0)}\n"
+                f"时间匹配: {stats.get('matched', 0)}\n"
+                f"成功写入 GPS: {stats.get('written', 0)}"
+                + (f"\n保留照片原 GPS: {kept}" if kept else "")
             )
             self.add_log("GPX→EXIF GPS:\n" + msg)
-            QMessageBox.information(self, "写入完成", msg)
-        except Exception as e:
-            QMessageBox.critical(self, "写入失败", str(e))
+        else:
+            msg = (
+                f"目录: {folder}\n"
+                f"统一坐标: {float(stats.get('lat', 0.0)):.6f}, "
+                f"{float(stats.get('lon', 0.0)):.6f}\n"
+                f"成功写入 GPS: {stats.get('written', 0)}"
+            )
+            self.add_log("指定地点→EXIF GPS:\n" + msg)
+        QMessageBox.information(self, "写入完成", msg)
 
     def _track_map_photo_folder(self) -> str:
         override = ""

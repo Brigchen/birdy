@@ -719,25 +719,33 @@ def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altit
         return False
 
 
-def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, altitude: Optional[float] = None, max_workers: int = None) -> int:
+def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, altitude: Optional[float] = None, max_workers: int = None, *, progress_cb=None, log_cb=None) -> int:
     """
     批量将 GPS 坐标写入文件夹中所有 JPEG 的 EXIF（递归子目录）。
 
     典型用法：连拍筛选后仅对 ``Screened_images`` 中的副本写入 GPS。
-    
+
     Args:
         image_folder: 图片文件夹路径
         latitude:     纬度
         longitude:    经度
         altitude:     海拔（可选）
         max_workers:  最大线程数，None 表示自动根据系统核心数调整
-    
+        progress_cb:  可选回调 (done: int, total: int, name: str)，每完成一张调用一次
+        log_cb:       可选回调 (msg: str)，替代 print 向调用方输出过程信息
+
     Returns:
         成功写入的图片数量
     """
+    def _log(msg: str) -> None:
+        if log_cb is not None:
+            log_cb(msg)
+        else:
+            print(msg)
+
     folder = Path(image_folder)
     if not folder.exists():
-        print(f"错误: 文件夹不存在: {image_folder}")
+        _log(f"错误: 文件夹不存在: {image_folder}")
         return 0
 
     # JPEG 用 write_gps_exif，DNG 用 write_gps_exif_dng
@@ -748,18 +756,22 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
     ]
 
     if not image_files:
-        print(f"警告: 文件夹中没有发现图片文件: {image_folder}")
+        _log(f"警告: 文件夹中没有发现图片文件: {image_folder}")
         return 0
 
-    print(f"开始批量写入 GPS EXIF...")
-    print(f"文件夹: {image_folder}")
-    print(f"坐标: ({latitude:.6f}, {longitude:.6f})")
-    print(f"图片数: {len(image_files)}")
-    print(f"使用并行处理，最大线程数: {max_workers or '自动'}")
-    print("=" * 60)
-    
+    total = len(image_files)
+    if progress_cb is not None:
+        progress_cb(0, total, "")
+    _log(f"开始批量写入 GPS EXIF...")
+    _log(f"文件夹: {image_folder}")
+    _log(f"坐标: ({latitude:.6f}, {longitude:.6f})")
+    _log(f"图片数: {total}")
+    _log(f"使用并行处理，最大线程数: {max_workers or '自动'}")
+    _log("=" * 60)
+
     success_count = 0
-    
+    done_count = 0
+
     # 使用线程池并行处理
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         # 提交所有任务（DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif）
@@ -772,20 +784,22 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
             future_to_file[
                 executor.submit(fn, str(img_file), latitude, longitude, altitude, verbose=False)
             ] = img_file
-        
+
         # 收集结果
         for future in concurrent.futures.as_completed(future_to_file):
             img_file = future_to_file[future]
             try:
                 if future.result():
                     success_count += 1
-                    print(f"[OK] {img_file.name}")
             except Exception as e:
-                print(f"[ERROR] {img_file.name}: {e}")
-    
-    print("=" * 60)
-    print(f"完成: {success_count}/{len(image_files)} 张图片 GPS EXIF 写入成功")
-    
+                _log(f"[ERROR] {img_file.name}: {e}")
+            done_count += 1
+            if progress_cb is not None:
+                progress_cb(done_count, total, img_file.name)
+
+    _log("=" * 60)
+    _log(f"完成: {success_count}/{total} 张图片 GPS EXIF 写入成功")
+
     return success_count
 
 
