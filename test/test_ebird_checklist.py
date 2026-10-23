@@ -65,7 +65,7 @@ def test_checklist_csv_matches_sample_layout():
         assert rows[3][0] == "Date"
         assert rows[3][2] == "5/4/2026"
         assert rows[4][2] == "8:00 AM"
-        # 物种行按中文名排序
+        # 物种行按目→科→种名录顺序（红头长尾山雀早于麻雀）
         assert rows[14][0] == "Black-throated Tit"
         assert rows[14][1] == "Aegithalos concinnus"
         assert rows[14][2] == "1"
@@ -111,6 +111,24 @@ def test_state_and_traveling_distance():
     assert grid[5][2] == "FJ"
     assert grid[11][0] == "Dist Traveled (Miles)"
     assert grid[11][2] == "1"
+
+
+def test_checklist_species_rows_follow_taxonomic_order():
+    """导出物种行按目排序：苍鹭（鹈形目）在反嘴鹬（鸻形目）之前。"""
+    bucket = ChecklistBucket(
+        day=date(2026, 5, 4),
+        lat=24.5,
+        lon=118.0,
+        species_counts={"麻雀": 1, "反嘴鹬": 2, "苍鹭": 3},
+    )
+    table = {
+        "苍鹭": ("Grey Heron", "Ardea cinerea"),
+        "反嘴鹬": ("Pied Avocet", "Recurvirostra avosetta"),
+        "麻雀": ("Eurasian Tree Sparrow", "Passer montanus"),
+    }
+    grid = build_checklist_grid(bucket, table)
+    counts = [grid[r][2] for r in range(14, len(grid))]
+    assert counts == ["3", "2", "1"]
 
 
 def test_taxonomy_fix_bushtit_to_tit():

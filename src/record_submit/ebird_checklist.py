@@ -19,7 +19,11 @@ from .export_filenames import unique_checklist_slug
 from .gpx_travel_distance import GpxTravelDistanceResolver, try_create_gpx_resolver
 from .location_pinyin import format_ebird_location_name
 from .scan import ChecklistBucket
-from .taxonomy_cn import ebird_species_cells, lookup_species
+from .taxonomy_cn import (
+    ebird_species_cells,
+    iter_species_counts_taxo,
+    lookup_species,
+)
 
 _NUM_COLS = 3  # 单 checklist 仅 A/B/C；sample.xls 的 5 列用于多列示例
 _CHECKLIST_COL = 2  # 列 C（第 3 列）= checklist 数据
@@ -174,9 +178,9 @@ def _species_rows_for_bucket(
     bucket: ChecklistBucket,
     species_en_sci: Dict[str, Tuple[str, str]],
 ) -> List[Tuple[str, str, str]]:
-    """(A 列俗名, B 列学名, C 列只数)。"""
+    """(A 列俗名, B 列学名, C 列只数)；物种按目→科→种名录顺序。"""
     rows: List[Tuple[str, str, str]] = []
-    for sp_cn, cnt in sorted(bucket.species_counts.items()):
+    for sp_cn, cnt in iter_species_counts_taxo(bucket.species_counts):
         en, sci = lookup_species(sp_cn, species_en_sci)
         common, sci_name = ebird_species_cells(en, sci, sp_cn)
         rows.append((common, sci_name, str(int(cnt))))

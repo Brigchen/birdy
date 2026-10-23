@@ -48,6 +48,7 @@ from detect_bird_and_eye import (
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
     LOCAL_SPECIES_MODEL_RESNET34,
     local_species_model_label,
+    normalize_bird_detect_mode,
     normalize_local_species_model,
 )
 from api_config_defaults import ensure_doubao_api_config_file
@@ -104,8 +105,10 @@ class BirdDetectionCLI:
             'burst_keep_min': 2,
             'keep_top_n': 2,
             'use_bird_detection': True,
+            'bird_detect_mode': 'normal',
             'use_eye_detection': False,
             'use_fast_mode': True,
+            'fast_mode_sample_ratio': 0.5,
             'generate_burst_report': True,
             'enable_species_detection': True,
             'enable_crop': True,
@@ -227,7 +230,7 @@ class BirdDetectionCLI:
             '--burst-keep-ratio',
             type=float,
             dest='burst_keep_ratio',
-            help='连拍组保留比例，相对本组总张数，如 0.1 约 10%；快速模式候选约一半后再按此比例精选 (默认: 0.2)',
+            help='连拍组保留比例，相对本组总张数，如 0.1 约 10%；快速模式先按抽样比例抽候选再精选 (默认: 0.2)',
         )
         parser.add_argument(
             '--burst-keep-min',
@@ -246,10 +249,23 @@ class BirdDetectionCLI:
         )
         parser.add_argument('--no-bird-detection', action='store_true',
                           help='禁用鸟体检测')
+        parser.add_argument(
+            '--bird-detect-mode',
+            type=str,
+            choices=['normal', 'fine'],
+            dest='bird_detect_mode',
+            help='鸟体检测：normal 仅全图（默认），fine 全图+长边>5000 时中心复检',
+        )
         parser.add_argument('--eye-detection', action='store_true',
                           help='启用鸟眼检测（仅在启用鸟体检测时有效）')
         parser.add_argument('--no-fast-mode', action='store_true',
                           help='禁用快速模式')
+        parser.add_argument(
+            '--fast-sample-ratio',
+            type=float,
+            dest='fast_sample_ratio',
+            help='快速模式抽样比例 0–1，等步长抽取后仅对这些照片跑鸟检/对焦 (默认: 0.5)',
+        )
         parser.add_argument('--no-burst-report', action='store_true',
                           help='不生成连拍报告')
         
@@ -330,10 +346,17 @@ class BirdDetectionCLI:
             self.config['keep_top_n'] = args.keep_top_n
         if args.no_bird_detection:
             self.config['use_bird_detection'] = False
+        if getattr(args, 'bird_detect_mode', None):
+            self.config['bird_detect_mode'] = normalize_bird_detect_mode(
+                args.bird_detect_mode
+            )
         if args.eye_detection:
             self.config['use_eye_detection'] = True
         if args.no_fast_mode:
             self.config['use_fast_mode'] = False
+        if getattr(args, 'fast_sample_ratio', None) is not None:
+            r = float(args.fast_sample_ratio)
+            self.config['fast_mode_sample_ratio'] = max(0.0, min(1.0, r))
         if args.no_burst_report:
             self.config['generate_burst_report'] = False
         if getattr(args, 'dual_format_mode', None):
@@ -378,11 +401,21 @@ class BirdDetectionCLI:
             f"  连拍保留:       比例 {self.config.get('burst_keep_ratio', 0.2)}, "
             f"最少 {self.config.get('burst_keep_min', self.config.get('keep_top_n', 2))} 张/组"
         )
-        print(f"  鸟体检测:       {'是' if self.config['use_bird_detection'] else '否'}")
+        print(
+            f"  鸟体检测:       {'是' if self.config['use_bird_detection'] else '否'}"
+            + (
+                f"（{'精细' if normalize_bird_detect_mode(self.config.get('bird_detect_mode')) == 'fine' else '普通'}）"
+                if self.config['use_bird_detection'] else ""
+            )
+        )
         print(
             f"  鸟眼检测:       {'是' if (self.config.get('use_eye_detection') and self.config['use_bird_detection']) else '否'}"
         )
-        print(f"  快速模式:       {'是' if self.config['use_fast_mode'] else '否'}")
+        print(f"  快速模式:       {'是' if self.config['use_fast_mode'] else '否'}"
+              + (
+                  f"（抽样 {float(self.config.get('fast_mode_sample_ratio', 0.5)):.2f}）"
+                  if self.config['use_fast_mode'] else ""
+              ))
         print(
             f"  物种识别:       {'是' if self.config.get('enable_species_detection', True) else '否'}"
         )
@@ -447,6 +480,15 @@ class BirdDetectionCLI:
                     self.config['output_folder'], 'burst_analysis.json'
                 ),
                 fast_mode=self.config['use_fast_mode'],
+                fast_sample_ratio=float(
+                    self.config.get('fast_mode_sample_ratio', 0.5)
+                ),
+                bird_center_pass=(
+                    normalize_bird_detect_mode(
+                        self.config.get('bird_detect_mode', 'normal')
+                    )
+                    == 'fine'
+                ),
                 screened_output_dir=screened_dir,
                 dual_format_mode=self.config.get('dual_format_mode', 'off'),
             )
@@ -550,6 +592,9 @@ class BirdDetectionCLI:
                     doubao_config=doubao_config,
                     min_species_accept_confidence=self.config.get(
                         'min_species_accept_confidence', 0.5
+                    ),
+                    bird_detect_mode=normalize_bird_detect_mode(
+                        self.config.get('bird_detect_mode', 'normal')
                     ),
                 )
                 

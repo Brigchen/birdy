@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 _REPO = Path(__file__).resolve().parent.parent
 _SRC = _REPO / "src"
@@ -12,16 +14,41 @@ if str(_SRC) not in sys.path:
 
 from gpx_track.track_map import (  # noqa: E402
     _add_photo_markers,
+    _choose_cluster_placement,
     _cluster_grid_metrics,
     _cluster_label_xytext,
     _cluster_photos_by_radius,
     _dedupe_photos_by_species_radius,
     _is_multi_individual_image,
+    _clamp_positions_into_axes,
     _layout_cluster_thumb_grid,
+    _max_cols_on_side,
+    _min_thumb_sep_px,
     _observation_date_label,
     haversine_km,
 )
 from gpx_track.photo_collect import BirdPhoto  # noqa: E402
+
+
+def test_east_up_puts_north_left_and_east_up():
+    from gpx_track.track_map import _map_xy, _rotate_basemap_east_up, _track_wider_than_tall
+    import numpy as np
+
+    assert _track_wider_than_tall(114.0, 114.2, 30.50, 30.52)
+    assert not _track_wider_than_tall(114.0, 114.01, 30.0, 30.3)
+    south = _map_xy(114.1, 30.50, use_gcj=False, east_up=True)
+    north = _map_xy(114.1, 30.52, use_gcj=False, east_up=True)
+    west = _map_xy(114.0, 30.51, use_gcj=False, east_up=True)
+    east = _map_xy(114.2, 30.51, use_gcj=False, east_up=True)
+    assert north[0] < south[0]
+    assert east[1] > west[1]
+    img = np.zeros((4, 6, 3), dtype=np.float32)
+    img[0, :, 0] = 1.0
+    turned, extent = _rotate_basemap_east_up(img, (114.0, 114.2, 30.50, 30.52))
+    assert turned.shape[0] == 6 and turned.shape[1] == 4
+    assert turned[:, 0, 0].mean() == 1.0
+    assert extent[0] < extent[1]
+    assert extent[2] == 114.0 and extent[3] == 114.2
 
 
 def test_observation_date_single_day():
@@ -81,6 +108,43 @@ def test_cluster_photos_by_radius_no_merge_when_far():
     assert len(groups) == 2
 
 
+def test_layout_cluster_keeps_one_photo_per_species():
+    """同一块网格里同种只出现一次（反嘴鹬不应并排两张）。"""
+    p1 = BirdPhoto("a.jpg", "反嘴鹬", None, 25.5000, 119.7800)
+    p2 = BirdPhoto("b.jpg", "反嘴鹬", None, 25.5004, 119.7801)
+    p3 = BirdPhoto("c.jpg", "灰头麦鸡", None, 25.5002, 119.7800)
+    groups = _cluster_photos_by_radius(
+        [(p1, 0, 0), (p2, 0, 0), (p3, 0, 0)], radius_km=1.0
+    )
+    assert len(groups) == 1
+    names = [t[0].species_cn for t in groups[0]]
+    assert names.count("反嘴鹬") == 1
+    assert names.count("灰头麦鸡") == 1
+
+
+def test_layout_cluster_does_not_chain_same_species_beyond_radius():
+    """中间夹其它种时，不得把半径外的第二张同种串进同一网格。"""
+    # 纬度 0.009 ≈ 1.0km；0.016 ≈ 1.8km
+    avocet_a = BirdPhoto("a.jpg", "反嘴鹬", None, 25.5000, 119.7800)
+    other = BirdPhoto("x.jpg", "灰头麦鸡", None, 25.5065, 119.7800)
+    avocet_b = BirdPhoto("b.jpg", "反嘴鹬", None, 25.5160, 119.7800)
+    d_ab = haversine_km(25.5000, 119.7800, 25.5160, 119.7800)
+    assert d_ab > 1.0
+    groups = _cluster_photos_by_radius(
+        [(avocet_a, 0, 0), (other, 0, 0), (avocet_b, 0, 0)],
+        radius_km=1.0,
+    )
+    avocet_groups = sum(
+        1
+        for g in groups
+        if any(t[0].species_cn == "反嘴鹬" for t in g)
+    )
+    assert avocet_groups == 2
+    for g in groups:
+        names = [t[0].species_cn for t in g]
+        assert names.count("反嘴鹬") <= 1
+
+
 def test_cluster_label_alternates_vertical():
     a = _cluster_label_xytext(0, 10.0, 44, dpi=120)
     b = _cluster_label_xytext(1, 10.0, 80, dpi=120)
@@ -92,10 +156,69 @@ def test_cluster_label_alternates_vertical():
 
 def test_cluster_grid_spacing_uses_diameter_plus_fifth():
     d = 50
-    col_step, row_step, _, gap, _ = _cluster_grid_metrics(d, 10.0, dpi=120)
-    assert gap == d * 0.4
-    assert col_step == d + gap
+    dpi = 120.0
+    col_step, row_step, _, gap, _ = _cluster_grid_metrics(d, 10.0, dpi=dpi)
+    assert gap == float(d) * 0.4
+    assert col_step == float(d) + gap
     assert row_step > col_step
+
+
+def test_cluster_block_bbox_covers_rendered_thumbs():
+    """图块包围盒应包住每张 OffsetImage 窗口（网格步长仍用 diameter）。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import (
+        _cluster_block_bbox_px,
+        _iter_map_thumb_artists,
+        _plan_cluster_layouts,
+        _thumb_cluster_index_from_gid,
+    )
+
+    fig, ax = plt.subplots(figsize=(8, 12), dpi=120)
+    ax.set_xlim(115.10, 115.18)
+    ax.set_ylim(30.18, 30.26)
+    photos = [
+        BirdPhoto(f"{i}.jpg", f"测试鸟种{i}", None, 30.20, 115.12 + 0.0001 * i)
+        for i in range(6)
+    ]
+    layouts = _plan_cluster_layouts(
+        ax,
+        photos,
+        max_markers=None,
+        thumb_diameter=80,
+        use_gcj=False,
+        radius_km=0.3,
+        east_up=False,
+        top_axes=None,
+        bottom_axes=None,
+        track_xy=[],
+    )
+    assert layouts and any(lay.positions for lay in layouts)
+    from gpx_track.track_map import _add_photo_markers
+
+    _add_photo_markers(
+        ax, photos, thumb_diameter=80, use_gcj=False,
+        basemap_style="none", on_basemap=False, radius_km=0.3,
+    )
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    for cluster_idx, layout in enumerate(layouts):
+        if not layout.positions:
+            continue
+        pts_px = [ax.transData.transform(p) for p in layout.positions]
+        names = [ph.species_cn for ph, _, _ in layout.group]
+        bb = _cluster_block_bbox_px(
+            pts_px, thumb_diameter=80, label_fs=9.0, dpi=120.0, species_names=names,
+        )
+        for ab in _iter_map_thumb_artists(ax):
+            gid = ab.get_gid() if hasattr(ab, "get_gid") else ""
+            if _thumb_cluster_index_from_gid(gid or "") != cluster_idx:
+                continue
+            ext = ab.get_window_extent(renderer)
+            assert bb[0] <= float(ext.x0) + 1.0
+            assert bb[1] >= float(ext.x1) - 1.0
+            assert bb[2] <= float(ext.y0) + 1.0
+            assert bb[3] >= float(ext.y1) - 1.0
+    plt.close(fig)
 
 
 def test_layout_cluster_row_first_indices():
@@ -105,12 +228,367 @@ def test_layout_cluster_row_first_indices():
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     positions, row_first = _layout_cluster_thumb_grid(
-        ax, (0.2, 0.5), 7, 1, 40, 9.0
+        ax, (0.2, 0.5), 7, 1, 40, 9.0, max_cols=5
     )
     plt.close(fig)
     assert len(positions) == 7
     assert row_first == [0, 5]
     assert positions[0][0] < positions[1][0] < positions[2][0]
+
+
+def test_bird_labels_stay_below_title_band():
+    """多行鸟名的上沿应落在标题块之下，下沿离开底边。"""
+    import matplotlib.pyplot as plt
+
+    from gpx_track.track_map import (
+        _label_box_axes_frac_at,
+        _marker_center_y_bounds,
+        _title_band_bottom_axes,
+    )
+
+    fig, ax = plt.subplots(figsize=(6, 8), dpi=100)
+    ax.set_xlim(115.0, 115.2)
+    ax.set_ylim(30.0, 30.3)
+    fig.canvas.draw()
+    bottom, top = _title_band_bottom_axes(
+        ax, "黄石西塞山", "月亮山", "2026-10-02", elev_south_frac=0.18
+    )
+    assert top < 0.95
+    assert bottom >= 0.17
+    bounds = _marker_center_y_bounds(
+        ax, 80, 11.0, top_axes=top, bottom_axes=bottom
+    )
+    assert bounds is not None
+    # 锚点贴在上沿，夹紧后鸟名仍低于标题
+    pos, _ = _layout_cluster_thumb_grid(ax, (115.05, 30.28), 6, 1, 80, 11.0, max_cols=2)
+    clamped = _clamp_positions_into_axes(ax, pos, 80, y_bounds=bounds)
+    oy = _cluster_label_xytext(0, 11.0, 80, dpi=100)
+    for x, y in clamped:
+        box = _label_box_axes_frac_at(
+            ax, x, y, "白胸翡翠", oy[0], oy[1], 11.0, oy[2], oy[3]
+        )
+        assert box[3] <= top + 0.02
+    plt.close(fig)
+
+
+def test_compass_aligns_with_title_and_summary_below():
+    from gpx_track.track_map import _compass_axes_box, _try_symmetric_top_chrome
+
+    y_top = 0.97
+    box = _compass_axes_box("left", y_top)
+    from gpx_track.track_map import _compass_center
+
+    cx, cy = _compass_center("left", None, elev_panel_top=0.0, y_title_top=y_top)
+    assert cx > 0.8
+    assert abs(cy - (y_top - 0.02)) < 1e-6
+    paired = _try_symmetric_top_chrome(0.22, 0.12, 0.18, 0.08, [], y_top)
+    assert paired is not None
+    _title, _ha, sum_box = paired
+    assert sum_box[3] <= box[1] + 1e-6
+
+
+def test_distant_photos_stay_near_their_gps():
+    """相距较远的鸟图应留在各自记录点附近，而不是收成一个中心。"""
+    import tempfile
+    import matplotlib.pyplot as plt
+    from PIL import Image
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_near_"))
+    photos = []
+    coords = [(30.20, 115.10), (30.24, 115.16)]
+    for i, (lat, lon) in enumerate(coords):
+        p = td / f"{i}.jpg"
+        Image.new("RGB", (40, 40), (80, 80, 80)).save(p)
+        photos.append(BirdPhoto(str(p), f"鸟{i}", datetime(2026, 10, 4, 9, i), lat, lon))
+    fig, ax = plt.subplots(figsize=(6, 8), dpi=80)
+    ax.set_xlim(115.05, 115.22)
+    ax.set_ylim(30.16, 30.28)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=40, use_gcj=False, radius_km=1.0,
+        basemap_style="none", on_basemap=False,
+    )
+    plt.close(fig)
+    assert len(layout.displays) == 2
+    for (lat, lon), (x, y) in zip(coords, layout.displays):
+        assert abs(x - lon) < 0.03
+        assert abs(y - lat) < 0.03
+
+
+def test_matrix_shape_prefers_filled_grid():
+    from gpx_track.track_map import _matrix_shape
+
+    assert _matrix_shape(10) == (5, 2)
+    assert _matrix_shape(12) == (4, 3)
+    assert _matrix_shape(6) == (3, 2)
+    # 14 张应排成 5×3 扁矩阵，而不是 2×7 超长竖条
+    assert _matrix_shape(14) == (5, 3)
+    assert _matrix_shape(16) == (4, 4)
+    # 大簇不再封顶 5 列变成超高竖条
+    c48, r48 = _matrix_shape(48)
+    assert c48 >= 6 and r48 <= 8
+    c51, r51 = _matrix_shape(51)
+    assert c51 >= 6 and r51 <= 8
+    from gpx_track.track_map import _cluster_col_cap
+    assert _cluster_col_cap(2, 48) == 8
+    assert _cluster_col_cap(7, 47) == 5
+    assert _matrix_shape(47, max_cols=5)[0] == 5
+
+
+def test_top_left_cluster_uses_wide_matrix_not_two_cols():
+    """左上角记录点两侧有空时，应排宽矩阵，不能挤成两列超长竖条。"""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(18, 32), dpi=120)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    fig.canvas.draw()
+    side, cols, pos, _rf = _choose_cluster_placement(
+        ax, (0.18, 0.82), 14, 80, 8.0, [], 80 * 1.34
+    )
+    plt.close(fig)
+    rows = (14 + cols - 1) // cols
+    assert len(pos) == 14
+    assert cols >= 4, (side, cols, rows)
+    assert rows <= 4, (side, cols, rows)
+
+
+def test_large_cluster_does_not_straddle():
+    """几十张的大簇不得水平居中骑在记录点上盖住地图。"""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(18, 32), dpi=120)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    fig.canvas.draw()
+    side, cols, pos, _rf = _choose_cluster_placement(
+        ax, (0.42, 0.52), 51, 80, 8.0, [], 80 * 1.34
+    )
+    plt.close(fig)
+    rows = (51 + cols - 1) // cols
+    assert len(pos) == 51
+    assert side != 0
+    assert cols >= 6, (side, cols, rows)
+    assert rows <= 8, (side, cols, rows)
+
+
+def test_large_cluster_keeps_track_side_after_window_expand():
+    """扩窗后图中线会变；大簇仍按轨迹范围中线留在原侧，避免被吸到湖面。"""
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(18, 32), dpi=120)
+    # 模拟向左扩窗后：簇在图中线左侧，但在轨迹中线右侧
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    fig.canvas.draw()
+    track = [(0.30 + 0.16 * i / 20.0, 0.2 + 0.03 * i) for i in range(21)]
+    side, cols, pos, _rf = _choose_cluster_placement(
+        ax, (0.44, 0.50), 48, 80, 8.0, [], 80 * 1.34,
+        ignore_fit=True, track_xy=track,
+    )
+    plt.close(fig)
+    assert side == 1, (side, cols)
+    assert cols >= 6
+    assert len(pos) == 48
+
+
+def test_crowded_edge_cluster_widens_map():
+    """贴边且鸟图很多时，向该点外侧扩大经纬度范围。"""
+    from gpx_track.track_map import _expand_bounds_for_photo_packs
+
+    photos = [
+        BirdPhoto(f"{i}.jpg", f"鸟{i}", None, 30.201, 115.101)
+        for i in range(12)
+    ]
+    lon0, lon1, lat0, lat1 = 115.10, 115.20, 30.18, 30.26
+    out0, out1, out_lat0, out_lat1 = _expand_bounds_for_photo_packs(
+        lon0, lon1, lat0, lat1, photos,
+        width_px=2160, height_px=3840, thumb_diameter=120,
+    )
+    assert out0 < lon0 - 0.01
+    assert out1 >= lon1 - 1e-9
+    assert out_lat1 - out_lat0 >= (lat1 - lat0) - 1e-9
+
+
+def test_cluster_regions_do_not_overlap_and_clear_track():
+    """两点各有多张鸟图时，摆放区不交错，且圆心不压在轨迹上。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _cluster_region_bbox, _point_seg_dist, _species_label_up_px
+
+    photos = []
+    for i in range(4):
+        photos.append(BirdPhoto(f"a{i}.jpg", f"甲{i}", None, 30.20, 115.10))
+    for i in range(4):
+        photos.append(BirdPhoto(f"b{i}.jpg", f"乙{i}", None, 30.201, 115.102))
+    fig, ax = plt.subplots(figsize=(6, 10), dpi=100)
+    ax.set_xlim(115.08, 115.14)
+    ax.set_ylim(30.18, 30.24)
+    fig.canvas.draw()
+    track = [(115.08 + 0.001 * k, 30.20) for k in range(60)]
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=70, use_gcj=False,
+        basemap_style="none", on_basemap=False, track_xy=track,
+    )
+    assert len(layout.displays) == 8
+    dpi = float(ax.figure.dpi)
+    pad = 70 * 0.62
+    label_up = _species_label_up_px(70, 9.0, dpi)
+    px = [ax.transData.transform(p) for p in layout.displays]
+    groups = [px[:4], px[4:]]
+    bb0 = _cluster_region_bbox(groups[0], pad, label_up)
+    bb1 = _cluster_region_bbox(groups[1], pad, label_up)
+    assert bb0[1] < bb1[0] or bb1[1] < bb0[0] or bb0[3] < bb1[2] or bb1[3] < bb0[2]
+    tpx = [ax.transData.transform(p) for p in track]
+    for p in px:
+        nearest = min(
+            _point_seg_dist(p[0], p[1], tpx[i][0], tpx[i][1], tpx[i + 1][0], tpx[i + 1][1])
+            for i in range(len(tpx) - 1)
+        )
+        assert nearest > 70 * 0.45
+    plt.close(fig)
+
+
+def test_two_left_edge_clusters_do_not_stack():
+    """左缘两个记录点的鸟图不得被夹到同一位置互相重叠。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import (
+        _cluster_occupancy_pad_px,
+        _cluster_region_bbox,
+        _rects_overlap,
+        _species_label_up_px,
+    )
+
+    photos = []
+    for i in range(4):
+        photos.append(BirdPhoto(f"a{i}.jpg", f"甲{i}", None, 30.200, 115.100))
+    for i in range(4):
+        photos.append(BirdPhoto(f"b{i}.jpg", f"乙{i}", None, 30.218, 115.100))
+    fig, ax = plt.subplots(figsize=(8, 14), dpi=100)
+    ax.set_xlim(115.095, 115.135)
+    ax.set_ylim(30.185, 30.245)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=70, use_gcj=False, radius_km=0.3,
+        basemap_style="none", on_basemap=False,
+    )
+    assert len(layout.displays) == 8
+    dpi = float(ax.figure.dpi)
+    pad = _cluster_occupancy_pad_px(70, dpi)
+    label_up = _species_label_up_px(70, 9.0, dpi)
+    px = [ax.transData.transform(p) for p in layout.displays]
+    bb0 = _cluster_region_bbox(px[:4], pad, label_up)
+    bb1 = _cluster_region_bbox(px[4:], pad, label_up)
+    plt.close(fig)
+    assert not _rects_overlap(bb0, bb1, 12.0)
+
+
+def test_cluster_block_clears_vertical_track():
+    """鸟图圆心不得落在轨迹附近（整块避让后圆心仍须让开轨迹）。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _point_seg_dist, _thumb_display_px
+
+    photos = [
+        BirdPhoto(f"t{i}.jpg", f"鸟{i}", None, 30.20 + 0.0001 * i, 115.105)
+        for i in range(8)
+    ]
+    fig, ax = plt.subplots(figsize=(10, 10), dpi=100)
+    ax.set_xlim(115.08, 115.16)
+    ax.set_ylim(30.18, 30.24)
+    fig.canvas.draw()
+    track = [(115.128, 30.18 + 0.001 * k) for k in range(60)]
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=70, use_gcj=False, radius_km=1.0,
+        basemap_style="none", on_basemap=False, track_xy=track,
+    )
+    dpi = float(ax.figure.dpi)
+    min_dist = _thumb_display_px(70, dpi) * 0.35
+    px = [ax.transData.transform(p) for p in layout.displays]
+    tpx = [ax.transData.transform(p) for p in track]
+    plt.close(fig)
+    assert layout.displays
+    for p in px:
+        nearest = min(
+            _point_seg_dist(
+                float(p[0]),
+                float(p[1]),
+                float(tpx[i][0]),
+                float(tpx[i][1]),
+                float(tpx[i + 1][0]),
+                float(tpx[i + 1][1]),
+            )
+            for i in range(len(tpx) - 1)
+        )
+        assert nearest > min_dist
+
+
+def test_max_cols_left_edge_forces_right_or_wrap():
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(6, 8), dpi=100)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    fig.canvas.draw()
+    left_cols = _max_cols_on_side(ax, (0.04, 0.5), -1, 3, 90, 9.0)
+    right_cols = _max_cols_on_side(ax, (0.04, 0.5), 1, 3, 90, 9.0)
+    assert left_cols <= 1
+    assert right_cols >= 2
+    side, cols, pos, _rf = _choose_cluster_placement(
+        ax, (0.04, 0.5), 3, 90, 9.0, [], 90 * 1.34
+    )
+    plt.close(fig)
+    assert side == 1 or cols == 1
+    assert len(pos) == 3
+    xs = [p[0] for p in pos]
+    ys = [p[1] for p in pos]
+    # 不得全挤在同一点
+    spread = max(max(xs) - min(xs), max(ys) - min(ys))
+    assert spread > 0.02
+
+
+def test_left_edge_markers_do_not_overlap():
+    """左缘多张鸟图应向右或分行，不能夹回后叠在一起。"""
+    import tempfile
+    import matplotlib.pyplot as plt
+    from PIL import Image
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_le_"))
+    photos = []
+    for i, name in enumerate(("白鹡鸰", "白胸翡翠", "凸胸鹦鹉")):
+        p = td / f"{name}.jpg"
+        Image.new("RGB", (80, 80), (40 + i * 40, 90, 140)).save(p)
+        photos.append(
+            BirdPhoto(
+                str(p),
+                name,
+                datetime(2026, 10, 2, 10, i),
+                30.50 + 0.0002 * i,
+                114.20,
+            )
+        )
+    fig, ax = plt.subplots(figsize=(6, 10), dpi=100)
+    ax.set_xlim(114.199, 114.220)
+    ax.set_ylim(30.495, 30.520)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax,
+        photos,
+        thumb_diameter=80,
+        use_gcj=False,
+        radius_km=0.1,
+        basemap_style="none",
+        on_basemap=False,
+    )
+    sep = _min_thumb_sep_px(80, float(fig.dpi))
+    pts = [ax.transData.transform(xy) for xy in layout.displays]
+    plt.close(fig)
+    assert len(pts) == 3
+    for i in range(len(pts)):
+        for j in range(i):
+            d = (
+                (float(pts[i][0]) - float(pts[j][0])) ** 2
+                + (float(pts[i][1]) - float(pts[j][1])) ** 2
+            ) ** 0.5
+            assert d + 1e-3 >= sep
 
 
 def test_island_scale_markers_stay_on_map():
@@ -154,6 +632,316 @@ def test_island_scale_markers_stay_on_map():
     assert all(x0 <= x <= x1 and y0 <= y <= y1 for x, y in layout.displays)
 
 
+def test_occupancy_pad_matches_offsetimage_radius():
+    """占位半径不得小于 OffsetImage 实际显示半径，否则右下会被裁切。"""
+    from gpx_track.track_map import (
+        _cluster_occupancy_pad_px,
+        _thumb_display_px,
+        _thumb_visual_radius_px,
+    )
+
+    dpi, d = 120.0, 120
+    assert abs(_thumb_display_px(d, dpi) - 200.0) < 1e-6
+    assert abs(_thumb_visual_radius_px(d, dpi) - 100.0) < 1e-6
+    assert _cluster_occupancy_pad_px(d, dpi) >= _thumb_visual_radius_px(d, dpi)
+
+
+def test_markers_visual_extent_stays_inside_axes():
+    """鸟图中心加真实显示半径后仍应落在坐标轴内。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _cluster_occupancy_pad_px
+
+    photos = [
+        BirdPhoto(f"e{i}.jpg", f"鸟{i}", None, 30.20 + 0.0004 * i, 115.12)
+        for i in range(12)
+    ]
+    fig, ax = plt.subplots(figsize=(9, 16), dpi=120)
+    ax.set_xlim(115.06, 115.20)
+    ax.set_ylim(30.14, 30.30)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=120, use_gcj=False, radius_km=1.0,
+        basemap_style="none", on_basemap=False,
+    )
+    fig.canvas.draw()
+    from gpx_track.track_map import _thumb_offsetimage_overflow_px
+
+    assert layout.displays
+    assert _thumb_offsetimage_overflow_px(ax) <= 1.5
+    plt.close(fig)
+
+
+def test_crowded_clusters_stay_inside_axes():
+    """多个记录点分列轨迹左右时，真实鸟图窗口盒不得裁出画布。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _thumb_offsetimage_overflow_px
+
+    photos = []
+    for k, lon in enumerate((115.100, 115.108, 115.116, 115.124)):
+        for i in range(8):
+            photos.append(
+                BirdPhoto(
+                    f"c{k}_{i}.jpg", f"鸟{k}{i}", None,
+                    30.200 + 0.0008 * i, lon,
+                )
+            )
+    fig, ax = plt.subplots(figsize=(9, 16), dpi=120)
+    ax.set_xlim(115.085, 115.145)
+    ax.set_ylim(30.17, 30.25)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=80, use_gcj=False, radius_km=0.2,
+        basemap_style="none", on_basemap=False,
+        track_xy=[(115.112, 30.18 + 0.001 * t) for t in range(60)],
+    )
+    fig.canvas.draw()
+    assert len(layout.displays) == 32
+    assert _thumb_offsetimage_overflow_px(ax) <= 1.5
+    plt.close(fig)
+
+
+def _make_thumb_jpegs(td: Path, n: int, prefix: str = "t"):
+    from PIL import Image
+
+    paths = []
+    for i in range(n):
+        p = td / f"{prefix}{i}.jpg"
+        Image.new("RGB", (96, 96), ((40 + i * 13) % 255, 90, 140)).save(p)
+        paths.append(p)
+    return paths
+
+
+def test_offsetimage_artists_stay_inside_figure():
+    """真实 OffsetImage 窗口盒必须落在 figure 内（savefig 前硬约束）。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _thumb_offsetimage_overflow_px
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_ab_"))
+    photos = []
+    for i, p in enumerate(_make_thumb_jpegs(td, 12)):
+        photos.append(
+            BirdPhoto(str(p), f"鸟{i}", None, 30.20 + 0.0004 * i, 115.12)
+        )
+    fig, ax = plt.subplots(figsize=(9, 16), dpi=120)
+    ax.set_xlim(115.08, 115.18)
+    ax.set_ylim(30.16, 30.28)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=120, use_gcj=False, radius_km=1.0,
+        basemap_style="none", on_basemap=False,
+    )
+    assert layout.displays
+    assert _thumb_offsetimage_overflow_px(ax) <= 1.5
+    plt.close(fig)
+
+
+def test_crowded_offsetimages_stay_inside_figure():
+    """多记录点 + 真实鸟图：左/右/下窗口盒不得裁出画布。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import _thumb_offsetimage_overflow_px
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_cr_"))
+    photos = []
+    k = 0
+    for lon in (115.100, 115.108, 115.116, 115.124):
+        for i in range(8):
+            p = _make_thumb_jpegs(td, 1, prefix=f"c{k}_")[0]
+            photos.append(
+                BirdPhoto(str(p), f"鸟{k}{i}", None, 30.200 + 0.0008 * i, lon)
+            )
+            k += 1
+    fig, ax = plt.subplots(figsize=(9, 16), dpi=120)
+    ax.set_xlim(115.09, 115.14)
+    ax.set_ylim(30.18, 30.24)
+    fig.canvas.draw()
+    layout = _add_photo_markers(
+        ax, photos, thumb_diameter=80, use_gcj=False, radius_km=0.2,
+        basemap_style="none", on_basemap=False,
+        track_xy=[(115.112, 30.18 + 0.001 * t) for t in range(60)],
+    )
+    assert len(layout.displays) == 32
+    assert _thumb_offsetimage_overflow_px(ax) <= 1.5
+    plt.close(fig)
+
+
+def _wanghu_sample_paths():
+    return (
+        Path(r"C:\Users\brigc\Pictures\Photo_Output\classification_20261004_网湖"),
+        Path(r"C:\Users\brigc\Downloads\20261004户外步行-网湖.gpx"),
+    )
+
+
+def _load_wanghu_matched_photos():
+    from gpx_track.gpx_io import load_gpx
+    from gpx_track.gpx_match import match_photos_to_track
+    from gpx_track.photo_collect import collect_bird_photos
+    from gpx_track.track_map import _photo_path_key
+
+    class_dir, gpx_path = _wanghu_sample_paths()
+    track = load_gpx(str(gpx_path))
+    photos = collect_bird_photos(str(class_dir), require_gps=False)
+    matched = match_photos_to_track(
+        [ph.path for ph in photos],
+        track,
+        max_delta_seconds=3600.0,
+        prefer_exif_gps=False,
+    )
+    by_path = {_photo_path_key(m["path"]): m for m in matched}
+    enriched = []
+    for ph in photos:
+        m = by_path.get(_photo_path_key(ph.path))
+        if not m:
+            continue
+        enriched.append(
+            BirdPhoto(
+                path=ph.path,
+                species_cn=ph.species_cn,
+                when=ph.when or m.get("time"),
+                when_track=m.get("when_track"),
+                lat=m["lat"],
+                lon=m["lon"],
+                ele=m.get("ele"),
+                order_cn=ph.order_cn,
+                family_cn=ph.family_cn,
+            )
+        )
+    return track, enriched
+
+
+def test_wanghu_layout_block_pairwise_overlap():
+    """网湖 0.3km：规划阶段图块包围盒两两交叠面积应较小（实测回归）。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import (
+        EXPORT_DPI,
+        EXPORT_HEIGHT_PX,
+        EXPORT_WIDTH_PX,
+        _cluster_block_bbox_px,
+        _dedupe_photos_by_species_radius,
+        _figure_size_inches,
+        _plan_cluster_layouts,
+        _rects_overlap_area,
+        _track_map_thumb_diameters,
+    )
+
+    class_dir, gpx_path = _wanghu_sample_paths()
+    if not class_dir.is_dir() or not gpx_path.is_file():
+        import pytest
+
+        pytest.skip("网湖分类目录或 GPX 不在本机")
+
+    track, matched = _load_wanghu_matched_photos()
+    photos = _dedupe_photos_by_species_radius(matched, 0.3)
+    fig_w, fig_h = _figure_size_inches(
+        EXPORT_WIDTH_PX, EXPORT_HEIGHT_PX, EXPORT_DPI
+    )
+    thumb_map, _ = _track_map_thumb_diameters(EXPORT_HEIGHT_PX)
+    from gpx_track.track_map import _map_xy, _plot_map_ax
+
+    fig = plt.figure(figsize=(fig_w, fig_h), dpi=EXPORT_DPI, facecolor="white")
+    ax = fig.add_axes([0, 0, 1, 1])
+    _plot_map_ax(
+        ax,
+        track,
+        photos,
+        "网湖",
+        map_title="观鸟记录",
+        date_label="2026年10月4日",
+        thumb_diameter=thumb_map,
+        basemap_style="none",
+        map_width_px=EXPORT_WIDTH_PX,
+        map_height_px=EXPORT_HEIGHT_PX,
+        radius_km=0.3,
+    )
+    track_xy = [
+        _map_xy(p.lon, p.lat, use_gcj=False, east_up=False)
+        for p in track[:: max(1, len(track) // 280)]
+    ]
+    layouts = _plan_cluster_layouts(
+        ax,
+        photos,
+        max_markers=None,
+        thumb_diameter=thumb_map,
+        use_gcj=False,
+        radius_km=0.3,
+        east_up=False,
+        top_axes=None,
+        bottom_axes=None,
+        track_xy=track_xy,
+    )
+    label_fs = 9.0
+    bbs = []
+    for layout in layouts:
+        if not layout.positions:
+            continue
+        pts_px = [ax.transData.transform(p) for p in layout.positions]
+        names = [ph.species_cn for ph, _, _ in layout.group]
+        bbs.append(
+            _cluster_block_bbox_px(
+                pts_px,
+                thumb_diameter=thumb_map,
+                label_fs=label_fs,
+                dpi=EXPORT_DPI,
+                species_names=names,
+            )
+        )
+    plt.close(fig)
+    overlap = 0.0
+    for i in range(len(bbs)):
+        for j in range(i + 1, len(bbs)):
+            overlap += _rects_overlap_area(bbs[i], bbs[j], 8.0)
+    assert overlap < 2.5e6, f"网湖图块规划交叠过大 {overlap:.0f}px²"
+
+
+def test_wanghu_radii_thumbs_inside_figure():
+    """网湖真数据 0.2 / 0.3 / 1.0 km 出图后鸟图盒 ⊆ 画布。"""
+    import matplotlib.pyplot as plt
+    from gpx_track.track_map import (
+        EXPORT_DPI,
+        EXPORT_HEIGHT_PX,
+        EXPORT_WIDTH_PX,
+        _dedupe_photos_by_species_radius,
+        _figure_size_inches,
+        _plot_map_ax,
+        _thumb_offsetimage_overflow_px,
+        _track_map_thumb_diameters,
+    )
+
+    class_dir, gpx_path = _wanghu_sample_paths()
+    if not class_dir.is_dir() or not gpx_path.is_file():
+        import pytest
+
+        pytest.skip("网湖分类目录或 GPX 不在本机")
+
+    track, matched = _load_wanghu_matched_photos()
+    fig_w, fig_h = _figure_size_inches(
+        EXPORT_WIDTH_PX, EXPORT_HEIGHT_PX, EXPORT_DPI
+    )
+    thumb_map, _ = _track_map_thumb_diameters(EXPORT_HEIGHT_PX)
+    for radius_km in (0.2, 0.3, 1.0):
+        photos = _dedupe_photos_by_species_radius(matched, radius_km)
+        assert photos, f"网湖 {radius_km} km 未匹配到鸟图"
+        fig = plt.figure(figsize=(fig_w, fig_h), dpi=EXPORT_DPI, facecolor="white")
+        ax = fig.add_axes([0, 0, 1, 1])
+        _plot_map_ax(
+            ax,
+            track,
+            photos,
+            "网湖",
+            map_title="观鸟记录",
+            date_label="2026年10月4日",
+            thumb_diameter=thumb_map,
+            basemap_style="none",
+            map_width_px=EXPORT_WIDTH_PX,
+            map_height_px=EXPORT_HEIGHT_PX,
+            radius_km=radius_km,
+        )
+        overflow = _thumb_offsetimage_overflow_px(ax)
+        plt.close(fig)
+        assert overflow <= 1.5, (
+            f"网湖 {radius_km} km 鸟图越界 {overflow:.1f}px（左/右/下）"
+        )
+
+
 def test_reserve_south_lat_keeps_north_and_places_old_south():
     from gpx_track.amap_basemap import reserve_south_lat
 
@@ -187,7 +975,7 @@ def test_elevation_south_reserve_covers_panel_and_thumbs():
 def test_fit_lon_to_aspect_after_south_reserve():
     from gpx_track.amap_basemap import fit_lon_to_aspect, reserve_south_lat
 
-    aspect = 1440 / 2560
+    aspect = 2160 / 3840
     lon0, lon1 = 120.0, 120.0 + aspect
     lat0, lat1 = 30.0, 31.0
     a, b, c, d = reserve_south_lat(lon0, lon1, lat0, lat1, 0.2)
@@ -866,3 +1654,162 @@ def test_markers_distinct_species_same_site_share_one_dot():
         assert _anchor_dot_count(ax) == 1
     finally:
         plt.close(fig)
+
+
+def test_cluster_sort_groups_same_order_together():
+    """同一记录点矩阵内：鸟图按 目→科→种 分类学顺序排列，同目物种相邻，
+    不再按拍摄时间混排（物种多时便于查看）。"""
+    from gpx_track.photo_collect import photo_taxo_sort_key
+
+    base = datetime(2026, 10, 4, 9, 0, 0)
+    # 时间上交错，但分类学上 雁形目(鸭科) 远在 雀形目(鸦科) 之前
+    entries = [
+        (BirdPhoto("p0.jpg", "喜鹊", base, 30.20, 115.10,
+                   order_cn="雀形目", family_cn="鸦科"), 0.1, 0.2),
+        (BirdPhoto("p1.jpg", "绿头鸭", base.replace(minute=1), 30.20, 115.10,
+                   order_cn="雁形目", family_cn="鸭科"), 0.1, 0.2),
+        (BirdPhoto("p2.jpg", "灰喜鹊", base.replace(minute=2), 30.20, 115.10,
+                   order_cn="雀形目", family_cn="鸦科"), 0.1, 0.2),
+        (BirdPhoto("p3.jpg", "斑嘴鸭", base.replace(minute=3), 30.20, 115.10,
+                   order_cn="雁形目", family_cn="鸭科"), 0.1, 0.2),
+    ]
+    groups = _cluster_photos_by_radius(entries, radius_km=1.0)
+    assert len(groups) == 1
+    order_in_grid = [t[0].path for t in groups[0]]
+    # 名录序号：斑嘴鸭(165) < 绿头鸭(166) < 灰喜鹊(7031) < 喜鹊(7058)
+    # 雁形目两张在前且相邻，雀形目两张在后且相邻（不再按拍摄时间交错）
+    assert order_in_grid == ["p3.jpg", "p1.jpg", "p2.jpg", "p0.jpg"]
+    # 同目内按名录序号：斑嘴鸭 < 绿头鸭
+    k1 = photo_taxo_sort_key(entries[1][0])
+    k3 = photo_taxo_sort_key(entries[3][0])
+    assert k3 < k1
+
+
+def test_taxonomy_from_classification_path_levels():
+    """分类目录 目/科/属/种 层级应解析出目与科。"""
+    from gpx_track.photo_collect import _taxonomy_from_classification_path
+
+    root = Path("classification_x")
+    p = root / "雁形目" / "鸭科" / "鸭属" / "绿头鸭" / "a.jpg"
+    assert _taxonomy_from_classification_path(root, p) == ("雁形目", "鸭科", "绿头鸭")
+    # 层级不足时退回末级作为物种名，目/科留空
+    p2 = root / "绿头鸭" / "a.jpg"
+    assert _taxonomy_from_classification_path(root, p2) == ("", "", "绿头鸭")
+
+
+def _write_exif_jpg(path: Path, *, when: Optional[datetime] = None,
+                    gps: Optional[tuple] = None) -> None:
+    """写一张带 EXIF 时间/GPS 的 JPEG（供轨迹图回退标注测试）。"""
+    import piexif
+    from PIL import Image
+
+    Image.new("RGB", (60, 60), (80, 90, 140)).save(path)
+    exif: dict = {"0th": {}, "Exif": {}, "GPS": {}, "1st": {}, "thumbnail": None}
+    if when is not None:
+        exif["Exif"][piexif.ExifIFD.DateTimeOriginal] = when.strftime(
+            "%Y:%m:%d %H:%M:%S"
+        ).encode()
+    if gps is not None:
+        lat, lon = gps
+
+        def _dms(v: float):
+            v = abs(v)
+            d = int(v)
+            m = int((v - d) * 60)
+            s = round(((v - d) * 60 - m) * 60 * 100)
+            return ((d, 1), (m, 1), (s, 100))
+
+        exif["GPS"][piexif.GPSIFD.GPSLatitudeRef] = b"N" if lat >= 0 else b"S"
+        exif["GPS"][piexif.GPSIFD.GPSLatitude] = _dms(lat)
+        exif["GPS"][piexif.GPSIFD.GPSLongitudeRef] = b"E" if lon >= 0 else b"W"
+        exif["GPS"][piexif.GPSIFD.GPSLongitude] = _dms(lon)
+    piexif.insert(piexif.dump(exif), str(path))
+
+
+def _fallback_map_fixture(td: Path):
+    """构造 GPX + 照片目录：2 张在 GPX 时间范围内，2 张超出范围但 EXIF GPS
+    在视野内，1 张超出范围且 EXIF GPS 远在视野外。"""
+    photo_root = td / "photos"
+    photo_root.mkdir(parents=True)
+    # GPX：2026-10-01 08:00-09:00 UTC（EXIF 本地 Asia/Shanghai 16:00-17:00）
+    gpx_xml = """<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="test">
+  <trk><trkseg>
+    <trkpt lat="24.5000" lon="118.0000"><time>2026-10-01T08:00:00Z</time></trkpt>
+    <trkpt lat="24.5100" lon="118.0100"><time>2026-10-01T08:30:00Z</time></trkpt>
+    <trkpt lat="24.5200" lon="118.0200"><time>2026-10-01T09:00:00Z</time></trkpt>
+  </trkseg></trk>
+</gpx>
+"""
+    gpx_path = td / "t.gpx"
+    gpx_path.write_text(gpx_xml, encoding="utf-8")
+
+    def _mk(species: str, name: str, **kw) -> None:
+        d = photo_root / species
+        d.mkdir(exist_ok=True)
+        _write_exif_jpg(d / name, **kw)
+
+    # 范围内：GPX 插值定位
+    _mk("白鹭", "in1.jpg", when=datetime(2026, 10, 1, 16, 10))
+    _mk("灰喜鹊", "in2.jpg", when=datetime(2026, 10, 1, 16, 50))
+    # 超出 GPX 时间范围，但 EXIF GPS 在地图视野内 → 应补充显示
+    _mk("池鹭", "out_in_view.jpg", when=datetime(2026, 10, 1, 21, 0),
+        gps=(24.5080, 118.0080))
+    # 无拍摄时间（仅有文件 mtime），EXIF GPS 在视野内 → 应补充显示
+    _mk("夜鹭", "no_time.jpg", gps=(24.5130, 118.0130))
+    # 超出范围且 EXIF GPS 远在视野外 → 不显示
+    _mk("苍鹭", "far.jpg", when=datetime(2026, 10, 1, 22, 0),
+        gps=(25.5000, 119.0000))
+    return photo_root, gpx_path
+
+
+def test_gpx_mode_exif_fallback_drawn_only_when_within_view():
+    """勾选「补充使用 EXIF GPS」时：时间不在 GPX 范围或无拍摄时间的照片，
+    带 EXIF GPS 且落在地图范围内的一并显示；视野外的不显示。"""
+    import matplotlib
+    matplotlib.use("Agg")
+    from gpx_track.track_map import generate_track_maps
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_fb_"))
+    photo_root, gpx_path = _fallback_map_fixture(td)
+    written = generate_track_maps(
+        reports_dir=str(td / "reports"),
+        gpx_paths=[str(gpx_path)],
+        photo_folder=str(photo_root),
+        use_gpx_track=True,
+        use_exif_gps=True,
+        radius_km=1.0,
+        include_elevation=False,
+        basemap_style="none",
+        preview_only=True,
+    )
+    assert Path(written["track_png"]).is_file()
+    # 池鹭（超时） + 夜鹭（无时间） 补充绘制；苍鹭视野外未绘制
+    assert written.get("map_exif_fallback_drawn") == "2"
+    assert written.get("exif_fallback_out_of_range") == "1"
+    assert "far.jpg" in written.get("exif_fallback_out_of_range_paths", "")
+
+
+def test_gpx_mode_exif_fallback_disabled_when_unchecked():
+    """未勾选「补充使用 EXIF GPS」时，GPX 匹配不上的照片直接不绘制。"""
+    import matplotlib
+    matplotlib.use("Agg")
+    from gpx_track.track_map import generate_track_maps
+
+    td = Path(tempfile.mkdtemp(prefix="birdy_tm_fboff_"))
+    photo_root, gpx_path = _fallback_map_fixture(td)
+    written = generate_track_maps(
+        reports_dir=str(td / "reports"),
+        gpx_paths=[str(gpx_path)],
+        photo_folder=str(photo_root),
+        use_gpx_track=True,
+        use_exif_gps=False,
+        radius_km=1.0,
+        include_elevation=False,
+        basemap_style="none",
+        preview_only=True,
+    )
+    assert Path(written["track_png"]).is_file()
+    assert "map_exif_fallback_drawn" not in written
+    # 3 张匹配不上（超时/无时间）且不回退
+    assert written.get("skipped_time_mismatch") == "3"

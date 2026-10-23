@@ -171,6 +171,24 @@ def _download_tile(session, url: str) -> Image.Image:
     return Image.open(BytesIO(r.content)).convert("RGBA")
 
 
+def _nearest_ok_tile(
+    grid: Dict[Tuple[int, int], Optional[Image.Image]],
+    tx: int,
+    ty: int,
+) -> Optional[Image.Image]:
+    """缺瓦时取最近一张已成功的瓦片，避免底图留下浅灰方块。"""
+    best: Optional[Image.Image] = None
+    best_d = 10**9
+    for (x, y), im in grid.items():
+        if im is None:
+            continue
+        d = abs(x - tx) + abs(y - ty)
+        if d < best_d:
+            best_d = d
+            best = im
+    return best
+
+
 def _compose_tile_layers(layers: Sequence[Image.Image]) -> Image.Image:
     if not layers:
         return Image.new("RGBA", (TILE_SIZE, TILE_SIZE), (240, 240, 240, 255))
@@ -451,18 +469,25 @@ def fetch_amap_basemap_rgba(
     )
 
     failed = 0
+    grid: Dict[Tuple[int, int], Optional[Image.Image]] = {}
     for ty in range(ty0, ty1 + 1):
         for tx in range(tx0, tx1 + 1):
             urls = _tile_urls_for_style(tx, ty, zoom, style, key)
             try:
                 layers = [_download_tile(session, u) for u in urls]
-                tile = _compose_tile_layers(layers)
-                mosaic.paste(
-                    tile,
-                    ((tx - tx0) * TILE_SIZE, (ty - ty0) * TILE_SIZE),
-                )
+                grid[(tx, ty)] = _compose_tile_layers(layers)
             except Exception:
+                grid[(tx, ty)] = None
                 failed += 1
+    for (tx, ty), tile in grid.items():
+        if tile is None:
+            tile = _nearest_ok_tile(grid, tx, ty)
+        if tile is None:
+            continue
+        mosaic.paste(
+            tile,
+            ((tx - tx0) * TILE_SIZE, (ty - ty0) * TILE_SIZE),
+        )
 
     if failed > cols * rows // 2:
         raise RuntimeError("高德底图瓦片下载失败过多，请检查网络与 API Key 权限")

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 from .scan import ChecklistBucket
+from .taxonomy_cn import iter_species_counts_taxo
 
 
 def build_birdreport_batch(
@@ -17,7 +18,7 @@ def build_birdreport_batch(
     checklists: List[dict] = []
     for _k, b in sorted(buckets.items(), key=lambda x: (x[0][0], x[0][1], x[0][2])):
         observations = []
-        for sp_cn, cnt in sorted(b.species_counts.items()):
+        for sp_cn, cnt in iter_species_counts_taxo(b.species_counts):
             en, sci = species_en_sci.get(sp_cn, ("", ""))
             observations.append(
                 {

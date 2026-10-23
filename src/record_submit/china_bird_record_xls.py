@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .export_filenames import unique_checklist_slug
 from .scan import ChecklistBucket
+from .taxonomy_cn import iter_species_counts_taxo
 
 # 模版列（不得增删）：与 data/species/鸟种导入模版.xls 一致
 COL_CN_NAME = "中文名"
@@ -58,12 +59,12 @@ def write_china_bird_record_xls(
     ws = wb.get_sheet(0)
 
     row = 1
-    for sp_cn in sorted(species_counts.keys()):
-        cnt = int(species_counts[sp_cn])
-        if cnt < 1:
+    for sp_cn, cnt in iter_species_counts_taxo(species_counts):
+        n = int(cnt)
+        if n < 1:
             continue
         ws.write(row, 0, sp_cn)
-        ws.write(row, 1, cnt)
+        ws.write(row, 1, n)
         row += 1
 
     out = Path(output_path).expanduser().resolve()

@@ -748,11 +748,17 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
         _log(f"错误: 文件夹不存在: {image_folder}")
         return 0
 
-    # JPEG 用 write_gps_exif，DNG 用 write_gps_exif_dng
+    from image_io import is_raw_path
+
+    # JPEG 用 piexif；DNG/RAW 用 exiftool（Screened 中的 RAW 保持原格式）
     image_files = [
         f
         for f in folder.rglob("*")
-        if f.is_file() and f.suffix.lower() in (".jpg", ".jpeg", ".dng")
+        if f.is_file()
+        and (
+            f.suffix.lower() in (".jpg", ".jpeg", ".dng")
+            or is_raw_path(str(f))
+        )
     ]
 
     if not image_files:
@@ -777,7 +783,7 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
         # 提交所有任务（DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif）
         future_to_file = {}
         for img_file in sorted(image_files):
-            if img_file.suffix.lower() == ".dng":
+            if img_file.suffix.lower() == ".dng" or is_raw_path(str(img_file)):
                 fn = write_gps_exif_dng
             else:
                 fn = write_gps_exif

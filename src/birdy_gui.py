@@ -51,6 +51,7 @@ from detect_bird_and_eye import (
     SPECIES_GEO_MODE_PROVINCE,
     archive_identified_crop_file,
     group_crop_records_by_source,
+    normalize_bird_detect_mode,
     normalize_local_species_model,
     normalize_species_geo_mode,
     save_instance_crops_to_staging,
@@ -83,6 +84,7 @@ from watermark_generator import (
     choose_default_watermark_source,
     collect_images_recursive,
     generate_watermarks,
+    normalize_collage_mode,
     render_watermark_for_image,
 )
 from image_clean import ImageCleanOptions, clean_bird_images, clean_image_list
@@ -103,6 +105,41 @@ def _open_local_file(path: str) -> None:
         os.startfile(path)
     else:
         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+
+def soft_break_long_text(text: str, every: int = 8) -> str:
+    """在路径分隔符与长串后插入零宽空格，让 QLabel 能换行，避免撑破左栏。"""
+    if not text:
+        return ""
+    out: List[str] = []
+    run = 0
+    for ch in str(text):
+        out.append(ch)
+        if ch in "/\\-_.:":
+            out.append("\u200b")
+            run = 0
+        elif ch == "\n":
+            run = 0
+        else:
+            run += 1
+            if run >= max(4, int(every)):
+                out.append("\u200b")
+                run = 0
+    return "".join(out)
+
+
+def _make_vertical_scroll(parent: Optional[QWidget] = None) -> QScrollArea:
+    """与旧版相同：只纵向滚动，内容按自身宽度参与左右分栏，不被视口锁窄。"""
+    scroll = QScrollArea(parent)
+    scroll.setWidgetResizable(True)
+    scroll.setFrameShape(QFrame.NoFrame)
+    scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+    scroll.setStyleSheet(
+        "QScrollArea { border: none; background: transparent; }"
+        "QScrollArea > QWidget > QWidget { background: transparent; }"
+    )
+    return scroll
 
 
 class _WatermarkRenderWorker(QObject):
@@ -696,6 +733,9 @@ class WorkerThread(QThread):
                 total_steps += 1
             if do_species:
                 total_steps += 1
+            dxo_on = bool(config.get("enable_dxo_pureraw")) and do_species
+            if dxo_on:
+                total_steps += 1
             if config.get("enable_watermark_generation", False):
                 total_steps += 1
             if config.get("enable_record_export_auto", False):
@@ -720,6 +760,8 @@ class WorkerThread(QThread):
                 enabled_phases.append("burst")
             if config.get("enable_gps_write"):
                 enabled_phases.append("gps")
+            if dxo_on:
+                enabled_phases.append("dxo")
             if do_species:
                 enabled_phases.append("species")
             if config.get("enable_watermark_generation", False):
@@ -828,6 +870,15 @@ class WorkerThread(QThread):
                                 config["output_folder"], "burst_analysis.json"
                             ),
                             fast_mode=config["use_fast_mode"],
+                            fast_sample_ratio=float(
+                                config.get("fast_mode_sample_ratio", 0.5)
+                            ),
+                            bird_center_pass=(
+                                normalize_bird_detect_mode(
+                                    config.get("bird_detect_mode", "normal")
+                                )
+                                == "fine"
+                            ),
                             screened_output_dir=screened_dir,
                             dual_format_mode=config.get("dual_format_mode", "off"),
                             focus_score_weight=float(
@@ -945,6 +996,67 @@ class WorkerThread(QThread):
                     )
                     results["gps_written"] = 0
 
+            # 可选：识别前用 DxO PureRAW 对 Screened 中的 RAW 降噪（无人值守 batch）。
+            # DxO 是可选项：未安装 / 勾选未开 / 无 RAW / 处理失败时，
+            # 均静默回退，ARW 按原流程（rawpy 全尺寸 demosaic）识别，不弹错误。
+            dxo_outputs_map: Dict[str, str] = {}
+            if dxo_on and os.path.isdir(screened_dir):
+                from dxo_pureraw import find_pureraw_exe
+
+                if find_pureraw_exe() is None:
+                    self.status_updated.emit(
+                        "DxO PureRAW 未安装，跳过降噪；"
+                        "RAW 按原流程解码识别。"
+                    )
+                else:
+                    current_step += 1
+                    self.status_updated.emit(
+                        f"[步骤 {current_step}/{total_steps}] "
+                        "DxO PureRAW 降噪 Screened RAW…"
+                    )
+                    _emit_phase_progress("dxo", 0, 1)
+                    self.eta_checkpoint.emit(
+                        {"kind": "phase_begin", "phase": "dxo"}
+                    )
+                    try:
+                        from dxo_pureraw import run_pureraw_batch
+                        from image_io import RAW_EXTENSIONS
+
+                        raw_paths = [
+                            str(p)
+                            for p in Path(screened_dir).rglob("*")
+                            if p.is_file()
+                            and p.suffix.lower() in RAW_EXTENSIONS
+                        ]
+                        if raw_paths:
+                            dxo_stat = run_pureraw_batch(
+                                raw_paths,
+                                log_cb=self.status_updated.emit,
+                                should_cancel=lambda: not self.is_running,
+                            )
+                            results["dxo_pureraw"] = {
+                                "ok": int(dxo_stat.get("ok", 0)),
+                                "fail": int(dxo_stat.get("fail", 0)),
+                                "total": int(dxo_stat.get("total", 0)),
+                            }
+                            self.status_updated.emit(
+                                f"✓ DxO PureRAW：成功 {dxo_stat.get('ok', 0)}"
+                                f"/{dxo_stat.get('total', 0)} 张"
+                            )
+                        else:
+                            self.status_updated.emit(
+                                "DxO PureRAW：Screened_images 中没有 RAW 文件，跳过。"
+                            )
+                    except Exception as e:
+                        self.status_updated.emit(
+                            f"⚠ DxO PureRAW 失败（{e}），"
+                            "这些图改用原 RAW 流程识别。"
+                        )
+                    _emit_phase_progress("dxo", 1, 1)
+                    self.eta_checkpoint.emit(
+                        {"kind": "phase_done", "phase": "dxo"}
+                    )
+
             # 下一步：物种识别与裁剪归档
             if do_species:
                 current_step += 1
@@ -985,6 +1097,9 @@ class WorkerThread(QThread):
                             config.get('species_geo_mode', SPECIES_GEO_MODE_AUTO)
                         ),
                         min_species_accept_confidence=min_species_thr,
+                        bird_detect_mode=normalize_bird_detect_mode(
+                            config.get("bird_detect_mode", "normal")
+                        ),
                     )
                     
                     # 连拍成功后仅处理筛选保留的图片；连拍失败则回退为扫描整个输入目录
@@ -1041,6 +1156,25 @@ class WorkerThread(QThread):
                         self.status_updated.emit(
                             "物种识别/归档：连拍步骤未成功完成，扫描全部输入图片"
                         )
+
+                    if config.get("enable_dxo_pureraw") and image_files:
+                        try:
+                            from dxo_pureraw import map_sources_to_outputs
+
+                            dxo_outputs_map = map_sources_to_outputs(image_files)
+                            if dxo_outputs_map:
+                                image_files = [
+                                    dxo_outputs_map.get(p, p)
+                                    for p in image_files
+                                ]
+                                self.status_updated.emit(
+                                    f"DxO 降噪：{len(dxo_outputs_map)} 张 RAW "
+                                    "改用 DxO 输出（JPEG/DNG）进行识别裁切"
+                                )
+                        except Exception as e:
+                            self.status_updated.emit(
+                                f"⚠ DxO 输出映射失败，改用 RAW 解码: {e}"
+                            )
 
                     def _cfg_geo_str(v):
                         if v is None:
@@ -1254,6 +1388,9 @@ class WorkerThread(QThread):
                         key_places_text=str(
                             config.get("track_map_key_places", "") or ""
                         ),
+                        adaptive_rotate=bool(
+                            config.get("track_map_adaptive_rotate", False)
+                        ),
                         preview_only=False,
                     )
                     for k, p in written.items():
@@ -1332,6 +1469,9 @@ class WorkerThread(QThread):
                         ai_denoise_strength=float(config.get("wm_ai_denoise_strength", 0.5)),
                         ai_sharpen_strength=float(config.get("wm_ai_sharpen_strength", 0.5)),
                         ai_tile_size=int(config.get("wm_ai_tile_size", 512)),
+                        collage_mode=normalize_collage_mode(
+                            config.get("wm_collage_mode", "off")
+                        ),
                     )
                     wm_result = generate_watermarks(
                         source_folder=source_folder,
@@ -1420,8 +1560,22 @@ class WatermarkBatchThread(QThread):
             tot = max(1, int(d.get("total", 1)))
             if k == "start":
                 extra = ""
+                _cm = normalize_collage_mode(
+                    getattr(self._options, "collage_mode", "off")
+                )
                 if self._random_per_species and int(self._random_per_species) > 0:
-                    extra = f"（每物种目录≤{int(self._random_per_species)} 张，半按鸟体大小、半随机）"
+                    if _cm != "off":
+                        extra = (
+                            f"（每物种≤{int(self._random_per_species)} 张成品："
+                            f"先分横/竖再各池抽格，不跑鸟检）"
+                        )
+                    else:
+                        extra = (
+                            f"（每物种目录≤{int(self._random_per_species)} 张，"
+                            f"半按鸟体大小、半随机）"
+                        )
+                if _cm != "off":
+                    extra += f"；拼图 {_cm}"
                 self.log_line.emit(f"水印批量：开始，共 {tot} 张{extra}…")
                 _emit(0, 0, tot)
             elif k == "tick":
@@ -1433,6 +1587,10 @@ class WatermarkBatchThread(QThread):
                     self._last_log_pct = pct
             elif k == "done":
                 _emit(100, tot, tot)
+            elif k == "status":
+                msg = str(d.get("message") or "").strip()
+                if msg:
+                    self.log_line.emit(msg)
 
         try:
             r = generate_watermarks(
@@ -1542,6 +1700,9 @@ class SpeciesBatchThread(QThread):
                     config.get("species_geo_mode", SPECIES_GEO_MODE_AUTO)
                 ),
                 min_species_accept_confidence=min_species_thr,
+                bird_detect_mode=normalize_bird_detect_mode(
+                    config.get("bird_detect_mode", "normal")
+                ),
             )
 
             def _cfg_geo_str(v):
@@ -2223,8 +2384,10 @@ class BirdDetectionGUI(QMainWindow):
             'area_score_weight': 1.0,
             'enable_burst_detection': True,
             'use_bird_detection': True,
+            'bird_detect_mode': 'normal',
             'use_eye_detection': False,
             'use_fast_mode': True,
+            'fast_mode_sample_ratio': 0.5,
             'generate_burst_report': False,
             'enable_species_detection': True,
             'enable_crop': True,
@@ -2247,6 +2410,8 @@ class BirdDetectionGUI(QMainWindow):
             'doubao_api_key': '',
             # 未知种类阈值：仅当 species_conf_threshold_enabled 为 True 时在地理后判顶一生效
             'species_conf_threshold_enabled': False,
+            # 识别前用 DxO PureRAW 降噪 Screened 中的 RAW（需已安装 PureRAW 并配好预设）
+            'enable_dxo_pureraw': False,
             'min_species_accept_confidence': 0.5,
             # 水印生成
             'enable_watermark_generation': False,
@@ -2263,6 +2428,7 @@ class BirdDetectionGUI(QMainWindow):
             'wm_watermark_style': 'frame',
             'wm_random_per_species': False,
             'wm_random_per_species_count': 3,
+            'wm_collage_mode': 'off',
             # AI 增强（水印前曝光/降噪/锐化，流水线顺序：曝光→降噪→锐化）
             'wm_enable_ai_exposure': False,
             'wm_ai_exposure_strength': 1.0,
@@ -2301,6 +2467,7 @@ class BirdDetectionGUI(QMainWindow):
             'track_map_photo_folder_override': '',
             'track_map_radius_km': 1.0,
             'track_map_include_elevation': True,
+            'track_map_adaptive_rotate': False,
             'track_map_basemap_style': 'normal',
             'track_map_show_key_places': False,
             'track_map_key_places': '',
@@ -2323,7 +2490,9 @@ class BirdDetectionGUI(QMainWindow):
         body_layout = QHBoxLayout(body)
         body_layout.setSpacing(12)
         body_layout.setContentsMargins(12, 8, 12, 12)
-        body_layout.addWidget(self._create_settings_panel(), 1)
+        settings_panel = self._create_settings_panel()
+        settings_panel.setMinimumWidth(420)
+        body_layout.addWidget(settings_panel, 1)
         body_layout.addWidget(self._create_status_panel(), 1)
         outer.addWidget(body, 1)
 
@@ -2387,15 +2556,7 @@ class BirdDetectionGUI(QMainWindow):
     
     def _create_settings_panel(self) -> QWidget:
         """创建设置面板（可滚动，避免大字/高 DPI 下纵向空间不足时控件被压扁裁切）"""
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll.setStyleSheet(
-            "QScrollArea { border: none; background: transparent; }"
-            "QScrollArea > QWidget > QWidget { background: transparent; }"
-        )
+        scroll = _make_vertical_scroll()
 
         panel = QWidget()
         panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -2447,6 +2608,10 @@ class BirdDetectionGUI(QMainWindow):
 
         self.derived_paths_label = QLabel("")
         self.derived_paths_label.setWordWrap(True)
+        self.derived_paths_label.setMinimumWidth(0)
+        self.derived_paths_label.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Preferred
+        )
         self.derived_paths_label.setStyleSheet("color: #555555; font-size: 9pt;")
         self.derived_paths_label.setVisible(False)
         folder_layout.addRow("自动生成:", self.derived_paths_label)
@@ -2696,7 +2861,7 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.burst_keep_ratio_input.setToolTip(
             "同一连拍组内：保留张数 = 组内总张数×比例，再与「最少保留」取较大值、不超过组大小。"
-            "快速模式也按全组总张数计算；候选约抽全组一半后再按此比例精选。"
+            "快速模式也按全组总张数计算；先按抽样比例抽候选再精选。"
         )
         process_layout.addRow("连拍保留比例:", self.burst_keep_ratio_input)
         
@@ -2743,12 +2908,27 @@ class BirdDetectionGUI(QMainWindow):
         self.use_bird_detection_checkbox = QCheckBox("启用鸟体检测")
         self.use_bird_detection_checkbox.setChecked(self.config['use_bird_detection'])
         self.use_bird_detection_checkbox.setToolTip(
-            "连拍评分用鸟体框。按 1280 推理；仅当长边大于 5000 时再对画面中心检一次。"
+            "连拍评分用鸟体框。普通：仅全图 1280 推理。"
+            "精细：全图之外，长边大于 5000 时再对画面中心检一次。"
         )
         self.use_bird_detection_checkbox.toggled.connect(
             self._on_bird_detection_toggled
         )
-        process_layout.addRow("", self.use_bird_detection_checkbox)
+        self.bird_detect_mode_combo = QComboBox()
+        self.bird_detect_mode_combo.addItem("普通", "normal")
+        self.bird_detect_mode_combo.addItem("精细", "fine")
+        _mode = normalize_bird_detect_mode(
+            self.config.get("bird_detect_mode", "normal")
+        )
+        self.bird_detect_mode_combo.setCurrentIndex(1 if _mode == "fine" else 0)
+        self.bird_detect_mode_combo.setToolTip(
+            "普通：只做全图检测。精细：现有全图 + 中心复检（长边>5000）。"
+        )
+        bird_row = QHBoxLayout()
+        bird_row.addWidget(self.use_bird_detection_checkbox)
+        bird_row.addWidget(self.bird_detect_mode_combo)
+        bird_row.addStretch(1)
+        process_layout.addRow("", bird_row)
 
         # 启用鸟眼检测（依赖鸟体检测）
         self.use_eye_detection_checkbox = QCheckBox("启用鸟眼检测（需先启用鸟体检测）")
@@ -2761,10 +2941,32 @@ class BirdDetectionGUI(QMainWindow):
         self.use_fast_mode_checkbox = QCheckBox("使用快速模式")
         self.use_fast_mode_checkbox.setChecked(self.config['use_fast_mode'])
         self.use_fast_mode_checkbox.setToolTip(
-            "只对约一半照片跑鸟检/对焦以加速（等步长抽取，不少于保留数）。"
+            "只对抽样比例对应的照片跑鸟检/对焦以加速（等步长抽取，不少于保留数）。"
             "保留比例仍相对本组总张数（例如 0.1 即约 10%）。"
         )
-        process_layout.addRow("", self.use_fast_mode_checkbox)
+        self.fast_mode_sample_ratio_input = QDoubleSpinBox()
+        self.fast_mode_sample_ratio_input.setRange(0.0, 1.0)
+        self.fast_mode_sample_ratio_input.setSingleStep(0.05)
+        self.fast_mode_sample_ratio_input.setDecimals(2)
+        self.fast_mode_sample_ratio_input.setValue(
+            float(self.config.get("fast_mode_sample_ratio", 0.5))
+        )
+        self.fast_mode_sample_ratio_input.setToolTip(
+            "快速模式抽样比例，0–1。例如 0.5 约抽一半跑鸟检/对焦，0.25 约四分之一，"
+            "1 则全组都跑。不少于最终保留张数。"
+        )
+        fast_row = QHBoxLayout()
+        fast_row.addWidget(self.use_fast_mode_checkbox)
+        fast_row.addWidget(QLabel("抽样比例:"))
+        fast_row.addWidget(self.fast_mode_sample_ratio_input)
+        fast_row.addStretch(1)
+        process_layout.addRow("", fast_row)
+        self.use_fast_mode_checkbox.toggled.connect(
+            self.fast_mode_sample_ratio_input.setEnabled
+        )
+        self.fast_mode_sample_ratio_input.setEnabled(
+            self.use_fast_mode_checkbox.isChecked()
+        )
         
         process_group.setLayout(process_layout)
         layout.addWidget(process_card)
@@ -2854,6 +3056,20 @@ class BirdDetectionGUI(QMainWindow):
             self._on_local_species_model_changed
         )
         species_layout.addRow("本地物种模型:", self.local_species_model_combo)
+
+        self.dxo_pureraw_checkbox = QCheckBox(
+            "识别前用 DxO PureRAW 降噪（Screened 中 RAW）"
+        )
+        self.dxo_pureraw_checkbox.setChecked(
+            bool(self.config.get("enable_dxo_pureraw", False))
+        )
+        self.dxo_pureraw_checkbox.setToolTip(
+            "连拍筛选后，调用本机 DxO PureRAW（Lightroom 插件接口）批量降噪：\n"
+            "DeepPRIME 处理按 PureRAW 界面「上次使用的预设」执行，建议预设为\n"
+            "DeepPRIME XD3 + 输出 JPEG（质量 100）。识别与裁切改用 DxO 输出，\n"
+            "不再对 RAW 做 demosaic。未安装 PureRAW 时自动跳过并回退 RAW。"
+        )
+        species_layout.addRow("", self.dxo_pureraw_checkbox)
 
         self.species_geo_mode_combo = QComboBox()
         self.species_geo_mode_combo.addItem(
@@ -3177,6 +3393,26 @@ class BirdDetectionGUI(QMainWindow):
             self.wm_random_per_species_checkbox.isChecked()
         )
 
+        self.wm_collage_combo = QComboBox()
+        self.wm_collage_combo.addItem("不拼图", "off")
+        self.wm_collage_combo.addItem("2连 · 左右", "2h")
+        self.wm_collage_combo.addItem("2连 · 上下", "2v")
+        self.wm_collage_combo.addItem("3连 · 左右", "3h")
+        self.wm_collage_combo.addItem("3连 · 上下", "3v")
+        self.wm_collage_combo.addItem("4连（2×2）", "4")
+        self.wm_collage_combo.addItem("9连（3×3）", "9")
+        _wm_col = str(self.config.get("wm_collage_mode", "off") or "off")
+        _wm_coli = self.wm_collage_combo.findData(_wm_col)
+        self.wm_collage_combo.setCurrentIndex(_wm_coli if _wm_coli >= 0 else 0)
+        self.wm_collage_combo.setToolTip(
+            "先按物种目录拼图，再在整张拼图上加水印。\n"
+            "2/3 连可选左右或上下；4 连 2×2；9 连 3×3；格间无白线。\n"
+            "同组优先竖配竖、横配横且长宽比接近，减少裁切鸟体。\n"
+            "张数不够格子数时循环补齐；多于格子数时分多张输出。\n"
+            "文件名含独立 token all 的合集图不参与拼图。"
+        )
+        wm_layout.addRow("拼图:", self.wm_collage_combo)
+
         # 自动曝光（水印前；基于鸟体测光，避免剪影）
         self.wm_ai_exposure_checkbox = QCheckBox("水印前自动曝光")
         self.wm_ai_exposure_checkbox.setChecked(
@@ -3340,7 +3576,7 @@ class BirdDetectionGUI(QMainWindow):
         track_layout.setContentsMargins(12, 10, 12, 12)
 
         track_hint = QLabel(
-            "从分类归档生成行迹与物种分布 PNG（2K 竖屏，需高德 Key）。"
+            "从分类归档生成行迹与物种分布 PNG（4K 竖屏 2160×3840，需高德 Key）。"
             "图内标题地点优先使用「水印生成 → 人工地点」。"
         )
         track_hint.setWordWrap(True)
@@ -3362,7 +3598,8 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.track_map_use_exif_checkbox.setToolTip(
             "不使用 GPX 时：从鸟图 EXIF 读取 GPS 绘制标记。\n"
-            "使用 GPX 时：与 GPX 插值位置接近时优先采用 EXIF GPS。"
+            "使用 GPX 时：照片时间不在 GPX 范围内或无拍摄时间的照片，\n"
+            "若带有 EXIF GPS 且落在地图范围内，则一并补充标注。"
         )
         track_layout.addRow("", self.track_map_use_exif_checkbox)
         self._on_track_map_use_gpx_changed(
@@ -3395,6 +3632,10 @@ class BirdDetectionGUI(QMainWindow):
 
         self.track_map_photo_path_label = QLabel("")
         self.track_map_photo_path_label.setWordWrap(True)
+        self.track_map_photo_path_label.setMinimumWidth(0)
+        self.track_map_photo_path_label.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Preferred
+        )
         self.track_map_photo_path_label.setStyleSheet("color: #555; font-size: 9pt;")
         track_layout.addRow("当前使用:", self.track_map_photo_path_label)
 
@@ -3406,8 +3647,9 @@ class BirdDetectionGUI(QMainWindow):
         )
 
         self.track_map_radius_input = QDoubleSpinBox()
-        self.track_map_radius_input.setRange(0.1, 100.0)
-        self.track_map_radius_input.setDecimals(1)
+        self.track_map_radius_input.setRange(0.01, 100.0)
+        self.track_map_radius_input.setDecimals(2)
+        self.track_map_radius_input.setSingleStep(0.1)
         self.track_map_radius_input.setSuffix(" km")
         self.track_map_radius_input.setValue(
             float(self.config.get("track_map_radius_km", 1.0))
@@ -3450,6 +3692,17 @@ class BirdDetectionGUI(QMainWindow):
             self.config.get("track_map_include_elevation", True)
         )
         track_layout.addRow("", self.track_map_elevation_checkbox)
+
+        self.track_map_adaptive_rotate_checkbox = QCheckBox("底图自适应旋转")
+        self.track_map_adaptive_rotate_checkbox.setChecked(
+            bool(self.config.get("track_map_adaptive_rotate", False))
+        )
+        self.track_map_adaptive_rotate_checkbox.setToolTip(
+            "勾选后，当轨迹东西跨度大于南北时，把底图逆时针转 90°（东朝上、北在左），"
+            "让轨迹沿竖屏长边展开，减少上下大片空白。\n"
+            "高德瓦片本身没有指北针；标题对侧会画方向十字（未旋转时北朝上）。"
+        )
+        track_layout.addRow("", self.track_map_adaptive_rotate_checkbox)
 
         self.track_map_show_places_checkbox = QCheckBox("显示关键地点")
         self.track_map_show_places_checkbox.setChecked(
@@ -3706,6 +3959,8 @@ class BirdDetectionGUI(QMainWindow):
             "💡 提示：设置「输出根目录」后每次只需换「图片文件夹」；"
             "或留空根目录并手动指定输出与分类路径。"
         )
+        info_label.setWordWrap(True)
+        info_label.setMinimumWidth(0)
         info_label.setStyleSheet("color: #666666; font-size: 10pt; margin-top: 4px;")
         layout.addWidget(info_label)
         
@@ -3716,8 +3971,18 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(watermark_label)
         
         panel.setLayout(layout)
+        self._harden_left_panel_layout(panel)
         scroll.setWidget(panel)
         return scroll
+
+    def _harden_left_panel_layout(self, panel: QWidget) -> None:
+        """下拉框不按最长项撑宽；路径说明可换行。不锁左栏视口宽度。"""
+        for w in panel.findChildren(QComboBox):
+            w.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+            w.setMinimumContentsLength(8)
+        for w in panel.findChildren(QLabel):
+            if w.wordWrap():
+                w.setMinimumWidth(0)
     
     def _create_card(self, title: str) -> tuple:
         """创建卡片式分组框"""
@@ -3888,16 +4153,11 @@ class BirdDetectionGUI(QMainWindow):
         """刷新轨迹图鸟图来源下拉项文案（含实际路径）与「当前使用」提示。"""
         if not hasattr(self, "track_map_source_combo"):
             return
-        paths = self._gui_paths_snapshot()
-        cls_p = paths.get("crop_output_folder") or ""
-        scr_p = paths.get("screened_images") or ""
         cur = self.track_map_source_combo.currentData()
         self.track_map_source_combo.blockSignals(True)
         self.track_map_source_combo.clear()
-        cls_label = f"分类归档 — {cls_p}" if cls_p else "分类归档（物种目录）"
-        scr_label = f"Screened — {scr_p}" if scr_p else "Screened_images 筛选图"
-        self.track_map_source_combo.addItem(cls_label, "classification")
-        self.track_map_source_combo.addItem(scr_label, "screened")
+        self.track_map_source_combo.addItem("分类归档（物种目录）", "classification")
+        self.track_map_source_combo.addItem("Screened_images 筛选图", "screened")
         idx = self.track_map_source_combo.findData(cur or "classification")
         self.track_map_source_combo.setCurrentIndex(idx if idx >= 0 else 0)
         self.track_map_source_combo.blockSignals(False)
@@ -3907,7 +4167,9 @@ class BirdDetectionGUI(QMainWindow):
         if hasattr(self, "track_map_photo_path_label"):
             if effective:
                 status = "（目录存在）" if exists else "（目录不存在或为空路径）"
-                self.track_map_photo_path_label.setText(f"{effective}\n{status}")
+                self.track_map_photo_path_label.setText(
+                    soft_break_long_text(f"{effective}\n{status}")
+                )
             else:
                 self.track_map_photo_path_label.setText(
                     "未解析到路径：请设置输出根目录与图片文件夹，或手动浏览指定鸟图目录。"
@@ -4391,6 +4653,14 @@ class BirdDetectionGUI(QMainWindow):
         exif_pos = written.get("map_pos_exif_gps")
         if exif_pos:
             lines.append(f"地图坐标：{exif_pos} 张使用 EXIF GPS（与 GPX 插值一致时）")
+        fb_drawn = written.get("map_exif_fallback_drawn")
+        if fb_drawn:
+            lines.append(
+                f"补充标注 {fb_drawn} 张：时间不在 GPX 范围或无拍摄时间，使用 EXIF GPS"
+            )
+        fb_out = written.get("exif_fallback_out_of_range")
+        if fb_out and int(fb_out) > 0:
+            lines.append(f"未绘制 {fb_out} 张：EXIF GPS 不在地图范围内")
         drawn_pl = written.get("key_places_drawn")
         if drawn_pl:
             lines.append(f"关键地点：已标注 {drawn_pl} 处")
@@ -4482,6 +4752,7 @@ class BirdDetectionGUI(QMainWindow):
             logo_width_ratio=float(self.config.get("wm_logo_width_ratio", 0.30)),
             show_key_places=self.track_map_show_places_checkbox.isChecked(),
             key_places_text=self.track_map_key_places_input.text().strip(),
+            adaptive_rotate=self.track_map_adaptive_rotate_checkbox.isChecked(),
         )
 
         label = "预览" if preview else "保存"
@@ -4784,15 +5055,7 @@ class BirdDetectionGUI(QMainWindow):
     
     def _create_status_panel(self) -> QWidget:
         """创建状态面板（可滚动，与左侧同高时避免内容被纵向挤压）"""
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll.setStyleSheet(
-            "QScrollArea { border: none; background: transparent; }"
-            "QScrollArea > QWidget > QWidget { background: transparent; }"
-        )
+        scroll = _make_vertical_scroll()
 
         panel = QWidget()
         panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -4947,10 +5210,12 @@ class BirdDetectionGUI(QMainWindow):
             self.derived_paths_label.setVisible(True)
             if not img:
                 self.derived_paths_label.setText(
-                    "已设置输出根目录。请选择「图片文件夹」后，将按该文件夹名自动生成：\n"
-                    "· <根>/screened_<文件夹名>/  （内含 Screened_images/、burst_analysis.json）\n"
-                    "· <根>/classification_<文件夹名>/  （物种归档）\n"
-                    "· <根>/reports/  （连拍与物种 HTML 报告）"
+                    soft_break_long_text(
+                        "已设置输出根目录。请选择「图片文件夹」后，将按该文件夹名自动生成：\n"
+                        "· <根>/screened_<文件夹名>/  （内含 Screened_images/、burst_analysis.json）\n"
+                        "· <根>/classification_<文件夹名>/  （物种归档）\n"
+                        "· <根>/reports/  （连拍与物种 HTML 报告）"
+                    )
                 )
             else:
                 slug = _session_slug_from_image_folder(img)
@@ -4969,7 +5234,9 @@ class BirdDetectionGUI(QMainWindow):
                             3,
                             f"· {os.path.join(o, 'Screened_raw_images')}",
                         )
-                self.derived_paths_label.setText("\n".join(lines))
+                self.derived_paths_label.setText(
+                    soft_break_long_text("\n".join(lines))
+                )
         else:
             self._legacy_paths_container.setVisible(True)
             self.derived_paths_label.setVisible(False)
@@ -5066,6 +5333,9 @@ class BirdDetectionGUI(QMainWindow):
             ai_denoise_strength=self.wm_ai_denoise_slider.value() / 100.0,
             ai_sharpen_strength=self.wm_ai_sharpen_slider.value() / 100.0,
             ai_tile_size=int(self.config.get("wm_ai_tile_size", 512)),
+            collage_mode=normalize_collage_mode(
+                self.wm_collage_combo.currentData()
+            ),
         )
 
     def _resolve_watermark_source_folder(self) -> str:
@@ -5141,6 +5411,9 @@ class BirdDetectionGUI(QMainWindow):
                 )
                 return None
             if d is not None:
+                d.bird_detect_mode = normalize_bird_detect_mode(
+                    self.config.get("bird_detect_mode", "normal")
+                )
                 return d
             print(
                 "[Birdy 动图GUI] 鸟检测器首次加载（仅鸟体 YOLO，无物种/鸟眼，可能卡顿数秒）…",
@@ -5150,6 +5423,9 @@ class BirdDetectionGUI(QMainWindow):
                 self._burst_webp_bird_detector = BirdAndEyeDetector(
                     enable_species=False,
                     enable_eye=False,
+                    bird_detect_mode=normalize_bird_detect_mode(
+                        self.config.get("bird_detect_mode", "normal")
+                    ),
                 )
             except Exception as e:
                 print(f"[Birdy 动图GUI] 鸟检测器加载失败：{e}", flush=True)
@@ -5930,10 +6206,16 @@ class BirdDetectionGUI(QMainWindow):
         self.burst_keep_ratio_input.setEnabled(en)
         self.burst_keep_min_input.setEnabled(en)
         self.use_bird_detection_checkbox.setEnabled(en)
+        self.bird_detect_mode_combo.setEnabled(
+            en and self.use_bird_detection_checkbox.isChecked()
+        )
         self.use_eye_detection_checkbox.setEnabled(
             en and self.use_bird_detection_checkbox.isChecked()
         )
         self.use_fast_mode_checkbox.setEnabled(en)
+        self.fast_mode_sample_ratio_input.setEnabled(
+            en and self.use_fast_mode_checkbox.isChecked()
+        )
 
     def _on_bird_detection_toggled(self, checked: bool):
         """鸟眼检测依赖鸟体检测。"""
@@ -5941,6 +6223,9 @@ class BirdDetectionGUI(QMainWindow):
             checked and self.enable_burst_detection_checkbox.isChecked()
         )
         self.use_eye_detection_checkbox.setEnabled(can_eye)
+        self.bird_detect_mode_combo.setEnabled(
+            checked and self.enable_burst_detection_checkbox.isChecked()
+        )
         if not can_eye:
             self.use_eye_detection_checkbox.setChecked(False)
 
@@ -6246,11 +6531,17 @@ class BirdDetectionGUI(QMainWindow):
             self.enable_burst_detection_checkbox.isChecked()
         )
         self.config["use_bird_detection"] = self.use_bird_detection_checkbox.isChecked()
+        self.config["bird_detect_mode"] = normalize_bird_detect_mode(
+            self.bird_detect_mode_combo.currentData()
+        )
         self.config["use_eye_detection"] = (
             self.use_eye_detection_checkbox.isChecked()
             and self.config["use_bird_detection"]
         )
         self.config["use_fast_mode"] = self.use_fast_mode_checkbox.isChecked()
+        self.config["fast_mode_sample_ratio"] = float(
+            self.fast_mode_sample_ratio_input.value()
+        )
         self.config["enable_species_detection"] = (
             self.enable_species_checkbox.isChecked()
         )
@@ -6301,6 +6592,9 @@ class BirdDetectionGUI(QMainWindow):
         self.config["wm_random_per_species_count"] = int(
             self.wm_random_per_species_count.value()
         )
+        self.config["wm_collage_mode"] = normalize_collage_mode(
+            self.wm_collage_combo.currentData()
+        )
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
         )
@@ -6341,6 +6635,10 @@ class BirdDetectionGUI(QMainWindow):
         self.config["min_species_accept_confidence"] = float(
             self.min_species_conf_input.value()
         )
+        if hasattr(self, "dxo_pureraw_checkbox"):
+            self.config["enable_dxo_pureraw"] = (
+                self.dxo_pureraw_checkbox.isChecked()
+            )
         _geo = self.species_geo_mode_combo.currentData()
         if _geo:
             self.config["species_geo_mode"] = normalize_species_geo_mode(_geo)
@@ -6398,6 +6696,9 @@ class BirdDetectionGUI(QMainWindow):
         self.config["track_map_include_elevation"] = (
             self.track_map_elevation_checkbox.isChecked()
         )
+        self.config["track_map_adaptive_rotate"] = (
+            self.track_map_adaptive_rotate_checkbox.isChecked()
+        )
         _bm = self.track_map_basemap_combo.currentData()
         if _bm:
             self.config["track_map_basemap_style"] = _bm
@@ -6434,6 +6735,11 @@ class BirdDetectionGUI(QMainWindow):
                         self.config['burst_keep_min'] = saved_config['keep_top_n']
                     if 'burst_keep_ratio' not in saved_config:
                         self.config['burst_keep_ratio'] = 0.2
+                    if 'fast_mode_sample_ratio' not in saved_config:
+                        self.config['fast_mode_sample_ratio'] = 0.5
+                    self.config['bird_detect_mode'] = normalize_bird_detect_mode(
+                        saved_config.get('bird_detect_mode', 'normal')
+                    )
                     if 'use_local_model' not in saved_config:
                         self.config['use_local_model'] = True
                     if 'local_species_model' not in saved_config:
@@ -6499,8 +6805,17 @@ class BirdDetectionGUI(QMainWindow):
             self.enable_burst_detection_checkbox.isChecked()
         )
         self.use_bird_detection_checkbox.setChecked(self.config.get('use_bird_detection', True))
+        _bdm = normalize_bird_detect_mode(self.config.get('bird_detect_mode', 'normal'))
+        self.bird_detect_mode_combo.setCurrentIndex(1 if _bdm == "fine" else 0)
         self.use_eye_detection_checkbox.setChecked(self.config.get('use_eye_detection', False))
         self.use_fast_mode_checkbox.setChecked(self.config.get('use_fast_mode', True))
+        self.fast_mode_sample_ratio_input.setValue(
+            float(self.config.get("fast_mode_sample_ratio", 0.5))
+        )
+        self.fast_mode_sample_ratio_input.setEnabled(
+            self.enable_burst_detection_checkbox.isChecked()
+            and self.use_fast_mode_checkbox.isChecked()
+        )
         self._on_bird_detection_toggled(self.use_bird_detection_checkbox.isChecked())
         self.enable_species_checkbox.setChecked(
             self.config.get('enable_species_detection', True)
@@ -6566,6 +6881,9 @@ class BirdDetectionGUI(QMainWindow):
         self.wm_random_per_species_count.setEnabled(
             self.wm_random_per_species_checkbox.isChecked()
         )
+        _wm_col = normalize_collage_mode(self.config.get("wm_collage_mode", "off"))
+        _wm_coli = self.wm_collage_combo.findData(_wm_col)
+        self.wm_collage_combo.setCurrentIndex(_wm_coli if _wm_coli >= 0 else 0)
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get('wm_logo_width_ratio', 0.30))
         )
@@ -6626,6 +6944,10 @@ class BirdDetectionGUI(QMainWindow):
         self.min_species_conf_input.setValue(
             float(self.config.get('min_species_accept_confidence', 0.5))
         )
+        if hasattr(self, "dxo_pureraw_checkbox"):
+            self.dxo_pureraw_checkbox.setChecked(
+                bool(self.config.get("enable_dxo_pureraw", False))
+            )
         _geo = normalize_species_geo_mode(
             self.config.get('species_geo_mode', SPECIES_GEO_MODE_AUTO)
         )
@@ -6695,6 +7017,9 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.track_map_elevation_checkbox.setChecked(
             self.config.get("track_map_include_elevation", True)
+        )
+        self.track_map_adaptive_rotate_checkbox.setChecked(
+            bool(self.config.get("track_map_adaptive_rotate", False))
         )
         try:
             from gpx_track.amap_basemap import normalize_basemap_style as _norm_bm

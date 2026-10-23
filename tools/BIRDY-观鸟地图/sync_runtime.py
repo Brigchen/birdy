@@ -89,6 +89,11 @@ def main() -> int:
         if src.is_file():
             _copy_file(src, assets / name)
 
+    # 分类名录（目/科/种排序用）；缺失时运行库自动退化为按目录名分组
+    taxo = TOOL_DIR.parent.parent / "data" / "species" / "bird_classification.json"
+    if taxo.is_file():
+        _copy_file(taxo, TOOL_DIR / "data" / "species" / "bird_classification.json")
+
     print(f"已同步到 {RUNTIME}")
     print("  gpx_track/, record_submit/exif_read.py")
     if any((assets / n).is_file() for n in ("birdy_logo_128.png", "logo.png")):

@@ -245,13 +245,7 @@ def read_raw_bgr_via_dng(
 
     try:
         with rawpy.imread(dng_path) as raw:
-            rgb = raw.postprocess(
-                half_size=half_size,
-                use_camera_wb=True,
-                no_auto_bright=True,
-                output_bps=8,
-            )
-            return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            return _render_rawpy_bgr(raw, half_size=half_size)
     except Exception as e:
         print(f"[image_io] DNG 读取失败 {Path(raw_path).name}: {e}", flush=True)
         return None
@@ -331,6 +325,46 @@ def _extract_embedded_jpeg(path: str) -> Optional[np.ndarray]:
     return best_img
 
 
+def _tone_demosaic_bgr(bgr: np.ndarray) -> np.ndarray:
+    """全尺寸 demosaic 后再提亮偏暗画面，并略加饱和。
+
+    rawpy 默认关掉自动亮度时，DNG/RAW 会比相机 JPEG 暗、灰。
+    这里在 sRGB 8bit 上做轻度 L 通道 gamma 和色度放大，不做降噪。
+    """
+    if bgr is None or bgr.size == 0:
+        return bgr
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+    lightness, a_ch, b_ch = cv2.split(lab)
+    lf = lightness.astype(np.float32) / 255.0
+    mean_l = float(lf.mean())
+    if mean_l < 0.45:
+        gamma = 0.82 if mean_l < 0.32 else 0.90
+        lf = np.clip(lf**gamma, 0.0, 1.0)
+    lightness = np.clip(lf * 255.0, 0, 255).astype(np.uint8)
+    sat = 1.18
+    a_ch = np.clip((a_ch.astype(np.float32) - 128.0) * sat + 128.0, 0, 255).astype(
+        np.uint8
+    )
+    b_ch = np.clip((b_ch.astype(np.float32) - 128.0) * sat + 128.0, 0, 255).astype(
+        np.uint8
+    )
+    return cv2.cvtColor(cv2.merge((lightness, a_ch, b_ch)), cv2.COLOR_LAB2BGR)
+
+
+def _render_rawpy_bgr(raw, *, half_size: bool) -> np.ndarray:
+    """相机白平衡 + 自动亮度，输出 sRGB 8bit，再做轻度影调。"""
+    rgb = raw.postprocess(
+        half_size=half_size,
+        use_camera_wb=True,
+        no_auto_bright=False,
+        auto_bright_thr=0.01,
+        output_bps=8,
+        output_color=rawpy.ColorSpace.sRGB,
+        gamma=(2.222, 4.5),
+    )
+    return _tone_demosaic_bgr(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+
+
 def read_raw_bgr(path: str, *, half_size: bool = True) -> np.ndarray:
     """将 RAW 解码为 BGR uint8（优先 JPEG 嵌入缩略图，否则 demosaic）。
 
@@ -356,14 +390,7 @@ def read_raw_bgr(path: str, *, half_size: bool = True) -> np.ndarray:
                         return im
             except Exception as _e:
                 print(f"[image_io] extract_thumb 失败 {Path(path).name}: {_e}", flush=True)
-            # 缩略图不可用 → 走 demosaic
-            rgb = raw.postprocess(
-                half_size=half_size,
-                use_camera_wb=True,
-                no_auto_bright=True,
-                output_bps=8,
-            )
-            return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            return _render_rawpy_bgr(raw, half_size=half_size)
     except Exception as e:
         rawpy_error = e
 
@@ -387,7 +414,8 @@ def read_raw_bgr_full(path: str, *, half_size: bool = False) -> np.ndarray:
     做 demosaic，获得完整画质的图像。适用于物种检测、裁剪、水印等需要
     全画质的场景。
 
-    rawpy 失败时 fallback 到 read_raw_bgr（含嵌入式 JPEG fallback）。
+    rawpy 失败时先经临时 DNG 缓存做全 demosaic（不写入 Screened），
+    仍失败才退回嵌入式 JPEG。
 
     Args:
         path: RAW 文件路径
@@ -398,20 +426,20 @@ def read_raw_bgr_full(path: str, *, half_size: bool = False) -> np.ndarray:
 
     try:
         with rawpy.imread(path) as raw:
-            rgb = raw.postprocess(
-                half_size=half_size,
-                use_camera_wb=True,
-                no_auto_bright=True,
-                output_bps=8,
-            )
-            return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            return _render_rawpy_bgr(raw, half_size=half_size)
     except Exception as e:
         print(
             f"[image_io] read_raw_bgr_full demosaic 失败 {Path(path).name}: {e}，"
-            f"fallback 到 read_raw_bgr",
+            f"尝试临时 DNG 全尺寸解码",
             flush=True,
         )
-        # demosaic 失败 → fallback 到 read_raw_bgr（含嵌入式 JPEG fallback）
+        via = read_raw_bgr_via_dng(path, half_size=half_size)
+        if via is not None:
+            return via
+        print(
+            f"[image_io] 临时 DNG 不可用 {Path(path).name}，退回嵌入式 JPEG",
+            flush=True,
+        )
         return read_raw_bgr(path, half_size=half_size)
 
 
@@ -434,7 +462,10 @@ def open_pil_rgb(path: str, *, raw_half_size: bool = False) -> Optional[Image.Im
     """
     if is_raw_path(path):
         try:
-            bgr = read_raw_bgr(path, half_size=raw_half_size)
+            if raw_half_size:
+                bgr = read_raw_bgr(path, half_size=True)
+            else:
+                bgr = read_raw_bgr_full(path, half_size=False)
             rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
             return Image.fromarray(rgb)
         except Exception:

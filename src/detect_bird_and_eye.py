@@ -2109,6 +2109,14 @@ def should_run_center_pass(
     return max(int(width), int(height)) > int(min_long_side)
 
 
+def normalize_bird_detect_mode(value: Optional[str]) -> str:
+    """normal：仅全图；fine：全图 + 长边>5000 时中心复检。"""
+    raw = str(value or "normal").strip().lower()
+    if raw in ("fine", "detail", "精细", "精细模式"):
+        return "fine"
+    return "normal"
+
+
 def _clip_bbox_to_image(
     bbox: List[int], width: int, height: int
 ) -> Optional[List[int]]:
@@ -2246,14 +2254,15 @@ def run_yolo_birds_full_and_center(
     center_ratio: float = BIRD_YOLO_CENTER_RATIO,
     nms_iou: float = BIRD_YOLO_NMS_IOU,
     min_long_side: int = BIRD_YOLO_CENTER_MIN_LONG_SIDE,
+    center_pass: bool = True,
 ) -> List[Dict]:
-    """整图 imgsz 推理；大图再对中心区域复检并 NMS 合并，偏向召回。"""
+    """整图 imgsz 推理。center_pass 且长边 >5000 时再对中心区域复检并 NMS 合并。"""
     if image is None or getattr(image, "size", 0) == 0:
         return []
     h, w = image.shape[:2]
     results = yolo_predict_with_imgsz(model, image, conf, imgsz)
     birds = extract_yolo_detections(results, image_size=(w, h))
-    if not should_run_center_pass(w, h, min_long_side):
+    if not center_pass or not should_run_center_pass(w, h, min_long_side):
         return birds
     x0, y0, cw, ch = center_crop_origin_size(w, h, center_ratio)
     crop = image[y0 : y0 + ch, x0 : x0 + cw]
@@ -2298,6 +2307,7 @@ class BirdAndEyeDetector:
         doubao_config: Optional[Dict] = None,
         use_local_model: bool = True,
         min_species_accept_confidence: Optional[float] = None,
+        bird_detect_mode: str = "normal",
     ):
         """
         初始化多阶段鸟类检测器
@@ -2322,6 +2332,7 @@ class BirdAndEyeDetector:
                 豆包：地理规则 + 名单外>0.75。本地：名单外>0.8；top10 无地理名单命中且顶一<0.8 则未知。
         """
         self.bird_conf = bird_conf
+        self.bird_detect_mode = normalize_bird_detect_mode(bird_detect_mode)
         self.eye_conf = eye_conf
         self.enable_species = enable_species
         self.enable_eye = enable_eye
@@ -2452,13 +2463,13 @@ class BirdAndEyeDetector:
 
     def detect_birds(self, image: np.ndarray) -> List[Dict]:
         """
-        检测图片中的鸟（imgsz=1280；长边 >5000 再中心 50% 复检后合并）。
-
-        Returns:
-            鸟的位置列表，每个元素包含 bbox、conf；seg 模型时含 mask_xy。
+        检测图片中的鸟。普通模式仅全图；精细模式在长边 >5000 时再做中心复检。
         """
         return run_yolo_birds_full_and_center(
-            self.bird_model, image, float(self.bird_conf)
+            self.bird_model,
+            image,
+            float(self.bird_conf),
+            center_pass=self.bird_detect_mode == "fine",
         )
 
     def detect_eyes_in_crop(

@@ -18,6 +18,7 @@ from gpx_track.amap_basemap import (  # noqa: E402
     BASEMAP_STYLE_CHOICES,
     _apply_vector_theme_look,
     _compose_tile_layers,
+    _nearest_ok_tile,
     is_dark_basemap_style,
     is_satellite_basemap_style,
     normalize_basemap_style,
@@ -72,3 +73,11 @@ def test_compose_road_overlay():
     out = _compose_tile_layers([sat, road])
     assert out.getpixel((0, 0))[:3] == (40, 80, 40)
     assert out.getpixel((8, 8))[0] > 150
+
+
+def test_missing_tile_copies_nearest_ok():
+    ok = Image.new("RGBA", (4, 4), (10, 20, 30, 255))
+    grid = {(0, 0): ok, (1, 0): None, (2, 0): None}
+    filled = _nearest_ok_tile(grid, 2, 0)
+    assert filled is ok
+    assert _nearest_ok_tile({(0, 0): None}, 0, 0) is None

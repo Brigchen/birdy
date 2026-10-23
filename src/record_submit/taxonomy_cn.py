@@ -6,16 +6,80 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from .ebird_taxonomy import resolve_ebird_species
 
 _EBIRD_ALIAS_INDEX: Optional[Dict[str, str]] = None
+_TAXO_TABLES: Optional[
+    Tuple[Dict[str, int], Dict[str, int], Dict[str, Tuple[str, str, int]]]
+] = None
 
 
 def default_species_csv_path(project_root: Optional[Path] = None) -> Path:
     root = project_root or Path(__file__).resolve().parent.parent.parent
     return root / "data" / "species" / "bird_species_list.csv"
+
+
+def default_bird_classification_path(project_root: Optional[Path] = None) -> Path:
+    root = project_root or Path(__file__).resolve().parent.parent.parent
+    return root / "data" / "species" / "bird_classification.json"
+
+
+def _load_taxo_tables() -> Tuple[
+    Dict[str, int], Dict[str, int], Dict[str, Tuple[str, str, int]]
+]:
+    """目→序号、科→序号、种→(目, 科, 名录序号)。"""
+    global _TAXO_TABLES
+    if _TAXO_TABLES is not None:
+        return _TAXO_TABLES
+    orders: Dict[str, int] = {}
+    families: Dict[str, int] = {}
+    species: Dict[str, Tuple[str, str, int]] = {}
+    path = default_bird_classification_path()
+    try:
+        if path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                for i, (name_cn, info) in enumerate(data.items()):
+                    if not isinstance(info, dict):
+                        continue
+                    o = str(info.get("order_cn") or "")
+                    f = str(info.get("family_cn") or "")
+                    species[str(name_cn)] = (o, f, i)
+                    if o:
+                        orders.setdefault(o, i)
+                    if f:
+                        families.setdefault(f, i)
+    except Exception:
+        orders, families, species = {}, {}, {}
+    _TAXO_TABLES = (orders, families, species)
+    return _TAXO_TABLES
+
+
+def species_cn_taxo_sort_key(species_cn: str) -> Tuple:
+    """分类学排序键：目 → 科 → 种（名录序号）。名录外的种排在后面。"""
+    orders, families, species = _load_taxo_tables()
+    name = (species_cn or "").strip()
+    meta = species.get(name)
+    order_name = meta[0] if meta else ""
+    family_name = meta[1] if meta else ""
+    o_rank = orders.get(order_name)
+    f_rank = families.get(family_name)
+    return (
+        (o_rank if o_rank is not None else 10**6, order_name),
+        (f_rank if f_rank is not None else 10**6, family_name),
+        (meta[2] if meta is not None else 10**6, name),
+    )
+
+
+def iter_species_counts_taxo(
+    species_counts: Dict[str, int],
+) -> List[Tuple[str, int]]:
+    """按目→科→种顺序给出 (中文名, 只数)。"""
+    return sorted(
+        species_counts.items(), key=lambda kv: species_cn_taxo_sort_key(kv[0])
+    )
 
 
 def default_species_aliases_path(project_root: Optional[Path] = None) -> Path:

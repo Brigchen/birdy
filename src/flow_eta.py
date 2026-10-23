@@ -55,6 +55,14 @@ def burst_sec_per_image(config: Dict[str, Any]) -> float:
         default = SEC_BURST_NO_BIRD
     else:
         default = SEC_BURST_FAST_BIRD if fast else SEC_BURST_FULL_BIRD
+        if fast:
+            r = float(config.get("fast_mode_sample_ratio", 0.5) or 0.5)
+            r = max(0.0, min(1.0, r))
+            default = _clip(
+                SEC_BURST_FAST_BIRD * (r / 0.5 if r > 0 else 0.15),
+                RATE_CLIP["burst"][0],
+                SEC_BURST_FULL_BIRD,
+            )
     prev = learned.get(key)
     try:
         if prev is not None and float(prev) > 0:

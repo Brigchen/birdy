@@ -83,6 +83,13 @@ def test_large_image_runs_full_then_center(monkeypatch):
     assert 0 <= y1 < y2 <= 4000
 
 
+def test_normal_mode_skips_center_on_large_image():
+    model = _FakeYolo()
+    img = np.zeros((4000, 6000, 3), dtype=np.uint8)
+    run_yolo_birds_full_and_center(model, img, conf=0.25, center_pass=False)
+    assert model.shapes == [(4000, 6000)]
+
+
 def test_small_image_skips_center_pass():
     model = _FakeYolo()
     img = np.zeros((600, 800, 3), dtype=np.uint8)

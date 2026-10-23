@@ -39,6 +39,15 @@ def test_write_two_columns_only():
         data = {r[0]: int(r[1]) for r in rows}
         assert data == {"白鹭": 3, "麻雀": 1}
 
+        write_china_bird_record_xls(
+            str(out),
+            {"麻雀": 1, "反嘴鹬": 2, "苍鹭": 3},
+            template_path=str(tpl),
+        )
+        sh = xlrd.open_workbook(str(out)).sheet_by_index(0)
+        names = [sh.cell_value(r, 0) for r in range(1, sh.nrows)]
+        assert names == ["苍鹭", "反嘴鹬", "麻雀"]
+
 
 if __name__ == "__main__":
     test_write_two_columns_only()

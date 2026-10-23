@@ -400,10 +400,25 @@ def compute_burst_keep_count(n: int, ratio: float, min_keep: int) -> int:
     return min(n, max(mk, by_ratio))
 
 
-def compute_fast_sample_count(n: int, keep_count: int) -> int:
+def normalize_fast_sample_ratio(ratio: Optional[float], default: float = 0.5) -> float:
+    """快速模式抽样比例，限制在 [0, 1]；非法值回退 default（默认 0.5）。"""
+    try:
+        if ratio is None:
+            r = float(default)
+        else:
+            r = float(ratio)
+    except (TypeError, ValueError):
+        r = float(default)
+    return max(0.0, min(1.0, r))
+
+
+def compute_fast_sample_count(
+    n: int, keep_count: int, sample_ratio: float = 0.5
+) -> int:
     """
     快速模式候选张数。keep_count 已按全组 n×保留比例算出。
-    候选至少为全组一半（旧版约 1/3），且不少于保留数，不超过 n。
+    sample_ratio（0–1）为抽去跑鸟检/对焦的比例，默认 0.5。
+    候选不少于保留数、不超过 n；比例为 0 时只抽保留所需张数。
     保留张数仍按全组比例计算，不叠在候选子集上。
     """
     if n <= 0:
@@ -411,8 +426,9 @@ def compute_fast_sample_count(n: int, keep_count: int) -> int:
     if n <= 3:
         return n
     k = max(1, min(int(keep_count), n))
-    half = max(1, (n + 1) // 2)
-    return min(n, max(half, k, 3))
+    r = normalize_fast_sample_ratio(sample_ratio)
+    by_ratio = int(n * r + 0.5)
+    return min(n, max(k, by_ratio, 1))
 
 
 def evenly_spaced_indices(n: int, sample_count: int) -> Set[int]:
@@ -707,7 +723,12 @@ def _attach_eyes_to_birds(img_info: ImageInfo, eye_model, conf: Optional[float] 
         print(f"      鸟眼检测失败: {e}")
 
 
-def _detect_birds_yolo(img_info: ImageInfo, model, conf: Optional[float] = None) -> None:
+def _detect_birds_yolo(
+    img_info: ImageInfo,
+    model,
+    conf: Optional[float] = None,
+    center_pass: bool = False,
+) -> None:
     """在 img_info 上写入 birds / bird_area（COCO class 14 = bird）；seg 模型可带 mask_xy。"""
     if conf is None:
         try:
@@ -724,7 +745,9 @@ def _detect_birds_yolo(img_info: ImageInfo, model, conf: Optional[float] = None)
             return
         from detect_bird_and_eye import run_yolo_birds_full_and_center
 
-        dets = run_yolo_birds_full_and_center(model, img_bgr, conf)
+        dets = run_yolo_birds_full_and_center(
+            model, img_bgr, conf, center_pass=center_pass
+        )
         coco_birds = [d for d in dets if int(d.get("class", -1)) == 14]
         use = coco_birds if coco_birds else dets
         for det in use:
@@ -754,6 +777,8 @@ def evaluate_focus_for_group(
     use_eye_detection: bool = False,
     eye_model=None,
     fast_mode: bool = False,
+    fast_sample_ratio: float = 0.5,
+    bird_center_pass: bool = False,
     min_bird_area: int = MIN_BIRD_AREA,
     keep_top_n: int = 0,
 ) -> BurstGroup:
@@ -761,8 +786,8 @@ def evaluate_focus_for_group(
     评估连拍组对焦。启用鸟检时：先检鸟；对焦在最大鸟体框 ROI 上按 FOCUS_METRIC_MODE 计分；
     无有效鸟体则对焦记 0（后续筛选一票否决）。
 
-    快速模式：等步长抽约全组一半作候选（不少于保留数），仅对候选集跑 YOLO + 对焦。
-    非候选集图 focus_score=0、bird_area=0，后续 select_best_images 自动过滤。
+    快速模式：按 fast_sample_ratio（0–1，默认 0.5）等步长抽候选（不少于保留数），
+    仅对候选集跑 YOLO + 对焦。非候选集图 focus_score=0、bird_area=0，后续过滤。
     保留张数仍按本组总张数×比例计算，不叠在候选子集上。
     """
     print(f"\n  评估连拍组 {group.group_id}，共 {len(group.images)} 张图片")
@@ -780,16 +805,17 @@ def evaluate_focus_for_group(
 
     n = len(group.images)
 
-    # ---- 快速模式：等步长抽约全组一半作候选 ----
+    # ---- 快速模式：按抽样比例等步长抽候选 ----
     fast_sample = fast_mode and n > 3
     sample_indices: Optional[Set[int]] = None
+    sample_ratio = normalize_fast_sample_ratio(fast_sample_ratio)
     if fast_sample:
         k = max(1, int(keep_top_n)) if keep_top_n else 1
-        sample_count = compute_fast_sample_count(n, k)
+        sample_count = compute_fast_sample_count(n, k, sample_ratio)
         sample_indices = evenly_spaced_indices(n, sample_count)
         print(
             f"    快速模式：全组 {n} 张，保留 {min(k, n)} 张（按全组比例），"
-            f"等步长抽约一半（{len(sample_indices)} 张）做候选"
+            f"等步长抽 {sample_ratio:.2f}（{len(sample_indices)} 张）做候选"
         )
 
     # ---- 鸟检（快速模式仅候选集；否则全量）----
@@ -798,7 +824,7 @@ def evaluate_focus_for_group(
             if sample_indices is not None and i not in sample_indices:
                 continue  # 快速模式：跳过非候选，不跑 YOLO
             print(f"    鸟检: {Path(img_info.path).name}")
-            _detect_birds_yolo(img_info, model)
+            _detect_birds_yolo(img_info, model, center_pass=bird_center_pass)
             if use_eye_detection and eye_model is not None:
                 _attach_eyes_to_birds(img_info, eye_model)
             print(
@@ -974,6 +1000,8 @@ def process_folder(
     use_eye_detection: bool = ENABLE_EYE_DETECTION,
     output_report: str = None,
     fast_mode: bool = False,
+    fast_sample_ratio: float = 0.5,
+    bird_center_pass: bool = False,
     batch_size: int = BATCH_SIZE,
     screened_output_dir: Optional[str] = None,
     dual_format_mode: str = "off",
@@ -997,11 +1025,20 @@ def process_folder(
     print(f"连拍阈值: {time_threshold}秒")
     print(
         f"保留策略: 比例 {burst_keep_ratio:.2f}，最少 {burst_keep_min} 张/组"
-        f"（按本组总张数计算；快速模式候选约全组一半）"
+        f"（按本组总张数计算）"
     )
-    print(f"鸟体检测: {'启用' if use_bird_detection else '禁用'}")
+    print(
+        f"鸟体检测: {'启用' if use_bird_detection else '禁用'}"
+        + (
+            f"（{'精细' if bird_center_pass else '普通'}）"
+            if use_bird_detection
+            else ""
+        )
+    )
     print(f"鸟眼检测: {'启用' if (use_bird_detection and use_eye_detection) else '禁用'}")
-    print(f"快速模式: {'启用' if fast_mode else '禁用'}")
+    _fsr = normalize_fast_sample_ratio(fast_sample_ratio)
+    print(f"快速模式: {'启用' if fast_mode else '禁用'}"
+          + (f"（抽样比例 {_fsr:.2f}）" if fast_mode else ""))
     if fast_mode:
         print(f"批处理大小: {batch_size}")
     print("=" * 60)
@@ -1079,6 +1116,8 @@ def process_folder(
                     fast_mode=fast_mode,
                     min_bird_area=MIN_BIRD_AREA,
                     keep_top_n=keep_count,
+                    fast_sample_ratio=_fsr,
+                    bird_center_pass=bird_center_pass,
                 )
                 group = select_best_images(
                     group,
@@ -1154,7 +1193,7 @@ def process_folder(
         kept = True
         if use_bird_detection and nb_model is not None:
             print(f"  单张: {Path(img.path).name}")
-            _detect_birds_yolo(img, nb_model)
+            _detect_birds_yolo(img, nb_model, center_pass=bird_center_pass)
             if use_eye_detection and nb_eye_model is not None:
                 _attach_eyes_to_birds(img, nb_eye_model)
             if img.bird_area < MIN_BIRD_AREA:
@@ -1283,18 +1322,14 @@ def screened_paths_for_kept_images(
     写入后的路径。
 
     映射规则（与 copy_kept_images_to_screened 一致）：
-      - RAW + Adobe DNG Converter 可用 → 同相对路径下 .dng
-      - RAW + DNG 不可用 → 同相对路径下 .jpg
+      - RAW → 同相对路径、原扩展名（不转 DNG/JPEG）
       - 非 RAW → 原相对路径
 
     物种阶段应使用本列表，以便读取 Screened_images 中的 EXIF（含 GPS），
     从而启用基于坐标的地理约束；仅返回磁盘上存在的路径。
     """
-    from image_io import is_raw_path, find_dng_converter
-
     image_folder = os.path.abspath(image_folder)
     screened_dir = os.path.abspath(screened_dir)
-    dng_available = find_dng_converter() is not None
     out: List[str] = []
     for src in get_kept_images(result):
         abs_p = os.path.abspath(src)
@@ -1304,26 +1339,8 @@ def screened_paths_for_kept_images(
             rel = os.path.basename(abs_p)
         rel = rel.replace("\\", "/")
         dest = os.path.join(screened_dir, rel)
-        if is_raw_path(abs_p):
-            # DNG 可用 → 优先查 .dng，其次 .jpg（fallback 路径）
-            if dng_available:
-                cand_dng = os.path.splitext(dest)[0] + ".dng"
-                cand_jpg = os.path.splitext(dest)[0] + ".jpg"
-                if os.path.isfile(cand_dng):
-                    out.append(cand_dng)
-                elif os.path.isfile(cand_jpg):
-                    out.append(cand_jpg)
-                elif os.path.isfile(dest):
-                    out.append(dest)
-            else:
-                cand = os.path.splitext(dest)[0] + ".jpg"
-                if os.path.isfile(cand):
-                    out.append(cand)
-                elif os.path.isfile(dest):
-                    out.append(dest)
-        else:
-            if os.path.isfile(dest):
-                out.append(dest)
+        if os.path.isfile(dest):
+            out.append(dest)
     return out
 
 
@@ -1362,29 +1379,13 @@ def copy_kept_images_to_screened(
     将连拍筛选保留的图片复制到 screened_dir（通常为 输出目录/Screened_images），
     尽量保持相对 image_folder 的子目录结构以避免重名覆盖。
 
-    RAW 处理策略（按优先级）：
-      1. Adobe DNG Converter 可用 → 转 DNG，直接复制 DNG 到 screened_images
-         （DNG 保留完整原始数据，便于后续美化处理；Adobe DNG Converter 转换时
-          自动从原 RAW 复制完整 EXIF）
-      2. DNG 不可用或转换失败 → fallback 到 JPEG（全 demosaic + 生态显影），
-         并用 piexif 从原 RAW 复制 EXIF 到 JPEG
+    RAW 原样复制到 Screened_images（保持 .ARW/.CR3 等扩展名），不转 DNG、不导出 JPEG。
+    物种识别阶段对这份 RAW 做全尺寸 demosaic，不使用嵌入式 JPEG 缩略图。
 
     返回成功处理的文件数。
     """
-    from ecology_jpeg_develop import develop_bgr_ecology_wildlife
-    from image_io import (
-        is_raw_path,
-        read_raw_bgr,
-        convert_raw_to_dng,
-        find_dng_converter,
-        copy_exif_from_raw_to_jpeg,
-    )
-
     image_folder = os.path.abspath(image_folder)
     os.makedirs(screened_dir, exist_ok=True)
-    dng_available = find_dng_converter() is not None
-    if dng_available:
-        print("  [DNG] 检测到 Adobe DNG Converter，RAW 将转为 DNG 保存到 Screened_images")
     n = 0
     for path in get_kept_images(result):
         abs_p = os.path.abspath(path)
@@ -1397,41 +1398,7 @@ def copy_kept_images_to_screened(
         dest_dir = os.path.dirname(dest)
         if dest_dir:
             os.makedirs(dest_dir, exist_ok=True)
-        if is_raw_path(abs_p):
-            # 策略 1：DNG 转换 → 直接复制 DNG 到 screened_images
-            if dng_available:
-                dng_cache_dir = os.path.join(
-                    os.path.dirname(abs_p), ".dng_cache"
-                )
-                dng_path = convert_raw_to_dng(abs_p, dng_cache_dir)
-                if dng_path is not None:
-                    dest_dng = os.path.splitext(dest)[0] + ".dng"
-                    shutil.copy2(dng_path, dest_dng)
-                    print(f"  [DNG] {os.path.basename(abs_p)} → {os.path.basename(dest_dng)}")
-                    n += 1
-                    continue
-                print(f"  [DNG] 转换失败 {os.path.basename(abs_p)}，fallback 到 JPEG")
-            # 策略 2：fallback 到 JPEG（全 demosaic + 生态显影 + EXIF 复制）
-            try:
-                bgr = read_raw_bgr(abs_p, half_size=False)
-                bgr = develop_bgr_ecology_wildlife(bgr)
-                dest_jpg = os.path.splitext(dest)[0] + ".jpg"
-                ok = cv2.imwrite(
-                    dest_jpg,
-                    bgr,
-                    [int(cv2.IMWRITE_JPEG_QUALITY), 93],
-                )
-                if not ok:
-                    raise OSError("cv2.imwrite 返回 False")
-                # 从原始 RAW 复制 EXIF 到 JPEG（保留拍摄时间、相机参数、GPS 等）
-                copy_exif_from_raw_to_jpeg(abs_p, dest_jpg)
-            except Exception as e:
-                print(
-                    f"  RAW 导出失败 ({os.path.basename(abs_p)}): {e}，已回退为原文件复制。"
-                )
-                shutil.copy2(abs_p, dest)
-        else:
-            shutil.copy2(abs_p, dest)
+        shutil.copy2(abs_p, dest)
         n += 1
     return n
 

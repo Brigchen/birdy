@@ -366,11 +366,15 @@ def batch_write_gps_from_gpx(
     if not folder.is_dir():
         raise FileNotFoundError(f"文件夹不存在: {folder}")
 
+    from image_io import is_raw_path
+
     exts = {".jpg", ".jpeg", ".dng"}
     files: List[str] = []
     it = folder.rglob("*") if recursive else folder.iterdir()
     for f in it:
-        if f.is_file() and f.suffix.lower() in exts:
+        if f.is_file() and (
+            f.suffix.lower() in exts or is_raw_path(str(f))
+        ):
             files.append(str(f))
 
     total = len(files)
@@ -417,7 +421,7 @@ def batch_write_gps_from_gpx(
                 kept_exif_gps += 1
             matched += 1
             # DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif
-            if path.lower().endswith(".dng"):
+            if path.lower().endswith(".dng") or is_raw_path(path):
                 fn = write_gps_exif_dng
             else:
                 fn = write_gps_exif

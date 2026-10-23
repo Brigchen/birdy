@@ -361,6 +361,10 @@ class MainWindow(QMainWindow):
 
         self.use_gpx_checkbox = QCheckBox("使用 GPX 轨迹匹配拍摄时间")
         self.use_exif_checkbox = QCheckBox("补充使用照片 EXIF 中的 GPS")
+        self.use_exif_checkbox.setToolTip(
+            "照片时间不在 GPX 范围内或无拍摄时间时，\n"
+            "若照片带有 EXIF GPS 且落在地图范围内，则一并补充标注。"
+        )
         form.addRow("", self.use_gpx_checkbox)
         form.addRow("", self.use_exif_checkbox)
         layout.addWidget(inp_card)
