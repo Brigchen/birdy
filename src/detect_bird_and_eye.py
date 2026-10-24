@@ -2308,6 +2308,7 @@ class BirdAndEyeDetector:
         use_local_model: bool = True,
         min_species_accept_confidence: Optional[float] = None,
         bird_detect_mode: str = "normal",
+        bird_imgsz: int = None,
     ):
         """
         初始化多阶段鸟类检测器
@@ -2333,6 +2334,9 @@ class BirdAndEyeDetector:
         """
         self.bird_conf = bird_conf
         self.bird_detect_mode = normalize_bird_detect_mode(bird_detect_mode)
+        self.bird_imgsz = (
+            int(bird_imgsz) if bird_imgsz else int(BIRD_YOLO_IMGSZ)
+        )
         self.eye_conf = eye_conf
         self.enable_species = enable_species
         self.enable_eye = enable_eye
@@ -2464,11 +2468,13 @@ class BirdAndEyeDetector:
     def detect_birds(self, image: np.ndarray) -> List[Dict]:
         """
         检测图片中的鸟。普通模式仅全图；精细模式在长边 >5000 时再做中心复检。
+        bird_imgsz 可在初始化时下调（如清洗场景 640），CPU 上近似线性提速。
         """
         return run_yolo_birds_full_and_center(
             self.bird_model,
             image,
             float(self.bird_conf),
+            imgsz=int(self.bird_imgsz),
             center_pass=self.bird_detect_mode == "fine",
         )
 

@@ -589,13 +589,13 @@ def _run_species_crop_clean_identify(
         clean_opts,
         progress_callback=_clean_prog,
         should_cancel=lambda: not worker.is_running,
+        skip_bird_detection=True,
     )
     cd = clean_res.as_dict()
     results["image_clean_result"] = cd
     worker.status_updated.emit(
         "切割图清洗完成："
         f"保留 {cd['kept']}/{cd['total']}，"
-        f"未检出鸟体 {cd['removed_no_bird']}，"
         f"模糊 {cd['removed_blurry']}，"
         f"重复 {cd['removed_duplicate']}"
     )
@@ -1159,14 +1159,12 @@ class WorkerThread(QThread):
 
                     if config.get("enable_dxo_pureraw") and image_files:
                         try:
-                            from dxo_pureraw import map_sources_to_outputs
+                            from dxo_pureraw import map_and_filter
 
-                            dxo_outputs_map = map_sources_to_outputs(image_files)
+                            image_files, dxo_outputs_map = map_and_filter(
+                                image_files
+                            )
                             if dxo_outputs_map:
-                                image_files = [
-                                    dxo_outputs_map.get(p, p)
-                                    for p in image_files
-                                ]
                                 self.status_updated.emit(
                                     f"DxO 降噪：{len(dxo_outputs_map)} 张 RAW "
                                     "改用 DxO 输出（JPEG/DNG）进行识别裁切"
@@ -1715,6 +1713,52 @@ class SpeciesBatchThread(QThread):
             manual_city = _cfg_geo_str(config.get("city"))
             results: Dict[str, Any] = {}
             start_time = _t.time()
+
+            # 可选：识别前用 DxO PureRAW 降噪 RAW（与主流程一致；缺装/失败静默回退）
+            if config.get("enable_dxo_pureraw"):
+                from dxo_pureraw import find_pureraw_exe
+                from image_io import is_raw_path
+
+                raw_paths = [p for p in image_files if is_raw_path(p)]
+                if find_pureraw_exe() is None:
+                    _log("DxO PureRAW 未安装，跳过降噪；RAW 按原流程解码识别。")
+                elif not raw_paths:
+                    _log("DxO PureRAW：输入目录中没有 RAW 文件，跳过。")
+                else:
+                    _log(
+                        f"DxO PureRAW：降噪 {len(raw_paths)} 张 RAW"
+                        "（按上次预设，处理期间界面可继续）…"
+                    )
+                    try:
+                        from dxo_pureraw import run_pureraw_batch
+
+                        dxo_stat = run_pureraw_batch(
+                            raw_paths,
+                            log_cb=_log,
+                            should_cancel=lambda: not self.is_running,
+                        )
+                        results["dxo_pureraw"] = {
+                            "ok": int(dxo_stat.get("ok", 0)),
+                            "fail": int(dxo_stat.get("fail", 0)),
+                            "total": int(dxo_stat.get("total", 0)),
+                        }
+                        _log(
+                            f"✓ DxO PureRAW：成功 {dxo_stat.get('ok', 0)}"
+                            f"/{dxo_stat.get('total', 0)} 张"
+                        )
+                    except Exception as e:
+                        _log(f"⚠ DxO PureRAW 失败（{e}），改用原 RAW 流程识别。")
+                try:
+                    from dxo_pureraw import map_and_filter
+
+                    image_files, dxo_map = map_and_filter(image_files)
+                    if dxo_map:
+                        _log(
+                            f"DxO 降噪：{len(dxo_map)} 张改用 DxO 输出识别裁切"
+                        )
+                except Exception as e:
+                    _log(f"⚠ DxO 输出映射失败，改用 RAW 解码: {e}")
+
             _log(
                 f"单独裁切识别：开始，共 {len(image_files)} 张 → {output_root}"
             )
@@ -1807,6 +1851,11 @@ class ImageCleanThread(QThread):
         super().__init__(parent)
         self._folder = folder
         self._options = options
+        self.is_running = True
+
+    def stop(self):
+        """异步停止：清洗循环在下一张图前退出。"""
+        self.is_running = False
 
     def run(self) -> None:
         try:
@@ -1831,6 +1880,7 @@ class ImageCleanThread(QThread):
                 self._folder,
                 self._options,
                 progress_callback=_cb,
+                should_cancel=lambda: not self.is_running,
             )
             d = r.as_dict()
             self.log_line.emit(
@@ -3149,15 +3199,6 @@ class BirdDetectionGUI(QMainWindow):
             "不会删除 Screened_images 里的大图。"
         )
         species_layout.addRow("", self.image_clean_before_species_checkbox)
-
-        self.image_clean_no_bird_checkbox = QCheckBox("去除未检出鸟体的图")
-        self.image_clean_no_bird_checkbox.setChecked(
-            bool(self.config.get("image_clean_remove_no_bird", True))
-        )
-        self.image_clean_no_bird_checkbox.setToolTip(
-            "用鸟体检测模型扫描；未检出鸟体的图片将被删除。"
-        )
-        species_layout.addRow("", self.image_clean_no_bird_checkbox)
 
         self.image_clean_blurry_checkbox = QCheckBox("去除鸟体模糊的图")
         self.image_clean_blurry_checkbox.setChecked(
@@ -5435,12 +5476,15 @@ class BirdDetectionGUI(QMainWindow):
             return self._burst_webp_bird_detector
 
     def _build_image_clean_options(self) -> ImageCleanOptions:
+        # 清洗对象为切割图/分类归档图：整图计分，不加载 YOLO；
+        # 「未检出鸟体」由识别阶段负责（归档目录里不存在未检出的鸟图）。
         return ImageCleanOptions(
-            remove_no_bird=self.image_clean_no_bird_checkbox.isChecked(),
+            remove_no_bird=False,
             remove_blurry=self.image_clean_blurry_checkbox.isChecked(),
             dedupe=self.image_clean_dedupe_checkbox.isChecked(),
             min_clarity=float(self.image_clean_clarity_slider.value()),
             dup_similarity=float(self.image_clean_dup_slider.value()),
+            use_full_frame_for_clarity=True,
         )
 
     def _resolve_image_clean_folder(self) -> str:
@@ -5599,14 +5643,13 @@ class BirdDetectionGUI(QMainWindow):
             )
             return
         opts = self._build_image_clean_options()
-        if not (opts.remove_no_bird or opts.remove_blurry or opts.dedupe):
+        if not (opts.remove_blurry or opts.dedupe):
             QMessageBox.warning(self, "提示", "请至少勾选一项清洗规则。")
             return
         reply = QMessageBox.question(
             self,
             "确认清洗",
             f"将对以下目录执行清洗，不合格图片会被直接删除：\n\n{folder}\n\n"
-            f"· 未检出鸟体：{'是' if opts.remove_no_bird else '否'}\n"
             f"· 模糊（清晰度 < {int(opts.min_clarity)}）："
             f"{'是' if opts.remove_blurry else '否'}\n"
             f"· 去重（相似度 ≥ {int(opts.dup_similarity)}%）："
@@ -5621,6 +5664,7 @@ class BirdDetectionGUI(QMainWindow):
         self._sync_config_from_ui()
         self._save_config()
         self.image_clean_run_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)  # 清洗接入停止键
         self.add_log(f"已启动图片清洗：{folder}")
         th = ImageCleanThread(folder, opts, self)
         self._image_clean_thread = th
@@ -5634,19 +5678,20 @@ class BirdDetectionGUI(QMainWindow):
 
         def _on_ok(r: Dict) -> None:
             self.image_clean_run_btn.setEnabled(True)
+            self.stop_btn.setEnabled(False)
             self.progress_bar.setValue(100)
             QMessageBox.information(
                 self,
                 "清洗完成",
                 f"总计 {r.get('total', 0)}，保留 {r.get('kept', 0)}\n"
-                f"删除：未检出鸟体 {r.get('removed_no_bird', 0)}，"
-                f"模糊 {r.get('removed_blurry', 0)}，"
+                f"删除：模糊 {r.get('removed_blurry', 0)}，"
                 f"重复 {r.get('removed_duplicate', 0)}\n"
                 f"失败 {r.get('failed', 0)}\n\n目录：{folder}",
             )
 
         def _on_fail(msg: str) -> None:
             self.image_clean_run_btn.setEnabled(True)
+            self.stop_btn.setEnabled(False)
             QMessageBox.critical(self, "清洗失败", msg)
 
         th.progress.connect(_on_prog)
@@ -6367,6 +6412,11 @@ class BirdDetectionGUI(QMainWindow):
             # 开始按钮保持禁用，直到 processing_finished 被调用
             # UI 状态（计时器、elapsed、eta、按钮）由 processing_finished 统一清理
             return
+        if self._image_clean_thread is not None and self._image_clean_thread.isRunning():
+            self._image_clean_thread.stop()
+            self.add_log("✗ 正在中止图片清洗，等待当前图片处理完...")
+            self.stop_btn.setEnabled(False)  # 防止重复点击；结束后由完成回调恢复
+            return
         if (
             self._species_batch_thread is not None
             and self._species_batch_thread.isRunning()
@@ -6547,9 +6597,6 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.config["enable_image_clean_before_species"] = (
             self.image_clean_before_species_checkbox.isChecked()
-        )
-        self.config["image_clean_remove_no_bird"] = (
-            self.image_clean_no_bird_checkbox.isChecked()
         )
         self.config["image_clean_remove_blurry"] = (
             self.image_clean_blurry_checkbox.isChecked()
@@ -6822,9 +6869,6 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.image_clean_before_species_checkbox.setChecked(
             bool(self.config.get("enable_image_clean_before_species", False))
-        )
-        self.image_clean_no_bird_checkbox.setChecked(
-            bool(self.config.get("image_clean_remove_no_bird", True))
         )
         self.image_clean_blurry_checkbox.setChecked(
             bool(self.config.get("image_clean_remove_blurry", True))
@@ -7116,6 +7160,7 @@ class BirdDetectionGUI(QMainWindow):
             if reply == QMessageBox.No:
                 event.ignore()
                 return
+            self._image_clean_thread.stop()
             self._image_clean_thread.wait()
         try:
             self._sync_config_from_ui()

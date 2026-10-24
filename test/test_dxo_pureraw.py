@@ -88,6 +88,20 @@ def test_map_sources_to_outputs_prefers_jpeg(tmp_path: Path):
     assert m[str(src)].lower().endswith(".jpg")
 
 
+def test_map_and_filter_replaces_raw_and_drops_dxo_files(tmp_path: Path):
+    """RAW → DxO 输出替换；目录里的 -DxO.jpg 本身不应再作为识别来源。"""
+    from dxo_pureraw import map_and_filter
+
+    raw = tmp_path / "a.ARW"
+    raw.write_bytes(b"x")
+    (tmp_path / "a-DxO.jpg").write_bytes(b"j")
+    files = [str(raw), str(tmp_path / "a-DxO.jpg")]
+    new_list, m = map_and_filter(files)
+    assert m
+    assert len(new_list) == 1
+    assert new_list[0].lower().endswith(".jpg")
+
+
 def test_map_sources_missing_output(tmp_path: Path):
     src = tmp_path / "b.ARW"
     src.write_bytes(b"x")

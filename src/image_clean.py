@@ -425,15 +425,19 @@ def _prune_empty_dirs(root: str) -> int:
 
 
 class _BirdDetector:
-    """轻量包装：仅鸟体检测，不加载物种模型。"""
+    """
+    轻量包装：仅鸟体检测，不加载物种模型（clarity-meter 等独立工具用）。
+    清洗函数不再使用它——「未检出鸟体」由识别阶段判定。
+    """
 
-    def __init__(self, bird_conf: float = 0.35):
+    def __init__(self, bird_conf: float = 0.35, imgsz: int = 640):
         from detect_bird_and_eye import BirdAndEyeDetector
 
         self._det = BirdAndEyeDetector(
             bird_conf=float(bird_conf),
             enable_species=False,
             enable_eye=False,
+            bird_imgsz=int(imgsz),
         )
 
     def detect(self, bgr: np.ndarray) -> List[Dict]:
@@ -446,12 +450,13 @@ def clean_bird_images(
     *,
     progress_callback: ProgressCB = None,
     should_cancel: CancelCB = None,
-    detector: Optional[_BirdDetector] = None,
 ) -> ImageCleanResult:
     """
     清洗目录内鸟图（递归）。默认直接删除不合格文件。
 
-    步骤顺序：未检出鸟体 → 模糊 → 同目录高度重复（保留更清晰的一张）。
+    只做 清晰度 + 同目录高度重复（保留更清晰的一张），不加载 YOLO：
+    清洗对象是切割图/分类归档图，「未检出鸟体」由识别阶段判定——
+    识别归档目录里不存在未检出的鸟图，无需再用检测模型扫一遍。
     """
     opts = options or ImageCleanOptions()
     result = ImageCleanResult()
@@ -465,11 +470,6 @@ def clean_bird_images(
         progress_callback,
         {"kind": "start", "done": 0, "total": max(1, result.total)},
     )
-
-    need_detect = bool(opts.remove_no_bird or opts.remove_blurry)
-    det = detector
-    if need_detect and det is None:
-        det = _BirdDetector(bird_conf=opts.bird_conf)
 
     survivors: List[Tuple[str, float, int]] = []  # path, clarity, dhash
     done = 0
@@ -492,35 +492,11 @@ def clean_bird_images(
             )
             continue
 
-        birds: List[Dict] = []
-        if need_detect and det is not None:
-            try:
-                birds = det.detect(bgr)
-            except Exception:
-                birds = []
-
-        if opts.remove_no_bird and not birds:
-            if _safe_unlink(path):
-                result.removed_no_bird += 1
-                result.removed_paths.append(path)
-            else:
-                result.failed += 1
-            _emit(
-                progress_callback,
-                {
-                    "kind": "tick",
-                    "done": done,
-                    "total": max(1, result.total),
-                    "phase": "no_bird",
-                },
-            )
-            continue
-
         crop = subject_for_clarity(
-            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+            bgr, [], use_full_frame=True
         )
         clarity = subject_clarity_score(
-            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
+            bgr, [], use_full_frame=True
         )
 
         if opts.remove_blurry and clarity < float(opts.min_clarity):
@@ -603,10 +579,15 @@ def clean_image_list(
     *,
     progress_callback: ProgressCB = None,
     should_cancel: CancelCB = None,
+    skip_bird_detection: bool = False,
 ) -> ImageCleanResult:
     """
     清洗给定文件列表（主流程切割后再识别时用）：按父目录分组去重，直接删文件。
     返回结果后调用方应刷新残留路径列表。
+
+    skip_bird_detection=True：切割图按鸟框切出、鸟必然在图中，跳过 YOLO
+    鸟检（清洗提速约一个数量级）；此时 remove_no_bird 不生效，模糊判定
+    对整张切割图计分。
     """
     opts = options or ImageCleanOptions()
     # 按根聚合调用 clean_bird_images 更干净；这里对列表做等价逻辑
@@ -615,9 +596,6 @@ def clean_image_list(
         progress_callback,
         {"kind": "start", "done": 0, "total": max(1, result.total)},
     )
-
-    need_detect = bool(opts.remove_no_bird or opts.remove_blurry)
-    det = _BirdDetector(bird_conf=opts.bird_conf) if need_detect else None
 
     survivors: List[Tuple[str, float, int]] = []
     done = 0
@@ -635,31 +613,7 @@ def clean_image_list(
             )
             continue
 
-        birds: List[Dict] = []
-        if det is not None:
-            try:
-                birds = det.detect(bgr)
-            except Exception:
-                birds = []
-
-        if opts.remove_no_bird and not birds:
-            if _safe_unlink(path):
-                result.removed_no_bird += 1
-                result.removed_paths.append(path)
-            else:
-                result.failed += 1
-            _emit(
-                progress_callback,
-                {"kind": "tick", "done": done, "total": max(1, result.total)},
-            )
-            continue
-
-        crop = subject_for_clarity(
-            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
-        )
-        clarity = subject_clarity_score(
-            bgr, birds, use_full_frame=opts.use_full_frame_for_clarity
-        )
+        clarity = subject_clarity_score(bgr, [], use_full_frame=True)
         if opts.remove_blurry and clarity < float(opts.min_clarity):
             if _safe_unlink(path):
                 result.removed_blurry += 1
@@ -672,7 +626,7 @@ def clean_image_list(
             )
             continue
 
-        survivors.append((path, clarity, dhash64(crop)))
+        survivors.append((path, clarity, dhash64(bgr)))
         _emit(
             progress_callback,
             {"kind": "tick", "done": done, "total": max(1, result.total)},

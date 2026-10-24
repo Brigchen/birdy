@@ -250,7 +250,10 @@ def run_pureraw_batch(
 def map_sources_to_outputs(
     sources: List[str],
 ) -> dict:
-    """返回 {源路径: DxO 输出路径}；无输出的源不出现在结果里。"""
+    """返回 {源路径: DxO 输出路径}；无输出的源不出现在结果里。
+
+    键同时包含原样路径与 resolve 后路径，调用方可直接 get(p)。
+    """
     out: dict = {}
     for s in sources:
         found = [
@@ -265,8 +268,31 @@ def map_sources_to_outputs(
                     p.suffix.lower()
                 ]
             )
-            out[str(Path(s).resolve())] = str(found[0].resolve())
+            target = str(found[0].resolve())
+            out[str(Path(s).resolve())] = target
+            out[s] = target
     return out
+
+
+def map_and_filter(
+    image_files: List[str],
+) -> Tuple[List[str], dict]:
+    """
+    把列表中的 RAW 替换为其 DxO 输出，并剔除输出文件自身
+    （目录重扫时 -DxO.jpg 会被再次收集，须避免重复识别）。
+    返回 (新列表, {源: 输出})。
+    """
+    m = map_sources_to_outputs(image_files)
+    if not m:
+        return list(image_files), m
+    out_set = {str(Path(v).resolve()) for v in m.values()}
+    new_list: List[str] = []
+    for p in image_files:
+        rp = str(Path(p).resolve())
+        if rp in out_set:
+            continue
+        new_list.append(m.get(p, m.get(rp, p)))
+    return new_list, m
 
 
 if __name__ == "__main__":
