@@ -836,7 +836,7 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
                     if is_raw_path(str(img_file)):
                         synced = _sync_gps_to_dxo_outputs(
                             str(img_file), latitude, longitude, altitude,
-                            verbose=verbose,
+                            verbose=False,
                         )
                         if synced:
                             _log(

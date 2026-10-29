@@ -1161,7 +1161,9 @@ class WorkerThread(QThread):
                             "物种识别/归档：连拍步骤未成功完成，扫描全部输入图片"
                         )
 
-                    if config.get("enable_dxo_pureraw") and image_files:
+                    # 无论是否勾选 DxO：同时存在 ARW 与其 DxO 生成图时，
+                    # 一律优先用生成图、跳过 ARW（勾选只决定是否新跑批量）
+                    if image_files:
                         try:
                             from dxo_pureraw import map_and_filter
 
@@ -1170,8 +1172,8 @@ class WorkerThread(QThread):
                             )
                             if dxo_outputs_map:
                                 self.status_updated.emit(
-                                    f"DxO 降噪：{len(dxo_outputs_map)} 张 RAW "
-                                    "改用 DxO 输出（JPEG/DNG）进行识别裁切"
+                                    f"来源选择：{len(dxo_outputs_map)} 张存在 "
+                                    "DxO 生成图，已优先使用并跳过对应 ARW"
                                 )
                         except Exception as e:
                             self.status_updated.emit(
@@ -1752,16 +1754,19 @@ class SpeciesBatchThread(QThread):
                         )
                     except Exception as e:
                         _log(f"⚠ DxO PureRAW 失败（{e}），改用原 RAW 流程识别。")
-                try:
-                    from dxo_pureraw import map_and_filter
+            # 无论是否勾选 DxO：目录里同时存在 ARW 与其 DxO 生成图时，
+            # 一律优先用生成图、跳过 ARW（勾选只决定是否新跑 PureRAW 批量）
+            try:
+                from dxo_pureraw import map_and_filter
 
-                    image_files, dxo_map = map_and_filter(image_files)
-                    if dxo_map:
-                        _log(
-                            f"DxO 降噪：{len(dxo_map)} 张改用 DxO 输出识别裁切"
-                        )
-                except Exception as e:
-                    _log(f"⚠ DxO 输出映射失败，改用 RAW 解码: {e}")
+                image_files, dxo_map = map_and_filter(image_files)
+                if dxo_map:
+                    _log(
+                        f"来源选择：{len(dxo_map)} 张存在 DxO 生成图，"
+                        "已优先使用并跳过对应 ARW"
+                    )
+            except Exception as e:
+                _log(f"⚠ DxO 输出映射失败，改用 RAW 解码: {e}")
 
             _log(
                 f"单独裁切识别：开始，共 {len(image_files)} 张 → {output_root}"

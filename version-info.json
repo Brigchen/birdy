@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.1.64",
+  "version": "2.1.66",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -37,6 +37,12 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.1.66": [
+      "修复批量写 GPS 时 DxO 同步步报 NameError（verbose 未定义）：RAW 本体写入不受影响（447/447 成功），修复后 DxO 生成图同步正常执行"
+    ],
+    "2.1.65": [
+      "来源选择不依赖勾选：单独裁切识别与主流程中，只要 ARW 的 DxO 生成图存在就优先使用并跳过 ARW（勾选 DxO 只决定是否新跑 PureRAW 批量）"
+    ],
     "2.1.64": [
       "版本元数据一致性：release_date 随版本更新（此前 2.1.52–63 未同步，停在 10-23）；新增元数据一致性测试防复发"
     ],
