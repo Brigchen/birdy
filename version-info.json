@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.1.56",
+  "version": "2.1.64",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-10-23",
+  "release_date": "2026-10-29",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,30 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.1.64": [
+      "版本元数据一致性：release_date 随版本更新（此前 2.1.52–63 未同步，停在 10-23）；新增元数据一致性测试防复发"
+    ],
+    "2.1.63": [
+      "GPS 写入后自动同步 DxO 生成图：RAW 写 GPS 成功后，同目录树内其 -DxO JPG 用 exiftool 原位写入相同 GPS（无重压缩），解决「先 DxO 后补 GPS」时序下生成图缺 GPS"
+    ],
+    "2.1.62": [
+      "exiftool 查找兼容 winget 用户级安装（%LOCALAPPDATA%\\Programs\\exiftool）；本机已装 exiftool 13.59 并实测 ARW 写入 GPS 成功"
+    ],
+    "2.1.61": [
+      "水印抽样提速：非拼图模式的「每物种抽样」排序改用像素面积（原为逐张 YOLO 测中心鸟体，CPU 上 283 张需半小时以上）；抽样过程输出逐目录进度日志"
+    ],
+    "2.1.60": [
+      "DxO 输出格式兜底：预设为 DNG 时自动把 DNG 渲染为 100% JPEG 并删除 DNG（降噪/光学校正保留），Birdy 不再依赖 PureRAW 的「上次设置」格式"
+    ],
+    "2.1.59": [
+      "DxO 输出格式体检：批处理后若全为 DNG 提示「上次设置」仍是 DNG 预设，需在 PureRAW 界面用 JPEG 预设实际处理一张（或设为默认）再跑 Birdy"
+    ],
+    "2.1.58": [
+      "DxO 输出发现改为沿源目录树搜索（含子目录）：预设自定义目标/子文件夹时输出不在源文件旁也能找到并映射；极端情况可用环境变量 DXO_OUTPUT_DIR 指定独立输出目录"
+    ],
+    "2.1.57": [
+      "主流程启动日志显式提示 DxO 降噪已启用；排查「勾选未生效」：运行中的 GUI 须重启才会加载新代码"
+    ],
     "2.1.56": [
       "DxO 降噪接入「单独裁切识别」：勾选后先无人值守降噪输入目录中的 RAW，再识别（此前只在主流程生效）；统一替换映射并剔除 -DxO 输出防重复识别"
     ],

@@ -661,13 +661,22 @@ def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altit
         # 尝试 exiftool
         exiftool = _shutil.which("exiftool")
         if exiftool is None:
-            # 检查常见安装路径
-            for p in (
+            # 检查常见安装路径（含 winget 用户级安装目录）
+            _candidates = [
                 r"C:\Program Files\exiftool\exiftool.exe",
                 r"C:\exiftool\exiftool.exe",
                 r"C:\Tools\exiftool\exiftool.exe",
-            ):
-                if os.path.isfile(p):
+                os.path.join(
+                    os.environ.get("LOCALAPPDATA", ""),
+                    "Programs", "exiftool", "ExifTool.exe",
+                ),
+                os.path.join(
+                    os.environ.get("LOCALAPPDATA", ""),
+                    "Programs", "exiftool", "exiftool.exe",
+                ),
+            ]
+            for p in _candidates:
+                if p and os.path.isfile(p):
                     exiftool = p
                     break
 
@@ -717,6 +726,33 @@ def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altit
         if verbose:
             print(f"[ERROR] DNG GPS write failed: {image_path.name} - {e}")
         return False
+
+
+def _sync_gps_to_dxo_outputs(
+    raw_path: str,
+    latitude: float,
+    longitude: float,
+    altitude: Optional[float],
+    verbose: bool = False,
+) -> int:
+    """
+    RAW 写入 GPS 成功后，把同目录树内的 DxO 生成图（<stem>-DxO*.jpg）
+    同步写入相同 GPS（exiftool 原位写元数据，不重压缩、秒级）。
+    用于「先 DxO 后补 GPS」的时序：无需重跑 DxO 批量。
+    """
+    try:
+        from dxo_pureraw import dxo_output_candidates
+    except Exception:
+        return 0
+    n = 0
+    for cand in dxo_output_candidates(raw_path):
+        if cand.suffix.lower() not in (".jpg", ".jpeg") or not cand.is_file():
+            continue
+        if write_gps_exif_dng(str(cand), latitude, longitude, altitude, verbose=verbose):
+            n += 1
+            if verbose:
+                print(f"[OK] DxO 输出同步 GPS: {cand.name}")
+    return n
 
 
 def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, altitude: Optional[float] = None, max_workers: int = None, *, progress_cb=None, log_cb=None) -> int:
@@ -797,6 +833,16 @@ def batch_write_gps_exif(image_folder: str, latitude: float, longitude: float, a
             try:
                 if future.result():
                     success_count += 1
+                    if is_raw_path(str(img_file)):
+                        synced = _sync_gps_to_dxo_outputs(
+                            str(img_file), latitude, longitude, altitude,
+                            verbose=verbose,
+                        )
+                        if synced:
+                            _log(
+                                f"[OK] 已同步 GPS 到 DxO 生成图 "
+                                f"{synced} 张（{img_file.stem}-DxO…）"
+                            )
             except Exception as e:
                 _log(f"[ERROR] {img_file.name}: {e}")
             done_count += 1

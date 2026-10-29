@@ -298,19 +298,23 @@ def sample_images_per_species_dir(
     source_root: str = "",
     rng: Optional[random.Random] = None,
     area_fn: Optional[Callable[[str], float]] = None,
+    progress_cb: Optional[Callable[[int, int, str], None]] = None,
 ) -> List[str]:
     """
     按「物种目录」（图片所在父目录）分组，每组抽取至多 per_dir 张。
 
-    抽样时：排除文件名含 all 的合集图；一半按中心鸟体从大到小取，
+    抽样时：排除文件名含 all 的合集图；一半按**像素面积**从大到小取
+    （切割图尺寸≈鸟体占比，不跑 YOLO——CPU 上逐张鸟检曾导致抽样数十分钟），
     剩下一半从其余中随机。目录内不足该数时全部保留（仍排除合集）。
     per_dir <= 0 时返回原列表副本（不抽样、不排除）。
+    area_fn：显式传入时可覆盖默认的像素面积度量（如测试）。
+    progress_cb：(已完成目录数, 总目录数, 目录名)。
     """
     paths = [str(p) for p in images]
     if per_dir <= 0 or not paths:
         return list(paths)
     rnd = rng if rng is not None else random.Random()
-    measure = area_fn if area_fn is not None else center_bird_body_area
+    measure = area_fn if area_fn is not None else _collage_pixel_area_score
     ranked_n = (int(per_dir) + 1) // 2
     random_n = int(per_dir) - ranked_n
     multi = (
@@ -328,8 +332,14 @@ def sample_images_per_species_dir(
             key = str(Path(p).parent)
         by_dir[key].append(p)
     out: List[str] = []
-    for _dir in sorted(by_dir.keys()):
+    dirs = sorted(by_dir.keys())
+    for i, _dir in enumerate(dirs):
         group = by_dir[_dir]
+        if progress_cb is not None:
+            try:
+                progress_cb(i, len(dirs), Path(_dir).name)
+            except Exception:
+                pass
         if len(group) <= per_dir:
             out.extend(group)
             continue
@@ -1581,7 +1591,7 @@ def generate_watermarks(
 
     random_per_species:
         None 或 <=0 → 处理全部图片；
-        正整数 N → 每个物种目录抽至多 N 张（排除合集图；一半按中心鸟体大小，一半随机）。
+        正整数 N → 每个物种目录抽至多 N 张（排除合集图；一半按像素面积，一半随机；不跑鸟检）。
     collage_mode（options）：拼图后再加水印；同物种张数不足格子数时循环补图。
     """
     os.makedirs(output_folder, exist_ok=True)
@@ -1602,11 +1612,47 @@ def generate_watermarks(
         and int(random_per_species) > 0
         and collage_mode == "off"
     ):
+        if progress_callback:
+            try:
+                progress_callback(
+                    {
+                        "kind": "status",
+                        "message": "水印：按物种目录抽样（像素面积排序+随机，不跑鸟检）…",
+                    }
+                )
+            except Exception:
+                pass
+
+        def _sample_prog(done: int, total: int, name: str) -> None:
+            if progress_callback:
+                try:
+                    progress_callback(
+                        {
+                            "kind": "status",
+                            "message": (
+                                f"水印：抽样中 {done}/{total}（{name}）…"
+                            ),
+                        }
+                    )
+                except Exception:
+                    pass
+
         images = sample_images_per_species_dir(
             images,
             int(random_per_species),
             source_root=source_folder,
+            progress_cb=_sample_prog,
         )
+        if progress_callback:
+            try:
+                progress_callback(
+                    {
+                        "kind": "status",
+                        "message": f"水印：抽样完成，共 {len(images)} 张待处理",
+                    }
+                )
+            except Exception:
+                pass
     elif (
         random_per_species is not None
         and int(random_per_species) > 0

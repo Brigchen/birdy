@@ -427,6 +427,15 @@ def batch_write_gps_from_gpx(
                 fn = write_gps_exif
             if fn is not None and fn(path, lat, lon, ele, verbose=False):
                 written += 1
+                if is_raw_path(path):
+                    try:
+                        from geo_encoder import _sync_gps_to_dxo_outputs
+
+                        _sync_gps_to_dxo_outputs(
+                            path, lat, lon, ele, verbose=False
+                        )
+                    except Exception:
+                        pass
         finally:
             if progress_cb is not None:
                 progress_cb(idx, total, os.path.basename(path))

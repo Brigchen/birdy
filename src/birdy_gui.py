@@ -747,6 +747,10 @@ class WorkerThread(QThread):
             current_step = 0
             results: Dict[str, Any] = {"_flow_flags": flow_flags}
             burst_filter_applied = False
+            if dxo_on:
+                self.status_updated.emit(
+                    "已启用 DxO PureRAW 降噪：识别前将处理 Screened_images 中的 RAW"
+                )
             phase_weights: Dict[str, float] = {
                 "gps": 0.08,
                 "burst": 0.47,
@@ -1570,7 +1574,7 @@ class WatermarkBatchThread(QThread):
                     else:
                         extra = (
                             f"（每物种目录≤{int(self._random_per_species)} 张，"
-                            f"半按鸟体大小、半随机）"
+                            f"半按像素面积、半随机，不跑鸟检）"
                         )
                 if _cm != "off":
                     extra += f"；拼图 {_cm}"
@@ -3423,7 +3427,7 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.wm_random_per_species_count.setSuffix(" 张/物种目录")
         self.wm_random_per_species_count.setToolTip(
-            "每个物种目录最多抽取的张数（半按中心鸟体大小、半随机，不含合集图）；\n"
+            "每个物种目录最多抽取的张数（半按像素面积、半随机，不跑鸟检，不含合集图）；\n"
             "目录内不足该数时全部保留（仍排除合集）。"
         )
         wm_layout.addRow("抽样张数:", self.wm_random_per_species_count)
