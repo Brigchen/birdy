@@ -69,6 +69,7 @@ doubao_api_usage.json
 src/gui_config.json
 src/gui_config-*.json
 src/burst_webp_dialog_state.json
+src/location_history.json
 
 # 衍生工具 BIRDY-观鸟地图
 # - birdy_runtime/、assets/：纳入版本控制

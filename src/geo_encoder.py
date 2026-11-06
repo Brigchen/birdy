@@ -15,6 +15,8 @@ import math
 import shutil
 from pathlib import Path
 from typing import Optional, Tuple, Dict, List
+
+from location_history import lookup_location
 import piexif
 import concurrent.futures
 import os
@@ -219,6 +221,15 @@ def geocode_location(location_name: str) -> Optional[Tuple[float, float]]:
     if location_name in CHINESE_LOCATIONS:
         lat, lon = CHINESE_LOCATIONS[location_name]
         print("[LOCAL] Found in database: {} -> ({:.6f}, {:.6f})".format(location_name, lat, lon))
+        return (lat, lon)
+
+    # 用户曾经查过并保存的地址（跨次启动），不再联网
+    saved = lookup_location(location_name)
+    if saved:
+        lat, lon = float(saved["lat"]), float(saved["lon"])
+        CHINESE_LOCATIONS[location_name] = (lat, lon)
+        print("[HISTORY] Reuse saved address: {} -> ({:.6f}, {:.6f})".format(
+            location_name, lat, lon))
         return (lat, lon)
     
     # [次选] 2. 尝试解析为直接坐标
@@ -637,6 +648,37 @@ def write_gps_exif(image_path: str, latitude: float, longitude: float, altitude:
         return False
 
 
+def _find_exiftool() -> Optional[str]:
+    """查找 exiftool 可执行文件：PATH + 常见安装路径（含 winget 用户级）。"""
+    import shutil as _shutil
+
+    exiftool = _shutil.which("exiftool")
+    if exiftool is not None:
+        return exiftool
+    _candidates = [
+        r"C:\Program Files\exiftool\exiftool.exe",
+        r"C:\exiftool\exiftool.exe",
+        r"C:\Tools\exiftool\exiftool.exe",
+        os.path.join(
+            os.environ.get("LOCALAPPDATA", ""),
+            "Programs", "exiftool", "ExifTool.exe",
+        ),
+        os.path.join(
+            os.environ.get("LOCALAPPDATA", ""),
+            "Programs", "exiftool", "exiftool.exe",
+        ),
+    ]
+    for p in _candidates:
+        if p and os.path.isfile(p):
+            return p
+    return None
+
+
+def exiftool_available() -> bool:
+    """本机是否可调用 exiftool（DNG/RAW 写 GPS 的前置条件）。"""
+    return _find_exiftool() is not None
+
+
 def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altitude: Optional[float] = None, verbose: bool = False) -> bool:
     """将 GPS 坐标写入 DNG 文件（通过 exiftool 或 sidecar）。
 
@@ -654,31 +696,10 @@ def write_gps_exif_dng(image_path: str, latitude: float, longitude: float, altit
         True 成功，False 失败/跳过
     """
     import subprocess
-    import shutil as _shutil
 
     try:
         image_path = Path(image_path)
-        # 尝试 exiftool
-        exiftool = _shutil.which("exiftool")
-        if exiftool is None:
-            # 检查常见安装路径（含 winget 用户级安装目录）
-            _candidates = [
-                r"C:\Program Files\exiftool\exiftool.exe",
-                r"C:\exiftool\exiftool.exe",
-                r"C:\Tools\exiftool\exiftool.exe",
-                os.path.join(
-                    os.environ.get("LOCALAPPDATA", ""),
-                    "Programs", "exiftool", "ExifTool.exe",
-                ),
-                os.path.join(
-                    os.environ.get("LOCALAPPDATA", ""),
-                    "Programs", "exiftool", "exiftool.exe",
-                ),
-            ]
-            for p in _candidates:
-                if p and os.path.isfile(p):
-                    exiftool = p
-                    break
+        exiftool = _find_exiftool()
 
         if exiftool is None:
             if verbose:

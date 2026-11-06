@@ -3,8 +3,12 @@
 
 from __future__ import annotations
 
+import os
 import sys
+import time
 from pathlib import Path
+
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
@@ -17,6 +21,7 @@ from burst_grouping import (  # noqa: E402
     copy_kept_images_to_screened,
     evenly_spaced_indices,
     normalize_fast_sample_ratio,
+    process_folder,
     screened_paths_for_kept_images,
 )
 
@@ -87,3 +92,34 @@ def test_screened_keeps_raw_bytes(tmp_path: Path):
     assert not list(out.glob("*.jpg"))
     mapped = screened_paths_for_kept_images(result, str(src), str(out))
     assert Path(mapped[0]).resolve() == dest.resolve()
+
+
+def test_burst_progress_reports_finished_groups(tmp_path: Path):
+    """筛选过程按连拍组回报：先报总数，每完成一组报已完成数。"""
+    folder = tmp_path / "in"
+    folder.mkdir()
+    base = time.time()
+    for name, offset in (
+        ("a1.jpg", 0.0),
+        ("a2.jpg", 0.2),
+        ("b1.jpg", 10.0),
+        ("b2.jpg", 10.2),
+    ):
+        path = folder / name
+        Image.new("RGB", (8, 8), (20, 30, 40)).save(path, "JPEG")
+        os.utime(path, (base + offset, base + offset))
+    events = []
+    process_folder(
+        str(folder),
+        time_threshold=1.0,
+        burst_keep_ratio=1.0,
+        burst_keep_min=1,
+        use_bird_detection=False,
+        progress_callback=events.append,
+    )
+    grouped = [e for e in events if e.get("kind") == "groups"]
+    finished = [e for e in events if e.get("kind") == "group"]
+    assert grouped and grouped[0]["groups_total"] == 2
+    assert grouped[0]["groups_done"] == 0
+    assert [e["groups_done"] for e in finished] == [1, 2]
+    assert finished[-1]["groups_total"] == 2

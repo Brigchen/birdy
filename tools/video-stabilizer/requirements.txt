@@ -1,0 +1,7 @@
+opencv-python>=4.5.0
+numpy>=1.19.0
+PyQt5>=5.15.0
+vidstab>=1.7.0
+# 追踪模式（YOLO）；若仅三脚架光流，可不装 torch/ultralytics
+torch>=1.9.0
+ultralytics>=8.0.0

@@ -1737,6 +1737,165 @@ def build_animated_mp4(
     }
 
 
+def mp4_sample_indices(n_frames: int, step: int) -> List[int]:
+    """每 step 帧保留 1 帧，从第 0 帧起。"""
+    n = int(n_frames)
+    every = max(1, int(step))
+    if n <= 0:
+        return []
+    return list(range(0, n, every))
+
+
+def mp4_playback_duration_ms(
+    src_fps: float, step: int, speed: float
+) -> Tuple[float, float]:
+    """抽帧后的内容时长再除以倍速。返回 (每帧毫秒, 播放帧率)。
+
+    倍速 1 保持原片节奏（抽帧只减少帧数）；大于 1 加速，小于 1 降速。
+    """
+    src = float(src_fps) if src_fps and float(src_fps) > 1e-3 else 30.0
+    every = max(1, int(step))
+    rate = float(speed) if speed and float(speed) > 1e-3 else 1.0
+    play_ms = (every / src) / rate * 1000.0
+    play_ms = float(np.clip(play_ms, 1.0, 60000.0))
+    return play_ms, 1000.0 / play_ms
+
+
+def _resize_long_edge_bgr(bgr: np.ndarray, max_long_edge: int) -> np.ndarray:
+    edge = int(max_long_edge or 0)
+    if edge <= 0 or bgr is None or bgr.size == 0:
+        return bgr
+    h, w = int(bgr.shape[0]), int(bgr.shape[1])
+    long_edge = max(h, w)
+    if long_edge <= edge:
+        return bgr
+    scale = edge / float(long_edge)
+    nw = max(1, int(round(w * scale)))
+    nh = max(1, int(round(h * scale)))
+    return cv2.resize(bgr, (nw, nh), interpolation=cv2.INTER_AREA)
+
+
+def probe_mp4(path: str) -> Tuple[int, float]:
+    """返回 (帧数, 帧率)。打不开或没有帧时抛出 RuntimeError。"""
+    cap = cv2.VideoCapture(path)
+    if not cap.isOpened():
+        raise RuntimeError(f"无法打开视频：{path}")
+    try:
+        n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+        fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+    finally:
+        cap.release()
+    if n <= 0:
+        raise RuntimeError(f"视频没有可读帧：{path}")
+    if fps <= 1e-3:
+        fps = 30.0
+    return n, fps
+
+
+def build_webp_from_mp4(
+    src_path: str,
+    out_path: str,
+    *,
+    frame_step: int = 1,
+    speed: float = 1.0,
+    max_long_edge: int = 1600,
+    webp_quality: int = 85,
+    progress: ProgressCb = None,
+    log_terminal: bool = True,
+) -> dict:
+    """把 MP4 抽帧后写成动画 WebP。倍速改变每帧停留时间。"""
+    log_tag = "[Birdy MP4转动图]"
+    if not src_path or not os.path.isfile(src_path):
+        raise RuntimeError("请选择存在的 MP4 文件")
+    n_src, src_fps = probe_mp4(src_path)
+    indices = mp4_sample_indices(n_src, frame_step)
+    if len(indices) < 2:
+        raise RuntimeError("抽帧后不足 2 帧，请减小抽帧间隔")
+    if len(indices) > 900:
+        raise RuntimeError(
+            f"抽帧后仍有 {len(indices)} 帧，请加大抽帧间隔后再生成"
+        )
+    play_ms, out_fps = mp4_playback_duration_ms(src_fps, frame_step, speed)
+    dur = max(1, int(round(play_ms)))
+    want = set(indices)
+    cap = cv2.VideoCapture(src_path)
+    if not cap.isOpened():
+        raise RuntimeError(f"无法打开视频：{src_path}")
+    frames: List[Image.Image] = []
+    kept = 0
+    total_steps = len(indices) + 1
+    try:
+        for i in range(n_src):
+            ok, bgr = cap.read()
+            if not ok or bgr is None:
+                break
+            if i not in want:
+                continue
+            bgr = _resize_long_edge_bgr(bgr, max_long_edge)
+            rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+            frames.append(Image.fromarray(rgb))
+            kept += 1
+            _emit_export_progress(
+                progress,
+                log_terminal,
+                kept,
+                total_steps,
+                f"抽帧 {kept}/{len(indices)}",
+                log_tag,
+            )
+    finally:
+        cap.release()
+    if len(frames) < 2:
+        raise RuntimeError("视频可读帧不足 2 张，无法做成动图")
+    parent = os.path.dirname(os.path.abspath(out_path))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    _emit_export_progress(
+        progress,
+        log_terminal,
+        total_steps - 1,
+        total_steps,
+        f"写入 WebP：{os.path.basename(out_path)} …",
+        log_tag,
+    )
+    try:
+        frames[0].save(
+            out_path,
+            format="WEBP",
+            save_all=True,
+            append_images=frames[1:],
+            duration=dur,
+            loop=0,
+            quality=int(np.clip(int(webp_quality), 30, 100)),
+            method=4,
+        )
+    except Exception as e:
+        raise RuntimeError(
+            f"写出动画 WebP 失败（请确认已安装带 libwebp 的 Pillow）：{e}"
+        ) from e
+    _emit_export_progress(
+        progress,
+        log_terminal,
+        total_steps,
+        total_steps,
+        f"完成 → {out_path}",
+        log_tag,
+    )
+    return {
+        "interval_ms": float(dur),
+        "interval_note": f"{out_fps:.2f} 张/秒",
+        "frame_duration_ms": float(dur),
+        "fps": float(out_fps),
+        "n_frames": len(frames),
+        "src_frames": int(n_src),
+        "src_fps": float(src_fps),
+        "frame_step": max(1, int(frame_step)),
+        "speed": float(speed) if speed else 1.0,
+        "out_path": out_path,
+        "format": "webp",
+    }
+
+
 def build_preview_frames_rgb(
     paths: List[str],
     opts: BurstWebpBuildOptions,

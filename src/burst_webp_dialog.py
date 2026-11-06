@@ -63,8 +63,12 @@ from burst_webp import (
     build_animated_mp4,
     build_animated_webp,
     build_preview_frames_rgb,
+    build_webp_from_mp4,
     gray_world_white_balance,
     infer_crop_center_norm_from_birds,
+    mp4_playback_duration_ms,
+    mp4_sample_indices,
+    probe_mp4,
     sort_paths_by_capture_time,
 )
 from image_io import file_filter_all_images, imread_bgr
@@ -470,6 +474,61 @@ class BurstWebpBuildWorker(QThread):
             self.failed.emit(str(e))
 
 
+class Mp4ToWebpWorker(QThread):
+    """MP4 抽帧后写成动画 WebP。"""
+
+    progress = pyqtSignal(int, int, str)
+    finished_ok = pyqtSignal(dict)
+    failed = pyqtSignal(str)
+
+    def __init__(
+        self,
+        src_path: str,
+        out_path: str,
+        frame_step: int,
+        speed: float,
+        max_long_edge: int,
+        webp_quality: int,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._src_path = src_path
+        self._out_path = out_path
+        self._frame_step = int(frame_step)
+        self._speed = float(speed)
+        self._max_long_edge = int(max_long_edge)
+        self._webp_quality = int(webp_quality)
+
+    def run(self) -> None:
+        _burst_worker_configure_openmp()
+        try:
+            _burst_gui_log(
+                f"MP4 转动图开始：{os.path.basename(self._src_path)}，"
+                f"每 {self._frame_step} 帧取 1 帧，{self._speed:g} 倍速 → "
+                f"{os.path.basename(self._out_path)}"
+            )
+
+            def _cb(cur: int, tot: int, msg: str) -> None:
+                self.progress.emit(cur, tot, msg)
+
+            r = build_webp_from_mp4(
+                self._src_path,
+                self._out_path,
+                frame_step=self._frame_step,
+                speed=self._speed,
+                max_long_edge=self._max_long_edge,
+                webp_quality=self._webp_quality,
+                progress=_cb,
+            )
+            _burst_gui_log(
+                f"MP4 转动图完成：{r.get('n_frames', 0)} 帧 → {r.get('out_path', '')}"
+            )
+            self.finished_ok.emit(r)
+        except Exception as e:
+            _burst_gui_log(f"MP4 转动图失败：{e}")
+            self.failed.emit(str(e))
+
+
 class BurstWebpPreviewWorker(QThread):
     progress = pyqtSignal(int, int, str)
     done = pyqtSignal(object, float, str)
@@ -669,6 +728,10 @@ class BurstWebpDialog(QDialog):
         self._preview_idx = 0
         self._pv_worker: Optional[BurstWebpPreviewWorker] = None
         self._build_worker: Optional[BurstWebpBuildWorker] = None
+        self._mp4_worker: Optional[Mp4ToWebpWorker] = None
+        self._mp4_frame_step = 1
+        self._mp4_speed = 1.0
+        self._export_status_fmt = ""
         self._ref_bird_worker: Optional[BurstRefBirdWorker] = None
         self._ref_bird_job_id = 0
         self._prop_worker: Optional[BurstAnchorPropagateWorker] = None
@@ -740,7 +803,13 @@ class BurstWebpDialog(QDialog):
         self.btn_up.clicked.connect(lambda: self._move_sel(-1))
         self.btn_dn = QPushButton("下移")
         self.btn_dn.clicked.connect(lambda: self._move_sel(1))
+        self.btn_mp4 = QPushButton("MP4 转动图…")
+        self.btn_mp4.setToolTip(
+            "从 MP4 抽帧做成 WebP 动图。抽帧间隔决定保留哪些帧，倍速决定播放快慢。"
+        )
+        self.btn_mp4.clicked.connect(self._on_mp4_to_webp)
         row_btns.addWidget(self.btn_add)
+        row_btns.addWidget(self.btn_mp4)
         row_btns.addWidget(self.btn_rm)
         row_btns.addWidget(self.btn_sort)
         row_btns.addWidget(self.btn_up)
@@ -2234,11 +2303,137 @@ class BurstWebpDialog(QDialog):
         if cur > 0 and tot > cur and elapsed > 0.05:
             rem = (elapsed / float(cur)) * float(tot - cur)
             eta_line = f"\n预计剩余约 {rem:.0f} 秒（按当前步均耗时粗算）"
-        fmt_lbl = "MP4" if self.rb_export_mp4.isChecked() else "WebP"
+        fmt_lbl = self._export_status_fmt or (
+            "MP4" if self.rb_export_mp4.isChecked() else "WebP"
+        )
         self.lbl_pv_status.setText(
             f"[导出 {fmt_lbl}] {msg}\n进度 {cur}/{tot} · 已用 {elapsed:.1f} s{eta_line}"
         )
         _burst_gui_log(f"导出进度 {cur}/{tot} · {msg} · 已用 {elapsed:.1f}s")
+
+    def _on_mp4_to_webp(self) -> None:
+        if (
+            (self._build_worker is not None and self._build_worker.isRunning())
+            or (self._mp4_worker is not None and self._mp4_worker.isRunning())
+        ):
+            QMessageBox.information(self, "提示", "正在生成，请稍候。")
+            return
+        start = self._default_dir or os.path.expanduser("~")
+        src, _ = QFileDialog.getOpenFileName(
+            self,
+            "选择 MP4",
+            start,
+            "MP4 (*.mp4);;所有文件 (*.*)",
+        )
+        if not src:
+            return
+        try:
+            n_src, src_fps = probe_mp4(src)
+        except Exception as e:
+            QMessageBox.critical(self, "无法读取视频", str(e))
+            return
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("MP4 转动图")
+        lay = QVBoxLayout(dlg)
+        form = QFormLayout()
+        src_label = QLabel(src)
+        src_label.setWordWrap(True)
+        form.addRow("源视频:", src_label)
+        step_spin = QSpinBox()
+        step_spin.setRange(1, 120)
+        step_spin.setValue(max(1, int(self._mp4_frame_step)))
+        step_spin.setSuffix(" 帧取 1 帧")
+        form.addRow("抽帧:", step_spin)
+        speed_spin = QDoubleSpinBox()
+        speed_spin.setRange(0.1, 8.0)
+        speed_spin.setSingleStep(0.25)
+        speed_spin.setDecimals(2)
+        speed_spin.setValue(float(np.clip(self._mp4_speed, 0.1, 8.0)))
+        speed_spin.setSuffix(" 倍")
+        form.addRow("速度:", speed_spin)
+        out_edit = QLineEdit()
+        stem = os.path.splitext(os.path.basename(src))[0]
+        out_edit.setText(os.path.join(os.path.dirname(src), f"{stem}_动图.webp"))
+        out_btn = QPushButton("浏览…")
+
+        def _pick_out() -> None:
+            fp, _ = QFileDialog.getSaveFileName(
+                dlg,
+                "保存 WebP 动图",
+                out_edit.text().strip() or os.path.dirname(src),
+                "WebP (*.webp);;所有文件 (*.*)",
+            )
+            if fp:
+                if not fp.lower().endswith(".webp"):
+                    fp += ".webp"
+                out_edit.setText(fp)
+
+        out_btn.clicked.connect(_pick_out)
+        out_row = QHBoxLayout()
+        out_row.addWidget(out_edit, 1)
+        out_row.addWidget(out_btn)
+        form.addRow("输出:", out_row)
+        preview = QLabel("")
+        preview.setWordWrap(True)
+
+        def _refresh_preview() -> None:
+            step = int(step_spin.value())
+            speed = float(speed_spin.value())
+            kept = len(mp4_sample_indices(n_src, step))
+            dur_ms, out_fps = mp4_playback_duration_ms(src_fps, step, speed)
+            preview.setText(
+                f"源 {src_fps:.2f} 帧/秒，共 {n_src} 帧；保留 {kept} 帧，"
+                f"每帧约 {dur_ms:.0f} ms（约 {out_fps:.2f} 张/秒）"
+            )
+
+        step_spin.valueChanged.connect(lambda _v: _refresh_preview())
+        speed_spin.valueChanged.connect(lambda _v: _refresh_preview())
+        _refresh_preview()
+        form.addRow(preview)
+        lay.addLayout(form)
+        row = QHBoxLayout()
+        row.addStretch(1)
+        ok_btn = QPushButton("生成")
+        cancel_btn = QPushButton("取消")
+        ok_btn.clicked.connect(dlg.accept)
+        cancel_btn.clicked.connect(dlg.reject)
+        row.addWidget(ok_btn)
+        row.addWidget(cancel_btn)
+        lay.addLayout(row)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        out = out_edit.text().strip()
+        if not out:
+            QMessageBox.warning(self, "提示", "请选择输出文件路径。")
+            return
+        if not out.lower().endswith(".webp"):
+            out += ".webp"
+        step = int(step_spin.value())
+        speed = float(speed_spin.value())
+        self._mp4_frame_step = step
+        self._mp4_speed = speed
+        self._schedule_burst_state_save()
+        edge = _int_safe_combo_data(self.cmb_max, 1600)
+        quality = int(self.spn_q.value())
+        self._export_status_fmt = "WebP"
+        self.btn_go.setEnabled(False)
+        self.btn_mp4.setEnabled(False)
+        self._export_t0 = time.monotonic()
+        self.lbl_pv_status.setText("已开始把 MP4 转为 WebP 动图…")
+        self._mp4_worker = Mp4ToWebpWorker(
+            src,
+            out,
+            step,
+            speed,
+            int(edge),
+            quality,
+            self,
+        )
+        self._mp4_worker.progress.connect(self._on_export_progress, Qt.QueuedConnection)
+        self._mp4_worker.finished_ok.connect(self._on_build_ok, Qt.QueuedConnection)
+        self._mp4_worker.failed.connect(self._on_build_fail, Qt.QueuedConnection)
+        self._mp4_worker.start()
 
     def _on_export(self) -> None:
         paths = self._collect_paths()
@@ -2277,7 +2472,10 @@ class BurstWebpDialog(QDialog):
                 else:
                     out = out + ".webp"
                 self.ed_out.setText(out)
-        if self._build_worker is not None and self._build_worker.isRunning():
+        if (
+            (self._build_worker is not None and self._build_worker.isRunning())
+            or (self._mp4_worker is not None and self._mp4_worker.isRunning())
+        ):
             _burst_gui_log("操作：生成忽略（导出线程已在运行）。")
             QMessageBox.information(self, "提示", "正在生成，请稍候。")
             return
@@ -2288,6 +2486,7 @@ class BurstWebpDialog(QDialog):
             f"模式={opts.mode}, fps={opts.fps:g}"
         )
         self.btn_go.setEnabled(False)
+        self.btn_mp4.setEnabled(False)
         self.btn_go.setText("生成中…")
         self._export_t0 = time.monotonic()
         log_hint = (
@@ -2313,7 +2512,9 @@ class BurstWebpDialog(QDialog):
         _burst_gui_log(
             f"操作：生成 {fmt} 成功，帧数={r.get('n_frames')}, 输出={r.get('out_path')}"
         )
+        self._export_status_fmt = ""
         self.btn_go.setEnabled(True)
+        self.btn_mp4.setEnabled(True)
         self.btn_go.setText("生成")
         fps_note = ""
         if r.get("fps") is not None:
@@ -2333,7 +2534,9 @@ class BurstWebpDialog(QDialog):
 
     def _on_build_fail(self, msg: str) -> None:
         _burst_gui_log(f"操作：生成失败：{msg}")
+        self._export_status_fmt = ""
         self.btn_go.setEnabled(True)
+        self.btn_mp4.setEnabled(True)
         self.btn_go.setText("生成")
         self.lbl_pv_status.setText(f"导出失败：{msg}")
         QMessageBox.critical(self, "生成失败", msg)
@@ -2366,6 +2569,9 @@ class BurstWebpDialog(QDialog):
         if self._build_worker and self._build_worker.isRunning():
             _burst_gui_log("等待导出线程结束（最多 3s）…")
             self._build_worker.wait(3000)
+        if self._mp4_worker and self._mp4_worker.isRunning():
+            _burst_gui_log("等待 MP4 转动图线程结束（最多 3s）…")
+            self._mp4_worker.wait(3000)
         if self._ref_bird_worker and self._ref_bird_worker.isRunning():
             _burst_gui_log("等待首张鸟检后台线程结束（最多 5s）…")
             self._ref_bird_worker.wait(5000)
@@ -2429,6 +2635,8 @@ class BurstWebpDialog(QDialog):
             "webp_quality": int(self.spn_q.value()),
             "out_path": self.ed_out.text().strip(),
             "export_format": ("mp4" if self.rb_export_mp4.isChecked() else "webp"),
+            "mp4_frame_step": int(self._mp4_frame_step),
+            "mp4_speed": float(self._mp4_speed),
             "window_maximized": bool(maxed),
             "window_geometry": geom,
             "last_project_path": (
@@ -2516,6 +2724,16 @@ class BurstWebpDialog(QDialog):
             try:
                 self.ed_out.setText(raw["out_path"])
             except Exception:
+                pass
+        if "mp4_frame_step" in raw:
+            try:
+                self._mp4_frame_step = max(1, int(raw["mp4_frame_step"]))
+            except (TypeError, ValueError):
+                pass
+        if "mp4_speed" in raw:
+            try:
+                self._mp4_speed = float(np.clip(float(raw["mp4_speed"]), 0.1, 8.0))
+            except (TypeError, ValueError):
                 pass
         try:
             if str(raw.get("export_format", "webp")).lower() == "mp4":

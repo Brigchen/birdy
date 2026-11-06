@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .export_filenames import unique_checklist_slug
 from .scan import ChecklistBucket
-from .taxonomy_cn import iter_species_counts_taxo
+from .zhengsi_names import iter_species_counts_zhengsi
 
 # 模版列（不得增删）：与 data/species/鸟种导入模版.xls 一致
 COL_CN_NAME = "中文名"
@@ -44,6 +44,7 @@ def write_china_bird_record_xls(
 ) -> None:
     """
     基于官方 ``鸟种导入模版.xls`` 复制格式，自第 2 行起写入物种与数量。
+    中文名按 ``郑四鸟种名录.xlsx`` 改写（学名相同而中文名不同时用郑四名，并对只数合并）。
     仅两列，不增加列。
     """
     import xlrd
@@ -59,7 +60,7 @@ def write_china_bird_record_xls(
     ws = wb.get_sheet(0)
 
     row = 1
-    for sp_cn, cnt in iter_species_counts_taxo(species_counts):
+    for sp_cn, cnt in iter_species_counts_zhengsi(species_counts):
         n = int(cnt)
         if n < 1:
             continue

@@ -1050,6 +1050,8 @@ def process_folder(
     
     print(f"\n发现 {len(groups)} 组连拍，共 {sum(g.total for g in groups)} 张图片")
     print(f"非连拍图片: {len(non_burst)} 张")
+    n_groups = len(groups)
+    print(f"连拍组共 {n_groups}")
     
     # 2. 处理每组连拍
     all_results = {
@@ -1072,8 +1074,18 @@ def process_folder(
     start_time = time.time()
     total_expected = int(sum(g.total for g in groups) + len(non_burst))
     processed_count = 0
+    groups_done = 0
     if progress_callback:
         try:
+            progress_callback(
+                {
+                    "kind": "groups",
+                    "done": 0,
+                    "total": max(1, total_expected),
+                    "groups_done": 0,
+                    "groups_total": n_groups,
+                }
+            )
             progress_callback(
                 {"kind": "start", "done": 0, "total": max(1, total_expected)}
             )
@@ -1173,6 +1185,21 @@ def process_folder(
                         pass
             
             all_results["groups"].append(group_result)
+            groups_done += 1
+            print(f"连拍组 {groups_done}/{n_groups} 已完成")
+            if progress_callback:
+                try:
+                    progress_callback(
+                        {
+                            "kind": "group",
+                            "done": processed_count,
+                            "total": max(1, total_expected),
+                            "groups_done": groups_done,
+                            "groups_total": n_groups,
+                        }
+                    )
+                except Exception:
+                    pass
     
     # 非连拍：启用鸟检且无有效鸟体则丢弃；有鸟则鸟体 ROI 对焦（与连拍一致）
     if non_burst:

@@ -41,6 +41,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from burst_grouping import process_folder, get_kept_images, screened_paths_for_kept_images
 from geo_encoder import batch_write_gps_exif, geocode_location
+from location_history import (
+    load_location_history,
+    lookup_location,
+    remember_location,
+)
 from detect_bird_and_eye import (
     BirdAndEyeDetector,
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
@@ -81,6 +86,7 @@ from gpx_track.timezone_util import (
 )
 from watermark_generator import (
     WatermarkOptions,
+    build_full_species_collage,
     choose_default_watermark_source,
     collect_images_recursive,
     generate_watermarks,
@@ -838,6 +844,29 @@ class WorkerThread(QThread):
 
             screened_dir = os.path.join(config["output_folder"], "Screened_images")
 
+            def _on_burst_progress(d: Dict) -> None:
+                kind = str(d.get("kind") or "")
+                if kind == "groups":
+                    n = int(d.get("groups_total") or 0)
+                    self.status_updated.emit(f"连拍组共 {n}")
+                elif kind == "group":
+                    done_g = int(d.get("groups_done") or 0)
+                    total_g = int(d.get("groups_total") or 0)
+                    self.status_updated.emit(f"连拍组 {done_g}/{total_g} 已完成")
+                if kind in ("start", "tick", "done"):
+                    _emit_phase_progress(
+                        "burst",
+                        int(d.get("done", 0)),
+                        int(d.get("total", 1)),
+                    )
+                if kind in ("tick", "done"):
+                    self.eta_checkpoint.emit({
+                        "kind": "phase_tick",
+                        "phase": "burst",
+                        "done": int(d.get("done", 0)),
+                        "total": max(1, int(d.get("total", 1))),
+                    })
+
             if burst_on:
                 # 第二步：连拍识别和筛选
                 current_step += 1
@@ -891,19 +920,7 @@ class WorkerThread(QThread):
                             area_score_weight=float(
                                 config.get("area_score_weight", 1.0)
                             ),
-                            progress_callback=lambda d: (
-                                _emit_phase_progress(
-                                    "burst",
-                                    int(d.get("done", 0)),
-                                    int(d.get("total", 1)),
-                                ),
-                                self.eta_checkpoint.emit({
-                                    "kind": "phase_tick",
-                                    "phase": "burst",
-                                    "done": int(d.get("done", 0)),
-                                    "total": max(1, int(d.get("total", 1))),
-                                }) if d.get("kind") != "start" else None,
-                            ),
+                            progress_callback=_on_burst_progress,
                             should_cancel=lambda: not self.is_running,
                         )
                         self.status_updated.emit(
@@ -1476,6 +1493,12 @@ class WorkerThread(QThread):
                         collage_mode=normalize_collage_mode(
                             config.get("wm_collage_mode", "off")
                         ),
+                        collage_allow_one_all=bool(
+                            config.get("wm_collage_allow_one_all", False)
+                        ),
+                        collage_multi_species=bool(
+                            config.get("wm_collage_multi_species", False)
+                        ),
                     )
                     wm_result = generate_watermarks(
                         source_folder=source_folder,
@@ -1609,6 +1632,49 @@ class WatermarkBatchThread(QThread):
                 f"水印批量：结束，成功 {r.get('ok', 0)}，失败 {r.get('fail', 0)}。"
             )
             self.finished_ok.emit(r)
+        except Exception as e:
+            self.failed.emit(str(e))
+
+
+class FullCollageThread(QThread):
+    """全拼图：每个物种一张，不走主流程。"""
+
+    log_line = pyqtSignal(str)
+    finished_ok = pyqtSignal(str)
+    failed = pyqtSignal(str)
+
+    def __init__(
+        self,
+        source_folder: str,
+        output_folder: str,
+        background_path: str,
+        place: str,
+        when: str,
+        species_count: str,
+        duration: str = "",
+        parent=None,
+    ):
+        super().__init__(parent)
+        self._source_folder = source_folder
+        self._output_folder = output_folder
+        self._background_path = background_path
+        self._place = place
+        self._when = when
+        self._species_count = species_count
+        self._duration = duration
+
+    def run(self) -> None:
+        try:
+            dest = build_full_species_collage(
+                self._source_folder,
+                self._output_folder,
+                self._background_path,
+                self._place,
+                self._when,
+                self._species_count,
+                self._duration,
+            )
+            self.finished_ok.emit(dest)
         except Exception as e:
             self.failed.emit(str(e))
 
@@ -2087,6 +2153,7 @@ class BirdDetectionGUI(QMainWindow):
         # 初始化变量
         self.worker_thread: Optional[WorkerThread] = None
         self._wm_batch_thread: Optional[WatermarkBatchThread] = None
+        self._full_collage_thread: Optional[FullCollageThread] = None
         self._species_batch_thread: Optional[SpeciesBatchThread] = None
         self._image_clean_thread: Optional[ImageCleanThread] = None
         self._track_map_thread: Optional[TrackMapThread] = None
@@ -2488,6 +2555,13 @@ class BirdDetectionGUI(QMainWindow):
             'wm_random_per_species': False,
             'wm_random_per_species_count': 3,
             'wm_collage_mode': 'off',
+            'wm_collage_allow_one_all': False,
+            'wm_collage_multi_species': False,
+            'wm_full_collage_bg': '',
+            'wm_full_collage_place': '',
+            'wm_full_collage_when': '',
+            'wm_full_collage_duration': '',
+            'wm_full_collage_count': '',
             # AI 增强（水印前曝光/降噪/锐化，流水线顺序：曝光→降噪→锐化）
             'wm_enable_ai_exposure': False,
             'wm_ai_exposure_strength': 1.0,
@@ -2778,17 +2852,33 @@ class BirdDetectionGUI(QMainWindow):
         amap_row.addStretch()
         geo_layout.addRow("", amap_row)
         
-        # 地址输入和查询
+        # 地址输入：历史地点下拉，查过的地址自动保存
         location_row = QHBoxLayout()
-        self.location_input = QLineEdit()
-        self.location_input.setPlaceholderText("输入地址，如：厦门大学翔安校区")
-        self.location_input.textChanged.connect(self._on_location_text_changed)
-        self.location_input.editingFinished.connect(self._query_location_gps)
+        self._location_history_busy = False
+        self.location_input = QComboBox()
+        self.location_input.setEditable(True)
+        self.location_input.setInsertPolicy(QComboBox.NoInsert)
+        self.location_input.setMaxVisibleItems(12)
+        self.location_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.location_input.setToolTip(
+            "输入新地址后点「查询」或离开输入框，会联网查询并自动保存。\n"
+            "下拉可直接选用以前查过的位置，填入经纬度，不再重新查询。"
+        )
+        location_edit = self.location_input.lineEdit()
+        location_edit.setPlaceholderText("输入地址，或下拉选择历史位置")
+        location_edit.editingFinished.connect(self._on_location_edit_finished)
+        completer = self.location_input.completer()
+        if completer is not None:
+            completer.setFilterMode(Qt.MatchContains)
+            completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.location_input.activated.connect(self._on_location_history_picked)
         location_row.addWidget(self.location_input, 1)
-        
+
         self.location_query_btn = QPushButton("查询")
         self.location_query_btn.clicked.connect(self._query_location_gps)
-        self.location_query_btn.setToolTip("点击查询GPS坐标")
+        self.location_query_btn.setToolTip(
+            "新地址联网查询并自动保存；已保存的地址直接填入经纬度"
+        )
         location_row.addWidget(self.location_query_btn)
         geo_layout.addRow("地址:", location_row)
         
@@ -3398,6 +3488,7 @@ class BirdDetectionGUI(QMainWindow):
 
         self.wm_date_checkbox = QCheckBox("显示拍照日期")
         self.wm_date_checkbox.setChecked(self.config.get("wm_enable_date", True))
+        self.wm_date_checkbox.setToolTip("单张水印可写 EXIF 拍摄日期。拼图时各张时间不一定相同，此项不生效。")
         wm_layout.addRow("", self.wm_date_checkbox)
 
         self.wm_species_checkbox = QCheckBox("显示物种名")
@@ -3410,6 +3501,7 @@ class BirdDetectionGUI(QMainWindow):
 
         self.wm_camera_checkbox = QCheckBox("显示相机参数")
         self.wm_camera_checkbox.setChecked(self.config.get("wm_enable_camera", True))
+        self.wm_camera_checkbox.setToolTip("单张水印可写相机参数。拼图时各张参数不一定相同，此项不生效。")
         wm_layout.addRow("", self.wm_camera_checkbox)
 
         self.wm_random_per_species_checkbox = QCheckBox(
@@ -3420,7 +3512,8 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.wm_random_per_species_checkbox.setToolTip(
             "按图片所在父目录（通常为物种文件夹）分组，每组抽取指定张数生成水印。\n"
-            "不选文件名带 all 的合集图；一半按画面中心鸟体从大到小取，剩下一半从其余中随机。\n"
+            "不拼图时：不选文件名带 all 的合集图；一半按像素面积从大到小取，剩下一半随机。\n"
+            "拼图时：不按大图排序，同一张拼图里画面相差大的优先；可另选「其中一张用群体图」。\n"
             "未勾选时对目录内全部图片生成水印。主流程与「单独批量水印生成」均生效。"
         )
         wm_layout.addRow("", self.wm_random_per_species_checkbox)
@@ -3432,36 +3525,74 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.wm_random_per_species_count.setSuffix(" 张/物种目录")
         self.wm_random_per_species_count.setToolTip(
-            "每个物种目录最多抽取的张数（半按像素面积、半随机，不跑鸟检，不含合集图）；\n"
-            "目录内不足该数时全部保留（仍排除合集）。"
+            "每个物种目录最多抽取的张数（不跑鸟检）。\n"
+            "不拼图：一半按像素面积、一半随机，不含合集图。\n"
+            "拼图：按画面差异抽格；勾选群体图时每张多联图最多一张 all。目录内不足该数时全部保留。"
         )
         wm_layout.addRow("抽样张数:", self.wm_random_per_species_count)
-        self.wm_random_per_species_checkbox.toggled.connect(
-            self.wm_random_per_species_count.setEnabled
-        )
         self.wm_random_per_species_count.setEnabled(
             self.wm_random_per_species_checkbox.isChecked()
         )
 
         self.wm_collage_combo = QComboBox()
         self.wm_collage_combo.addItem("不拼图", "off")
-        self.wm_collage_combo.addItem("2连 · 左右", "2h")
-        self.wm_collage_combo.addItem("2连 · 上下", "2v")
-        self.wm_collage_combo.addItem("3连 · 左右", "3h")
-        self.wm_collage_combo.addItem("3连 · 上下", "3v")
-        self.wm_collage_combo.addItem("4连（2×2）", "4")
-        self.wm_collage_combo.addItem("9连（3×3）", "9")
+        self.wm_collage_combo.addItem("2拼 · 左右", "2h")
+        self.wm_collage_combo.addItem("2拼 · 上下", "2v")
+        self.wm_collage_combo.addItem("3拼 · 左右", "3h")
+        self.wm_collage_combo.addItem("3拼 · 上下", "3v")
+        self.wm_collage_combo.addItem("3拼 · 上二下一", "3t")
+        self.wm_collage_combo.addItem("4拼", "4")
+        self.wm_collage_combo.addItem("5拼 · 上二中一下二", "5")
+        self.wm_collage_combo.addItem("6拼 · 上中下各二", "6")
+        self.wm_collage_combo.addItem("9拼 · 上中下各三", "9")
+        self.wm_collage_combo.addItem("24拼 · 每行四张", "24")
         _wm_col = str(self.config.get("wm_collage_mode", "off") or "off")
         _wm_coli = self.wm_collage_combo.findData(_wm_col)
         self.wm_collage_combo.setCurrentIndex(_wm_coli if _wm_coli >= 0 else 0)
         self.wm_collage_combo.setToolTip(
-            "先按物种目录拼图，再在整张拼图上加水印。\n"
-            "2/3 连可选左右或上下；4 连 2×2；9 连 3×3；格间无白线。\n"
-            "同组优先竖配竖、横配横且长宽比接近，减少裁切鸟体。\n"
-            "张数不够格子数时循环补齐；多于格子数时分多张输出。\n"
-            "文件名含独立 token all 的合集图不参与拼图。"
+            "拼图一律竖版 4:3、长边 4K（2880×3840），小图裁切填格，每格有细白边。\n"
+            "需要上下裁时，以画面从上往下 2/5 处为中心，避免鸟头被切掉；左右裁仍水平居中。\n"
+            "外框上、左、右白边为单张水印的 1/4，底栏高度不变。\n"
+            "水印自动用外框模式。5/6/9 拼同行宽度不等；24 拼每行四张且等宽。\n"
+            "默认按物种分开拼（不同物种不进同一张）。勾选「多物种合拼」后改为每个物种一张、合进同一张。\n"
+            "单物种拼图仍先分竖图池 / 横图池。拼图不写拍照日期和相机参数。\n"
+            "同一张拼图内按画面差异优先（颜色与构图相差大的放在一起），不按大图排序。\n"
+            "「其中一张用群体图」只用于单物种拼图。\n"
+            "张数不够格子数时循环补齐；多于格子数时分多张输出。"
         )
         wm_layout.addRow("拼图:", self.wm_collage_combo)
+
+        self.wm_collage_one_all_checkbox = QCheckBox("其中一张用群体图（all）")
+        self.wm_collage_one_all_checkbox.setChecked(
+            bool(self.config.get("wm_collage_allow_one_all", False))
+        )
+        self.wm_collage_one_all_checkbox.setToolTip(
+            "仅在拼图时生效。每张多联图留一格给文件名带 all 的群体图，\n"
+            "其余格子从单只图里按画面差异选取。群体图按横/竖分池，不与相反方向硬拼。\n"
+            "没有群体图时，仍全部使用单只图。"
+        )
+        self.wm_collage_combo.currentIndexChanged.connect(
+            self._sync_wm_collage_option_state
+        )
+        wm_layout.addRow("", self.wm_collage_one_all_checkbox)
+
+        self.wm_collage_multi_checkbox = QCheckBox("多物种合拼（每物种一张）")
+        self.wm_collage_multi_checkbox.setChecked(
+            bool(self.config.get("wm_collage_multi_species", False))
+        )
+        self.wm_collage_multi_checkbox.setToolTip(
+            "目录里有多个物种子文件夹时，把不同物种拼进同一张图，每个物种选一张代表图。\n"
+            "物种名写在对应小图底部居中；外框只保留签名和地点。\n"
+            "与「其中一张用群体图」「每物种抽样」分开：勾选合拼后这两项暂停，取消后恢复。"
+        )
+        self.wm_collage_multi_checkbox.toggled.connect(
+            self._sync_wm_collage_option_state
+        )
+        self.wm_random_per_species_checkbox.toggled.connect(
+            self._sync_wm_collage_option_state
+        )
+        self._sync_wm_collage_option_state()
+        wm_layout.addRow("", self.wm_collage_multi_checkbox)
 
         # 自动曝光（水印前；基于鸟体测光，避免剪影）
         self.wm_ai_exposure_checkbox = QCheckBox("水印前自动曝光")
@@ -3588,6 +3719,7 @@ class BirdDetectionGUI(QMainWindow):
             "将连拍合成为 WebP 动图或 MP4 视频（白平衡、按裁剪框自动曝光、定点/跟踪裁剪），"
             "后续帧用鸟体检测 + 卡尔曼跟踪标定点；帧率按每秒几张设置（默认 2）。"
             "图片列表与定位自动保存在相片目录的项目文件中；不支持动图 WebP 的 App 可选用 MP4。"
+            "也可把 MP4 抽帧转成 WebP 动图，并设置倍速。"
         )
         wm_burst_btn.clicked.connect(self._open_burst_webp_dialog)
         wm_preview_row.addWidget(wm_burst_btn)
@@ -3598,6 +3730,14 @@ class BirdDetectionGUI(QMainWindow):
         )
         wm_video_stab_btn.clicked.connect(self._open_video_stabilize_dialog)
         wm_preview_row.addWidget(wm_video_stab_btn)
+        self.wm_full_collage_btn = QPushButton("全拼图")
+        self.wm_full_collage_btn.setToolTip(
+            "不加入主流程。每个物种选像素面积最大的一张单只图，按观鸟记录的分类顺序（目、科、种）排列。\n"
+            "拼成一张竖版 4:3、4K 大图。小图各行等高、同行宽度不等。\n"
+            "上方 1/4 为标题栏：指定底图，左侧写地点、时间和观鸟时长，右侧为大号数字加小号「种鸟」。"
+        )
+        self.wm_full_collage_btn.clicked.connect(self._open_full_collage_dialog)
+        wm_preview_row.addWidget(self.wm_full_collage_btn)
         wm_preview_row.addStretch(1)
         wm_layout.addRow("", wm_preview_row)
 
@@ -4508,6 +4648,7 @@ class BirdDetectionGUI(QMainWindow):
         folder = stats.get("folder", "")
         if stats.get("mode") == "gpx":
             kept = int(stats.get("kept_exif_gps", 0))
+            no_exif = int(stats.get("failed_no_exiftool", 0))
             msg = (
                 f"目录: {folder}\n"
                 f"照片总数: {stats.get('total', 0)}\n"
@@ -4515,6 +4656,14 @@ class BirdDetectionGUI(QMainWindow):
                 f"成功写入 GPS: {stats.get('written', 0)}"
                 + (f"\n保留照片原 GPS: {kept}" if kept else "")
             )
+            if no_exif:
+                msg += (
+                    f"\n\n写入失败: {no_exif} 张 DNG/RAW\n"
+                    "原因: 未安装 exiftool，无法向 RAW 写入 GPS。\n"
+                    "请安装 exiftool 后重新执行批量写入。"
+                )
+            elif int(stats.get("write_failed", 0)) > 0:
+                msg += f"\n\n写入失败: {stats.get('write_failed')} 张（详见日志）"
             self.add_log("GPX→EXIF GPS:\n" + msg)
         else:
             msg = (
@@ -5348,6 +5497,32 @@ class BirdDetectionGUI(QMainWindow):
             except Exception as e:
                 print(f"保存 Logo 路径失败: {e}")
 
+    def _sync_wm_collage_option_state(self, *_args) -> None:
+        """拼图、单物种、多物种合拼的选项互斥，避免同时生效。"""
+        collage_on = (
+            normalize_collage_mode(self.wm_collage_combo.currentData()) != "off"
+        )
+        multi = collage_on and self.wm_collage_multi_checkbox.isChecked()
+        self.wm_collage_multi_checkbox.setEnabled(collage_on)
+        self.wm_collage_one_all_checkbox.setEnabled(collage_on and not multi)
+        self.wm_date_checkbox.setEnabled(not collage_on)
+        self.wm_camera_checkbox.setEnabled(not collage_on)
+        self.wm_style_combo.setEnabled(not collage_on)
+        self.wm_species_checkbox.setEnabled(not multi)
+        if multi:
+            self.wm_species_checkbox.setToolTip(
+                "多物种合拼时，物种名写在每张小图底部居中，外框不再写物种名。"
+            )
+        else:
+            self.wm_species_checkbox.setToolTip(
+                "指定相片文件夹时：使用图片所在目录名作为物种名；\n"
+                "未指定时：使用归档 ROI 图片目录名。\n"
+                "单物种拼图时，物种名写在外框底栏。"
+            )
+        sample_on = self.wm_random_per_species_checkbox.isChecked()
+        self.wm_random_per_species_checkbox.setEnabled(not multi)
+        self.wm_random_per_species_count.setEnabled(sample_on and not multi)
+
     def _update_wm_ai_denoise_enabled(self) -> None:
         """AI 降噪复选框状态联动：禁用降噪模型与强度控件。"""
         enabled = self.wm_ai_denoise_checkbox.isChecked()
@@ -5386,6 +5561,11 @@ class BirdDetectionGUI(QMainWindow):
             collage_mode=normalize_collage_mode(
                 self.wm_collage_combo.currentData()
             ),
+            collage_allow_one_all=(
+                self.wm_collage_one_all_checkbox.isChecked()
+                and not self.wm_collage_multi_checkbox.isChecked()
+            ),
+            collage_multi_species=self.wm_collage_multi_checkbox.isChecked(),
         )
 
     def _resolve_watermark_source_folder(self) -> str:
@@ -5705,6 +5885,123 @@ class BirdDetectionGUI(QMainWindow):
 
         th.progress.connect(_on_prog)
         th.log_line.connect(_on_log)
+        th.finished_ok.connect(_on_ok)
+        th.failed.connect(_on_fail)
+        th.start()
+
+    def _open_full_collage_dialog(self) -> None:
+        """全拼图：每个物种一张，标题栏手动填写，不加入主流程。"""
+        if (
+            self._full_collage_thread is not None
+            and self._full_collage_thread.isRunning()
+        ):
+            QMessageBox.information(self, "提示", "全拼图正在生成，请稍候。")
+            return
+        source_folder = self._resolve_watermark_source_folder()
+        if not source_folder or not os.path.isdir(source_folder):
+            QMessageBox.warning(self, "提示", "未找到可处理的图片目录，请先设置相片文件夹。")
+            return
+        output_folder = self.wm_output_folder_input.text().strip()
+        if not output_folder:
+            output_folder = os.path.join(
+                self.output_folder_input.text().strip() or "./outputs",
+                "watermarked",
+            )
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("全拼图")
+        lay = QVBoxLayout(dlg)
+        form = QFormLayout()
+        src_label = QLabel(source_folder)
+        src_label.setWordWrap(True)
+        src_label.setStyleSheet("color: #333;")
+        form.addRow("物种目录:", src_label)
+
+        bg_edit = QLineEdit(str(self.config.get("wm_full_collage_bg", "") or ""))
+        bg_btn = QPushButton("浏览...")
+
+        def _pick_bg() -> None:
+            start = bg_edit.text().strip() or source_folder
+            path, _ = QFileDialog.getOpenFileName(
+                dlg,
+                "选择标题栏底图",
+                start,
+                "图片 (*.jpg *.jpeg *.png *.webp *.bmp *.tif *.tiff)",
+            )
+            if path:
+                bg_edit.setText(path)
+
+        bg_btn.clicked.connect(_pick_bg)
+        bg_row = QHBoxLayout()
+        bg_row.addWidget(bg_edit, 1)
+        bg_row.addWidget(bg_btn)
+        form.addRow("标题底图:", bg_row)
+
+        place_edit = QLineEdit(str(self.config.get("wm_full_collage_place", "") or ""))
+        form.addRow("地点:", place_edit)
+        when_edit = QLineEdit(str(self.config.get("wm_full_collage_when", "") or ""))
+        form.addRow("观鸟时间:", when_edit)
+        duration_edit = QLineEdit(str(self.config.get("wm_full_collage_duration", "") or ""))
+        form.addRow("观鸟时长:", duration_edit)
+        count_edit = QLineEdit(str(self.config.get("wm_full_collage_count", "") or ""))
+        form.addRow("鸟种数:", count_edit)
+        out_label = QLabel(output_folder)
+        out_label.setWordWrap(True)
+        form.addRow("输出目录:", out_label)
+        lay.addLayout(form)
+
+        btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        btns.button(QDialogButtonBox.Ok).setText("生成")
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+        lay.addWidget(btns)
+        if dlg.exec_() != QDialog.Accepted:
+            return
+        bg_path = bg_edit.text().strip()
+        if not bg_path or not os.path.isfile(bg_path):
+            QMessageBox.warning(self, "提示", "请指定一张存在的标题栏底图。")
+            return
+        place = place_edit.text().strip()
+        when = when_edit.text().strip()
+        duration = duration_edit.text().strip()
+        count = count_edit.text().strip()
+        self.config["wm_full_collage_bg"] = bg_path
+        self.config["wm_full_collage_place"] = place
+        self.config["wm_full_collage_when"] = when
+        self.config["wm_full_collage_duration"] = duration
+        self.config["wm_full_collage_count"] = count
+        try:
+            Path(output_folder).mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            QMessageBox.critical(self, "全拼图失败", f"无法创建输出目录：{e}")
+            return
+        self.wm_output_folder_input.setText(output_folder)
+        self._save_config()
+
+        self.wm_full_collage_btn.setEnabled(False)
+        self.add_log("全拼图：正在按物种选图并合成…")
+        th = FullCollageThread(
+            source_folder,
+            output_folder,
+            bg_path,
+            place,
+            when,
+            count,
+            duration,
+            self,
+        )
+        self._full_collage_thread = th
+
+        def _on_ok(path: str) -> None:
+            self.wm_full_collage_btn.setEnabled(True)
+            self.add_log(f"全拼图已保存：{path}")
+            QMessageBox.information(self, "全拼图完成", path)
+
+        def _on_fail(msg: str) -> None:
+            self.wm_full_collage_btn.setEnabled(True)
+            self.add_log(f"全拼图失败：{msg}")
+            QMessageBox.critical(self, "全拼图失败", msg)
+
         th.finished_ok.connect(_on_ok)
         th.failed.connect(_on_fail)
         th.start()
@@ -6044,11 +6341,121 @@ class BirdDetectionGUI(QMainWindow):
 
         dlg.exec_()
     
-    def _on_location_text_changed(self, text):
-        """地址文本改变时的处理"""
-        # 可选：实时查询或延迟查询
-        pass
-    
+    def _location_text(self) -> str:
+        return self.location_input.currentText().strip()
+
+    def _reload_location_history_combo(self, current: str = "") -> None:
+        """用已保存的地址刷新下拉列表，并保持输入框里的文字。"""
+        combo = self.location_input
+        text = current if current is not None else combo.currentText()
+        self._location_history_busy = True
+        try:
+            combo.blockSignals(True)
+            line = combo.lineEdit()
+            if line is not None:
+                line.blockSignals(True)
+            combo.clear()
+            for rec in load_location_history():
+                combo.addItem(rec["name"])
+            combo.setEditText(text)
+        finally:
+            line = combo.lineEdit()
+            if line is not None:
+                line.blockSignals(False)
+            combo.blockSignals(False)
+            self._location_history_busy = False
+
+    def _seed_current_location_history(self) -> None:
+        """把当前配置里的地址补进历史，方便第一次打开就能下拉选到。"""
+        name = (self.config.get("location_name") or "").strip()
+        if not name or lookup_location(name):
+            return
+        try:
+            lat = float(self.config.get("gps_latitude"))
+            lon = float(self.config.get("gps_longitude"))
+        except (TypeError, ValueError):
+            return
+        if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+            return
+        remember_location(
+            name,
+            lat,
+            lon,
+            str(self.config.get("province") or ""),
+            str(self.config.get("city") or ""),
+        )
+
+    def _coords_match_saved(self, rec: Dict) -> bool:
+        try:
+            lat = float(self.lat_input.text().strip())
+            lon = float(self.lon_input.text().strip())
+        except ValueError:
+            return False
+        return abs(lat - float(rec["lat"])) < 1e-5 and abs(lon - float(rec["lon"])) < 1e-5
+
+    def _apply_saved_location(self, rec: Dict, *, announce: bool = True) -> None:
+        """用历史记录填入经纬度与省市，不联网。"""
+        if self._location_history_busy:
+            return
+        name = str(rec.get("name") or "").strip()
+        lat = float(rec["lat"])
+        lon = float(rec["lon"])
+        province = str(rec.get("province") or "").strip()
+        city = str(rec.get("city") or "").strip()
+        self._location_history_busy = True
+        try:
+            self.lat_input.setText(f"{lat:.6f}")
+            self.lon_input.setText(f"{lon:.6f}")
+            self.province_city_display.setText(f"{province} {city}".strip())
+            self.config["gps_latitude"] = lat
+            self.config["gps_longitude"] = lon
+            self.config["location_name"] = name
+            self.config["province"] = province or None
+            self.config["city"] = city or None
+            self.location_input.setEditText(name)
+        finally:
+            self._location_history_busy = False
+        remember_location(name, lat, lon, province, city)
+        self._reload_location_history_combo(name)
+        self._save_config()
+        if announce:
+            place = f"{province} {city}".strip()
+            extra = f"，{place}" if place else ""
+            self.add_log(
+                f"✓ 已选用历史位置: {name} -> 纬度: {lat:.6f}, 经度: {lon:.6f}{extra}"
+            )
+
+    def _needs_saved_location(self, rec: Dict) -> bool:
+        name = str(rec.get("name") or "").strip()
+        return (not self._coords_match_saved(rec)) or self.config.get("location_name") != name
+
+    def _on_location_history_picked(self, index) -> None:
+        if self._location_history_busy:
+            return
+        if isinstance(index, int):
+            if index < 0:
+                return
+            name = self.location_input.itemText(index).strip()
+        else:
+            name = str(index or "").strip()
+        rec = lookup_location(name)
+        if rec and self._needs_saved_location(rec):
+            self._apply_saved_location(rec)
+
+    def _on_location_edit_finished(self) -> None:
+        """离开输入框：历史地址直接填入；新地址才查询。"""
+        if self._location_history_busy:
+            return
+        name = self._location_text()
+        if not name:
+            return
+        rec = lookup_location(name)
+        if rec:
+            if self._needs_saved_location(rec):
+                self._apply_saved_location(rec)
+            return
+        self._query_location_gps()
+
     def _get_gps_coords(self):
         """从经纬度输入框安全读取坐标，超出范围则弹出提示并返回 None"""
         try:
@@ -6066,27 +6473,40 @@ class BirdDetectionGUI(QMainWindow):
         return lat, lon
 
     def _query_location_gps(self):
-        """查询地址的GPS坐标并更新界面"""
-        location_name = self.location_input.text().strip()
+        """查询地址的 GPS。已保存的地址直接填入，新地址联网查询后自动保存。"""
+        if self._location_history_busy:
+            return
+        location_name = self._location_text()
         if not location_name:
             return
-        
+
+        saved = lookup_location(location_name)
+        if saved:
+            self._apply_saved_location(saved)
+            return
+
         try:
             result = geocode_location(location_name)
             if result:
                 lat, lon = result
-                # 更新经纬度输入框
                 self.lat_input.setText(f"{lat:.6f}")
                 self.lon_input.setText(f"{lon:.6f}")
-                
-                # 保存到配置
+
                 self.config['gps_latitude'] = lat
                 self.config['gps_longitude'] = lon
                 self.config['location_name'] = location_name
-                
-                # 查询省市信息
+
                 self._update_province_city(lat, lon)
-                
+                remember_location(
+                    location_name,
+                    lat,
+                    lon,
+                    str(self.config.get("province") or ""),
+                    str(self.config.get("city") or ""),
+                )
+                self._reload_location_history_combo(location_name)
+                self._save_config()
+
                 self.add_log(f"✓ 查询成功: {location_name} -> 纬度: {lat:.6f}, 经度: {lon:.6f}")
             else:
                 QMessageBox.warning(self, "查询失败", f"无法找到 '{location_name}' 的GPS坐标")
@@ -6567,7 +6987,7 @@ class BirdDetectionGUI(QMainWindow):
             self.config["crop_output_folder"] = self.crop_folder_input.text().strip()
             self.config.pop("reports_output_folder", None)
         self.config["enable_gps_write"] = self.gps_write_checkbox.isChecked()
-        self.config["location_name"] = self.location_input.text().strip()
+        self.config["location_name"] = self._location_text()
         try:
             lat = float(self.lat_input.text().strip())
             if -90.0 <= lat <= 90.0:
@@ -6650,6 +7070,12 @@ class BirdDetectionGUI(QMainWindow):
         )
         self.config["wm_collage_mode"] = normalize_collage_mode(
             self.wm_collage_combo.currentData()
+        )
+        self.config["wm_collage_allow_one_all"] = (
+            self.wm_collage_one_all_checkbox.isChecked()
+        )
+        self.config["wm_collage_multi_species"] = (
+            self.wm_collage_multi_checkbox.isChecked()
         )
         self.config["wm_logo_width_ratio"] = float(
             self.wm_logo_width_ratio_input.value()
@@ -6937,6 +7363,15 @@ class BirdDetectionGUI(QMainWindow):
         _wm_col = normalize_collage_mode(self.config.get("wm_collage_mode", "off"))
         _wm_coli = self.wm_collage_combo.findData(_wm_col)
         self.wm_collage_combo.setCurrentIndex(_wm_coli if _wm_coli >= 0 else 0)
+        if hasattr(self, "wm_collage_one_all_checkbox"):
+            self.wm_collage_one_all_checkbox.setChecked(
+                bool(self.config.get("wm_collage_allow_one_all", False))
+            )
+        if hasattr(self, "wm_collage_multi_checkbox"):
+            self.wm_collage_multi_checkbox.setChecked(
+                bool(self.config.get("wm_collage_multi_species", False))
+            )
+            self._sync_wm_collage_option_state()
         self.wm_logo_width_ratio_input.setValue(
             float(self.config.get('wm_logo_width_ratio', 0.30))
         )
@@ -7106,8 +7541,9 @@ class BirdDetectionGUI(QMainWindow):
             self.gps_mode_fixed_radio.setChecked(True)
         self._on_gps_write_mode_changed()
 
-        # 更新地理位置相关UI
-        self.location_input.setText(self.config.get('location_name', ''))
+        # 更新地理位置相关UI（地址下拉含历史位置）
+        self._seed_current_location_history()
+        self._reload_location_history_combo(self.config.get('location_name', ''))
         province = self.config.get('province', '')
         city = self.config.get('city', '')
         if province or city:
@@ -7142,6 +7578,21 @@ class BirdDetectionGUI(QMainWindow):
                 event.ignore()
                 return
             self._wm_batch_thread.wait()
+        if (
+            self._full_collage_thread is not None
+            and self._full_collage_thread.isRunning()
+        ):
+            reply = QMessageBox.question(
+                self,
+                "确认关闭",
+                "全拼图仍在生成，关闭窗口将中止该任务。确定要关闭吗？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
+            self._full_collage_thread.wait()
         if (
             self._species_batch_thread is not None
             and self._species_batch_thread.isRunning()

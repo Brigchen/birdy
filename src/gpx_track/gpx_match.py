@@ -388,6 +388,8 @@ def batch_write_gps_from_gpx(
     align = alignment_from_tz(exif_tz, gpx_tz)
     matched = 0
     written = 0
+    write_failed = 0
+    failed_no_exiftool = 0
     skipped_no_time = 0
     skipped_delta = 0
     endpoint_matched = 0
@@ -395,6 +397,19 @@ def batch_write_gps_from_gpx(
     max_delta = max_delta_hours * 3600.0
 
     ts_tl, _ = _timeline_index(track, align)
+
+    # DNG/RAW 写 GPS 依赖 exiftool：缺失时提前提示并短路，避免逐张静默失败
+    from geo_encoder import exiftool_available
+
+    raw_need_exiftool = any(
+        f.lower().endswith(".dng") or is_raw_path(f) for f in files
+    )
+    no_exiftool = raw_need_exiftool and not exiftool_available()
+    if no_exiftool:
+        _log(
+            "  未检测到 exiftool：DNG/RAW 文件无法写入 GPS，"
+            "请安装 exiftool（https://exiftool.org 或 winget install exiftool）"
+        )
 
     for idx, path in enumerate(files, 1):
         try:
@@ -421,21 +436,25 @@ def batch_write_gps_from_gpx(
                 kept_exif_gps += 1
             matched += 1
             # DNG 用 write_gps_exif_dng，JPEG 用 write_gps_exif
-            if path.lower().endswith(".dng") or is_raw_path(path):
-                fn = write_gps_exif_dng
+            is_raw = path.lower().endswith(".dng") or is_raw_path(path)
+            if no_exiftool and is_raw:
+                failed_no_exiftool += 1
+                write_failed += 1
             else:
-                fn = write_gps_exif
-            if fn is not None and fn(path, lat, lon, ele, verbose=False):
-                written += 1
-                if is_raw_path(path):
-                    try:
-                        from geo_encoder import _sync_gps_to_dxo_outputs
+                fn = write_gps_exif_dng if is_raw else write_gps_exif
+                if fn is not None and fn(path, lat, lon, ele, verbose=False):
+                    written += 1
+                    if is_raw:
+                        try:
+                            from geo_encoder import _sync_gps_to_dxo_outputs
 
-                        _sync_gps_to_dxo_outputs(
-                            path, lat, lon, ele, verbose=False
-                        )
-                    except Exception:
-                        pass
+                            _sync_gps_to_dxo_outputs(
+                                path, lat, lon, ele, verbose=False
+                            )
+                        except Exception:
+                            pass
+                else:
+                    write_failed += 1
         finally:
             if progress_cb is not None:
                 progress_cb(idx, total, os.path.basename(path))
@@ -450,12 +469,21 @@ def batch_write_gps_from_gpx(
             f"  EXIF GPS：{kept_exif_gps} 张照片已有 GPS 且距轨迹插值点 ≤ 2 公里，"
             f"已保留照片原有坐标"
         )
+    if failed_no_exiftool > 0:
+        _log(
+            f"  GPS 写入失败：{failed_no_exiftool} 张 DNG/RAW 因缺少 exiftool "
+            f"未写入（请安装后重新执行批量写入）"
+        )
+    elif write_failed > 0:
+        _log(f"  GPS 写入失败：{write_failed} 张（详见后台日志）")
     _log(f"GPX 匹配写入完成：匹配 {matched}/{total}，成功写入 {written} 张")
 
     return {
         "total": total,
         "matched": matched,
         "written": written,
+        "write_failed": write_failed,
+        "failed_no_exiftool": failed_no_exiftool,
         "skipped": len(files) - matched,
         "skipped_no_time": skipped_no_time,
         "skipped_delta": skipped_delta,

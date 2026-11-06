@@ -15,7 +15,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, Callable, Sequence, Tuple, Any
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageStat
+from PIL import Image, ImageDraw, ImageFont, ImageStat
 
 from image_io import all_supported_extensions, open_pil_rgb
 
@@ -46,8 +46,25 @@ except Exception:  # pragma: no cover
 
 
 WatermarkStyle = Literal["frame", "inline"]
-WatermarkCollageMode = Literal["off", "2h", "2v", "3h", "3v", "4", "9"]
+WatermarkCollageMode = Literal[
+    "off", "2h", "2v", "3h", "3v", "3t", "4", "5", "6", "9", "24"
+]
 
+# 竖版 4:3（宽:高 = 3:4），长边 3840，即 4K。
+COLLAGE_CANVAS_SIZE = (2880, 3840)
+# 每行是各格相对宽度。5/6/9 同行宽度不等；24 每行四张且等宽。
+COLLAGE_ROW_WEIGHTS: Dict[str, List[List[float]]] = {
+    "2h": [[1, 1]],
+    "2v": [[1], [1]],
+    "3h": [[1, 1, 1]],
+    "3v": [[1], [1], [1]],
+    "3t": [[1, 1], [1]],
+    "4": [[1, 1], [1, 1]],
+    "5": [[1.45, 0.85], [1], [0.85, 1.45]],
+    "6": [[1.40, 0.85], [0.90, 1.35], [1.20, 0.95]],
+    "9": [[1.30, 0.85, 1.10], [0.90, 1.35, 0.80], [1.05, 0.95, 1.25]],
+    "24": [[1, 1, 1, 1] for _ in range(6)],
+}
 COLLAGE_LAYOUTS: Dict[str, Tuple[int, int]] = {
     "2h": (1, 2),
     "2v": (2, 1),
@@ -55,9 +72,14 @@ COLLAGE_LAYOUTS: Dict[str, Tuple[int, int]] = {
     "3v": (3, 1),
     "4": (2, 2),
     "9": (3, 3),
+    "24": (6, 4),
 }
 COLLAGE_CELL_MAX = 2400
 COLLAGE_GAP = 0
+# 上下裁时，裁切窗口中心落在画面从上往下 2/5 处（鸟多在画面偏上）
+COLLAGE_VERTICAL_CROP_CENTER = 2 / 5
+# 拼图外框的上、左、右白边为单张的 1/4（底栏高度不变）
+COLLAGE_SIDE_WHITE_SCALE = 0.25
 # 同组内长宽比（高/宽）允许偏差，用于优先竖图配竖图、横图配横图
 COLLAGE_ASPECT_TOLERANCE = 0.28
 
@@ -88,8 +110,12 @@ class WatermarkOptions:
     ai_denoise_strength: float = 0.5  # 0=原图，1=完全降噪
     ai_sharpen_strength: float = 0.5  # 0=原图，1=完全锐化
     ai_tile_size: int = 512  # 分块大小，越大越快但越吃显存
-    # 拼图：off 逐张；2h/2v/3h/3v；4=2×2；9=3×3。水印加在拼图之后。
+    # 拼图：off 逐张。成图为竖版 4:3 / 4K，小图裁切填格并带细白边；水印固定外框。
     collage_mode: WatermarkCollageMode = "off"
+    # 多联图中最多放入一张文件名带 all 的群体图，其余为单只图。
+    collage_allow_one_all: bool = False
+    # 多个物种子目录合进同一张拼图；每物种一张。与单物种拼图、群体图、按物种抽样互斥。
+    collage_multi_species: bool = False
 
 
 def _safe_open_image(path: str) -> Optional[Image.Image]:
@@ -253,11 +279,151 @@ def _center_bird_bbox_area(birds: Sequence[dict], w: int, h: int) -> float:
 
 
 def _collage_pixel_area_score(path: str) -> float:
-    """拼图抽样用：按像素面积排序，避免对全目录跑 YOLO。"""
+    """非拼图抽样用：按像素面积排序，避免对全目录跑 YOLO。"""
     sz = _collage_image_size(path)
     if not sz:
         return 0.0
     return float(sz[0]) * float(sz[1])
+
+
+def _collage_visual_signature(path: str) -> Tuple[int, Tuple[float, ...]]:
+    """拼图筛选用的轻量画面指纹：8×8 差分哈希 + 16×16 颜色直方图。不跑 YOLO。"""
+    empty = tuple([0.0] * 24)
+    resample = getattr(getattr(Image, "Resampling", Image), "BOX", Image.BOX)
+    try:
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            small = im.resize((9, 8), resample)
+            gray = small.convert("L").tobytes()
+            bits = 0
+            for y in range(8):
+                row = gray[y * 9 : (y + 1) * 9]
+                for x in range(8):
+                    bits = (bits << 1) | (1 if row[x] > row[x + 1] else 0)
+            raw = im.resize((16, 16), resample).tobytes()
+            bins = [0.0] * 24
+            for i in range(0, len(raw), 3):
+                r, g, b = raw[i], raw[i + 1], raw[i + 2]
+                bins[min(7, r // 32)] += 1.0
+                bins[8 + min(7, g // 32)] += 1.0
+                bins[16 + min(7, b // 32)] += 1.0
+            total = sum(bins) or 1.0
+            return bits, tuple(v / total for v in bins)
+    except Exception:
+        return 0, empty
+
+
+def _collage_signature_distance(
+    a: Tuple[int, Tuple[float, ...]],
+    b: Tuple[int, Tuple[float, ...]],
+) -> float:
+    """越大越不相似。哈希汉明距离与颜色直方图 L1 相加。"""
+    ba, ha = a
+    bb, hb = b
+    ham = bin(int(ba) ^ int(bb)).count("1") / 64.0
+    l1 = sum(abs(x - y) for x, y in zip(ha, hb))
+    return ham + l1
+
+
+def _collage_signatures(
+    paths: Sequence[str],
+) -> Dict[str, Tuple[int, Tuple[float, ...]]]:
+    out: Dict[str, Tuple[int, Tuple[float, ...]]] = {}
+    for p in paths:
+        key = str(p)
+        if key and key not in out:
+            out[key] = _collage_visual_signature(key)
+    return out
+
+
+def _pick_diverse(
+    pool: Sequence[str],
+    n: int,
+    sigs: Dict[str, Tuple[int, Tuple[float, ...]]],
+) -> List[str]:
+    """从池中取 n 张，优先让组内任意两张的画面距离更大。
+
+    距离全相等时按文件名顺序取，相同画面时分组保持稳定。
+    """
+    items = sorted((str(p) for p in pool if str(p)), key=_collage_path_order_key)
+    need = int(n)
+    if need <= 0 or not items:
+        return []
+    if len(items) <= need:
+        return items
+
+    def dist(a: str, b: str) -> float:
+        return _collage_signature_distance(sigs[a], sigs[b])
+
+    start = items[0]
+    best_mean = -1.0
+    for p in items:
+        others = [dist(p, q) for q in items if q != p]
+        mean = sum(others) / len(others) if others else 0.0
+        if mean > best_mean + 1e-9:
+            best_mean = mean
+            start = p
+    picked = [start]
+    remain = [p for p in items if p != start]
+    while len(picked) < need and remain:
+        best_i = 0
+        best_s = -1.0
+        for i, p in enumerate(remain):
+            score = min(dist(p, q) for q in picked)
+            if score > best_s + 1e-9:
+                best_s = score
+                best_i = i
+        picked.append(remain.pop(best_i))
+    return picked
+
+
+def _choose_all_image(
+    all_paths: Sequence[str],
+    body: Sequence[str],
+    sigs: Dict[str, Tuple[int, Tuple[float, ...]]],
+) -> str:
+    """在群体图里选与已选单只图相差最大的一张；距离相同时按文件名。"""
+    ordered = sorted((str(p) for p in all_paths if str(p)), key=_collage_path_order_key)
+    if not ordered:
+        return ""
+    if not body:
+        return ordered[0]
+    best = ordered[0]
+    best_s = -1.0
+    for path in ordered:
+        score = min(
+            _collage_signature_distance(sigs[path], sigs[q]) for q in body
+        )
+        if score > best_s + 1e-9:
+            best_s = score
+            best = path
+    return best
+
+
+def _take_one_all_group(
+    avail: Sequence[str],
+    need: int,
+    sigs: Dict[str, Tuple[int, Tuple[float, ...]]],
+) -> List[str]:
+    """凑一格：有单只图时最多放一张 all 群体图，其余从单只图里按画面差异选取。"""
+    items = [str(p) for p in avail if str(p)]
+    n = int(need)
+    if n <= 0 or not items:
+        return []
+    singles = [p for p in items if not is_species_collection_image(p)]
+    alls = [p for p in items if is_species_collection_image(p)]
+    if not singles or n <= 1 or not alls:
+        pool = singles or items
+        return _pick_diverse(pool, n, sigs)
+    body_n = n - 1
+    if len(singles) >= body_n:
+        body = _pick_diverse(singles, body_n, sigs)
+    else:
+        body = cycle_fill_paths(singles, body_n)
+    chosen = _choose_all_image(alls, body, sigs)
+    if not chosen:
+        return body
+    return list(body) + [chosen]
 
 
 def center_bird_body_area(path: str) -> float:
@@ -352,39 +518,12 @@ def sample_images_per_species_dir(
     return out
 
 
-def _pick_rank_and_random(
-    pool: Sequence[str],
-    n: int,
-    rng: random.Random,
-    measure: Callable[[str], float],
-) -> List[str]:
-    """从池内抽 n 张：约一半按 measure 从高到低，其余随机（与单张水印抽样一致）。"""
-    group = [str(p) for p in pool if str(p)]
-    need = int(n)
-    if need <= 0 or not group:
-        return []
-    if len(group) <= need:
-        return list(group)
-    ranked_n = (need + 1) // 2
-    random_n = need - ranked_n
-    scored = sorted(group, key=lambda p: (-float(measure(p) or 0.0), p))
-    picked = list(scored[:ranked_n])
-    rest = scored[ranked_n:]
-    if random_n > 0 and rest:
-        picked.extend(rng.sample(rest, min(random_n, len(rest))))
-    return picked
-
-
 def _collage_ori_pool(path: str) -> str:
     """拼图分池：仅竖池 / 横池（方图与 unknown 按高宽比并入）。"""
     ori, ar = _collage_orientation(path)
     if ori in ("portrait", "landscape"):
         return ori
     return "portrait" if ar >= 1.0 else "landscape"
-
-
-def _collage_aspect_sort_key(path: str) -> Tuple:
-    return (_collage_orientation(path)[1], _collage_path_order_key(path))
 
 
 def _collage_by_ori_pools(paths: Sequence[str]) -> Dict[str, List[str]]:
@@ -409,35 +548,38 @@ def _collage_merge_orientation_pools(
     return len(portrait) < need or len(landscape) < need
 
 
-def _collage_merged_sorted(by_ori: Dict[str, List[str]]) -> List[str]:
-    merged: List[str] = []
-    for key in ("portrait", "landscape"):
-        merged.extend(by_ori.get(key) or [])
-    merged.sort(key=_collage_aspect_sort_key)
-    return merged
-
-
 def _collage_groups_by_orientation_chunk(
     paths: Sequence[str],
     n: int,
+    *,
+    allow_one_all: bool = False,
 ) -> List[List[str]]:
-    """全量拼图：先竖/横分池；任一侧不足一格则合并后再切组。"""
+    """全量拼图：先竖/横分池；任一侧不足一格则合并。每组按画面差异优先。"""
     src = [str(p) for p in paths if str(p)]
     need = int(n)
     if need <= 0 or not src:
         return []
+    sigs = _collage_signatures(src)
     by_ori = _collage_by_ori_pools(src)
+
+    def _chunk(items: Sequence[str]) -> List[List[str]]:
+        if allow_one_all:
+            return _chunk_paths_one_all(items, need, sigs)
+        return _chunk_paths_diverse(items, need, sigs)
+
     if _collage_merge_orientation_pools(by_ori, need):
-        return _chunk_paths_disjoint(_collage_merged_sorted(by_ori), need)
+        merged: List[str] = []
+        for key in ("portrait", "landscape"):
+            merged.extend(by_ori.get(key) or [])
+        return _chunk(merged)
     groups: List[List[str]] = []
     for ori in ("portrait", "landscape"):
         items = by_ori.get(ori) or []
         if not items:
             continue
-        items.sort(key=_collage_aspect_sort_key)
-        groups.extend(_chunk_paths_disjoint(items, need))
+        groups.extend(_chunk(items))
     if not groups:
-        return _chunk_paths_disjoint(src, need)
+        return _chunk(src)
     return groups
 
 
@@ -448,23 +590,23 @@ def collage_tile_groups_sampled(
     *,
     rng: Optional[random.Random] = None,
     measure: Optional[Callable[[str], float]] = None,
+    allow_one_all: bool = False,
 ) -> List[List[str]]:
     """
-    拼图 + 每物种限额：先竖/横分池，再各池用分辨率（或鸟体）排序与随机结合，
+    拼图 + 每物种限额：先竖/横分池，再在各池内按画面差异抽格
+    （同一张拼图里颜色与构图相差大的优先）。
+    allow_one_all 时每张拼图最多放一张 all 群体图。
     每池至多抽满一格拼图；限额 8、四连 → 通常竖四连 + 横四连共 2 张成品。
     单池不足格数时在本池内循环补格，且已选路径不重复用于下一池。
     """
-    src = [
-        str(p)
-        for p in paths
-        if str(p) and not is_species_collection_image(str(p))
-    ]
+    src = [str(p) for p in paths if str(p)]
     need = int(n_tiles)
     budget = int(per_species)
     if need <= 0 or budget <= 0 or not src:
         return []
-    rnd = rng if rng is not None else random.Random()
-    score_fn = measure if measure is not None else _collage_pixel_area_score
+    _ = rng
+    _ = measure
+    sigs = _collage_signatures(src)
     max_collages = max(1, budget // need)
 
     by_ori = _collage_by_ori_pools(src)
@@ -482,12 +624,19 @@ def collage_tile_groups_sampled(
         )
         groups.append(tiles)
 
+    def _select(avail: Sequence[str]) -> List[str]:
+        if allow_one_all:
+            picked = _take_one_all_group(avail, need, sigs)
+            if picked:
+                return picked
+        return _pick_diverse(list(avail), need, sigs)
+
     if _collage_merge_orientation_pools(by_ori, need):
         while len(groups) < max_collages:
             avail = [p for p in src if p not in used]
             if not avail:
                 break
-            picked = _pick_rank_and_random(avail, need, rnd, score_fn)
+            picked = _select(avail)
             for p in picked:
                 used.add(p)
             _append_group(picked)
@@ -504,7 +653,7 @@ def collage_tile_groups_sampled(
         avail = [p for p in pool if p not in used]
         if not avail:
             continue
-        picked = _pick_rank_and_random(avail, need, rnd, score_fn)
+        picked = _select(avail)
         for p in picked:
             used.add(p)
         _append_group(picked)
@@ -517,7 +666,7 @@ def collage_tile_groups_sampled(
                 best = avail
         if not best:
             break
-        picked = _pick_rank_and_random(best, need, rnd, score_fn)
+        picked = _select(best)
         for p in picked:
             used.add(p)
         _append_group(picked)
@@ -551,30 +700,78 @@ def normalize_collage_mode(value: Optional[str]) -> WatermarkCollageMode:
         "3tb": "3v",
         "3连竖": "3v",
         "3连上下": "3v",
+        "3t": "3t",
+        "3top": "3t",
+        "上二下一": "3t",
         "4": "4",
         "2x2": "4",
         "4连": "4",
+        "4拼": "4",
+        "5": "5",
+        "5连": "5",
+        "5拼": "5",
+        "6": "6",
+        "6连": "6",
+        "6拼": "6",
         "9": "9",
         "3x3": "9",
         "9连": "9",
+        "9拼": "9",
+        "24": "24",
+        "24连": "24",
+        "24拼": "24",
     }
     mode = aliases.get(raw, "off")
-    if mode in COLLAGE_LAYOUTS or mode == "off":
+    if mode in COLLAGE_ROW_WEIGHTS or mode == "off":
         return mode  # type: ignore[return-value]
     return "off"
 
 
 def collage_grid_shape(mode: Optional[str]) -> Optional[Tuple[int, int]]:
-    """返回 (rows, cols)；不拼图则为 None。"""
+    """均匀网格时返回 (rows, cols)；不规则版式或未拼图则为 None。"""
     m = normalize_collage_mode(mode)
     return COLLAGE_LAYOUTS.get(m)
 
 
 def collage_tile_count(mode: Optional[str]) -> int:
-    shape = collage_grid_shape(mode)
-    if not shape:
+    rows = COLLAGE_ROW_WEIGHTS.get(normalize_collage_mode(mode))
+    if not rows:
         return 1
-    return int(shape[0]) * int(shape[1])
+    return sum(len(row) for row in rows)
+
+
+def collage_tile_frame_px() -> int:
+    """小图细白边，按画布短边约 0.4%。"""
+    short = min(COLLAGE_CANVAS_SIZE)
+    return max(8, int(round(short * 0.004)))
+
+
+def collage_photo_boxes(mode: Optional[str]) -> List[Tuple[int, int, int, int]]:
+    """各小图在竖版 4K 画布上的裁切框 (x, y, w, h)，框外为白边。"""
+    rows = COLLAGE_ROW_WEIGHTS.get(normalize_collage_mode(mode))
+    if not rows:
+        return []
+    canvas_w, canvas_h = COLLAGE_CANVAS_SIZE
+    frame = collage_tile_frame_px()
+    n_rows = len(rows)
+    inner_h = canvas_h - 2 * frame - (n_rows - 1) * frame
+    base_h = inner_h // n_rows
+    extra_h = inner_h - base_h * n_rows
+    boxes: List[Tuple[int, int, int, int]] = []
+    y = frame
+    for r, weights in enumerate(rows):
+        h = base_h + (1 if r < extra_h else 0)
+        n_cols = len(weights)
+        inner_w = canvas_w - 2 * frame - (n_cols - 1) * frame
+        total = float(sum(weights)) or 1.0
+        widths = [int(inner_w * float(w) / total) for w in weights]
+        widths[-1] = inner_w - sum(widths[:-1])
+        x = frame
+        for wi in widths:
+            boxes.append((x, y, max(1, wi), max(1, h)))
+            x += max(1, wi) + frame
+        y += h + frame
+    return boxes
 
 
 def _collage_image_size(path: str) -> Optional[Tuple[int, int]]:
@@ -639,6 +836,81 @@ def _chunk_paths_disjoint(pool: Sequence[str], n: int) -> List[List[str]]:
     return groups
 
 
+def _chunk_paths_diverse(
+    pool: Sequence[str],
+    n: int,
+    sigs: Dict[str, Tuple[int, Tuple[float, ...]]],
+) -> List[List[str]]:
+    """同池内按画面差异切成 n 张一组，组间不重叠；末组不足只在本池内循环补齐。"""
+    src = sorted((str(p) for p in pool if str(p)), key=_collage_path_order_key)
+    need = int(n)
+    if need <= 0 or not src:
+        return []
+    if len(src) <= need:
+        return [cycle_fill_paths(src, need)]
+    groups: List[List[str]] = []
+    remain = list(src)
+    while remain:
+        if len(remain) <= need:
+            filled = list(remain)
+            k = 0
+            while len(filled) < need:
+                filled.append(src[k % len(src)])
+                k += 1
+            groups.append(filled)
+            break
+        picked = _pick_diverse(remain, need, sigs)
+        groups.append(picked)
+        picked_set = set(picked)
+        remain = [p for p in remain if p not in picked_set]
+    return groups
+
+
+def _chunk_paths_one_all(
+    pool: Sequence[str],
+    n: int,
+    sigs: Dict[str, Tuple[int, Tuple[float, ...]]],
+) -> List[List[str]]:
+    """每张拼图最多一张 all 群体图；单只图按画面差异分组，末组不足只循环单只图。"""
+    items = [str(p) for p in pool if str(p)]
+    need = int(n)
+    if need <= 0 or not items:
+        return []
+    singles = sorted(
+        (p for p in items if not is_species_collection_image(p)),
+        key=_collage_path_order_key,
+    )
+    alls = sorted(
+        (p for p in items if is_species_collection_image(p)),
+        key=_collage_path_order_key,
+    )
+    if not alls:
+        return _chunk_paths_diverse(singles, need, sigs)
+    if not singles or need <= 1:
+        return _chunk_paths_diverse(items, need, sigs)
+
+    groups: List[List[str]] = []
+    remain_s = list(singles)
+    remain_a = list(alls)
+    while remain_s:
+        if remain_a:
+            body_n = need - 1
+            if len(remain_s) <= body_n:
+                body = cycle_fill_paths(remain_s, body_n)
+                remain_s = []
+            else:
+                body = _pick_diverse(remain_s, body_n, sigs)
+                used = set(body)
+                remain_s = [p for p in remain_s if p not in used]
+            chosen = _choose_all_image(remain_a, body, sigs)
+            remain_a = [p for p in remain_a if p != chosen]
+            groups.append(list(body) + [chosen])
+            continue
+        groups.extend(_chunk_paths_diverse(remain_s, need, sigs))
+        break
+    return groups
+
+
 def collage_tile_groups(
     paths: Sequence[str],
     n: int,
@@ -646,10 +918,12 @@ def collage_tile_groups(
     shuffle: bool = False,
     rng: Optional[random.Random] = None,
     per_species_budget: Optional[int] = None,
+    allow_one_all: bool = False,
 ) -> List[List[str]]:
     """
-    拼图分组。限额抽样请设 per_species_budget（先横/竖再排序+随机抽格）；
-    全量时先横/竖分池再顺序切分。预览等同目录 siblings 时用全量分池逻辑。
+    拼图分组。限额抽样请设 per_species_budget（先横/竖，再按画面差异抽格）；
+    全量时先横/竖分池，每组内优先画面相差大的图。
+    allow_one_all 时每张多联图最多放一张文件名带 all 的群体图。
     """
     if per_species_budget is not None and int(per_species_budget) > 0:
         return collage_tile_groups_sampled(
@@ -657,9 +931,12 @@ def collage_tile_groups(
             n,
             int(per_species_budget),
             rng=rng,
+            allow_one_all=allow_one_all,
         )
     _ = shuffle
-    return _collage_groups_by_orientation_chunk(paths, n)
+    return _collage_groups_by_orientation_chunk(
+        paths, n, allow_one_all=allow_one_all
+    )
 
 
 def sample_images_per_species_dir_for_collage(
@@ -669,12 +946,12 @@ def sample_images_per_species_dir_for_collage(
     source_root: str = "",
     rng: Optional[random.Random] = None,
 ) -> List[str]:
-    """拼图批量：每物种目录随机抽至多 per_dir 张（排除合集图）。"""
+    """拼图批量：每物种目录按画面差异抽至多 per_dir 张（含 all 合集图）。"""
     paths = [str(p) for p in images]
     n = int(per_dir)
     if n <= 0 or not paths:
         return list(paths)
-    rnd = rng if rng is not None else random.Random()
+    _ = rng
     multi = (
         _watermark_multi_species_roots(source_root, paths)
         if source_root
@@ -682,8 +959,6 @@ def sample_images_per_species_dir_for_collage(
     )
     by_dir: Dict[str, List[str]] = defaultdict(list)
     for p in paths:
-        if is_species_collection_image(p):
-            continue
         if source_root:
             key = _watermark_batch_bucket(p, source_root, multi_species=multi)
         else:
@@ -695,7 +970,7 @@ def sample_images_per_species_dir_for_collage(
         if len(group) <= n:
             out.extend(group)
         else:
-            out.extend(rnd.sample(group, n))
+            out.extend(_pick_diverse(group, n, _collage_signatures(group)))
     return out
 
 
@@ -734,13 +1009,42 @@ def unique_named_dest(output_folder: str, stem: str, suffix: str = ".jpg") -> st
         i += 1
 
 
+def fit_collage_tile(im: Image.Image, size: Tuple[int, int]) -> Image.Image:
+    """按格子比例裁切后缩放。左右裁水平居中；上下裁以画面 2/5 高度为中心。"""
+    tw = max(1, int(size[0]))
+    th = max(1, int(size[1]))
+    src = im.convert("RGB")
+    sw, sh = src.size
+    sw = max(1, int(sw))
+    sh = max(1, int(sh))
+    if sw * th >= tw * sh:
+        crop_h = sh
+        crop_w = max(1, min(sw, int(round(sh * tw / float(th)))))
+        left = max(0, (sw - crop_w) // 2)
+        top = 0
+    else:
+        crop_w = sw
+        crop_h = max(1, min(sh, int(round(sw * th / float(tw)))))
+        center = sh * COLLAGE_VERTICAL_CROP_CENTER
+        top = int(round(center - crop_h / 2.0))
+        if top < 0:
+            top = 0
+        if top + crop_h > sh:
+            top = sh - crop_h
+        left = 0
+    cropped = src.crop((left, top, left + crop_w, top + crop_h))
+    if cropped.size != (tw, th):
+        cropped = cropped.resize((tw, th), Image.LANCZOS)
+    return cropped
+
+
 def compose_collage(
     images: Sequence[Image.Image],
     rows: int,
     cols: int,
     gap: int = COLLAGE_GAP,
 ) -> Image.Image:
-    """把已解码 RGB 图排成网格；各格按中位宽高居中裁切填满。"""
+    """把已解码 RGB 图排成网格；各格按中位宽高裁切填满。"""
     n = int(rows) * int(cols)
     tiles = [im.convert("RGB") for im in images[:n]]
     if len(tiles) < n:
@@ -757,10 +1061,7 @@ def compose_collage(
         scale = COLLAGE_CELL_MAX / float(long_side)
         cell_w = max(1, int(round(cell_w * scale)))
         cell_h = max(1, int(round(cell_h * scale)))
-    fitted = [
-        ImageOps.fit(im, (cell_w, cell_h), Image.LANCZOS, centering=(0.5, 0.5))
-        for im in tiles
-    ]
+    fitted = [fit_collage_tile(im, (cell_w, cell_h)) for im in tiles]
     g = max(0, int(gap))
     out_w = cols * cell_w + max(0, cols - 1) * g
     out_h = rows * cell_h + max(0, rows - 1) * g
@@ -773,6 +1074,487 @@ def compose_collage(
             canvas.paste(fitted[idx], (x, y))
             idx += 1
     return canvas
+
+
+def _draw_tile_species_label(
+    canvas: Image.Image,
+    box: Tuple[int, int, int, int],
+    name: str,
+) -> None:
+    """物种名画在该格照片底部居中。"""
+    text = (name or "").strip()
+    if not text:
+        return
+    x, y, w, h = box
+    if w < 8 or h < 8:
+        return
+    draw = ImageDraw.Draw(canvas)
+    max_w = max(8, int(w * 0.92))
+    font_size = max(16, min(64, h // 16, w // 8))
+    font = _get_font(font_size)
+    while font_size > 12:
+        bbox = draw.textbbox((0, 0), text, font=font)
+        if bbox[2] - bbox[0] <= max_w:
+            break
+        font_size -= 2
+        font = _get_font(font_size)
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    tx = x + max(0, (w - tw) // 2)
+    ty = y + h - th - max(10, h // 28)
+    draw.text((tx + 2, ty + 2), text, fill=(0, 0, 0), font=font)
+    draw.text((tx, ty), text, fill=(255, 255, 255), font=font)
+
+
+def compose_collage_canvas(
+    images: Sequence[Image.Image],
+    mode: Optional[str],
+    labels: Optional[Sequence[str]] = None,
+) -> Image.Image:
+    """按版式把小图裁进竖版 4:3 / 4K 画布，格间与外缘为细白边。"""
+    m = normalize_collage_mode(mode)
+    boxes = collage_photo_boxes(m)
+    if not boxes:
+        raise ValueError(f"无效拼图模式: {mode}")
+    tiles = [im.convert("RGB") for im in images]
+    if len(tiles) < len(boxes):
+        raise ValueError(f"拼图需要 {len(boxes)} 张，实际 {len(tiles)}")
+    canvas = Image.new("RGB", COLLAGE_CANVAS_SIZE, (255, 255, 255))
+    for im, (x, y, w, h) in zip(tiles, boxes):
+        fitted = fit_collage_tile(im, (w, h))
+        canvas.paste(fitted, (x, y))
+    if labels:
+        for box, label in zip(boxes, labels):
+            _draw_tile_species_label(canvas, box, str(label or ""))
+    return canvas
+
+
+_FULL_ROW_WEIGHTS = (1.45, 0.82, 1.22, 0.90, 1.35, 0.78, 1.12, 0.95, 1.28, 0.86)
+
+
+def full_collage_columns(n: int) -> int:
+    """全拼图列数：种数少时少列，避免小图过窄。"""
+    n = max(0, int(n))
+    if n <= 1:
+        return 1
+    if n <= 4:
+        return 2
+    if n <= 9:
+        return 3
+    if n <= 16:
+        return 4
+    if n <= 30:
+        return 5
+    if n <= 48:
+        return 6
+    if n <= 80:
+        return 8
+    return 10
+
+
+def full_collage_title_height() -> int:
+    return COLLAGE_CANVAS_SIZE[1] // 4
+
+
+def full_collage_photo_boxes(n: int) -> List[Tuple[int, int, int, int]]:
+    """全拼图小图框。上方 1/4 留给标题；各行等高，同行宽度按权重不等。"""
+    n = int(n)
+    if n <= 0:
+        return []
+    canvas_w, _canvas_h = COLLAGE_CANVAS_SIZE
+    title_h = full_collage_title_height()
+    frame = collage_tile_frame_px()
+    cols = full_collage_columns(n)
+    rows = (n + cols - 1) // cols
+    photo_h = COLLAGE_CANVAS_SIZE[1] - title_h
+    inner_h = photo_h - 2 * frame - (rows - 1) * frame
+    row_h = max(1, inner_h // rows)
+    boxes: List[Tuple[int, int, int, int]] = []
+    y = title_h + frame
+    idx = 0
+    for _r in range(rows):
+        k = min(cols, n - idx)
+        row_inner = canvas_w - 2 * frame - (k - 1) * frame
+        weights = [
+            _FULL_ROW_WEIGHTS[(idx + i) % len(_FULL_ROW_WEIGHTS)] for i in range(k)
+        ]
+        total_w = float(sum(weights)) or 1.0
+        widths = [int(row_inner * float(w) / total_w) for w in weights]
+        widths[-1] = row_inner - sum(widths[:-1])
+        x = frame
+        for wi in widths:
+            boxes.append((x, y, max(1, wi), max(1, row_h)))
+            x += max(1, wi) + frame
+        y += row_h + frame
+        idx += k
+    return boxes
+
+
+def _cover_center(im: Image.Image, size: Tuple[int, int]) -> Image.Image:
+    """铺满目标框并居中裁切，用于标题栏底图。"""
+    tw, th = max(1, int(size[0])), max(1, int(size[1]))
+    src = im.convert("RGB")
+    sw, sh = src.size
+    sw, sh = max(1, int(sw)), max(1, int(sh))
+    if sw * th >= tw * sh:
+        crop_h = sh
+        crop_w = max(1, min(sw, int(round(sh * tw / float(th)))))
+        left = max(0, (sw - crop_w) // 2)
+        top = 0
+    else:
+        crop_w = sw
+        crop_h = max(1, min(sh, int(round(sw * th / float(tw)))))
+        top = max(0, (sh - crop_h) // 2)
+        left = 0
+    cropped = src.crop((left, top, left + crop_w, top + crop_h))
+    if cropped.size != (tw, th):
+        cropped = cropped.resize((tw, th), Image.LANCZOS)
+    return cropped
+
+
+def _banner_side_scrim(width: int, height: int) -> Image.Image:
+    """标题栏左右压暗，中间留出底图，保证白字可读。"""
+    w = max(1, int(width))
+    h = max(1, int(height))
+    strip = Image.new("L", (64, 1), 0)
+    px = strip.load()
+    for i in range(64):
+        t = i / 63.0
+        if t < 0.48:
+            alpha = int(168 * (1.0 - t / 0.48))
+        elif t > 0.60:
+            alpha = int(176 * (t - 0.60) / 0.40)
+        else:
+            alpha = 0
+        px[i, 0] = alpha
+    mask = strip.resize((w, h), Image.BILINEAR)
+    scrim = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    black = Image.new("RGBA", (w, h), (0, 0, 0, 255))
+    black.putalpha(mask)
+    return Image.alpha_composite(scrim, black)
+
+
+def _fit_line_font(draw: ImageDraw.ImageDraw, text: str, max_w: int, max_size: int, min_size: int, bold: bool):
+    size = max(min_size, int(max_size))
+    font = _get_bold_font(size) if bold else _get_font(size)
+    while size > min_size and _text_pixel_width(draw, text, font) > max_w:
+        size -= 4
+        font = _get_bold_font(size) if bold else _get_font(size)
+    return font
+
+
+def _draw_shadow_text(draw, xy, text, font, fill, shadow=(0, 0, 0)) -> None:
+    x, y = xy
+    draw.text((x + 3, y + 4), text, font=font, fill=shadow)
+    draw.text((x, y), text, font=font, fill=fill)
+
+
+_FULL_COLLAGE_COUNT_NUM = re.compile(r"\d+")
+
+
+def full_collage_count_parts(species_count: str, fallback_n: int) -> Tuple[str, str]:
+    """右上角固定为「数字 + 种鸟」。手填里取出数字，没有数字时用实际种数。"""
+    text = (species_count or "").strip()
+    found = _FULL_COLLAGE_COUNT_NUM.search(text)
+    if found:
+        num = str(int(found.group(0)))
+    else:
+        num = str(max(0, int(fallback_n)))
+    return num, "种鸟"
+
+
+def _font_em(font, text: str, draw: ImageDraw.ImageDraw) -> Tuple[int, int]:
+    """返回 (ascent, descent)，用于数字与「种鸟」基线对齐。"""
+    metrics = getattr(font, "getmetrics", None)
+    if callable(metrics):
+        try:
+            ascent, descent = metrics()
+            return max(1, int(ascent)), max(0, int(descent))
+        except Exception:
+            pass
+    box = draw.textbbox((0, 0), text or "0", font=font)
+    return max(1, box[3] - box[1]), 0
+
+
+def _full_collage_count_fonts(
+    draw: ImageDraw.ImageDraw,
+    num_s: str,
+    suf_s: str,
+    max_w: int,
+    title_h: int,
+):
+    """数字约标题栏高度的 1/4，「种鸟」约为数字的 1/5（与观鸟地图相同比例）。"""
+    num_size = max(32, int(title_h * 0.24))
+    while True:
+        num_font = _get_bold_font(num_size)
+        suf_size = max(16, int(round(num_size / 5.0)))
+        suf_font = _get_bold_font(suf_size)
+        gap = max(6, int(round(num_size * 0.18)))
+        width = (
+            _text_pixel_width(draw, num_s, num_font)
+            + gap
+            + _text_pixel_width(draw, suf_s, suf_font)
+        )
+        if width <= max_w or num_size <= 32:
+            return num_font, suf_font, gap
+        num_size -= 4
+
+
+def _full_collage_species_sort_key(name: str):
+    """与观鸟记录导出相同：目 → 科 → 种。名录外的种排在后面。"""
+    try:
+        from record_submit.taxonomy_cn import species_cn_taxo_sort_key
+
+        return species_cn_taxo_sort_key(name)
+    except Exception:
+        return ((10**6, ""), (10**6, ""), (10**6, name or ""))
+
+
+def _draw_full_collage_title(
+    canvas: Image.Image,
+    place: str,
+    when: str,
+    species_count: str,
+    species_total: int = 0,
+    duration: str = "",
+) -> None:
+    """标题栏：左上地点、其下时间、再下观鸟时长；右侧大号数字加小号「种鸟」。"""
+    w, h = canvas.size
+    title_h = full_collage_title_height() if h == COLLAGE_CANVAS_SIZE[1] else max(1, h // 4)
+    place_s = (place or "").strip()
+    when_s = (when or "").strip()
+    duration_s = (duration or "").strip()
+    num_s, suf_s = full_collage_count_parts(species_count, species_total)
+    if not (place_s or when_s or duration_s or num_s):
+        return
+    draw = ImageDraw.Draw(canvas)
+    pad_x = max(36, int(w * 0.048))
+    left_max = max(80, int(w * 0.56))
+    right_max = max(80, int(w * 0.30))
+    place_font = _fit_line_font(draw, place_s or " ", left_max, int(title_h * 0.16), 28, True)
+    when_font = _fit_line_font(draw, when_s or " ", left_max, int(title_h * 0.078), 20, False)
+    duration_font = _fit_line_font(
+        draw, duration_s or " ", left_max, int(title_h * 0.078), 20, False
+    )
+    num_font, suf_font, count_gap = _full_collage_count_fonts(
+        draw, num_s, suf_s, right_max, title_h
+    )
+    line_gap = max(8, title_h // 28)
+
+    def _line_h(text: str, font) -> int:
+        if not text:
+            return 0
+        box = draw.textbbox((0, 0), text, font=font)
+        return box[3] - box[1]
+
+    left_lines = []
+    if place_s:
+        left_lines.append((place_s, place_font, (255, 255, 255)))
+    if when_s:
+        left_lines.append((when_s, when_font, (236, 236, 236)))
+    if duration_s:
+        left_lines.append((duration_s, duration_font, (236, 236, 236)))
+    left_h = sum(_line_h(text, font) for text, font, _fill in left_lines)
+    if len(left_lines) > 1:
+        left_h += line_gap * (len(left_lines) - 1)
+    num_ascent, num_descent = _font_em(num_font, num_s, draw)
+    suf_ascent, _suf_descent = _font_em(suf_font, suf_s, draw)
+    count_h = num_ascent + num_descent
+    block_h = max(left_h, count_h, 1)
+    top = max(12, (title_h - block_h) // 2)
+    y = top
+    for text, font, fill in left_lines:
+        _draw_shadow_text(draw, (pad_x, y), text, font, fill)
+        y += _line_h(text, font) + line_gap
+    num_w = _text_pixel_width(draw, num_s, num_font)
+    suf_w = _text_pixel_width(draw, suf_s, suf_font)
+    total_w = num_w + count_gap + suf_w
+    count_top = top + max(0, (block_h - count_h) // 2)
+    baseline = count_top + num_ascent
+    x_num = w - pad_x - total_w
+    _draw_shadow_text(draw, (x_num, baseline - num_ascent), num_s, num_font, (255, 255, 255))
+    _draw_shadow_text(
+        draw,
+        (x_num + num_w + count_gap, baseline - suf_ascent),
+        suf_s,
+        suf_font,
+        (255, 255, 255),
+    )
+
+
+def compose_full_species_collage(
+    images: Sequence[Image.Image],
+    labels: Optional[Sequence[str]],
+    title_background: Image.Image,
+    place: str = "",
+    when: str = "",
+    species_count: str = "",
+    duration: str = "",
+) -> Image.Image:
+    """每个物种一张，竖版 4:3 / 4K。上方 1/4 为标题栏底图。"""
+    tiles = [im.convert("RGB") for im in images]
+    if not tiles:
+        raise ValueError("全拼图至少需要一张照片")
+    boxes = full_collage_photo_boxes(len(tiles))
+    canvas_w, canvas_h = COLLAGE_CANVAS_SIZE
+    title_h = full_collage_title_height()
+    canvas = Image.new("RGB", (canvas_w, canvas_h), (255, 255, 255))
+    banner = _cover_center(title_background, (canvas_w, title_h)).convert("RGBA")
+    banner = Image.alpha_composite(banner, _banner_side_scrim(canvas_w, title_h))
+    canvas.paste(banner.convert("RGB"), (0, 0))
+    for im, (x, y, w, h) in zip(tiles, boxes):
+        canvas.paste(fit_collage_tile(im, (w, h)), (x, y))
+    if labels:
+        for box, label in zip(boxes, labels):
+            _draw_tile_species_label(canvas, box, str(label or ""))
+    _draw_full_collage_title(
+        canvas, place, when, species_count, len(tiles), duration
+    )
+    return canvas
+
+
+def collect_species_representatives(source_folder: str) -> List[Tuple[str, str]]:
+    """每个物种一张代表图，返回 (路径, 物种名)，按观鸟记录的目、科、种顺序。
+
+    代表图取像素面积最大的单只图，不比较画面相似度。
+    """
+    images = _collect_images_recursive(source_folder)
+    if not images:
+        return []
+    multi = _watermark_multi_species_roots(source_folder, images)
+    by_dir: Dict[str, List[str]] = defaultdict(list)
+    for p in images:
+        by_dir[
+            _watermark_batch_bucket(p, source_folder, multi_species=multi)
+        ].append(p)
+    chosen: List[Tuple[str, str]] = []
+    for bucket in sorted(by_dir.keys(), key=lambda k: (Path(k).name.lower(), k.lower())):
+        rep = _pick_largest_species_photo(by_dir[bucket])
+        if not rep:
+            continue
+        chosen.append((rep, _species_label_for_bucket(bucket, rep, source_folder)))
+    chosen.sort(key=lambda item: (_full_collage_species_sort_key(item[1]), item[0].lower()))
+    return chosen
+
+
+def build_full_species_collage(
+    source_folder: str,
+    output_folder: str,
+    background_path: str,
+    place: str = "",
+    when: str = "",
+    species_count: str = "",
+    duration: str = "",
+) -> str:
+    """生成全拼图并保存，返回输出路径。鸟种数留空时按实际种数，成图为数字加「种鸟」。"""
+    picks = collect_species_representatives(source_folder)
+    if not picks:
+        raise ValueError("目录里没有可拼的物种照片")
+    if not background_path or not os.path.isfile(background_path):
+        raise ValueError("请指定标题栏底图")
+    images: List[Image.Image] = []
+    labels: List[str] = []
+    for path, name in picks:
+        im = _load_collage_tile(path)
+        if im is None:
+            continue
+        images.append(im)
+        labels.append(name)
+    if not images:
+        raise ValueError("物种照片无法打开")
+    count_text = (species_count or "").strip() or f"{len(images)}种"
+    with Image.open(background_path) as bg:
+        canvas = compose_full_species_collage(
+            images, labels, bg, place, when, count_text, duration
+        )
+    stem = _collage_stem(f"{(place or '全拼图').strip()}_全拼图")
+    dest = unique_named_dest(output_folder, stem, ".jpg")
+    save_watermarked_image(canvas, dest)
+    return dest
+
+
+def _species_label_for_bucket(bucket: str, sample_path: str, source_folder: str) -> str:
+    root = Path(source_folder).resolve()
+    folder = Path(bucket).resolve()
+    if folder != root and folder.name:
+        return folder.name
+    return _species_from_path(sample_path, source_folder)
+
+
+def _pick_largest_species_photo(paths: Sequence[str]) -> str:
+    """全拼图：每个物种一张，取像素面积最大的单只图。面积相同则按文件名。"""
+    items = [str(p) for p in paths if str(p)]
+    singles = [p for p in items if not is_species_collection_image(p)]
+    pool = singles or items
+    if not pool:
+        return ""
+    ordered = sorted(pool, key=_collage_path_order_key)
+    return max(ordered, key=_collage_pixel_area_score)
+
+
+def _pick_species_representative(paths: Sequence[str]) -> str:
+    """每个物种一张：优先单只图，按画面差异选一张代表。"""
+    items = [str(p) for p in paths if str(p)]
+    singles = [p for p in items if not is_species_collection_image(p)]
+    pool = singles or items
+    if not pool:
+        return ""
+    if len(pool) == 1:
+        return pool[0]
+    return _pick_diverse(pool, 1, _collage_signatures(pool))[0]
+
+
+def plan_multi_species_collages(
+    source_folder: str,
+    images: Sequence[str],
+    n_tiles: int,
+) -> List[List[Tuple[str, str]]]:
+    """
+    多物种合拼：每个物种子目录选一张，再按格子数分组。
+    不足一格时循环已选物种补齐。返回每张拼图的 (路径, 物种名)。
+    """
+    need = int(n_tiles)
+    paths = [str(p) for p in images if str(p)]
+    if need <= 0 or not paths:
+        return []
+    multi = _watermark_multi_species_roots(source_folder, paths)
+    by_dir: Dict[str, List[str]] = defaultdict(list)
+    for p in paths:
+        by_dir[
+            _watermark_batch_bucket(p, source_folder, multi_species=multi)
+        ].append(p)
+    chosen: List[Tuple[str, str]] = []
+    for bucket in sorted(by_dir.keys(), key=lambda k: (Path(k).name.lower(), k.lower())):
+        rep = _pick_species_representative(by_dir[bucket])
+        if not rep:
+            continue
+        chosen.append((rep, _species_label_for_bucket(bucket, rep, source_folder)))
+    if not chosen:
+        return []
+    if len(chosen) <= need:
+        return [[chosen[i % len(chosen)] for i in range(need)]]
+    groups: List[List[Tuple[str, str]]] = []
+    for i in range(0, len(chosen), need):
+        chunk = list(chosen[i : i + need])
+        k = 0
+        while len(chunk) < need:
+            chunk.append(chosen[k % len(chosen)])
+            k += 1
+        groups.append(chunk)
+    return groups
+
+
+def collage_frame_options(options: WatermarkOptions) -> WatermarkOptions:
+    """拼图外框不写日期和相机参数。多物种合拼时物种名在小图上，外框不再写物种。"""
+    multi = bool(getattr(options, "collage_multi_species", False))
+    return replace(
+        options,
+        watermark_style="frame",
+        enable_date=False,
+        enable_camera_params=False,
+        enable_species=False if multi else bool(options.enable_species),
+    )
 
 
 def _load_collage_tile(path: str) -> Optional[Image.Image]:
@@ -791,11 +1573,9 @@ def compose_collage_from_paths(
     mode: Optional[str],
     gap: int = COLLAGE_GAP,
 ) -> Optional[Image.Image]:
-    shape = collage_grid_shape(mode)
-    if not shape:
+    need = collage_tile_count(mode)
+    if normalize_collage_mode(mode) == "off":
         return None
-    rows, cols = shape
-    need = rows * cols
     loaded: List[Image.Image] = []
     for p in list(paths)[:need]:
         im = _load_collage_tile(p)
@@ -804,7 +1584,8 @@ def compose_collage_from_paths(
         loaded.append(im)
     if len(loaded) < need:
         return None
-    return compose_collage(loaded, rows, cols, gap=gap)
+    _ = gap
+    return compose_collage_canvas(loaded, mode)
 
 
 def apply_watermark_photo_pipeline(
@@ -904,6 +1685,26 @@ def _get_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
             except Exception:
                 continue
     return ImageFont.load_default()
+
+
+def _get_bold_font(size: int):
+    """优先微软雅黑粗体，用于标题栏地点和鸟种数。"""
+    bold_first = [
+        "C:/Windows/Fonts/msyhbd.ttc",
+        "C:/Windows/Fonts/simhei.ttf",
+        "C:/Windows/Fonts/msyh.ttc",
+    ]
+    probe = "中文Birdy"
+    for fp in bold_first:
+        if os.path.isfile(fp):
+            try:
+                f = ImageFont.truetype(fp, max(8, int(size)))
+                box = f.getbbox(probe)
+                if box and (box[2] - box[0]) > 0:
+                    return f
+            except Exception:
+                continue
+    return _get_font(size)
 
 
 def _extract_exif_datetime(path: str) -> str:
@@ -1103,13 +1904,48 @@ def _watermark_multi_species_roots(source_root: str, image_paths: Sequence[str])
     return len(tops) >= 2
 
 
+_TAXON_RANK_SUFFIXES = ("目", "科", "属")
+
+
+def _taxonomy_species_bucket(img_path: str, source_root: str) -> Optional[str]:
+    """分类目录 目/科/属/种：桶定在物种文件夹，其下子目录仍并入该物种。
+
+    路径里没有目/科/属时返回 None，交给原来的第一级目录规则。
+    """
+    root = Path(source_root).resolve()
+    p = Path(img_path).resolve()
+    try:
+        rel = p.relative_to(root)
+    except ValueError:
+        return None
+    dirs = rel.parts[:-1]
+    if not dirs:
+        return None
+    last_rank = -1
+    for i, name in enumerate(dirs):
+        if str(name).endswith(_TAXON_RANK_SUFFIXES):
+            last_rank = i
+    if last_rank < 0:
+        return None
+    if last_rank + 1 < len(dirs):
+        return str(root.joinpath(*dirs[: last_rank + 2]).resolve())
+    return str(root.joinpath(*dirs[: last_rank + 1]).resolve())
+
+
 def _watermark_batch_bucket(
     img_path: str,
     source_root: str,
     *,
     multi_species: bool,
 ) -> str:
-    """水印抽样/拼图分组：多物种根按第一级子目录；否则整棵输入目录一桶。"""
+    """水印抽样/拼图分组。
+
+    分类树（目/科/属/种）按物种目录分桶，避免同一目或同一属下的不同物种拼进一张图。
+    其它目录：多物种根按第一级子目录；单物种整棵输入目录一桶。
+    """
+    tax = _taxonomy_species_bucket(img_path, source_root)
+    if tax:
+        return tax
     root = Path(source_root).resolve()
     p = Path(img_path).resolve()
     try:
@@ -1184,16 +2020,25 @@ def _wrap_text_lines(
     return lines
 
 
+def _leica_side_white(w: int, h: int, scale: float = 1.0) -> int:
+    """上、左、右白边像素。scale=1 为单张；拼图用 COLLAGE_SIDE_WHITE_SCALE。"""
+    s = 1.0 if scale is None else float(scale)
+    if s <= 0:
+        s = 1.0
+    return max(2, int(0.01 * float(int(w) + int(h)) * s))
+
+
 def _compose_leica_style(
     img: Image.Image,
     text_left: str,
     text_right: str,
     logo: Optional[Image.Image],
     logo_width_ratio: float = 0.30,
+    side_white_scale: float = 1.0,
 ) -> Image.Image:
     w, h = img.size
-    # 上、左、右白边：原 (宽+高)×5% 的 1/3（与灰色细线分开计量）
-    side_white = max(2, int(0.01 * float(w + h)))
+    # 上、左、右白边与灰色细线分开计量；底栏高度不随这条白边变化
+    side_white = _leica_side_white(w, h, side_white_scale)
     gray_w = 1  # 界分白边与照片的灰色细框
     img_x = side_white + gray_w
     img_y = side_white + gray_w
@@ -1490,6 +2335,7 @@ def _finalize_watermarked_image(
     prefer_folder_name_as_species: bool,
     logo_img: Optional[Image.Image],
     species_or_theme_override: str = "",
+    side_white_scale: float = 1.0,
 ) -> Image.Image:
     """按选项合成最终水印图（外框模式或图内签名+标签模式）。"""
     style = _norm_watermark_style(options)
@@ -1534,7 +2380,12 @@ def _finalize_watermarked_image(
     left = "  |  ".join(left_fields) if left_fields else "Birdy"
     right = "  |  ".join(right_fields)
     return _compose_leica_style(
-        img, left, right, logo_img, options.logo_width_ratio
+        img,
+        left,
+        right,
+        logo_img,
+        options.logo_width_ratio,
+        side_white_scale=side_white_scale,
     )
 
 
@@ -1558,6 +2409,8 @@ def _apply_post_compose_watermark_pipeline(
     prefer_folder_name_as_species: bool,
     logo_img: Optional[Image.Image],
 ) -> Image.Image:
+    # 拼图一律外框；日期和相机参数不写（各张照片不一定一致）。
+    options = collage_frame_options(options)
     if (
         options.enable_ai_exposure
         or options.enable_ai_denoise
@@ -1574,6 +2427,7 @@ def _apply_post_compose_watermark_pipeline(
         options,
         prefer_folder_name_as_species,
         logo_img,
+        side_white_scale=COLLAGE_SIDE_WHITE_SCALE,
     )
 
 
@@ -1664,7 +2518,9 @@ def generate_watermarks(
                 {
                     "kind": "status",
                     "message": (
-                        "拼图模式：先分横/竖，各池分辨率排序+随机抽格（不跑鸟检）…"
+                        "拼图：多物种合拼，每个物种选一张代表图…"
+                        if getattr(options, "collage_multi_species", False)
+                        else "拼图模式：先分横/竖，同组按画面差异优先（含 all 合集图，不跑鸟检）…"
                     ),
                 }
             )
@@ -1684,13 +2540,26 @@ def generate_watermarks(
         ov_map = load_overrides_json(str(options.enhance_overrides_path))
 
     jobs: List[Dict[str, Any]] = []
-    if collage_mode != "off":
+    collage_multi = bool(getattr(options, "collage_multi_species", False))
+    if collage_mode != "off" and collage_multi:
+        n_tiles = collage_tile_count(collage_mode)
+        groups = plan_multi_species_collages(source_folder, images, n_tiles)
+        root_name = Path(source_folder).name or "合拼"
+        for gi, group in enumerate(groups, start=1):
+            jobs.append(
+                {
+                    "kind": "collage",
+                    "tiles": [path for path, _name in group],
+                    "labels": [name for _path, name in group],
+                    "meta": group[0][0],
+                    "stem": f"{_collage_stem(root_name)}_合拼_{collage_mode}_{gi:02d}",
+                }
+            )
+    elif collage_mode != "off":
         n_tiles = collage_tile_count(collage_mode)
         multi_species = _watermark_multi_species_roots(source_folder, images)
         by_dir: Dict[str, List[str]] = defaultdict(list)
         for p in images:
-            if is_species_collection_image(p):
-                continue
             by_dir[
                 _watermark_batch_bucket(
                     p, source_folder, multi_species=multi_species
@@ -1709,8 +2578,17 @@ def generate_watermarks(
                     and int(random_per_species) > 0
                     else None
                 ),
+                allow_one_all=bool(
+                    getattr(options, "collage_allow_one_all", False)
+                ),
             )
-            species = _species_from_path(by_dir[d][0], source_folder)
+            bucket = Path(d)
+            if bucket.resolve() == Path(source_folder).resolve():
+                species = _species_from_path(by_dir[d][0], source_folder)
+            else:
+                species = bucket.name or _species_from_path(
+                    by_dir[d][0], source_folder
+                )
             for gi, tiles in enumerate(groups, start=1):
                 jobs.append(
                     {
@@ -1749,8 +2627,7 @@ def generate_watermarks(
         try:
             if job.get("kind") == "collage":
                 tiles_paths: List[str] = list(job.get("tiles") or [])
-                shape = collage_grid_shape(collage_mode)
-                if not shape:
+                if normalize_collage_mode(collage_mode) == "off":
                     raise ValueError("无效拼图模式")
                 if progress_callback:
                     try:
@@ -1766,7 +2643,11 @@ def generate_watermarks(
                     except Exception:
                         pass
                 prepped = _load_collage_tiles_rgb(tiles_paths)
-                img = compose_collage(prepped, shape[0], shape[1])
+                img = compose_collage_canvas(
+                    prepped,
+                    collage_mode,
+                    labels=job.get("labels"),
+                )
                 meta_path = str(job.get("meta") or tiles_paths[0])
                 out = _apply_post_compose_watermark_pipeline(
                     img,
@@ -1853,16 +2734,36 @@ def render_watermark_for_image(
         sibs = [
             p
             for p in _collect_images_recursive(folder)
-            if str(Path(p).parent) == folder and not is_species_collection_image(p)
+            if str(Path(p).parent) == folder
         ]
         if not sibs:
             sibs = [image_path]
-        tiles = collage_tile_groups(sibs, n_tiles)[0]
+        if bool(getattr(options, "collage_multi_species", False)):
+            grouped = plan_multi_species_collages(
+                source_folder,
+                _collect_images_recursive(source_folder),
+                n_tiles,
+            )
+            if not grouped:
+                return None
+            host = str(Path(image_path).resolve())
+            group = next(
+                (g for g in grouped if any(str(Path(p).resolve()) == host for p, _n in g)),
+                grouped[0],
+            )
+            tiles = [p for p, _n in group]
+            labels = [n for _p, n in group]
+        else:
+            tiles = collage_tile_groups(
+                sibs,
+                n_tiles,
+                allow_one_all=bool(getattr(options, "collage_allow_one_all", False)),
+            )[0]
+            labels = None
         prepped = _load_collage_tiles_rgb(tiles)
-        shape = collage_grid_shape(collage_mode)
-        if not shape:
+        if normalize_collage_mode(collage_mode) == "off":
             return None
-        img = compose_collage(prepped, shape[0], shape[1])
+        img = compose_collage_canvas(prepped, collage_mode, labels=labels)
         meta = tiles[0]
         return _apply_post_compose_watermark_pipeline(
             img,
