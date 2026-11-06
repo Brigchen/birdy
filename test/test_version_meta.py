@@ -18,7 +18,7 @@ def _load_meta() -> dict:
 
 def _first_changelog_heading() -> tuple:
     text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    m = re.search(r"^## v([\d.]+) \((\d{4}-\d{2}-\d{2})\)", text, re.M)
+    m = re.search(r"^## v([\d.]+[ab]?) \((\d{4}-\d{2}-\d{2})\)", text, re.M)
     assert m, "CHANGELOG.md 缺少 '## vX.Y.Z (YYYY-MM-DD)' 标题"
     return m.group(1), m.group(2)
 

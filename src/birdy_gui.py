@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-鸟图智慧仓储 (Birdy) - 图形用户界面
+瞰鸟 (Birdy) - 图形用户界面
 支持：参数配置、进度显示、文件夹选择、处理监控
 
 作者: brigchen@gmail.com
@@ -2136,9 +2136,9 @@ class TrackMapThread(QThread):
 
 
 class BirdDetectionGUI(QMainWindow):
-    """鸟图智慧仓储 (Birdy) GUI 主程序"""
+    """瞰鸟 (Birdy) GUI 主程序"""
 
-    _APP_NAME_CN = "鸟图智慧仓储"
+    _APP_NAME_CN = "瞰鸟"
     _APP_NAME_EN = "Birdy"
 
     def __init__(self):
@@ -4155,7 +4155,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.addWidget(info_label)
         
         # 品牌水印
-        watermark_label = QLabel("Birdy · 鸟图智慧仓储")
+        watermark_label = QLabel("Birdy · 瞰鸟")
         watermark_label.setStyleSheet("color: #E0E0E0; font-size: 9pt; text-align: right;")
         watermark_label.setAlignment(Qt.AlignRight)
         layout.addWidget(watermark_label)

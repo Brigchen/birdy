@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.1.85",
+  "version": "2.1.86a",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-11-05",
+  "release_date": "2026-11-06",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,12 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.1.86a": [
+      "中文产品名由鸟图智慧仓储改为瞰鸟，与手机端应用名称一致"
+    ],
+    "2.1.85a": [
+      "版本号末尾加 a，表示 Python 版。Windows 安装版使用 b，目前为 2.1.85b，之后两边各自升级"
+    ],
     "2.1.85": [
       "动图生成可将 MP4 抽帧转成 WebP 动图，并按倍速加速或降速"
     ],

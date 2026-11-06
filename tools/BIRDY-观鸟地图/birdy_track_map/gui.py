@@ -462,7 +462,7 @@ class MainWindow(QMainWindow):
         hint.setStyleSheet("color: #666666; font-size: 10pt; margin-top: 2px;")
         layout.addWidget(hint)
 
-        watermark = QLabel("Birdy · 鸟图智慧仓储")
+        watermark = QLabel("Birdy · 瞰鸟")
         watermark.setStyleSheet("color: #E0E0E0; font-size: 9pt;")
         watermark.setAlignment(Qt.AlignRight)
         layout.addWidget(watermark)
