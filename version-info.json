@@ -1,6 +1,6 @@
 {
   "name": "鸟类检测与识别",
-  "version": "2.1.86a",
+  "version": "2.2.4a",
   "description": "AI驱动的连拍照片智能处理系统 - 支持GUI和CLI双界面",
   "author": "WorkBuddy",
   "category": "AI/图像处理",
@@ -19,7 +19,7 @@
     "macOS",
     "Linux"
   ],
-  "release_date": "2026-11-06",
+  "release_date": "2026-11-18",
   "entry_points": {
     "gui": "python src/birdy_gui.py",
     "cli": "python src/birdy_cli.py"
@@ -37,6 +37,66 @@
     "GUI 输出根目录按相片文件夹名自动生成 screened/classification/reports 子目录"
   ],
   "changelog": {
+    "2.2.4a": [
+      "本机调用 DxO 时不再为每次查进程弹出终端：tasklist 和 PowerShell 改成系统进程枚举。Windows Terminal 下原先每查一次就闪一个窗口，另一台用旧控制台时几乎看不见"
+    ],
+    "2.2.3a": [
+      "修复虚拟三脚架「越稳越抖、还会脱离主画面」：warpAffine 默认把矩阵按正向变换处理，采样矩阵被二次求逆，抖动被放大成两倍；同时旧实现把限幅后的变换写回累积轨迹，长摇镜后回不来。现在改为 WARP_INVERSE_MAP + 960 宽灰度图运动估计（光流为主、相位相关兜底）+ 完整轨迹居中平滑、只补偿高频抖动，限幅不再写回轨迹；轨迹与帧号严格对齐（差一帧也会叠加抖动）",
+      "标准防抖的平滑窗口改为按帧率自适应（约 1.8 秒，50fps → 90 帧，上限 180 帧），解决 30 帧窗口压不住手持抖动的问题；界面范围与默认值同步调整",
+      "云台跟随：跟踪轨迹先做 5 帧中值滤波去跳点、再按帧率做高斯平滑（约 1.2 秒），移除会反向引入抖动的光流微调，新增全局高频抖动小幅补偿（±8px），主体更稳"
+    ],
+    "2.2.2a": [
+      "修复视频稳定设置了开始时间后必报「无法打开视频进行处理」：截取片段原本用 libx264 重编码 4K 10-bit 素材（约 20 倍实时），超过 300 秒超时后残缺 MP4 仍被当成截取成功，后续读取失败；现在优先流复制截取（XAVC-Intra 精确且快，C0146 从 7 秒到结尾约 70 秒），失败再回退重编码并按片长放宽超时，任何失败都删除残缺文件，读不出首帧的结果一律丢弃并回退完整视频",
+      "稳定弹窗的「无法打开视频进行处理」现在附带源文件路径，便于定位"
+    ],
+    "2.2.1a": [
+      "修复视频稳定「追踪模式」必然失败：opencv-python 基础包不带 CSRT 跟踪器，改为 CSRT 缺失时自动退回 MIL，并把跟踪放在 960 宽的小图上，4K 视频不再卡死或报 AttributeError",
+      "修复稳定处理在输出目录不存在时（如默认的 watermarked 目录尚未创建）两个模式都在最后一步失败：现在自动创建输出目录",
+      "视频弹窗打开不存在的文件时明确提示「视频文件不存在」；开始处理前也做同样校验，不再只报笼统的无法打开",
+      "修复处理异常时原有的 traceback 局部导入导致报错信息被 UnboundLocalError 覆盖的问题"
+    ],
+    "2.2.0a": [
+      "动图生成预览可缩放平移：滚轮以光标为中心放大（1–8 倍），中键/右键拖动平移，中键/右键双击恢复适应窗口，并显示当前倍率，便于精确标点与画框",
+      "动图裁剪框改为固定像素尺寸：以首图画好的裁剪框宽高（像素）为基准，后续各帧沿用同一像素尺寸，不再按各帧分辨率等比缩放；分辨率不一的预裁图也能裁出统一大小，越界照旧补黑边"
+    ],
+    "2.1.99a": [
+      "纠正 DxO 失败诊断：6.8 命令行批处理本身可用（能读清单、加载预设、打印 Start processing），真实原因是本机 PureRAW 6.8 启动后原生崩溃退出（GUI 闪屏即消失，DxO 崩溃上报 level=fatal/native），主进程退出时析构保存队列导致全部 Processing Cancelled / Cannot save image。失败提示改为建议修复安装或回退 6.7",
+      "顺带清理：删除注册表 selectedDeviceId 里失效的显卡标识（GetAcceleratorDeviceById 找不到设备而引擎 RequireGPU=true），清除 %TEMP% 下残留的 qtsingleapp-DxOPur 单实例锁"
+    ],
+    "2.1.98a": [
+      "DxO 失败诊断：识别 PureRAW 6.8 不再支持第三方命令行批处理（缺 tmpCollectionFile，任务队列在处理前关闭，日志为 Processing Cancelled / Cannot save image），界面直接给出可行做法（在 Lightroom 里用增效工具处理，或回退 6.6/6.7）",
+      "修复批处理清单被 PureRAW 读后删除、重试时只剩空列表的问题：每次重试前重写清单文件"
+    ],
+    "2.1.97a": [
+      "修 DxO 批处理每次都以 ExitCause=2 空退出：Lightroom 插件 PluginData.lua 里 dxoPluginAppFilePath 仍是 DXO_EXECUTABLE_PATH_PLACEHOLDER（手动复制 LightroomPluginData 时不会替换）。现改为每次都检查并写入真实 exe 路径，路径用正斜杠避免 Lua 无效转义"
+    ],
+    "2.1.96a": [
+      "修另一台电脑上 DxO 在 Lightroom 进程刚出现就批处理、两次都空退出：改为等 Lightroom 主窗口出现后再等 20 秒，失败时把 PureRAW 日志里的退出原因打到界面，并最多再试两次"
+    ],
+    "2.1.95a": [
+      "修 DxO 在 Lightroom 未运行时只拉起 Lightroom、不降噪：批处理前先确认 Lightroom Classic 已在运行，第一次退出且没有输出时再试一次"
+    ],
+    "2.1.94a": [
+      "修 DxO 批处理启动后立即退出：--lr-version 写死 14.0，本机 Lightroom Classic 已是 15.5.1，PureRAW 找不到对应版本就退出且不处理。现改为读取 lightroom.exe 的文件版本再传入"
+    ],
+    "2.1.93a": [
+      "修 Birdy 调用 DxO PureRAW 不开始处理：托盘里已有的实例不接收插件批处理，新进程交完参数就退出。现先关闭该托盘实例，再以批处理方式重新启动"
+    ],
+    "2.1.92a": [
+      "修 MobileNetV4-S 裁切识别全部归为未知：_import_timm 使用 sys.path 但模块未 import sys，加载抛 NameError 后被静默关掉物种分类器。补上 import sys 后默认 mnv4s 可正常加载"
+    ],
+    "2.1.90a": [
+      "鸟体检测增加两道过滤：bird-seg.pt 为 COCO 80 类通用模型，现只保留 class 14（bird），避免人/船/车被当鸟归档；同时丢弃宽高比不在 0.25–2.6 的框（水面反光、岸线、枝叶常被误检成鸟；下限 0.25 保留蚁鴷等竖直姿态）。bird_conf 保持默认，不改动小目标召回"
+    ],
+    "2.1.89a": [
+      "修 MobileNetV4-S 识鸟全部判为「未知」：系统 timm 为 0.6.x 时不认识 mobilenetv4_*，模型加载失败后又被静默降级。现优先使用项目内 .tmp_timm（timm 1.0.15），并在 create_model 失败时给出明确的版本提示"
+    ],
+    "2.1.88a": [
+      "默认识鸟模型改为 MobileNetV4-S（models/birdy_mnv4s_infer.pt），物种名单改用 data/birdy_mnv4s_info.json；地理白名单按学名重映射。ResNet34 与 EfficientNet-B0 仍可选"
+    ],
+    "2.1.87a": [
+      "Python GUI 视觉整理：石墨灰底、苔绿只用于主按钮与进度、去掉卡片标题表情和进度条双色渐变"
+    ],
     "2.1.86a": [
       "中文产品名由鸟图智慧仓储改为瞰鸟，与手机端应用名称一致"
     ],

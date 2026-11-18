@@ -41,6 +41,18 @@ def test_geom_rel_roundtrip():
     assert abs(back.y1 - lay.y1) < 1e-3
 
 
+def test_crop_size_fixed_across_resolutions():
+    """首图裁框的像素尺寸固定：分辨率不一的帧裁出同一大小的画面。"""
+    first = FrameLayout(ax=0.5, ay=0.5, x0=0.25, y0=0.25, x1=0.75, y1=0.75)
+    geom = geom_from_first(first, 200, 100)
+    assert (geom.crop_w, geom.crop_h) == (100, 50)
+    for w, h in ((200, 100), (100, 50), (400, 300)):
+        img = np.full((h, w, 3), 120, dtype=np.uint8)
+        lay = layout_from_anchor(0.5, 0.5, geom, w, h)
+        crop = crop_bgr_with_pad(img, lay, geom)
+        assert crop.shape[:2] == (geom.crop_h, geom.crop_w)
+
+
 def test_crop_pad_when_anchor_near_corner():
     img = np.full((100, 120, 3), 40, dtype=np.uint8)
     first = FrameLayout(ax=0.5, ay=0.5, x0=0.25, y0=0.25, x1=0.75, y1=0.75)

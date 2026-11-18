@@ -49,6 +49,7 @@ from location_history import (
 from detect_bird_and_eye import (
     BirdAndEyeDetector,
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_MNV4S,
     LOCAL_SPECIES_MODEL_RESNET34,
     SPECIES_GEO_MODE_AUTO,
     SPECIES_GEO_MODE_CHINA,
@@ -1111,7 +1112,7 @@ class WorkerThread(QThread):
                         enable_species=do_species,
                         use_local_model=config.get('use_local_model', True),
                         local_species_model=config.get(
-                            'local_species_model', LOCAL_SPECIES_MODEL_RESNET34
+                            'local_species_model', LOCAL_SPECIES_MODEL_MNV4S
                         ),
                         doubao_config=doubao_config,
                         geo_mode=normalize_species_geo_mode(
@@ -1763,7 +1764,7 @@ class SpeciesBatchThread(QThread):
                 enable_species=True,
                 use_local_model=config.get("use_local_model", True),
                 local_species_model=config.get(
-                    "local_species_model", LOCAL_SPECIES_MODEL_RESNET34
+                    "local_species_model", LOCAL_SPECIES_MODEL_MNV4S
                 ),
                 doubao_config=doubao_config,
                 geo_mode=normalize_species_geo_mode(
@@ -2336,153 +2337,151 @@ class BirdDetectionGUI(QMainWindow):
         改 QFont 若未同步样式表会看不到效果。
         """
         style = """
-            /* 全局样式 */
             QMainWindow {
-                background-color: #F5F5F5;
+                background-color: #f4f4f5;
             }
-            
+
             QWidget {
-                font-family: 'Segoe UI', 'Microsoft YaHei UI', 'Arial', sans-serif;
+                font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif;
                 font-size: 10pt;
+                color: #171717;
             }
-            
-            /* 标签样式 */
+
             QLabel {
-                color: #333333;
+                color: #171717;
+                background: transparent;
             }
-            
-            /* 输入框样式 */
-            QLineEdit, QSpinBox, QDoubleSpinBox {
-                background-color: #FFFFFF;
-                border: 1px solid #E0E0E0;
-                border-radius: 6px;
-                padding: 5px 10px;
-                color: #333333;
+
+            QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+                background-color: #ffffff;
+                border: 1px solid rgba(23, 23, 23, 0.10);
+                border-radius: 8px;
+                padding: 4px 8px;
+                color: #171717;
                 font-size: 10pt;
-                min-height: 1.1em;
+                min-height: 24px;
             }
-            
-            QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
-                border: 1px solid #2E8B57;
-                outline: none;
+
+            QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+                border: 1px solid #1f6b45;
             }
-            
-            /* 按钮样式 */
+
             QPushButton {
-                background-color: #FFFFFF;
-                border: 1px solid #E0E0E0;
-                border-radius: 6px;
-                padding: 6px 14px;
-                color: #333333;
+                background-color: #ffffff;
+                border: 1px solid rgba(23, 23, 23, 0.10);
+                border-radius: 8px;
+                padding: 4px 16px;
+                color: #171717;
                 font-weight: 500;
                 font-size: 10pt;
-                min-height: 1.2em;
+                min-height: 28px;
             }
-            
+
             QPushButton:hover {
-                background-color: #F0F0F0;
-                border: 1px solid #1E90FF;
+                background-color: #f4f4f5;
+                border: 1px solid rgba(23, 23, 23, 0.18);
             }
-            
+
             QPushButton:pressed {
-                background-color: #E0E0E0;
+                background-color: #ececee;
             }
-            
+
             QPushButton:disabled {
-                background-color: #F5F5F5;
-                color: #999999;
-                border: 1px solid #E0E0E0;
+                background-color: #f4f4f5;
+                color: #737373;
+                border: 1px solid rgba(23, 23, 23, 0.08);
             }
-            
-            /* 复选框样式 */
+
             QCheckBox {
-                spacing: 6px;
+                spacing: 8px;
                 font-size: 10pt;
+                color: #171717;
             }
-            
+
             QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-                border: 2px solid #E0E0E0;
-                border-radius: 5px;
-                background-color: #FFFFFF;
+                width: 16px;
+                height: 16px;
+                border: 1px solid rgba(23, 23, 23, 0.18);
+                border-radius: 4px;
+                background-color: #ffffff;
             }
-            
+
             QCheckBox::indicator:checked {
-                background-color: #2E8B57;
-                border: 2px solid #2E8B57;
+                background-color: #1f6b45;
+                border: 1px solid #1f6b45;
             }
-            
+
             QCheckBox::indicator:hover {
-                border: 2px solid #1E90FF;
+                border: 1px solid #1f6b45;
             }
-            
-            /* 单选框样式 */
+
             QRadioButton {
-                spacing: 6px;
+                spacing: 8px;
                 font-size: 10pt;
             }
-            
+
             QRadioButton::indicator {
-                width: 20px;
-                height: 20px;
-                border: 2px solid #E0E0E0;
-                border-radius: 10px;
-                background-color: #FFFFFF;
+                width: 16px;
+                height: 16px;
+                border: 1px solid rgba(23, 23, 23, 0.18);
+                border-radius: 8px;
+                background-color: #ffffff;
             }
-            
+
             QRadioButton::indicator:checked {
-                background-color: #2E8B57;
-                border: 2px solid #2E8B57;
+                background-color: #1f6b45;
+                border: 1px solid #1f6b45;
             }
-            
+
             QRadioButton::indicator:hover {
-                border: 2px solid #1E90FF;
+                border: 1px solid #1f6b45;
             }
-            
-            /* 进度条样式 */
+
             QProgressBar {
-                background-color: #F0F0F0;
+                background-color: #ececee;
                 border: none;
-                border-radius: 8px;
+                border-radius: 4px;
                 text-align: center;
-                height: 24px;
-                font-size: 10pt;
-            }
-            
-            QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2E8B57, stop:1 #1E90FF);
-                border-radius: 8px;
-            }
-            
-            /* 文本编辑框样式 */
-            QTextEdit {
-                background-color: #FFFFFF;
-                border: 1px solid #E0E0E0;
-                border-radius: 6px;
-                padding: 6px;
-                font-family: 'Consolas', 'Courier New', 'Microsoft YaHei UI', monospace;
+                height: 8px;
                 font-size: 9pt;
+                color: #525252;
             }
-            
-            /* 表格样式 */
+
+            QProgressBar::chunk {
+                background-color: #1f6b45;
+                border-radius: 4px;
+            }
+
+            QTextEdit {
+                background-color: #ffffff;
+                border: 1px solid rgba(23, 23, 23, 0.10);
+                border-radius: 8px;
+                padding: 8px;
+                font-family: 'Cascadia Mono', 'Consolas', 'Microsoft YaHei UI', monospace;
+                font-size: 9pt;
+                color: #171717;
+            }
+
             QTableWidget {
-                background-color: #FFFFFF;
-                border: 1px solid #E0E0E0;
-                border-radius: 6px;
+                background-color: #ffffff;
+                border: 1px solid rgba(23, 23, 23, 0.10);
+                border-radius: 8px;
                 font-size: 10pt;
+                gridline-color: rgba(23, 23, 23, 0.06);
             }
-            
+
             QTableWidget::item {
                 padding: 4px 8px;
             }
-            
+
             QHeaderView::section {
-                background-color: #F0F0F0;
-                padding: 5px 8px;
+                background-color: #f4f4f5;
+                color: #525252;
+                padding: 8px;
                 border: none;
-                border-bottom: 1px solid #E0E0E0;
+                border-bottom: 1px solid rgba(23, 23, 23, 0.08);
                 font-size: 10pt;
+                font-weight: 500;
             }
         """
         self.setStyleSheet(style)
@@ -2529,7 +2528,7 @@ class BirdDetectionGUI(QMainWindow):
             'species_input_folder': '',
             # 物种识别模式配置
             'use_local_model': True,  # 默认使用本地模型
-            'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
+            'local_species_model': LOCAL_SPECIES_MODEL_MNV4S,
             # 地理约束：基准测试 ResNet34 在 auto/china/province 下约 87.7% top1（浦口集）
             'species_geo_mode': SPECIES_GEO_MODE_AUTO,
             'enable_doubao_api': False,  # 默认不启用豆包API
@@ -2621,8 +2620,8 @@ class BirdDetectionGUI(QMainWindow):
 
         body = QWidget()
         body_layout = QHBoxLayout(body)
-        body_layout.setSpacing(12)
-        body_layout.setContentsMargins(12, 8, 12, 12)
+        body_layout.setSpacing(16)
+        body_layout.setContentsMargins(16, 16, 16, 16)
         settings_panel = self._create_settings_panel()
         settings_panel.setMinimumWidth(420)
         body_layout.addWidget(settings_panel, 1)
@@ -2639,13 +2638,13 @@ class BirdDetectionGUI(QMainWindow):
         banner.setObjectName("birdyTopBanner")
         banner.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         banner.setStyleSheet(
-            "#birdyTopBanner { background-color: #FFFFFF; "
-            "border-bottom: 1px solid #E0E0E0; }"
+            "#birdyTopBanner { background-color: #fafafa; "
+            "border-bottom: 1px solid rgba(23, 23, 23, 0.08); }"
         )
 
         row = QHBoxLayout(banner)
-        row.setContentsMargins(14, 8, 18, 8)
-        row.setSpacing(10)
+        row.setContentsMargins(16, 12, 24, 12)
+        row.setSpacing(12)
 
         logo_h = 56
         logo_label = QLabel()
@@ -2668,18 +2667,30 @@ class BirdDetectionGUI(QMainWindow):
         text_col.setSpacing(2)
         text_col.setContentsMargins(0, 0, 0, 0)
 
+        name_row = QHBoxLayout()
+        name_row.setSpacing(8)
+        name_row.setContentsMargins(0, 0, 0, 0)
+        mark = QLabel()
+        mark.setFixedSize(8, 8)
+        mark.setStyleSheet(
+            "background-color: #1f6b45; border-radius: 4px;"
+        )
+        name_row.addWidget(mark, 0, Qt.AlignVCenter)
         cn = QLabel(self._APP_NAME_CN)
         cn.setStyleSheet(
-            "color: #2E3A3F; font-size: 14pt; font-weight: bold;"
+            "color: #171717; font-size: 16px; font-weight: 600;"
         )
-        text_col.addWidget(cn)
-
+        name_row.addWidget(cn, 0, Qt.AlignVCenter)
         en = QLabel(self._APP_NAME_EN)
-        en.setStyleSheet("color: #5A6B73; font-size: 10pt;")
-        text_col.addWidget(en)
+        en.setStyleSheet("color: #525252; font-size: 13px; font-weight: 400;")
+        name_row.addWidget(en, 0, Qt.AlignVCenter)
+        name_row.addStretch(1)
+        text_col.addLayout(name_row)
 
-        ver = QLabel(f"版本 {self.app_version}")
-        ver.setStyleSheet("color: #7A8A92; font-size: 9pt;")
+        ver = QLabel(self.app_version)
+        ver.setStyleSheet(
+            "color: #737373; font-size: 12px; font-family: 'Cascadia Mono', Consolas, monospace;"
+        )
         text_col.addWidget(ver)
 
         row.addLayout(text_col)
@@ -2698,7 +2709,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.setContentsMargins(0, 0, 8, 0)
 
         # ═════ 文件夹设置 ═════
-        folder_card, folder_group = self._create_card("📁 文件夹设置")
+        folder_card, folder_group = self._create_card("文件夹")
         folder_layout = QFormLayout()
         folder_layout.setSpacing(8)
         folder_layout.setContentsMargins(12, 10, 12, 12)
@@ -2745,7 +2756,7 @@ class BirdDetectionGUI(QMainWindow):
         self.derived_paths_label.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Preferred
         )
-        self.derived_paths_label.setStyleSheet("color: #555555; font-size: 9pt;")
+        self.derived_paths_label.setStyleSheet("color: #525252; font-size: 12px;")
         self.derived_paths_label.setVisible(False)
         folder_layout.addRow("自动生成:", self.derived_paths_label)
 
@@ -2799,7 +2810,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.gps_write_checkbox)
 
         geo_card, geo_group = self._create_collapsible_card(
-            "🌍 地理位置",
+            "地理位置",
             "geo",
             header_widgets=[self.gps_write_checkbox],
         )
@@ -2813,7 +2824,7 @@ class BirdDetectionGUI(QMainWindow):
             "下方「批量写入照片 GPS」可随时单独对任意文件夹执行（方式与上方写入方式一致）。"
         )
         geo_gps_hint.setWordWrap(True)
-        geo_gps_hint.setStyleSheet("color: #555; font-size: 9pt;")
+        geo_gps_hint.setStyleSheet("color: #525252; font-size: 12px;")
         geo_layout.addRow(geo_gps_hint)
 
         self.gps_write_mode_group = QButtonGroup(self)
@@ -2985,7 +2996,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.enable_burst_detection_checkbox)
 
         process_card, process_group = self._create_collapsible_card(
-            "📷 连拍处理",
+            "连拍",
             "burst",
             header_widgets=[self.enable_burst_detection_checkbox],
         )
@@ -3136,7 +3147,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.enable_species_checkbox)
 
         species_card, species_group = self._create_collapsible_card(
-            "🦅 物种识别",
+            "物种识别",
             "species",
             header_widgets=[self.enable_species_checkbox],
         )
@@ -3188,18 +3199,22 @@ class BirdDetectionGUI(QMainWindow):
 
         self.local_species_model_combo = QComboBox()
         self.local_species_model_combo.addItem(
-            "ResNet34（推荐，浦口基准约 87.7%）",
+            "MobileNetV4-S（默认，birdy_mnv4s）",
+            LOCAL_SPECIES_MODEL_MNV4S,
+        )
+        self.local_species_model_combo.addItem(
+            "ResNet34（旧模型，bird_info.json）",
             LOCAL_SPECIES_MODEL_RESNET34,
         )
         self.local_species_model_combo.addItem(
-            "EfficientNet-B0（SuperBirdID birdid2024，约 65%）",
+            "EfficientNet-B0（SuperBirdID birdid2024）",
             LOCAL_SPECIES_MODEL_EFFICIENTNET,
         )
         self.local_species_model_combo.setToolTip(
             "仅在选择「本地模型」时生效。\n"
-            "推荐 ResNet34（浦口基准约 88%）；EfficientNet 为 SuperBirdID JIT 权重，"
-            "须使用 BGR+T=0.6 推理（已内置）。\n"
-            "权重：models/bird_iden_efficient_b0.pt（与 birdid2024 解密文件相同）。"
+            "默认 MobileNetV4-S：models/birdy_mnv4s_infer.pt，"
+            "物种名单是 data/birdy_mnv4s_info.json，分类编号与旧模型不同。\n"
+            "ResNet34 与 EfficientNet-B0 仍使用 models/bird_info.json。"
         )
         self.local_species_model_combo.currentIndexChanged.connect(
             self._on_local_species_model_changed
@@ -3409,7 +3424,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.enable_watermark_checkbox)
 
         wm_card, wm_group = self._create_collapsible_card(
-            "🖼 水印生成",
+            "水印",
             "watermark",
             header_widgets=[self.enable_watermark_checkbox],
         )
@@ -3756,7 +3771,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.enable_track_map_auto_checkbox)
 
         track_card, track_group = self._create_collapsible_card(
-            "🗺 轨迹图生成",
+            "轨迹图",
             "track_map",
             expanded=False,
             header_widgets=[self.enable_track_map_auto_checkbox],
@@ -3770,7 +3785,7 @@ class BirdDetectionGUI(QMainWindow):
             "图内标题地点优先使用「水印生成 → 人工地点」。"
         )
         track_hint.setWordWrap(True)
-        track_hint.setStyleSheet("color: #555; font-size: 9pt;")
+        track_hint.setStyleSheet("color: #525252; font-size: 12px;")
         track_layout.addRow(track_hint)
 
         self.track_map_use_gpx_checkbox = QCheckBox("使用 GPX 轨迹（未选则仅用照片 EXIF GPS）")
@@ -3826,7 +3841,7 @@ class BirdDetectionGUI(QMainWindow):
         self.track_map_photo_path_label.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Preferred
         )
-        self.track_map_photo_path_label.setStyleSheet("color: #555; font-size: 9pt;")
+        self.track_map_photo_path_label.setStyleSheet("color: #525252; font-size: 12px;")
         track_layout.addRow("当前使用:", self.track_map_photo_path_label)
 
         self.track_map_source_combo.currentIndexChanged.connect(
@@ -3949,7 +3964,7 @@ class BirdDetectionGUI(QMainWindow):
         self._style_flow_header_checkbox(self.enable_record_export_auto_checkbox)
 
         export_card, export_group = self._create_collapsible_card(
-            "📤 观鸟记录导出",
+            "观鸟记录",
             "export",
             header_widgets=[self.enable_record_export_auto_checkbox],
         )
@@ -3961,7 +3976,7 @@ class BirdDetectionGUI(QMainWindow):
             "从分类归档导出 eBird Checklist .csv 与中国观鸟记录中心鸟种导入 .xls。"
         )
         export_hint.setWordWrap(True)
-        export_hint.setStyleSheet("color: #555555; font-size: 9pt;")
+        export_hint.setStyleSheet("color: #525252; font-size: 12px;")
         export_layout.addRow(export_hint)
 
         class_row = QHBoxLayout()
@@ -4090,52 +4105,55 @@ class BirdDetectionGUI(QMainWindow):
         btn_layout.setSpacing(12)
         btn_layout.setContentsMargins(12, 10, 12, 12)
         
-        self.start_btn = QPushButton("▶ 开始处理")
+        self.start_btn = QPushButton("开始处理")
         self.start_btn.setStyleSheet("""
             QPushButton {
-                background-color: #2E8B57;
-                color: white;
-                font-weight: bold;
-                padding: 6px 14px;
-                border-radius: 6px;
+                background-color: #1f6b45;
+                color: #ffffff;
+                font-weight: 600;
+                padding: 4px 16px;
+                border-radius: 8px;
                 font-size: 10pt;
                 border: none;
+                min-height: 32px;
             }
             QPushButton:hover:enabled {
-                background-color: #277A4B;
+                background-color: #185538;
             }
             QPushButton:pressed:enabled {
-                background-color: #226A3F;
+                background-color: #144a30;
             }
             QPushButton:disabled {
-                background-color: #BDC3C7;
-                color: #7F8C8D;
+                background-color: #ececee;
+                color: #737373;
             }
         """)
         self.start_btn.clicked.connect(self.start_processing)
         btn_layout.addWidget(self.start_btn, 1)
         
-        self.stop_btn = QPushButton("⏹ 停止")
+        self.stop_btn = QPushButton("停止")
         self.stop_btn.setEnabled(False)
         self.stop_btn.setStyleSheet("""
             QPushButton {
-                background-color: #E74C3C;
-                color: white;
-                font-weight: bold;
-                padding: 6px 14px;
-                border-radius: 6px;
+                background-color: #ffffff;
+                color: #b42318;
+                font-weight: 500;
+                padding: 4px 16px;
+                border-radius: 8px;
                 font-size: 10pt;
-                border: none;
+                border: 1px solid rgba(180, 35, 24, 0.35);
+                min-height: 32px;
             }
             QPushButton:hover:enabled {
-                background-color: #C0392B;
+                background-color: #fef2f2;
             }
             QPushButton:pressed:enabled {
-                background-color: #A93226;
+                background-color: #fee2e2;
             }
             QPushButton:disabled {
-                background-color: #BDC3C7;
-                color: #7F8C8D;
+                background-color: #f4f4f5;
+                color: #737373;
+                border: 1px solid rgba(23, 23, 23, 0.08);
             }
         """)
         self.stop_btn.clicked.connect(self.stop_processing)
@@ -4146,19 +4164,13 @@ class BirdDetectionGUI(QMainWindow):
         
         # 底部信息
         info_label = QLabel(
-            "💡 提示：设置「输出根目录」后每次只需换「图片文件夹」；"
-            "或留空根目录并手动指定输出与分类路径。"
+            "设好输出根目录后，每次只换图片文件夹。"
+            "根目录留空时，仍用下面的手动路径"
         )
         info_label.setWordWrap(True)
         info_label.setMinimumWidth(0)
-        info_label.setStyleSheet("color: #666666; font-size: 10pt; margin-top: 4px;")
+        info_label.setStyleSheet("color: #737373; font-size: 12px;")
         layout.addWidget(info_label)
-        
-        # 品牌水印
-        watermark_label = QLabel("Birdy · 瞰鸟")
-        watermark_label.setStyleSheet("color: #E0E0E0; font-size: 9pt; text-align: right;")
-        watermark_label.setAlignment(Qt.AlignRight)
-        layout.addWidget(watermark_label)
         
         panel.setLayout(layout)
         self._harden_left_panel_layout(panel)
@@ -4178,10 +4190,12 @@ class BirdDetectionGUI(QMainWindow):
         """创建卡片式分组框"""
         card = QWidget()
         card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        card.setObjectName("birdyCard")
         card.setStyleSheet("""
-            QWidget {
-                background-color: #FFFFFF;
-                border-radius: 8px;
+            QWidget#birdyCard {
+                background-color: #ffffff;
+                border: 1px solid rgba(23, 23, 23, 0.08);
+                border-radius: 12px;
             }
         """)
         card_layout = QVBoxLayout()
@@ -4192,14 +4206,13 @@ class BirdDetectionGUI(QMainWindow):
         title_label = QLabel(title)
         title_label.setStyleSheet("""
             QLabel {
-                background-color: #FFFFFF;
-                color: #333333;
-                font-weight: bold;
-                font-size: 11pt;
-                padding: 6px 12px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
-                border-bottom: 1px solid #F0F0F0;
+                background: transparent;
+                color: #171717;
+                font-weight: 600;
+                font-size: 14px;
+                padding: 12px 16px 8px 16px;
+                border: none;
+                border-bottom: 1px solid rgba(23, 23, 23, 0.06);
             }
         """)
         card_layout.addWidget(title_label)
@@ -4218,15 +4231,15 @@ class BirdDetectionGUI(QMainWindow):
 
     @staticmethod
     def _section_arrow_text(expanded: bool) -> str:
-        return "▼" if expanded else "▶"
+        return "▾" if expanded else "▸"
 
     @staticmethod
     def _style_flow_header_checkbox(cb: QCheckBox) -> None:
         """标题栏主流程勾选：紧凑样式，悬停显示完整说明。"""
         cb.setStyleSheet(
-            "QCheckBox { font-size: 9pt; color: #2E6B4A; font-weight: 600; "
-            "spacing: 4px; padding: 0 4px; }"
-            "QCheckBox::indicator { width: 14px; height: 14px; }"
+            "QCheckBox { font-size: 12px; color: #525252; font-weight: 500; "
+            "spacing: 8px; padding: 0 4px; background: transparent; }"
+            "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 4px; }"
         )
 
     def _create_collapsible_card(
@@ -4247,7 +4260,8 @@ class BirdDetectionGUI(QMainWindow):
         outer = QWidget()
         outer.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         outer.setStyleSheet(
-            "QWidget#collapsibleCard { background-color: #FFFFFF; border-radius: 8px; }"
+            "QWidget#collapsibleCard { background-color: #ffffff; "
+            "border: 1px solid rgba(23, 23, 23, 0.08); border-radius: 12px; }"
         )
         outer.setObjectName("collapsibleCard")
         outer_layout = QVBoxLayout(outer)
@@ -4256,12 +4270,11 @@ class BirdDetectionGUI(QMainWindow):
 
         header_bar = QWidget()
         header_bar.setStyleSheet(
-            "background-color: #FFFFFF; border-top-left-radius: 8px; "
-            "border-top-right-radius: 8px; border-bottom: 1px solid #F0F0F0;"
+            "background: transparent; border-bottom: 1px solid rgba(23, 23, 23, 0.06);"
         )
         header_hl = QHBoxLayout(header_bar)
-        header_hl.setContentsMargins(4, 6, 10, 6)
-        header_hl.setSpacing(6)
+        header_hl.setContentsMargins(8, 8, 12, 8)
+        header_hl.setSpacing(8)
 
         toggle_btn = QPushButton(self._section_arrow_text(expanded))
         toggle_btn.setCheckable(True)
@@ -4270,14 +4283,14 @@ class BirdDetectionGUI(QMainWindow):
         toggle_btn.setFlat(True)
         toggle_btn.setCursor(Qt.PointingHandCursor)
         toggle_btn.setStyleSheet(
-            "QPushButton { border: none; font-size: 11pt; font-weight: bold; "
-            "background: transparent; color: #333; }"
-            "QPushButton:hover { background-color: #F0F0F0; border-radius: 4px; }"
+            "QPushButton { border: none; font-size: 14px; font-weight: 500; "
+            "background: transparent; color: #525252; min-height: 24px; padding: 0; }"
+            "QPushButton:hover { background-color: #f4f4f5; border-radius: 4px; }"
         )
 
         title_lbl = QLabel(title)
         title_lbl.setStyleSheet(
-            "font-weight: bold; font-size: 11pt; color: #333333; background: transparent;"
+            "font-weight: 600; font-size: 14px; color: #171717; background: transparent;"
         )
         title_lbl.setCursor(Qt.PointingHandCursor)
 
@@ -4286,7 +4299,7 @@ class BirdDetectionGUI(QMainWindow):
         header_hl.addStretch(1)
         if header_widgets:
             sep = QLabel("|")
-            sep.setStyleSheet("color: #CCC; font-size: 9pt;")
+            sep.setStyleSheet("color: #d4d4d4; font-size: 12px; background: transparent;")
             header_hl.addWidget(sep, 0)
             for w in header_widgets:
                 header_hl.addWidget(w, 0)
@@ -5174,7 +5187,7 @@ class BirdDetectionGUI(QMainWindow):
             "每批取归档张数最多的一次再累加。"
         )
         hint.setWordWrap(True)
-        hint.setStyleSheet("color: #555; font-size: 9pt;")
+        hint.setStyleSheet("color: #525252; font-size: 12px;")
         lay.addWidget(hint)
 
         form = QFormLayout()
@@ -5263,7 +5276,7 @@ class BirdDetectionGUI(QMainWindow):
         layout.setContentsMargins(0, 0, 8, 0)
         
         # 进度卡片
-        progress_card_container, progress_card = self._create_card("📊 处理进度")
+        progress_card_container, progress_card = self._create_card("进度")
         progress_layout = QVBoxLayout()
         progress_layout.setSpacing(10)
         progress_layout.setContentsMargins(12, 10, 12, 12)
@@ -5272,19 +5285,18 @@ class BirdDetectionGUI(QMainWindow):
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(8)
         self.progress_bar.setStyleSheet("""
             QProgressBar {
-                background-color: #F0F0F0;
+                background-color: #ececee;
                 border: none;
-                border-radius: 8px;
-                text-align: center;
-                height: 22px;
-                font-size: 10pt;
-                font-weight: bold;
+                border-radius: 4px;
+                height: 8px;
             }
             QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2E8B57, stop:1 #1E90FF);
-                border-radius: 8px;
+                background-color: #1f6b45;
+                border-radius: 4px;
             }
         """)
         progress_layout.addWidget(self.progress_bar)
@@ -5294,15 +5306,18 @@ class BirdDetectionGUI(QMainWindow):
         self._elapsed_label = QLabel("已用时间：—")
         self._eta_label = QLabel("预计剩余：—")
         for lb in (self._elapsed_label, self._eta_label):
-            lb.setStyleSheet("font-size: 10pt; color: #444444;")
+            lb.setStyleSheet(
+                "font-size: 12px; color: #525252; "
+                "font-family: 'Cascadia Mono', Consolas, monospace;"
+            )
         time_row.addWidget(self._elapsed_label)
         time_row.addWidget(self._eta_label)
         time_row.addStretch(1)
         progress_layout.addLayout(time_row)
         
         # 状态信息
-        status_label = QLabel("状态信息:")
-        status_label.setStyleSheet("font-size: 10pt; font-weight: bold; color: #333333;")
+        status_label = QLabel("日志")
+        status_label.setStyleSheet("font-size: 13px; font-weight: 500; color: #525252;")
         progress_layout.addWidget(status_label)
         
         self.status_log = QTextEdit()
@@ -5336,8 +5351,8 @@ class BirdDetectionGUI(QMainWindow):
         progress_layout.addWidget(self.status_log)
         
         # 处理统计
-        stats_label = QLabel("处理统计:")
-        stats_label.setStyleSheet("font-size: 10pt; font-weight: bold; color: #333333;")
+        stats_label = QLabel("统计")
+        stats_label.setStyleSheet("font-size: 13px; font-weight: 500; color: #525252;")
         progress_layout.addWidget(stats_label)
         
         self.stats_table = QTableWidget()
@@ -5382,13 +5397,13 @@ class BirdDetectionGUI(QMainWindow):
         # 版权信息
         copyright_label = QLabel("© 2026 brigchen@gmail.com")
         copyright_label.setAlignment(Qt.AlignCenter)
-        copyright_label.setStyleSheet("color: #666666; font-size: 10pt;")
+        copyright_label.setStyleSheet("color: #525252; font-size: 12px;")
         brand_layout.addWidget(copyright_label)
         
         # 开源声明
         license_label = QLabel("基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途")
         license_label.setAlignment(Qt.AlignCenter)
-        license_label.setStyleSheet("color: #999999; font-size: 9pt;")
+        license_label.setStyleSheet("color: #737373; font-size: 12px;")
         brand_layout.addWidget(license_label)
         
         brand_widget.setLayout(brand_layout)
@@ -7225,7 +7240,7 @@ class BirdDetectionGUI(QMainWindow):
                     if 'use_local_model' not in saved_config:
                         self.config['use_local_model'] = True
                     if 'local_species_model' not in saved_config:
-                        self.config['local_species_model'] = LOCAL_SPECIES_MODEL_RESNET34
+                        self.config['local_species_model'] = LOCAL_SPECIES_MODEL_MNV4S
                     else:
                         self.config['local_species_model'] = normalize_local_species_model(
                             self.config['local_species_model']
@@ -7417,7 +7432,7 @@ class BirdDetectionGUI(QMainWindow):
         self.local_model_radio.setChecked(use_local)
         self.doubao_model_radio.setChecked(not use_local)
         _lsm = normalize_local_species_model(
-            self.config.get('local_species_model', LOCAL_SPECIES_MODEL_RESNET34)
+            self.config.get('local_species_model', LOCAL_SPECIES_MODEL_MNV4S)
         )
         self.config['local_species_model'] = _lsm
         _li = self.local_species_model_combo.findData(_lsm)

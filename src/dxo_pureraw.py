@@ -2,11 +2,13 @@
 """
 调用本机 DxO PureRAW 对 Screened_images 中的 RAW 批量降噪（无人值守）。
 
-原理：PureRAW 自带的 Lightroom 插件通过命令行驱动主程序；该接口不依赖
-Lightroom，可直接用 Python subprocess 调用：
+原理：PureRAW 自带的 Lightroom 插件通过命令行驱动主程序，可直接用
+Python subprocess 调用。Lightroom Classic 必须已经在运行，否则 PureRAW
+只把 Lightroom 拉起来就退出，一张都不处理。处理结束后它仍会通知
+Lightroom 导入结果：
 
     PureRAWv6.exe --as-lightroom-last-settings-plugin
-                  --lr-version="14.0" --batch-file="<每行一个绝对路径>"
+                  --lr-version="<本机 Lightroom Classic 版本>" --batch-file="<每行一个绝对路径>"
 
 参数说明：
   - 队列按 PureRAW 界面里「上次使用的预设」处理（降噪档位/输出格式/
@@ -22,6 +24,7 @@ Lightroom，可直接用 Python subprocess 调用：
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import time
@@ -92,6 +95,372 @@ def find_pureraw_exe() -> Optional[str]:
         if p and os.path.isfile(p):
             return p
     return None
+
+
+def _hidden_subprocess_kwargs() -> dict:
+    """控制台程序不要弹出窗口。本机默认终端是 Windows Terminal，每次 tasklist / powershell 都会闪一个窗口。"""
+    if os.name != "nt":
+        return {}
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo.wShowWindow = 0
+    return {
+        "startupinfo": startupinfo,
+        "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    }
+
+
+def _win_pids_named(image_name: str) -> List[int]:
+    """按 exe 名取 PID。用 Toolhelp，不启动 tasklist，因此不会弹出终端。"""
+    if os.name != "nt" or not image_name:
+        return []
+    import ctypes
+    from ctypes import wintypes
+
+    class PROCESSENTRY32W(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", wintypes.DWORD),
+            ("cntUsage", wintypes.DWORD),
+            ("th32ProcessID", wintypes.DWORD),
+            ("th32DefaultHeapID", ctypes.c_size_t),
+            ("th32ModuleID", wintypes.DWORD),
+            ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD),
+            ("pcPriClassBase", ctypes.c_long),
+            ("dwFlags", wintypes.DWORD),
+            ("szExeFile", wintypes.WCHAR * 260),
+        ]
+
+    kernel = ctypes.windll.kernel32
+    snap = kernel.CreateToolhelp32Snapshot(0x00000002, 0)
+    if not snap or snap == ctypes.c_void_p(-1).value:
+        return []
+    try:
+        entry = PROCESSENTRY32W()
+        entry.dwSize = ctypes.sizeof(PROCESSENTRY32W)
+        want = image_name.lower()
+        pids: List[int] = []
+        ok = kernel.Process32FirstW(snap, ctypes.byref(entry))
+        while ok:
+            if entry.szExeFile.lower() == want:
+                pids.append(int(entry.th32ProcessID))
+            ok = kernel.Process32NextW(snap, ctypes.byref(entry))
+        return pids
+    finally:
+        kernel.CloseHandle(snap)
+
+
+def _find_running_pureraw() -> Optional[Tuple[int, str]]:
+    """检测已在运行的 PureRAW 主程序实例，返回 (PID, 启动时间文本)。
+
+    PureRAW 是单实例应用。托盘里已有的实例（常见为 --run-in-tray）
+    不会接 --as-lightroom-last-settings-plugin 批处理：新进程交完参数
+    就退出，队列不会开始。调用前要先关掉这个实例。
+    """
+    if os.name != "nt":
+        return None
+    exe = find_pureraw_exe()
+    if exe is None:
+        return None
+    pids = _win_pids_named(Path(exe).name)
+    if not pids:
+        return None
+    return pids[0], ""
+
+
+def _lightroom_classic_exe() -> Optional[str]:
+    """本机 Adobe Lightroom Classic 的 lightroom.exe。"""
+    roots = [Path(r"C:\Program Files\Adobe"), Path(r"C:\Program Files (x86)\Adobe")]
+    found: List[str] = []
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for exe in root.glob("*/lightroom.exe"):
+            found.append(str(exe))
+    if not found:
+        return None
+    found.sort(key=lambda p: _pe_file_version(p), reverse=True)
+    return found[0]
+
+
+def _pe_file_version(path: str) -> str:
+    """读 PE 的 FileVersion，如 15.5.1。读不到则返回空串。"""
+    if os.name != "nt" or not path or not os.path.isfile(path):
+        return ""
+    import ctypes
+    from ctypes import wintypes
+
+    size = ctypes.windll.version.GetFileVersionInfoSizeW(path, None)
+    if not size:
+        return ""
+    buf = ctypes.create_string_buffer(size)
+    if not ctypes.windll.version.GetFileVersionInfoW(path, 0, size, buf):
+        return ""
+    lptr = ctypes.c_void_p()
+    llen = wintypes.UINT()
+    if not ctypes.windll.version.VerQueryValueW(
+        buf, "\\VarFileInfo\\Translation", ctypes.byref(lptr), ctypes.byref(llen)
+    ):
+        return ""
+    pair = ctypes.cast(lptr, ctypes.POINTER(ctypes.c_uint16 * 2)).contents
+    key = f"\\StringFileInfo\\{pair[0]:04x}{pair[1]:04x}\\FileVersion"
+    if not ctypes.windll.version.VerQueryValueW(
+        buf, key, ctypes.byref(lptr), ctypes.byref(llen)
+    ):
+        return ""
+    text = ctypes.wstring_at(lptr, llen.value) if llen.value else ""
+    return text.split("\x00", 1)[0].strip()
+
+
+def lightroom_version_for_pureraw() -> str:
+    """PureRAW 的 --lr-version。须与已安装的 Lightroom Classic 一致，否则直接退出。"""
+    exe = _lightroom_classic_exe()
+    if not exe:
+        raise RuntimeError(
+            "未找到 Adobe Lightroom Classic。PureRAW 的批处理接口要核对它的版本，"
+            "请安装 Lightroom Classic 后重试。"
+        )
+    ver = _lr_version_token(_pe_file_version(exe))
+    if not ver:
+        raise RuntimeError(f"无法读取 Lightroom Classic 版本：{exe}")
+    return ver
+
+
+def _lr_version_token(text: str) -> str:
+    """PureRAW 只认主版本号，如 15.5.1。文件版本末尾的 .0 要去掉。"""
+    match = re.search(r"(\d+\.\d+\.\d+)", text or "")
+    return match.group(1) if match else (text or "").strip()
+
+
+def _lightroom_is_running() -> bool:
+    return bool(_win_pids_named("Lightroom.exe"))
+
+
+def _lightroom_window_title() -> str:
+    """Lightroom 主窗口标题。进程在、窗口还没出来时返回空串。"""
+    if os.name != "nt":
+        return ""
+    import ctypes
+    from ctypes import wintypes
+
+    pids = set(_win_pids_named("Lightroom.exe"))
+    if not pids:
+        return ""
+    user32 = ctypes.windll.user32
+    titles: List[str] = []
+
+    @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    def _collect(hwnd, _lparam):
+        if not user32.IsWindowVisible(hwnd):
+            return True
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if int(pid.value) not in pids:
+            return True
+        length = user32.GetWindowTextLengthW(hwnd)
+        if length <= 0:
+            return True
+        buf = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buf, length + 1)
+        if buf.value:
+            titles.append(buf.value)
+        return True
+
+    user32.EnumWindows(_collect, 0)
+    return "\n".join(titles)
+
+
+def _ensure_lightroom_running(log_cb: Callable[[str], None]) -> None:
+    """插件批处理只在 Lightroom 主窗口已经出现时才会降噪。
+
+    只看到 Lightroom.exe 进程不够：目录还在打开时，PureRAW 会以退出码 0
+    结束且不调用 processImage。已经有主窗口则直接继续。
+    """
+    exe = _lightroom_classic_exe()
+    if not exe:
+        raise RuntimeError(
+            "未找到 Adobe Lightroom Classic。PureRAW 的批处理要它已在运行才会降噪。"
+        )
+    title = _lightroom_window_title()
+    if title:
+        return
+    if not _lightroom_is_running():
+        log_cb(
+            "DxO PureRAW：Lightroom Classic 未在运行。"
+            "这个接口要先有 Lightroom 才会降噪，正在启动…"
+        )
+        subprocess.Popen([exe])
+    else:
+        log_cb("DxO PureRAW：Lightroom 进程已在，等待主窗口…")
+    deadline = time.time() + 180
+    while time.time() < deadline:
+        title = _lightroom_window_title()
+        if title:
+            log_cb(f"DxO PureRAW：Lightroom 窗口已出现（{title.splitlines()[0][:80]}），等待目录加载…")
+            time.sleep(20)
+            return
+        time.sleep(1)
+    raise RuntimeError("已启动 Lightroom Classic，但 180 秒内没有看到主窗口。")
+
+
+def _pureraw_log_hint() -> str:
+    """从刚结束的 PureRAW 日志里抽出退出原因，供 Birdy 界面显示。"""
+    log = Path(os.environ.get("LOCALAPPDATA", "")) / "DxO_Labs" / "DxO PureRAW 6" / "Logs" / "PureRAWv6.txt"
+    if not log.is_file():
+        return ""
+    try:
+        lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return ""
+    hints = []
+    for ln in lines:
+        msg = ln.split(" - ", 1)[-1]
+        if any(
+        key in msg
+        for key in (
+                "is absent",
+                "Available LR version",
+                "ExitCause=",
+                "launchImportConfigDialog",
+                "openFilesInApplication",
+                "Return with result",
+                "preset name is not set",
+                "export file was not created",
+                "not installed",
+                "not supported",
+                "Processing failed to launch",
+                "Task bar doesn't exist",
+                "processImage",
+                "saveAsJPG",
+                "Processing Cancelled",
+                "tmpCollectionFile",
+            )
+        ):
+            hints.append(msg.strip()[:180])
+    if not hints:
+        return ""
+    return " PureRAW 日志：" + " | ".join(hints[-6:])
+
+
+def _cli_batch_unsupported_hint() -> str:
+    """PureRAW 处理开始后自行退出、任务全部被取消时，给出可执行的建议。
+
+    实测 6.8.0.7：「Start processing」之后主进程约 30 秒就结束，保存任务队列
+    被析构，已排队的图全部 "Processing Cancelled" → "Cannot save image"，
+    一张都出不来。同一台机器上 PureRAW 自己的 GUI 也是闪屏后消失，DxO 的
+    崩溃上报（CrashReports/__sentry-event）记录 level=fatal / native。
+    所以不是命令行参数的问题，而是 PureRAW 自身在本机启动后崩溃退出。
+    """
+    log = Path(os.environ.get("LOCALAPPDATA", "")) / "DxO_Labs" / "DxO PureRAW 6" / "Logs" / "PureRAWv6.txt"
+    if not log.is_file():
+        return ""
+    try:
+        text = log.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    if "Processing Cancelled" not in text and "Cannot save image" not in text:
+        return ""
+    return (
+        "DxO PureRAW：处理一开始主进程就自行退出，排队中的图被全部取消"
+        "（日志里 Start processing → Processing Cancelled → Cannot save image）。"
+        "本机实测 PureRAW 6.8 连界面都是闪屏后崩溃退出，不是参数或输出目录的问题。"
+        "建议先修复安装 DxO PureRAW（或在驱动/系统更新后重装），"
+        "也可以回退到 6.7 再重跑本批量。"
+    )
+
+
+def _available_lr_version_from_log() -> str:
+    log = Path(os.environ.get("LOCALAPPDATA", "")) / "DxO_Labs" / "DxO PureRAW 6" / "Logs" / "PureRAWv6.txt"
+    if not log.is_file():
+        return ""
+    try:
+        text = log.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    found = re.findall(r"Available LR version is ([0-9.]+)", text)
+    return _lr_version_token(found[-1]) if found else ""
+
+
+def _ensure_lightroom_plugin(log_cb: Callable[[str], None], pureraw_exe: str) -> None:
+    """确保 Lightroom 的 Modules 里有 DxO 插件，且 exe 路径已写入。
+
+    插件入口缺失或 PluginData.lua 里仍是 DXO_EXECUTABLE_PATH_PLACEHOLDER
+    时，Lightroom 会报 "PureRaw is absent at ..." 并以 ExitCause=2 结束，不降噪。
+    手动复制 LightroomPluginData 而没跑 DxO 安装器时就会留下占位符。
+    Lightroom 已经开着时，新写入的插件要重开 Lightroom 才生效。
+    """
+    src_root = Path(pureraw_exe).parent / "LightroomPluginData"
+    dest_root = Path(os.environ.get("APPDATA", "")) / "Adobe" / "Lightroom" / "Modules"
+    if not src_root.is_dir() or not dest_root.is_dir():
+        return
+    names = ("DxOPureRAWv6.lrplugin", "DxOPureRAWv6.import.lrplugin")
+    token = b"DXO_EXECUTABLE_PATH_PLACEHOLDER"
+    # Lua 字符串里用正斜杠：反斜杠会触发 \P、\D 之类的无效转义
+    exe_bytes = str(Path(pureraw_exe)).replace("\\", "/").encode("utf-8")
+    copied = False
+    patched = 0
+    for name in names:
+        src = src_root / name
+        if not src.is_dir():
+            continue
+        dest = dest_root / name
+        if not dest.exists():
+            import shutil
+
+            shutil.copytree(src, dest)
+            copied = True
+        for file in dest.rglob("*"):
+            if not file.is_file() or file.stat().st_size > 2_000_000:
+                continue
+            try:
+                blob = file.read_bytes()
+            except OSError:
+                continue
+            if token in blob:
+                try:
+                    file.write_bytes(blob.replace(token, exe_bytes))
+                    patched += 1
+                except OSError as exc:
+                    log_cb(f"DxO PureRAW：写入 Lightroom 插件失败（{file.name}）：{exc}")
+    if not (copied or patched):
+        return
+    what = "已从安装目录补上" if copied else "里仍写着占位符路径"
+    log_cb(
+        f"DxO PureRAW：Lightroom 插件{what}，已写入 {pureraw_exe}。"
+        "请关掉并重新打开 Lightroom 后再跑，否则这次仍会 ExitCause=2。"
+    )
+
+
+def _close_running_pureraw(log_cb: Callable[[str], None]) -> None:
+    """关掉托盘里的 PureRAW，让接下来的插件批处理成为主实例。"""
+    running = _find_running_pureraw()
+    if running is None:
+        return
+    pid = running[0]
+    log_cb(
+        f"DxO PureRAW 已在托盘运行（PID {pid}）。"
+        "这个实例不接收 Birdy 的批处理参数，先关闭再重新启动。"
+    )
+    try:
+        subprocess.run(
+            ["taskkill", "/PID", str(pid), "/T", "/F"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            **_hidden_subprocess_kwargs(),
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"无法关闭已在运行的 PureRAW（PID {pid}）：{exc}"
+        ) from exc
+    deadline = time.time() + 20
+    while time.time() < deadline:
+        if _find_running_pureraw() is None:
+            return
+        time.sleep(0.4)
+    raise RuntimeError(
+        f"PureRAW（PID {pid}）关闭超时。请从托盘退出 DxO PureRAW 后重试。"
+    )
 
 
 def _iter_files_depth(root: Path, max_depth: int = 4):
@@ -217,28 +586,42 @@ def run_pureraw_batch(
         f"birdy_pureraw_{int(time.time())}.txt"
     )
     batch_file.write_text("\n".join(todo), encoding="utf-8")
+
+    # 托盘里已有的实例不接插件批处理。先关掉，再让本次启动成为主实例。
+    try:
+        _close_running_pureraw(_log)
+    except Exception:
+        batch_file.unlink(missing_ok=True)
+        raise
+
+    try:
+        lr_ver = lightroom_version_for_pureraw()
+        _ensure_lightroom_running(_log)
+        _ensure_lightroom_plugin(_log, exe)
+    except Exception:
+        batch_file.unlink(missing_ok=True)
+        raise
     _log(
         f"DxO PureRAW：启动批量降噪，共 {len(todo)} 张"
-        f"（{Path(exe).name}，按上次预设处理）…"
+        f"（{Path(exe).name}，Lightroom {lr_ver}，按上次预设处理）…"
     )
     t0 = time.time()
 
+    # 不隐藏窗口。无窗口时另一台机器会在读完预设后以 ExitCause=2 退出，processImage 不会发生。
     creationflags = 0
-    if os.name == "nt":
-        creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    proc = subprocess.Popen(
-        [
-            exe,
-            "--as-lightroom-last-settings-plugin",
-            "--lr-version=14.0",
-            f"--batch-file={batch_file}",
-        ],
-        creationflags=creationflags,
-    )
+    launch = [
+        exe,
+        "--as-lightroom-last-settings-plugin",
+        f"--lr-version={lr_ver}",
+        f"--batch-file={batch_file}",
+    ]
+    proc = subprocess.Popen(launch, creationflags=creationflags)
 
     total = len(todo)
     last_n = len(_existing_outputs(todo))
     last_progress_t = time.time()
+    proc_gone = False
+    retries_left = 2
     if progress_cb:
         progress_cb(0, total, "")
 
@@ -259,22 +642,69 @@ def run_pureraw_batch(
                 _log(f"DxO PureRAW：已完成 {n}/{total}")
             if n >= total:
                 break
-            if proc.poll() is not None:
-                # 进程已退出；再等一小会确认没有遗漏
-                time.sleep(5.0)
-                cur = _existing_outputs(todo)
-                if len(cur) >= total:
+            if proc.poll() is not None and not proc_gone:
+                proc_gone = True
+                rc = proc.returncode
+                if n == 0:
+                    grace_until = time.time() + 20
+                    while time.time() < grace_until and n == 0:
+                        time.sleep(_POLL_INTERVAL)
+                        n = len(_existing_outputs(todo))
+                    if n > last_n:
+                        last_n = n
+                        last_progress_t = time.time()
+                        proc_gone = True
+                        _log(f"DxO PureRAW：启动进程已退出，输出仍在增加（{n}/{total}）…")
+                        continue
+                if n == 0 and retries_left > 0:
+                    retries_left -= 1
+                    proc_gone = False
+                    hint = _pureraw_log_hint()
+                    alt = _available_lr_version_from_log()
+                    if alt and alt != lr_ver:
+                        lr_ver = alt
+                        launch[2] = f"--lr-version={lr_ver}"
+                        _log(f"DxO PureRAW：改用日志里的 Lightroom 版本 {lr_ver} 再试。")
+                    _log(
+                        f"DxO PureRAW：进程已退出（退出码 {rc}），没有生成输出。"
+                        "Lightroom 可能还在打开，稍后再试。"
+                        + hint
+                    )
+                    time.sleep(10)
+                    _ensure_lightroom_running(_log)
+                    # PureRAW 读完批处理清单就会删掉它，重试前必须重写，
+                    # 否则第二次启动只会报 "Files list for processing is empty"。
+                    batch_file.write_text("\n".join(todo), encoding="utf-8")
+                    proc = subprocess.Popen(launch, creationflags=creationflags)
+                    last_progress_t = time.time()
+                    continue
+                if n == 0:
+                    _log(
+                        f"DxO PureRAW：进程已退出（退出码 {rc}），没有生成输出。"
+                        f"本次 --lr-version={lr_ver}。"
+                        + _pureraw_log_hint()
+                    )
+                    advice = _cli_batch_unsupported_hint()
+                    if advice:
+                        _log(advice)
                     break
                 _log(
-                    f"DxO PureRAW：进程退出但仅 {len(cur)}/{total} 张有输出，"
-                    f"视为失败 {total - len(cur)} 张。"
+                    f"DxO PureRAW：启动进程已退出（退出码 {rc}，"
+                    f"{len(cur)}/{total} 张有输出），继续等待剩余文件…"
                 )
-                break
             if time.time() - last_progress_t > _STALL_BUDGET:
-                _log(
-                    f"DxO PureRAW：等待超过 {_STALL_BUDGET:.0f}s 无新输出，终止。"
-                )
-                proc.terminate()
+                if proc_gone:
+                    _log(
+                        f"DxO PureRAW：启动进程退出后长时间无新输出"
+                        f"（{_STALL_BUDGET:.0f}s），终止监控。"
+                        "若桌面有 PureRAW 窗口停在等待状态，请关闭后重跑。"
+                    )
+                else:
+                    _log(
+                        f"DxO PureRAW：等待超过 {_STALL_BUDGET:.0f}s 无新输出，终止。"
+                    )
+                if proc.poll() is None:
+                    proc.terminate()
                 break
     finally:
         try:
@@ -284,8 +714,16 @@ def run_pureraw_batch(
 
     outputs = sorted(_existing_outputs(srcs))
     outputs = _ensure_jpeg_outputs(outputs, srcs, _log)
-    ok = len(outputs)
-    fail = total - min(ok, total)
+    covered = sum(
+        1
+        for s in srcs
+        if any(
+            Path(o).name.lower().startswith(Path(s).stem.lower() + _DXO_SUFFIX)
+            for o in outputs
+        )
+    )
+    reported = len(srcs)
+    fail = reported - covered
     # 输出格式体检：全 DNG 说明「上次设置」是 DNG 预设，提示如何切回 JPEG
     dng_n = sum(1 for o in outputs if Path(o).suffix.lower() == ".dng")
     jpg_n = sum(
@@ -298,10 +736,10 @@ def run_pureraw_batch(
             "在其界面用 JPEG 预设处理一张或设为默认。"
         )
     _log(
-        f"DxO PureRAW：结束，成功 {ok}/{total}，用时 "
+        f"DxO PureRAW：结束，成功 {covered}/{reported}，用时 "
         f"{time.time() - t0:.0f}s。"
     )
-    return {"ok": ok, "fail": fail, "total": total, "outputs": outputs}
+    return {"ok": covered, "fail": fail, "total": reported, "outputs": outputs}
 
 
 def _ensure_jpeg_outputs(

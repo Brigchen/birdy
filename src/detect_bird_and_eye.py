@@ -3,8 +3,9 @@
 1. 读取图片 EXIF GPS，定位拍摄省市
 2. 使用 YOLOv8x-seg 检测鸟体
 3. （可选）使用 birdeye.pt 检测鸟眼
-4. 使用 ResNet34 / EfficientNet-B0（本地）或豆包API 进行物种识别
-   - 本地模型：bird_iden_res34.pth、bird_iden_efficient_b0.pt - 快速、离线
+4. 使用 MobileNetV4-S / ResNet34 / EfficientNet-B0（本地）或豆包API 进行物种识别
+   - 默认：birdy_mnv4s_infer.pt + data/birdy_mnv4s_info.json
+   - 可选：bird_iden_res34.pth、bird_iden_efficient_b0.pt，与 models/bird_info.json 配套
    - 豆包API：在线识别 - 准确率更高、支持全球物种
 5. 结合地理位置辅助优化物种识别结果
 6. 从 bird_classification.json 补全四级中文分类（目/科/属/种）
@@ -17,6 +18,7 @@
 版权说明: 基于开源协议，仅限爱好者、公益、科研等非盈利用途，请勿用于商业用途
 """
 import os
+import sys
 # 禁止 Ultralytics 自动联网安装依赖（避免 pi-heif 等包在 Windows 构建失败导致卡顿）
 os.environ.setdefault("YOLO_AUTOINSTALL", "False")
 import re
@@ -914,22 +916,117 @@ def _load_bird_classification():
                 _SCI_TO_CLASSIFICATION[key_genus] = entry
 
 
+# 当前分类器使用的名单。地理索引文件里的下标仍指向 models/bird_info.json，
+# 换模型后按学名（其次中文名）映到这份名单。
+_ACTIVE_SPECIES_ROWS: Optional[List] = None
+_LEGACY_SPECIES_ROWS: Optional[List] = None
+_LEGACY_TO_ACTIVE: Optional[Dict[int, int]] = None
+
+
+def read_species_label_rows(path: str) -> List[List[str]]:
+    """读物种名单。支持 [[中文, 英文, 学名], ...] 或 {\"classes\": [{\"cn\",\"en\",\"latin\"}, ...]}。"""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    rows: List[List[str]] = []
+    if isinstance(data, dict) and isinstance(data.get("classes"), list):
+        source = data["classes"]
+    elif isinstance(data, list):
+        source = data
+    else:
+        raise ValueError(f"无法识别的物种名单格式: {path}")
+    for item in source:
+        if isinstance(item, dict):
+            rows.append([
+                str(item.get("cn") or item.get("chinese") or item.get("chinese_name") or ""),
+                str(item.get("en") or item.get("english") or item.get("english_name") or ""),
+                str(item.get("latin") or item.get("sci") or item.get("scientific") or item.get("scientific_name") or ""),
+            ])
+        elif isinstance(item, list):
+            rows.append([str(x) if x is not None else "" for x in item])
+    return rows
+
+
+def bind_active_species_rows(rows: List) -> None:
+    """分类器加载后绑定名单，并清掉按旧下标缓存的地理白名单。"""
+    global _ACTIVE_SPECIES_ROWS, _SCI_TO_BIRD_INDEX, _CN_TO_BIRD_INDEX
+    global _CHINA_SPECIES_INDICES, _CN_ADMIN_SPECIES_BY_NAME, _LEGACY_TO_ACTIVE
+    _ACTIVE_SPECIES_ROWS = rows
+    _SCI_TO_BIRD_INDEX = None
+    _CN_TO_BIRD_INDEX = None
+    _CHINA_SPECIES_INDICES = None
+    _CN_ADMIN_SPECIES_BY_NAME = None
+    _LEGACY_TO_ACTIVE = None
+
+
+def _legacy_species_rows() -> List:
+    global _LEGACY_SPECIES_ROWS
+    if _LEGACY_SPECIES_ROWS is None:
+        path = Path(_BIRD_INFO_PATH)
+        _LEGACY_SPECIES_ROWS = read_species_label_rows(str(path)) if path.is_file() else []
+    return _LEGACY_SPECIES_ROWS
+
+
+def _active_species_rows() -> List:
+    if _ACTIVE_SPECIES_ROWS is not None:
+        return _ACTIVE_SPECIES_ROWS
+    return _legacy_species_rows()
+
+
+def _legacy_to_active_index() -> Dict[int, int]:
+    """旧 bird_info 下标 → 当前名单下标。名单未换时下标保持不变。"""
+    global _LEGACY_TO_ACTIVE
+    if _LEGACY_TO_ACTIVE is not None:
+        return _LEGACY_TO_ACTIVE
+    by_sci: Dict[str, int] = {}
+    by_cn: Dict[str, int] = {}
+    for idx, row in enumerate(_active_species_rows()):
+        if not isinstance(row, list) or not row:
+            continue
+        cn = str(row[0]).strip() if len(row) > 0 else ""
+        sci = str(row[2]).strip() if len(row) > 2 else ""
+        if sci and sci not in by_sci:
+            by_sci[sci] = idx
+        if cn and cn not in by_cn:
+            by_cn[cn] = idx
+    mapping: Dict[int, int] = {}
+    for idx, row in enumerate(_legacy_species_rows()):
+        if not isinstance(row, list) or not row:
+            continue
+        cn = str(row[0]).strip() if len(row) > 0 else ""
+        sci = str(row[2]).strip() if len(row) > 2 else ""
+        new_idx = by_sci.get(sci) if sci else None
+        if new_idx is None and cn:
+            new_idx = by_cn.get(cn)
+        if new_idx is not None:
+            mapping[idx] = new_idx
+    _LEGACY_TO_ACTIVE = mapping
+    return mapping
+
+
+def _map_legacy_species_index(old_idx) -> Optional[int]:
+    if old_idx is None:
+        return None
+    try:
+        old_i = int(old_idx)
+    except (TypeError, ValueError):
+        return None
+    return _legacy_to_active_index().get(old_i)
+
+
 def _load_bird_info_index_maps() -> None:
-    """加载 bird_info 的学名/中文名到类别 index 的映射。"""
+    """加载当前物种名单的学名/中文名到类别 index 的映射。"""
     global _SCI_TO_BIRD_INDEX, _CN_TO_BIRD_INDEX
     if _SCI_TO_BIRD_INDEX is not None and _CN_TO_BIRD_INDEX is not None:
         return
     _SCI_TO_BIRD_INDEX = {}
     _CN_TO_BIRD_INDEX = {}
 
-    bird_info_path = Path(_BIRD_INFO_PATH)
-    if not bird_info_path.exists():
-        print(f"警告: bird_info.json 不存在: {bird_info_path}")
+    info_list = _active_species_rows()
+    if not info_list:
+        print(f"警告: 物种名单为空（{_BIRD_INFO_PATH}）")
         return
 
     try:
-        with open(bird_info_path, encoding="utf-8") as f:
-            info_list = json.load(f)
         for idx, row in enumerate(info_list):
             if not isinstance(row, list) or not row:
                 continue
@@ -1016,8 +1113,9 @@ def _load_china_species_indices() -> set:
                 cn_codes.update(sp_codes)
 
         # 将 species_code → bird_info index
+        # species_code → 旧 bird_info 下标 → 当前模型名单下标
         for code in cn_codes:
-            idx = code_mapping.get(code)
+            idx = _map_legacy_species_index(code_mapping.get(code))
             if idx is not None:
                 _CHINA_SPECIES_INDICES.add(idx)
 
@@ -1074,7 +1172,7 @@ def _load_cn_admin_species_by_name() -> Dict[str, set]:
                 continue
             acc: set = set()
             for code in rval.get("species", []):
-                idx = code_mapping.get(code)
+                idx = _map_legacy_species_index(code_mapping.get(code))
                 if idx is not None:
                     acc.add(idx)
             if acc:
@@ -1363,13 +1461,15 @@ def geo_refine_species(
 
 # ─────────────────────────────────────────────────────────────
 # 物种识别模块（本地：ResNet / EfficientNet-B0 + bird_info.json）
+# 物种识别模块（默认 MobileNetV4-S；可选 ResNet34 / EfficientNet-B0）
 # ─────────────────────────────────────────────────────────────
 _BIRDY_ROOT = _PROJECT_ROOT
+_SPECIES_MODEL_MNV4S_PATH = str(_BIRDY_ROOT / "models" / "birdy_mnv4s_infer.pt")
 _SPECIES_MODEL_RES34_PATH = str(_BIRDY_ROOT / "models" / "bird_iden_res34.pth")
 _SPECIES_MODEL_EFFICIENT_B0_PATH = str(
     _BIRDY_ROOT / "models" / "bird_iden_efficient_b0.pt"
 )
-# SuperBirdID birdid2024 JIT：BGR ImageNet + softmax 温度（与 SuperBirdID API 一致）
+_MNV4S_INFO_PATH = str(_BIRDY_ROOT / "data" / "birdy_mnv4s_info.json")
 _EFFICIENTNET_BGR_MEAN = np.array([0.406, 0.456, 0.485], dtype=np.float32)
 _EFFICIENTNET_BGR_STD = np.array([0.225, 0.224, 0.229], dtype=np.float32)
 _EFFICIENTNET_SOFTMAX_TEMPERATURE = 0.6
@@ -1381,24 +1481,34 @@ _DEFAULT_BIRD_YOLO = str(_BIRDY_ROOT / "models" / "bird-seg.pt")
 _DEFAULT_EYE_YOLO = str(_BIRDY_ROOT / "models" / "birdeye.pt")
 
 # GUI / CLI 下拉：resnet34 → bird_iden_res34.pth；efficientnet_b0 → bird_iden_efficient_b0.pt
+# GUI / CLI：mnv4s → birdy_mnv4s_infer.pt；resnet34 / efficientnet_b0 仍可用
+LOCAL_SPECIES_MODEL_MNV4S = "mnv4s"
 LOCAL_SPECIES_MODEL_RESNET34 = "resnet34"
 LOCAL_SPECIES_MODEL_EFFICIENTNET = "efficientnet_b0"
 LOCAL_SPECIES_MODEL_RESNET = LOCAL_SPECIES_MODEL_RESNET34  # 旧常量名，值已为 resnet34
 _LOCAL_SPECIES_MODEL_CHOICES = (
+    LOCAL_SPECIES_MODEL_MNV4S,
     LOCAL_SPECIES_MODEL_RESNET34,
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
 )
 
 
 def normalize_local_species_model(kind: Optional[str]) -> str:
-    """统一配置值；兼容旧版 gui_config 中的 resnet50。"""
-    k = (kind or LOCAL_SPECIES_MODEL_RESNET34).strip().lower()
+    """统一配置值。缺省为 MobileNetV4-S；仍接受 resnet34 / resnet50 / efficientnet_b0。"""
+    k = (kind or LOCAL_SPECIES_MODEL_MNV4S).strip().lower()
+    if k in (
+        LOCAL_SPECIES_MODEL_MNV4S,
+        "mobilenetv4",
+        "mobilenetv4s",
+        "mobilenetv4_conv_small",
+        "birdy_mnv4s",
+    ):
+        return LOCAL_SPECIES_MODEL_MNV4S
     if k in ("resnet50", "resnet34", LOCAL_SPECIES_MODEL_RESNET34):
         return LOCAL_SPECIES_MODEL_RESNET34
     if k == LOCAL_SPECIES_MODEL_EFFICIENTNET:
         return LOCAL_SPECIES_MODEL_EFFICIENTNET
-    return LOCAL_SPECIES_MODEL_RESNET34
-
+    return LOCAL_SPECIES_MODEL_MNV4S
 
 def normalize_species_geo_mode(mode: Optional[str]) -> str:
     """统一地理约束模式；兼容旧版 use_geo_constraint=false。"""
@@ -1415,9 +1525,11 @@ def normalize_species_geo_mode(mode: Optional[str]) -> str:
     return SPECIES_GEO_MODE_AUTO
 
 
-def resolve_local_species_model_path(kind: str = LOCAL_SPECIES_MODEL_RESNET34) -> str:
+def resolve_local_species_model_path(kind: str = LOCAL_SPECIES_MODEL_MNV4S) -> str:
     """按本地模型类型解析权重路径。"""
     kind = normalize_local_species_model(kind)
+    if kind == LOCAL_SPECIES_MODEL_MNV4S:
+        return _SPECIES_MODEL_MNV4S_PATH
     if kind == LOCAL_SPECIES_MODEL_EFFICIENTNET:
         return _SPECIES_MODEL_EFFICIENT_B0_PATH
     p34 = _BIRDY_ROOT / "models" / "bird_iden_res34.pth"
@@ -1430,9 +1542,21 @@ def resolve_local_species_model_path(kind: str = LOCAL_SPECIES_MODEL_RESNET34) -
     return _SPECIES_MODEL_RES34_PATH
 
 
+def resolve_species_label_path(kind: str, explicit: Optional[str] = None) -> str:
+    """MobileNetV4-S 使用自己的名单；未另行指定时不要套用旧 bird_info.json。"""
+    kind = normalize_local_species_model(kind)
+    legacy = os.path.normcase(os.path.abspath(_BIRD_INFO_PATH))
+    given = os.path.normcase(os.path.abspath(explicit)) if explicit else ""
+    if kind == LOCAL_SPECIES_MODEL_MNV4S and (not given or given == legacy):
+        return _MNV4S_INFO_PATH
+    return explicit or _BIRD_INFO_PATH
+
+
 def infer_local_species_model_kind(model_path: str) -> str:
     """根据权重文件名推断骨干类型。"""
     name = Path(model_path).name.lower()
+    if "mnv4" in name or name == "birdy_mnv4s_infer.pt":
+        return LOCAL_SPECIES_MODEL_MNV4S
     if name in (
         "bird_iden_efficient_b0.pt",
         "bird2024.pt",
@@ -1444,7 +1568,8 @@ def infer_local_species_model_kind(model_path: str) -> str:
 
 def local_species_model_label(kind: str) -> str:
     kind = normalize_local_species_model(kind)
-    if kind == LOCAL_SPECIES_MODEL_EFFICIENTNET:
+    if kind == LOCAL_SPECIES_MODEL_MNV4S:
+        return "MobileNetV4-S（birdy_mnv4s_infer.pt）"
         return "EfficientNet-B0（bird_iden_efficient_b0.pt）"
     return "ResNet34（bird_iden_res34.pth）"
 
@@ -1474,9 +1599,68 @@ def _runtime_error_bad_torch_file(err: Exception, path: str, title_cn: str) -> R
     return RuntimeError(f"{title_cn}\n路径: {os.path.abspath(path)}\n{err}")
 
 
+def _version_tuple(text: str) -> Tuple[int, ...]:
+    """把 "1.0.15" 解析成 (1, 0, 15)，便于比较 timm 版本高低。"""
+    parts: List[int] = []
+    for seg in str(text or "").split("."):
+        digits = ""
+        for ch in seg:
+            if not ch.isdigit():
+                break
+            digits += ch
+        parts.append(int(digits) if digits else 0)
+    return tuple(parts)
+
+
+def _vendored_timm_dir() -> Optional[Path]:
+    """项目根目录下随包放置的 timm（.tmp_timm），存在则返回路径。"""
+    vendored = _BIRDY_ROOT.parent / ".tmp_timm"
+    return vendored if vendored.is_dir() else None
+
+
+def _vendored_timm_version(root: Path) -> str:
+    """从 .tmp_timm 的 dist-info 目录名解析版本，如 timm-1.0.15.dist-info。"""
+    for dist in sorted(root.glob("timm-*.dist-info")):
+        name = dist.name
+        if name.startswith("timm-") and name.endswith(".dist-info"):
+            ver = name[len("timm-"): -len(".dist-info")]
+            if ver:
+                return ver
+    return ""
+
+
+def _import_timm():
+    """MobileNetV4-S 用 timm 建网。
+
+    常见坑：系统里的 timm 若为 0.6.x，不认识 mobilenetv4_*，create_model 会抛
+    Unknown model，上层再把异常静默降级成「全部未知」。因此当项目自带
+    .tmp_timm 且版本高于已装 timm 时，**在首次导入前**就把该目录插到 sys.path
+    最前（不能先导入旧版再清理 sys.modules，torch 的 jit overload 会重复注册）。
+    """
+    vendored = _vendored_timm_dir()
+    if vendored is not None and str(vendored) not in sys.path:
+        vendored_ver = _vendored_timm_version(vendored)
+        try:
+            from importlib.metadata import version as _dist_version
+            installed_ver = _dist_version("timm")
+        except Exception:
+            installed_ver = ""
+        if _version_tuple(vendored_ver) > _version_tuple(installed_ver):
+            sys.path.insert(0, str(vendored))
+    try:
+        import timm
+        return timm
+    except ImportError as exc:
+        raise RuntimeError(
+            "加载 MobileNetV4-S 需要 timm>=1.0（mobilenetv4 系列模型）。"
+            "请执行 pip install -U \"timm>=1.0.0\""
+        ) from exc
+
+
 class BirdSpeciesClassifier:
     """
-    本地鸟类物种分类器：ResNet34（bird_iden_res34.pth）或 EfficientNet-B0（bird_iden_efficient_b0.pt）。
+    本地鸟类物种分类器。默认 MobileNetV4-S（birdy_mnv4s_infer.pt + birdy_mnv4s_info.json）。
+    仍可选用 ResNet34 或 EfficientNet-B0，这两套继续用 models/bird_info.json。
     """
 
     def __init__(
@@ -1484,10 +1668,11 @@ class BirdSpeciesClassifier:
         model_path: Optional[str] = None,
         bird_info_path: str = _BIRD_INFO_PATH,
         device: Optional[str] = None,
-        local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
+        local_species_model: str = LOCAL_SPECIES_MODEL_MNV4S,
     ):
         import torch
         import torchvision.transforms as transforms
+        from torchvision.transforms import InterpolationMode
 
         local_species_model = normalize_local_species_model(local_species_model)
         if local_species_model not in _LOCAL_SPECIES_MODEL_CHOICES:
@@ -1500,34 +1685,76 @@ class BirdSpeciesClassifier:
         self.model_path = model_path or resolve_local_species_model_path(local_species_model)
         if model_path is not None:
             self.local_species_model = infer_local_species_model_kind(self.model_path)
+        label_path = resolve_species_label_path(self.local_species_model, bird_info_path)
+        if (
+            self.local_species_model == LOCAL_SPECIES_MODEL_MNV4S
+            and (not os.path.isfile(self.model_path) or not os.path.isfile(label_path))
+        ):
+            print(
+                "警告: 未找到 MobileNetV4-S 权重或名单，本次仍用 ResNet34。\n"
+                f"  权重: {os.path.abspath(self.model_path)}\n"
+                f"  名单: {os.path.abspath(label_path)}"
+            )
+            self.local_species_model = LOCAL_SPECIES_MODEL_RESNET34
+            self.model_path = resolve_local_species_model_path(self.local_species_model)
+            label_path = resolve_species_label_path(self.local_species_model, None)
+        bird_info_path = label_path
 
         self.device = torch.device(
             "cuda" if (device is None and torch.cuda.is_available()) else (device or "cpu")
         )
 
-        with open(bird_info_path, encoding="utf-8") as f:
-            self.bird_info: List[List[str]] = json.load(f)
+        if not os.path.isfile(bird_info_path):
+            raise FileNotFoundError(
+                f"物种名单不存在: {os.path.abspath(bird_info_path)}\n"
+                f"MobileNetV4-S 使用 data/birdy_mnv4s_info.json，"
+                f"不要改用旧的 models/bird_info.json。"
+            )
+        self.bird_info = read_species_label_rows(bird_info_path)
+        self.bird_info_path = bird_info_path
 
         self.model = None
         self._jit_model = None
 
         if self.local_species_model == LOCAL_SPECIES_MODEL_EFFICIENTNET:
             self._load_efficientnet_b0_jit(self.model_path)
+            resize_interpolation = InterpolationMode.BILINEAR
+        elif self.local_species_model == LOCAL_SPECIES_MODEL_MNV4S:
+            self._load_mnv4s(self.model_path)
+            resize_interpolation = InterpolationMode.BICUBIC
         else:
             self._load_resnet_state_dict(self.model_path)
+            resize_interpolation = InterpolationMode.BILINEAR
 
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406],
-                                  [0.229, 0.224, 0.225]),
-        ])
+        if self.local_species_model == LOCAL_SPECIES_MODEL_MNV4S:
+            # mnv4s 采用 stretch 口径：ROI 整框直接拉伸到 224×224，不做 CenterCrop。
+            # 训练侧 stretch_transforms 的验证变换即 Resize((224,224)) + ToTensor + Normalize。
+            self.transform = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.Resize((224, 224), interpolation=InterpolationMode.BICUBIC),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406],
+                                      [0.229, 0.224, 0.225]),
+            ])
+        else:
+            self.transform = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.Resize(256, interpolation=resize_interpolation),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406],
+                                      [0.229, 0.224, 0.225]),
+            ])
+        bind_active_species_rows(self.bird_info)
+        if len(self.bird_info) != self.num_classes:
+            print(
+                f"警告: 分类头 {self.num_classes} 类，名单 {len(self.bird_info)} 条，"
+                f"下标和物种对不上。名单: {bird_info_path}"
+            )
 
         print(
             f"物种分类器已加载 ({local_species_model_label(self.local_species_model)}): "
-            f"{self.num_classes} 类，设备: {self.device}"
+            f"{self.num_classes} 类，名单 {len(self.bird_info)} 条，设备: {self.device}"
         )
 
     def _load_resnet_state_dict(self, model_path: str) -> None:
@@ -1558,6 +1785,93 @@ class BirdSpeciesClassifier:
         backbone.to(self.device)
         backbone.eval()
         self.model = backbone
+
+    def _load_mnv4s(self, model_path: str) -> None:
+        """timm mobilenetv4_conv_small.e2400_r224_in1k，分类头维数取自权重。"""
+        import torch
+
+        if not os.path.isfile(model_path):
+            raise FileNotFoundError(
+                f"找不到 MobileNetV4-S 权重: {os.path.abspath(model_path)}"
+            )
+        timm = _import_timm()
+        try:
+            try:
+                blob = torch.load(model_path, map_location="cpu", weights_only=False)
+            except TypeError:
+                blob = torch.load(model_path, map_location="cpu")
+        except Exception as e:
+            raise _runtime_error_bad_torch_file(
+                e, model_path, "物种分类权重（birdy_mnv4s_infer.pt）无法读取"
+            ) from e
+
+        if isinstance(blob, torch.nn.Module):
+            blob.to(self.device)
+            blob.eval()
+            self.model = blob
+            self._jit_model = None
+            weight = None
+            for name in ("classifier.weight", "head.fc.weight", "fc.weight"):
+                param = dict(blob.named_parameters()).get(name)
+                if param is not None and param.ndim == 2:
+                    weight = param
+                    break
+            if weight is None:
+                raise RuntimeError(f"权重里没有分类头: {model_path}")
+            self.num_classes = int(weight.shape[0])
+            return
+
+        sd = blob
+        if isinstance(blob, dict):
+            for key in ("state_dict", "model", "model_state"):
+                inner = blob.get(key)
+                if isinstance(inner, dict):
+                    sd = inner
+                    break
+        if not isinstance(sd, dict):
+            raise RuntimeError(f"无法从权重中取出 state_dict: {model_path}")
+        cleaned = {}
+        for key, value in sd.items():
+            name = key[7:] if key.startswith("module.") else key
+            cleaned[name] = value
+        weight = None
+        for key in ("classifier.weight", "head.fc.weight", "fc.weight"):
+            value = cleaned.get(key)
+            if value is not None and getattr(value, "ndim", 0) == 2:
+                weight = value
+                break
+        if weight is None:
+            for key, value in cleaned.items():
+                if key.endswith("weight") and getattr(value, "ndim", 0) == 2 and value.shape[0] > 100:
+                    weight = value
+                    break
+        if weight is None:
+            raise RuntimeError(f"权重里没有分类头: {model_path}")
+        self.num_classes = int(weight.shape[0])
+        try:
+            model = timm.create_model(
+                "mobilenetv4_conv_small.e2400_r224_in1k",
+                num_classes=self.num_classes,
+                pretrained=False,
+            )
+        except RuntimeError as exc:
+            if "unknown model" not in str(exc).lower():
+                raise
+            raise RuntimeError(
+                "当前 timm 版本过低，不认识 mobilenetv4_*（需要 timm>=1.0）。\n"
+                f"实际加载版本: {getattr(timm, '__version__', '未知')}\n"
+                "处理办法：pip install -U \"timm>=1.0.0\"，"
+                "或确认项目根目录下存在 .tmp_timm（timm 1.0.x）目录。"
+            ) from exc
+        missing, _unexpected = model.load_state_dict(cleaned, strict=False)
+        if "classifier.weight" in missing:
+            raise RuntimeError(
+                f"分类头没有装进 MobileNetV4-S（缺少 classifier.weight）: {model_path}"
+            )
+        model.to(self.device)
+        model.eval()
+        self.model = model
+        self._jit_model = None
 
     def _load_efficientnet_b0_jit(self, model_path: str) -> None:
         import torch
@@ -2048,6 +2362,12 @@ BIRD_YOLO_CENTER_RATIO = 0.5
 BIRD_YOLO_CENTER_MIN_LONG_SIDE = 5000
 BIRD_YOLO_NMS_IOU = 0.5
 BIRD_YOLO_IMGSZ_FALLBACKS = (1280, 960, 640)
+# 鸟体框宽高比合理范围：水纹、岸线常被误检成细长条，超出此范围的框丢弃。
+# 下限 0.25 是为竖直姿态的鸟留出空间（蚁鴷/啄木鸟贴树干、竖构图可达 0.38）。
+BIRD_BBOX_MIN_ASPECT = 0.25
+BIRD_BBOX_MAX_ASPECT = 2.6
+# bird-seg.pt 是 COCO 80 类通用检测器，只有 class 14（bird）才是鸟
+COCO_BIRD_CLASS_ID = 14
 
 
 def box_iou_xyxy(a: List[float], b: List[float]) -> float:
@@ -2246,6 +2566,48 @@ def yolo_predict_with_imgsz(model, image, conf: float, imgsz: int = BIRD_YOLO_IM
     return []
 
 
+def _is_coco_detector(model) -> bool:
+    """判断是否为 COCO 80 类通用检测器（如 bird-seg.pt）。"""
+    names = getattr(model, "names", None) or {}
+    if not isinstance(names, dict) or len(names) != 80:
+        return False
+    return any(str(v).strip().lower() == "bird" for v in names.values())
+
+
+def _filter_bird_boxes(boxes: List[Dict], *, coco_only: bool = False) -> List[Dict]:
+    """丢弃非鸟类目与宽高比异常的框。
+
+    COCO 通用检测器会同时输出 person/boat/car 等 80 类，只有 class 14 是鸟；
+    水面反光、岸线常被误检成细长条，宽高比超出 [0.25, 2.6] 的一律丢弃。
+    """
+    kept: List[Dict] = []
+    dropped_cls = dropped_ratio = 0
+    for b in boxes or []:
+        if coco_only and int(b.get("class", -1)) != COCO_BIRD_CLASS_ID:
+            dropped_cls += 1
+            continue
+        bbox = b.get("bbox") or []
+        if len(bbox) < 4:
+            dropped_ratio += 1
+            continue
+        bw = float(bbox[2]) - float(bbox[0])
+        bh = float(bbox[3]) - float(bbox[1])
+        if bw <= 0 or bh <= 0:
+            dropped_ratio += 1
+            continue
+        aspect = bw / bh
+        if aspect < BIRD_BBOX_MIN_ASPECT or aspect > BIRD_BBOX_MAX_ASPECT:
+            dropped_ratio += 1
+            continue
+        kept.append(b)
+    if dropped_cls or dropped_ratio:
+        print(
+            f"鸟体框过滤: 非鸟类目 {dropped_cls} 个，宽高比异常 {dropped_ratio} 个，"
+            f"保留 {len(kept)}/{len(boxes or [])}"
+        )
+    return kept
+
+
 def run_yolo_birds_full_and_center(
     model,
     image: np.ndarray,
@@ -2260,8 +2622,11 @@ def run_yolo_birds_full_and_center(
     if image is None or getattr(image, "size", 0) == 0:
         return []
     h, w = image.shape[:2]
+    coco_only = _is_coco_detector(model)
     results = yolo_predict_with_imgsz(model, image, conf, imgsz)
-    birds = extract_yolo_detections(results, image_size=(w, h))
+    birds = _filter_bird_boxes(
+        extract_yolo_detections(results, image_size=(w, h)), coco_only=coco_only
+    )
     if not center_pass or not should_run_center_pass(w, h, min_long_side):
         return birds
     x0, y0, cw, ch = center_crop_origin_size(w, h, center_ratio)
@@ -2275,11 +2640,14 @@ def run_yolo_birds_full_and_center(
             torch.cuda.empty_cache()
     except Exception:
         pass
-    extra = extract_yolo_detections(
-        yolo_predict_with_imgsz(model, crop, conf, imgsz),
-        offset_x=x0,
-        offset_y=y0,
-        image_size=(w, h),
+    extra = _filter_bird_boxes(
+        extract_yolo_detections(
+            yolo_predict_with_imgsz(model, crop, conf, imgsz),
+            offset_x=x0,
+            offset_y=y0,
+            image_size=(w, h),
+        ),
+        coco_only=coco_only,
     )
     merged = merge_detections_nms(birds + extra, nms_iou)
     print(
@@ -2295,7 +2663,7 @@ class BirdAndEyeDetector:
         bird_model_path: str = _DEFAULT_BIRD_YOLO,
         eye_model_path: str = _DEFAULT_EYE_YOLO,
         species_model_path: Optional[str] = None,
-        local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
+        local_species_model: str = LOCAL_SPECIES_MODEL_MNV4S,
         bird_info_path: str = _BIRD_INFO_PATH,
         bird_conf: float = 0.25,
         eye_conf: float = 0.25,
@@ -2317,8 +2685,7 @@ class BirdAndEyeDetector:
             bird_model_path:    鸟类检测模型路径（YOLOv8）
             eye_model_path:     鸟眼检测模型路径
             species_model_path: 物种识别模型路径（默认由 local_species_model 解析）
-            local_species_model: 本地骨干 resnet34 | efficientnet_b0（GUI 下拉）
-            bird_info_path:     物种信息 JSON 路径
+            local_species_model: 本地骨干 mnv4s | resnet34 | efficientnet_b0（GUI 下拉）
             bird_conf:          鸟类检测置信度阈值（默认 0.25，偏向召回）
             eye_conf:           鸟眼检测置信度阈值
             device:             运行设备 (cuda/cpu)
@@ -3219,7 +3586,7 @@ def process_folder(
     bird_model_path: str = str(_BIRDY_ROOT / "models" / "bird-seg.pt"),
     eye_model_path: str = str(_BIRDY_ROOT / "models" / "birdeye.pt"),
     species_model_path: Optional[str] = None,
-    local_species_model: str = LOCAL_SPECIES_MODEL_RESNET34,
+    local_species_model: str = LOCAL_SPECIES_MODEL_MNV4S,
     bird_info_path: str = _BIRD_INFO_PATH,
     enable_species: bool = True,
     enable_eye: bool = False,
@@ -3404,9 +3771,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--local-species-model",
         type=str,
-        default=LOCAL_SPECIES_MODEL_RESNET34,
+        default=LOCAL_SPECIES_MODEL_MNV4S,
         choices=list(_LOCAL_SPECIES_MODEL_CHOICES),
-        help="本地物种骨干：resnet34（bird_iden_res34.pth）| efficientnet_b0（bird_iden_efficient_b0.pt）",
+        help="本地物种骨干：mnv4s（birdy_mnv4s_infer.pt）| resnet34 | efficientnet_b0",
     )
     parser.add_argument(
         "--bird-info", type=str,

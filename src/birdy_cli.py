@@ -46,6 +46,7 @@ from geo_encoder import batch_write_gps_exif, geocode_location
 from detect_bird_and_eye import (
     BirdAndEyeDetector,
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_MNV4S,
     LOCAL_SPECIES_MODEL_RESNET34,
     local_species_model_label,
     normalize_bird_detect_mode,
@@ -115,7 +116,7 @@ class BirdDetectionCLI:
             'generate_species_report': True,
             # 物种识别模式配置
             'use_local_model': True,
-            'local_species_model': LOCAL_SPECIES_MODEL_RESNET34,
+            'local_species_model': LOCAL_SPECIES_MODEL_MNV4S,
             # 本地模型最低接受置信度（低于此值视为未知种类）
             'min_species_accept_confidence': 0.5,
         }
@@ -281,8 +282,12 @@ class BirdDetectionCLI:
         parser.add_argument(
             '--local-species-model',
             type=str,
-            choices=[LOCAL_SPECIES_MODEL_RESNET34, LOCAL_SPECIES_MODEL_EFFICIENTNET],
-            help='本地物种骨干: resnet34 | efficientnet_b0',
+            choices=[
+                LOCAL_SPECIES_MODEL_MNV4S,
+                LOCAL_SPECIES_MODEL_RESNET34,
+                LOCAL_SPECIES_MODEL_EFFICIENTNET,
+            ],
+            help='本地物种骨干: mnv4s | resnet34 | efficientnet_b0',
         )
         parser.add_argument(
             '--species-conf',
@@ -426,7 +431,7 @@ class BirdDetectionCLI:
         if self.config['use_local_model']:
             print(
                 f"  本地物种模型:   "
-                f"{local_species_model_label(self.config.get('local_species_model', LOCAL_SPECIES_MODEL_RESNET34))}"
+                f"{local_species_model_label(self.config.get('local_species_model', LOCAL_SPECIES_MODEL_MNV4S))}"
             )
             print(
                 f"  未知种类阈值:   {self.config.get('min_species_accept_confidence', 0.5):.2f} "
@@ -585,11 +590,7 @@ class BirdDetectionCLI:
                     local_species_model=self.config.get(
                         normalize_local_species_model(
                             self.config.get(
-                                'local_species_model', LOCAL_SPECIES_MODEL_RESNET34
-                            )
-                        ),
-                    ),
-                    doubao_config=doubao_config,
+                                'local_species_model', LOCAL_SPECIES_MODEL_MNV4S
                     min_species_accept_confidence=self.config.get(
                         'min_species_accept_confidence', 0.5
                     ),

@@ -22,6 +22,7 @@ import cv2  # noqa: E402
 
 from detect_bird_and_eye import (  # noqa: E402
     LOCAL_SPECIES_MODEL_EFFICIENTNET,
+    LOCAL_SPECIES_MODEL_MNV4S,
     LOCAL_SPECIES_MODEL_RESNET34,
     BirdSpeciesClassifier,
     resolve_local_species_model_path,
@@ -46,9 +47,13 @@ def main() -> None:
     )
     ap.add_argument(
         "--backbone",
-        choices=[LOCAL_SPECIES_MODEL_RESNET34, LOCAL_SPECIES_MODEL_EFFICIENTNET],
-        default=LOCAL_SPECIES_MODEL_RESNET34,
-        help="本地骨干：resnet34 | efficientnet_b0",
+        choices=[
+            LOCAL_SPECIES_MODEL_MNV4S,
+            LOCAL_SPECIES_MODEL_RESNET34,
+            LOCAL_SPECIES_MODEL_EFFICIENTNET,
+        ],
+        default=LOCAL_SPECIES_MODEL_MNV4S,
+        help="本地骨干：mnv4s | resnet34 | efficientnet_b0",
     )
     ap.add_argument(
         "--bird-info",

@@ -38,7 +38,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from PyQt5.QtCore import QRect, Qt, QTimer, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QRect, QRectF, Qt, QTimer, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPainter, QPen, QPixmap
 
 from burst_anchor import (
@@ -187,11 +187,15 @@ def _pil_rgb_to_qimage(pil_img) -> QImage:
 class BurstCropPreviewWidget(QWidget):
     """
     设置阶段：当前帧 + 红十字（标定点，单击）+ 绿框（裁剪区，拖拽）。
+    滚轮缩放（以光标为中心）、中键/右键拖拽平移、中键/右键双击恢复适应窗口。
     播放模式：动效帧。
     """
 
     anchor_changed = pyqtSignal(float, float)
     crop_changed = pyqtSignal(float, float, float, float)
+
+    _ZOOM_MIN = 1.0
+    _ZOOM_MAX = 8.0
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -202,6 +206,10 @@ class BurstCropPreviewWidget(QWidget):
         self._dest = (0, 0, 1, 1)
         self._iw = 1
         self._ih = 1
+        self._zoom = 1.0
+        self._pan: List[float] = [0.0, 0.0]
+        self._panning = False
+        self._pan_anchor: Optional[Tuple[int, int]] = None
         self._playback_frames: List[QImage] = []
         self._playback_idx = 0
         self._press: Optional[Tuple[int, int, float, float]] = None
@@ -212,6 +220,7 @@ class BurstCropPreviewWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setStyleSheet("background-color: #2b2b2b; border: 1px solid #555;")
         self.setMouseTracking(True)
+        self.setCursor(Qt.CrossCursor)
 
     def stop_playback(self) -> None:
         if self._playback_frames:
@@ -270,12 +279,83 @@ class BurstCropPreviewWidget(QWidget):
         self._ay = float(np.clip(ay, 0.0, 1.0))
         self.update()
 
+    def _fit_rect(self) -> Tuple[int, int, int, int]:
+        """缩放=1 时图像在控件内的居中矩形。"""
+        pw, ph = max(1, self.width()), max(1, self.height())
+        iw, ih = max(1, self._iw), max(1, self._ih)
+        scale = min(pw / float(iw), ph / float(ih))
+        sw = max(1, int(round(iw * scale)))
+        sh = max(1, int(round(ih * scale)))
+        return (pw - sw) // 2, (ph - sh) // 2, sw, sh
+
+    def _dest_rect(self) -> Tuple[int, int, int, int]:
+        """当前显示的图像矩形（含缩放与平移），顺带把平移量夹回可视范围。"""
+        pw, ph = max(1, self.width()), max(1, self.height())
+        _ox, _oy, sw, sh = self._fit_rect()
+        z = float(self._zoom)
+        dw = max(1, int(round(sw * z)))
+        dh = max(1, int(round(sh * z)))
+        if dw <= pw:
+            dx = (pw - dw) // 2
+            self._pan[0] = 0.0
+        else:
+            dx = int(round((pw - dw) * 0.5 + self._pan[0]))
+            dx = min(0, max(pw - dw, dx))
+            self._pan[0] = float(dx) - (pw - dw) * 0.5
+        if dh <= ph:
+            dy = (ph - dh) // 2
+            self._pan[1] = 0.0
+        else:
+            dy = int(round((ph - dh) * 0.5 + self._pan[1]))
+            dy = min(0, max(ph - dh, dy))
+            self._pan[1] = float(dy) - (ph - dh) * 0.5
+        self._dest = (dx, dy, dw, dh)
+        return self._dest
+
+    def reset_view(self) -> None:
+        """恢复适应窗口（缩放 1、无平移）。"""
+        self._zoom = 1.0
+        self._pan = [0.0, 0.0]
+        self._dest_rect()
+        self.update()
+
     def _norm_from_widget(self, wx: int, wy: int) -> Optional[Tuple[float, float]]:
-        ox, oy, sw, sh = self._dest
+        ox, oy, sw, sh = self._dest_rect()
         mx, my = wx - ox, wy - oy
         if mx < 0 or my < 0 or mx >= sw or my >= sh or sw <= 0 or sh <= 0:
             return None
         return float(mx) / float(sw), float(my) / float(sh)
+
+    def wheelEvent(self, e) -> None:
+        if self._playback_frames or self._base_pix is None or self._base_pix.isNull():
+            return
+        ox, oy, ow, oh = self._dest_rect()
+        if ow <= 1 or oh <= 1:
+            return
+        steps = float(e.angleDelta().y()) / 120.0
+        if abs(steps) < 1e-6:
+            return
+        new_zoom = float(
+            np.clip(self._zoom * (1.25 ** steps), self._ZOOM_MIN, self._ZOOM_MAX)
+        )
+        if abs(new_zoom - self._zoom) < 1e-4:
+            return
+        px, py = int(e.x()), int(e.y())
+        # 光标下的图像归一化坐标在缩放前后保持不变
+        u = (px - ox) / float(ow)
+        v = (py - oy) / float(oh)
+        fx, fy, sw, sh = self._fit_rect()
+        nw = max(1, int(round(sw * new_zoom)))
+        nh = max(1, int(round(sh * new_zoom)))
+        self._zoom = new_zoom
+        self._pan = [
+            px - u * nw - (self.width() - nw) * 0.5,
+            py - v * nh - (self.height() - nh) * 0.5,
+        ]
+        self._dest_rect()
+        _burst_gui_log(f"预览缩放：×{self._zoom:.2f}")
+        self.update()
+        e.accept()
 
     def paintEvent(self, event) -> None:
         del event
@@ -300,6 +380,7 @@ class BurstCropPreviewWidget(QWidget):
                 self.rect(),
                 Qt.AlignCenter,
                 "添加图片后：单击设标定点（红十字），拖拽矩形设裁剪区（绿框）。\n"
+                "滚轮缩放（以光标为中心），中键/右键拖动平移，中键/右键双击复原。\n"
                 "用上一张/下一张检查各帧；改首图后自动重算未锁定的后续帧。",
             )
             return
@@ -307,19 +388,13 @@ class BurstCropPreviewWidget(QWidget):
         iw, ih = self._iw, self._ih
         if iw <= 0 or ih <= 0:
             return
-        scale = min(pw / float(iw), ph / float(ih))
-        sw = max(1, int(round(iw * scale)))
-        sh = max(1, int(round(ih * scale)))
-        ox = (pw - sw) // 2
-        oy = (ph - sh) // 2
-        scal_pix = self._base_pix.scaled(
-            sw, sh, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        dox, doy, dw, dh = self._dest_rect()
+        p.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        p.drawPixmap(
+            QRectF(dox, doy, dw, dh),
+            self._base_pix,
+            QRectF(0, 0, iw, ih),
         )
-        dox = ox + (sw - scal_pix.width()) // 2
-        doy = oy + (sh - scal_pix.height()) // 2
-        dw, dh = scal_pix.width(), scal_pix.height()
-        self._dest = (dox, doy, dw, dh)
-        p.drawPixmap(dox, doy, scal_pix)
 
         def _draw_crop(x0n: float, y0n: float, x1n: float, y1n: float) -> None:
             xa = dox + int(round(x0n * dw))
@@ -357,10 +432,20 @@ class BurstCropPreviewWidget(QWidget):
         p.drawLine(cx_w - arm, cy_w, cx_w + arm, cy_w)
         p.drawLine(cx_w, cy_w - arm, cx_w, cy_w + arm)
 
+        if self._zoom > 1.01:
+            p.setPen(QColor(235, 235, 180))
+            p.drawText(8, self.height() - 8, f"×{self._zoom:.1f}（双击中/右键复原）")
+
     def mousePressEvent(self, e) -> None:
         if self._playback_frames:
             return
         if self._base_pix is None or self._base_pix.isNull():
+            return
+        if e.button() in (Qt.MiddleButton, Qt.RightButton):
+            self._panning = True
+            self._pan_anchor = (int(e.x()), int(e.y()))
+            self.setCursor(Qt.ClosedHandCursor)
+            e.accept()
             return
         if e.button() != Qt.LeftButton:
             return
@@ -374,6 +459,20 @@ class BurstCropPreviewWidget(QWidget):
 
     def mouseMoveEvent(self, e) -> None:
         if self._playback_frames or self._base_pix is None or self._base_pix.isNull():
+            return
+        if self._panning and self._pan_anchor is not None:
+            if not (e.buttons() & (Qt.MiddleButton | Qt.RightButton)):
+                self._panning = False
+                self._pan_anchor = None
+                self.setCursor(Qt.CrossCursor)
+                return
+            dx = int(e.x()) - self._pan_anchor[0]
+            dy = int(e.y()) - self._pan_anchor[1]
+            self._pan_anchor = (int(e.x()), int(e.y()))
+            self._pan[0] += dx
+            self._pan[1] += dy
+            self._dest_rect()
+            self.update()
             return
         if self._press is None:
             return
@@ -392,6 +491,12 @@ class BurstCropPreviewWidget(QWidget):
 
     def mouseReleaseEvent(self, e) -> None:
         if self._playback_frames or self._base_pix is None or self._base_pix.isNull():
+            return
+        if e.button() in (Qt.MiddleButton, Qt.RightButton):
+            self._panning = False
+            self._pan_anchor = None
+            self.setCursor(Qt.CrossCursor)
+            e.accept()
             return
         if e.button() != Qt.LeftButton or self._press is None:
             return
@@ -421,6 +526,11 @@ class BurstCropPreviewWidget(QWidget):
         self._ay = float(np.clip(pn[1], 0.0, 1.0))
         self.anchor_changed.emit(self._ax, self._ay)
         self.update()
+
+    def mouseDoubleClickEvent(self, e) -> None:
+        if e.button() in (Qt.MiddleButton, Qt.RightButton):
+            self.reset_view()
+            e.accept()
 
 
 class BurstWebpBuildWorker(QThread):
@@ -955,8 +1065,10 @@ class BurstWebpDialog(QDialog):
 
         self.lbl_pick_hint = QLabel(
             "单击：标定点（红十字）　拖拽：裁剪区（绿框）。"
-            "后续帧单击后，裁剪区按首图相对位置与大小跟随。"
+            "滚轮缩放，中键/右键拖动平移，中键/右键双击复原。"
+            "后续帧沿用首图裁剪框的像素尺寸（各帧分辨率不同也不变）。"
         )
+        self.lbl_pick_hint.setWordWrap(True)
         self.lbl_pick_hint.setStyleSheet("color: #666; font-size: 9pt;")
         pv_inner_l.addWidget(self.lbl_pick_hint)
 
@@ -1672,7 +1784,7 @@ class BurstWebpDialog(QDialog):
         return int(bgr.shape[1]), int(bgr.shape[0])
 
     def _apply_later_anchor(self, idx: int, ax: float, ay: float) -> bool:
-        """后续帧：按首图裁剪相对位置与大小，把绿框放到新标定点上。"""
+        """后续帧：按首图裁剪切点的相对位置 + 固定像素尺寸，把绿框放到新标定点上。"""
         geom = self._geom_ready()
         if geom is None:
             return False
@@ -1951,13 +2063,13 @@ class BurstWebpDialog(QDialog):
                 return
             _burst_gui_log(
                 f"操作：第 {idx + 1} 帧标定点 → ({ax:.4f},{ay:.4f})，"
-                f"裁剪区已按首图相对位置更新（切换其它页后锁定）"
+                f"裁剪区已按首图像素尺寸更新（切换其它页后锁定）"
             )
         self._pv_canvas.set_layout(self._layouts[idx])
         self._refresh_lock_status()
         if idx > 0 and self._later_anchor_dirty:
             self.lbl_pv_status.setText(
-                "裁剪区已按首图相对位置与大小更新。切换其它页后锁定；"
+                "裁剪区已按首图像素尺寸更新（各帧分辨率不同也不变）。切换其它页后锁定；"
                 "正在进行的传播会跳过锁定页，不会因此整段重跑。"
             )
         self._invalidate_ae_preview()

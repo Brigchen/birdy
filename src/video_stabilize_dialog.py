@@ -89,8 +89,11 @@ def _find_ffmpeg() -> Optional[str]:
     return None
 
 
-def _run_ffmpeg(cmd: list) -> tuple:
+def _run_ffmpeg(cmd: list, timeout: int = 300) -> tuple:
     """安全地运行 ffmpeg 命令，处理 Windows 编码问题。
+
+    Args:
+        timeout: 超时秒数。4K 长片段重编码可能远超默认 300 秒，需按片长放宽。
 
     Returns:
         (returncode, stdout_str, stderr_str)
@@ -99,7 +102,7 @@ def _run_ffmpeg(cmd: list) -> tuple:
         result = subprocess.run(
             cmd,
             capture_output=True,
-            timeout=300,
+            timeout=max(1, int(timeout)),
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
         )
         # 二进制模式读取，手动用 UTF-8 解码（忽略错误）
@@ -109,6 +112,34 @@ def _run_ffmpeg(cmd: list) -> tuple:
         return result.returncode, stdout, stderr
     except Exception as e:
         return -1, "", str(e)
+
+
+def _create_video_tracker():
+    """创建可用的目标跟踪器。
+
+    opencv-python 基础包通常不带 CSRT（需 opencv-contrib），此时退回 MIL，
+    避免「追踪模式」直接因 AttributeError 失败。返回 (tracker, 名称)。
+    """
+    for name in ("TrackerCSRT_create", "TrackerMIL_create"):
+        factory = getattr(cv2, name, None)
+        if factory is None:
+            continue
+        try:
+            return factory(), name[len("Tracker"):-len("_create")]
+        except Exception:
+            continue
+    return None, ""
+
+
+def _video_openable(path: str) -> bool:
+    """文件能被 OpenCV 打开且能解出首帧（残缺 MP4 没有 moov，打不开）。"""
+    if not os.path.exists(path) or os.path.getsize(path) <= 0:
+        return False
+    cap = cv2.VideoCapture(path)
+    try:
+        return bool(cap.isOpened() and cap.read()[0])
+    finally:
+        cap.release()
 
 
 def _ffmpeg_trim_segment(
@@ -135,9 +166,17 @@ def _ffmpeg_trim_segment(
     cmd = [ffmpeg, '-y', '-i', input_path]
     if start_time > 0:
         cmd.extend(['-ss', f'{start_time:.3f}'])
+    duration = None
     if end_time > start_time:
         duration = end_time - start_time
         cmd.extend(['-t', f'{duration:.3f}'])
+
+    def _cleanup_partial() -> None:
+        try:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+        except OSError:
+            pass
 
     if audio_only:
         # 提取音频：统一转码为 AAC 并用 M4A 封装（比原始 .aac 更可靠）
@@ -148,22 +187,66 @@ def _ffmpeg_trim_segment(
             '-movflags', '+faststart',
             output_path
         ])
-    else:
-        cmd.extend([
-            '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-movflags', '+faststart',
-            output_path
-        ])
+        try:
+            returncode, _stdout, stderr = _run_ffmpeg(cmd)
+            if returncode != 0:
+                _video_stab_log(f"ffmpeg 警告: {stderr[-500:] if stderr else ''}")
+                _cleanup_partial()
+                return False
+            return _video_openable(output_path)
+        except Exception as e:
+            _video_stab_log(f"ffmpeg 提取音频失败: {e}")
+            _cleanup_partial()
+            return False
 
+    # 视频片段：先尝试流复制。4K 10-bit 重编码约 20 倍实时（10 秒片段要 3 分钟），
+    # 长片段会超过超时并把残缺文件当成成功；XAVC-Intra 每帧都是关键帧，复制切割是精确的。
+    copy_cmd = list(cmd) + [
+        '-map', '0:v:0', '-map', '0:a:0?',
+        '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+        '-movflags', '+faststart', '-avoid_negative_ts', 'make_zero',
+        output_path,
+    ]
     try:
-        _video_stab_log(f"执行 ffmpeg 截取: {' '.join(cmd[:8])}...")
-        returncode, stdout, stderr = _run_ffmpeg(cmd)
+        _video_stab_log("执行 ffmpeg 截取（流复制）...")
+        returncode, _stdout, stderr = _run_ffmpeg(
+            copy_cmd, timeout=max(120, int(duration * 2 + 60)) if duration else 300
+        )
+        if returncode == 0 and _video_openable(output_path):
+            return True
         if returncode != 0:
-            _video_stab_log(f"ffmpeg 警告: {stderr[-500:] if stderr else ''}")
-        return os.path.exists(output_path) and os.path.getsize(output_path) > 0
+            _video_stab_log(f"流复制截取失败，改用重编码: {stderr[-300:] if stderr else ''}")
+        _cleanup_partial()
+    except Exception as e:
+        _video_stab_log(f"ffmpeg 流复制截取失败: {e}")
+        _cleanup_partial()
+
+    # 回退：重编码为 H.264（按片长放宽超时，避免长 4K 片段中途被截断）
+    encode_cmd = list(cmd) + [
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
+        '-c:a', 'aac', '-b:a', '192k',
+        '-movflags', '+faststart',
+        output_path,
+    ]
+    try:
+        _video_stab_log("执行 ffmpeg 截取（重编码）...")
+        if duration:
+            timeout = int(min(3600, max(300, duration * 30 + 120)))
+        else:
+            timeout = 1800
+        returncode, _stdout, stderr = _run_ffmpeg(encode_cmd, timeout=timeout)
+        if returncode != 0:
+            _video_stab_log(f"ffmpeg 重编码截取失败: {stderr[-500:] if stderr else ''}")
+            _cleanup_partial()
+            return False
+        if not _video_openable(output_path):
+            _video_stab_log("⚠ 截取结果无法打开，已丢弃")
+            _cleanup_partial()
+            return False
+        return True
     except Exception as e:
         _video_stab_log(f"ffmpeg 截取失败: {e}")
+        _cleanup_partial()
         return False
 
 
@@ -273,8 +356,8 @@ class VideoStabilizeOptions:
 
     # 稳定模式: "standard" | "virtual_tripod" | "gimbal_follow"
     # - standard: 标准vidstab防抖（默认）
-    # - virtual_tripod: 虚拟三脚架，画面钉死，只抵消微手抖
-    # - gimbal_follow: 云台跟随，CSRT跟踪主体+平移跟随+vidstab去抖
+    # - virtual_tripod: 虚拟三脚架，全局运动长窗口平滑，抵消抖动保留缓慢摇镜
+    # - gimbal_follow: 云台跟随，CSRT/MIL 跟踪主体+平移跟随+vidstab去抖
     stabilizer_mode: str = "standard"
 
     # 时间范围（秒）
@@ -288,7 +371,7 @@ class VideoStabilizeOptions:
     crop_bottom: float = 1.0
 
     # ===== vidstab 专业防抖参数 =====
-    smoothing_window: int = 30  # 平滑窗口大小（帧），越大越稳定但延迟越高
+    smoothing_window: int = 60  # 平滑窗口大小（帧），越大越稳定但延迟越高
     border_type: str = "black"  # 边缘填充: black | reflect | replicate
     border_size: int = -1  # 自动计算边缘裁剪大小（-1=根据平滑窗口自动计算）
     trim_ratio: float = 0.05  # 边缘裁剪比例（当 border_size=-1 时使用，0-0.3）
@@ -1597,7 +1680,6 @@ class VideoPreviewProcessor(QThread):
                 self.error.emit("未能提取任何预览帧")
 
         except Exception as e:
-            import traceback
             traceback.print_exc()
             self.error.emit(f"预览处理异常: {str(e)}")
 
@@ -1714,6 +1796,9 @@ class VideoStabilizeWorker(QThread):
         temp_files = []  # 跟踪需要清理的临时文件
 
         try:
+            if not os.path.isfile(self._input_path):
+                raise IOError(f"输入视频不存在: {self._input_path}")
+
             # ===== 检查 vidstab 库 =====
             try:
                 import vidstab as vidstab_module
@@ -1804,6 +1889,14 @@ class VideoStabilizeWorker(QThread):
                                 crop_w = crop_x2 - crop_x1
                                 crop_h = crop_y2 - crop_y1
                         cap_trim.release()
+                    else:
+                        # 截取文件打不开（多为超时留下的残缺 MP4），回退完整视频，避免后续误报
+                        self.log_line.emit("⚠ 截取片段无法打开，回退处理完整视频")
+                        source_path = self._input_path
+                        audio_source_path = self._input_path
+                        audio_start_time = 0.0
+                        audio_end_time = -1.0
+                        need_trim = False
                 else:
                     self.log_line.emit("⚠ ffmpeg 截取失败，将处理完整视频")
                     need_trim = False
@@ -1817,14 +1910,14 @@ class VideoStabilizeWorker(QThread):
             if mode == "virtual_tripod":
                 # ===== 虚拟三脚架模式 =====
                 self.log_line.emit("Step 2/4: 虚拟三脚架模式 (virtual-tripod)...")
-                self.log_line.emit("  画面钉死在首帧坐标，仅抵消微小手抖")
+                self.log_line.emit("  估计全局运动并长窗口平滑：抵消抖动、保留缓慢摇镜")
                 self._run_virtual_tripod(source_path, stabilized_video_path, width, height, fps)
                 self.log_line.emit("✓ 虚拟三脚架处理完成")
 
             elif mode == "gimbal_follow":
                 # ===== 云台跟随模式 =====
                 self.log_line.emit("Step 2/4: 云台跟随模式 (gimbal-follow)...")
-                self.log_line.emit("  CSRT 跟踪主体 + 画面跟随 + vidstab 去抖")
+                self.log_line.emit("  主体跟踪（CSRT/MIL）+ 画面跟随 + 微小去抖")
                 self._run_gimbal_follow(source_path, stabilized_video_path, width, height, fps)
                 self.log_line.emit("✓ 云台跟随处理完成")
 
@@ -1835,7 +1928,15 @@ class VideoStabilizeWorker(QThread):
                 stabilizer = VidStab()
 
                 # ===== 正确计算 vidstab 参数 =====
-                smoothing_window = max(5, min(60, self._options.smoothing_window))
+                # vidstab 的窗口以「帧」计；50fps 下 30 帧只有 0.6 秒，压不住手持抖动。
+                # 按帧率折算到约 1.8 秒，同时尊重用户手动调大的值。
+                smoothing_window = max(
+                    5,
+                    min(
+                        180,
+                        int(round(max(self._options.smoothing_window, fps * 1.8))),
+                    ),
+                )
                 border_type = self._options.border_type if self._options.border_type in ['black', 'reflect', 'replicate'] else 'black'
 
                 # 计算 border_size：负1表示根据 trim_ratio 自动计算
@@ -1861,7 +1962,6 @@ class VideoStabilizeWorker(QThread):
                     self.log_line.emit("✓ vidstab 防抖完成")
                 except Exception as e:
                     self.log_line.emit(f"⚠ vidstab 处理失败: {e}")
-                    import traceback
                     traceback.print_exc()
                     # vidstab失败时，直接复制源文件
                     self.log_line.emit("回退：直接使用源视频进行裁剪调整")
@@ -1877,7 +1977,9 @@ class VideoStabilizeWorker(QThread):
                 stab_cap.release()
                 stab_cap = cv2.VideoCapture(source_path)
                 if not stab_cap.isOpened():
-                    raise IOError(f"无法打开视频进行处理")
+                    raise IOError(
+                        f"无法打开视频进行处理（防抖输出与源视频均无法读取）: {source_path}"
+                    )
 
             # 获取防抖后视频的实际尺寸（可能因为 border_size 有黑边）
             stab_width = int(stab_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -1946,6 +2048,10 @@ class VideoStabilizeWorker(QThread):
             # ===== Step 4: ffmpeg 合并音频 =====
             final_output = self._output_path
             merge_ok = False
+            # 输出目录不存在时成品落盘会失败（默认 watermarked 目录可能尚未创建）
+            final_dir = os.path.dirname(os.path.abspath(final_output))
+            if final_dir:
+                os.makedirs(final_dir, exist_ok=True)
 
             # 只有勾选了保留音频且 ffmpeg 可用时才合并
             if (self._options.keep_audio and has_ffmpeg
@@ -2100,206 +2206,218 @@ class VideoStabilizeWorker(QThread):
         height: int,
         fps: float,
     ) -> None:
-        """虚拟三脚架模式：以首帧为基准，将所有帧对齐到首帧坐标。
+        """虚拟三脚架：估计全局运动路径 → 长窗口平滑 → 只补偿抖动分量。
 
-        算法（帧间累积法，稳定可靠）：
-        1. 逐帧计算帧间仿射变换（光流跟踪，每帧和前一帧比，差异小更稳定）
-        2. 累积帧间变换，得到首帧→当前帧的全局运动轨迹
-        3. 对累积运动做指数平滑（EMA），消除帧间跳变
-        4. 硬限制旋转 ±5°，平移在边缘安全区内
-        5. 用约束后的逆运动做 warpAffine，把画面拉回首帧坐标
-        6. 输出居中裁剪 12%，保证完全无黑边
+        与旧实现的区别：
+        - 运动估计在 960 宽灰度图上做（光流为主、相位相关兜底），4K 也不易跟丢；
+        - 先记录完整轨迹再用「居中移动平均」平滑（零相位），缓慢摇镜保留、抖动被抵消；
+        - 绝不把限幅结果写回轨迹，长时间摇镜后不会积累错误偏移、脱离主画面。
         """
         import math
 
-        cap = cv2.VideoCapture(input_path)
-        if not cap.isOpened():
-            raise IOError(f"无法打开视频: {input_path}")
-
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        # ===== 输出参数 =====
         margin_ratio = 0.12
         margin = int(min(width, height) * margin_ratio)
         out_w = width - 2 * margin
         out_h = height - 2 * margin
+        max_shift = margin * 0.8
+        max_angle = math.radians(5.0)
+        smooth_win = max(31, min(181, int(round(fps * 1.5)) | 1))
 
-        max_angle_rad = math.radians(5.0)
-        max_dx = margin * 0.75
-        max_dy = margin * 0.75
+        # ===== 第一遍：估计每帧相对首帧的全局运动 =====
+        est_scale = min(1.0, 960.0 / float(max(1, width)))
+        ew = max(32, int(round(width * est_scale)))
+        eh = max(32, int(round(height * est_scale)))
+        hann = cv2.createHanningWindow((ew, eh), cv2.CV_32F)
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
-
-        # ===== 读取首帧 =====
-        ret, ref_frame = cap.read()
-        if not ret:
-            cap.release()
-            out.release()
-            raise IOError("无法读取第一帧")
-
-        # 首帧直接居中裁剪输出（基准帧，不需要变换）
-        ref_cropped = ref_frame[margin:margin + out_h, margin:margin + out_w].copy()
-        out.write(ref_cropped)
-
-        # ===== 光流参数 =====
         feature_params = dict(
-            maxCorners=300,
-            qualityLevel=0.01,
-            minDistance=20,
-            blockSize=7
+            maxCorners=600, qualityLevel=0.01, minDistance=8, blockSize=7
         )
         lk_params = dict(
             winSize=(21, 21),
             maxLevel=3,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)
+            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01),
         )
 
-        prev_gray = cv2.cvtColor(ref_frame, cv2.COLOR_BGR2GRAY)
+        def _read_small(cap_obj):
+            ok, fr = cap_obj.read()
+            if not ok:
+                return None, None
+            g = cv2.cvtColor(fr, cv2.COLOR_BGR2GRAY)
+            if g.shape[1] != ew or g.shape[0] != eh:
+                g = cv2.resize(g, (ew, eh), interpolation=cv2.INTER_AREA)
+            return fr, g
 
-        # ===== 累积变换状态（3x3 齐次矩阵，初始为单位矩阵）=====
-        # M_cum 表示 ref→curr：首帧坐标到当前帧坐标的映射
-        M_cum = np.array([[1.0, 0.0, 0.0],
-                          [0.0, 1.0, 0.0],
-                          [0.0, 0.0, 1.0]], dtype=np.float64)
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            raise IOError(f"无法打开视频: {input_path}")
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
 
-        # EMA 平滑后的累积变换（初始和 M_cum 相同）
-        sx, sy, sa = 0.0, 0.0, 0.0  # smoothed tx, ty, angle
-        ss = 1.0                     # smoothed scale
-        ema_alpha = 0.3              # EMA 系数：越小越平滑但延迟越大
+        _, prev_u8 = _read_small(cap)
+        if prev_u8 is None:
+            cap.release()
+            raise IOError("无法读取第一帧")
+        prev_f32 = prev_u8.astype(np.float32) / 255.0
 
-        frame_idx = 1
-        failed_frames = 0
+        M_abs = np.eye(3, dtype=np.float64)
+        # 第 0 帧为基准：轨迹必须与帧号一一对应（否则会差一帧，反而叠加抖动）
+        path_tx, path_ty, path_ang, path_scale = [0.0], [0.0], [0.0], [1.0]
+        frame_idx = 0
+        reg_failed = 0
 
         self.log_line.emit(f"  输出尺寸: {out_w}x{out_h} (各边裁 {margin}px, {margin_ratio*100:.0f}%)")
-        self.log_line.emit(f"  旋转限制: ±5°, 平移限制: ±{max_dx:.0f}px")
-        self.log_line.emit(f"  总帧数: {total_frames}")
+        self.log_line.emit(f"  运动估计分辨率: {ew}x{eh}，平滑窗口: {smooth_win} 帧")
+        if total_frames:
+            self.log_line.emit(f"  总帧数: {total_frames}")
+        self.log_line.emit("  第一遍：估计全局运动轨迹...")
 
         while True:
-            ret, frame = cap.read()
-            if not ret:
+            _fr, cur_u8 = _read_small(cap)
+            if cur_u8 is None:
                 break
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            # ===== 步骤1：检测前一帧的特征点 =====
-            p0 = cv2.goodFeaturesToTrack(prev_gray, mask=None, **feature_params)
-
             M_rel = None
-            if p0 is not None and len(p0) >= 10:
-                # 光流跟踪到当前帧
-                p1, st, err = cv2.calcOpticalFlowPyrLK(
-                    prev_gray, gray, p0, None, **lk_params
+            p0 = cv2.goodFeaturesToTrack(prev_u8, mask=None, **feature_params)
+            if p0 is not None and len(p0) >= 8:
+                p1, st, _err = cv2.calcOpticalFlowPyrLK(
+                    prev_u8, cur_u8, p0, None, **lk_params
                 )
                 if p1 is not None:
-                    good_old = p0[st == 1]
-                    good_new = p1[st == 1]
-                    if len(good_old) >= 6:
-                        # estimateAffinePartial2D(old, new)：old→new 的变换
-                        # 即 new_pt = M @ old_pt，这是 prev→curr
-                        M_rel_raw, inliers = cv2.estimateAffinePartial2D(
+                    good_old = p0[st.ravel() == 1]
+                    good_new = p1[st.ravel() == 1]
+                    if len(good_old) >= 8:
+                        M_rel_raw, _inliers = cv2.estimateAffinePartial2D(
                             good_old, good_new,
                             method=cv2.RANSAC,
-                            ransacReprojThreshold=3.0
+                            ransacReprojThreshold=1.5,
                         )
                         if M_rel_raw is not None:
-                            # 帧间运动合理性检查：跳变太大说明跟丢了，丢弃
-                            dx_rel = abs(M_rel_raw[0, 2])
-                            dy_rel = abs(M_rel_raw[1, 2])
-                            if dx_rel < 50 and dy_rel < 50:
+                            rel_ang = math.atan2(M_rel_raw[1, 0], M_rel_raw[0, 0])
+                            rel_scale = math.hypot(M_rel_raw[0, 0], M_rel_raw[1, 0])
+                            if (
+                                abs(M_rel_raw[0, 2]) < 60
+                                and abs(M_rel_raw[1, 2]) < 60
+                                and abs(rel_ang) < math.radians(4)
+                                and 0.96 < rel_scale < 1.04
+                            ):
                                 M_rel = M_rel_raw.astype(np.float64)
 
-            # ===== 步骤2：累积变换 =====
+            if M_rel is None:
+                # 光流失败：相位相关兜底（纯平移），避免整段轨迹停止更新
+                (pdx, pdy), resp = cv2.phaseCorrelate(
+                    prev_f32, cur_u8.astype(np.float32) / 255.0, hann
+                )
+                if resp > 0.05 and abs(pdx) < 120 and abs(pdy) < 120:
+                    M_rel = np.array(
+                        [[1.0, 0.0, pdx], [0.0, 1.0, pdy]], dtype=np.float64
+                    )
+                else:
+                    reg_failed += 1
+
             if M_rel is not None:
-                # M_rel 是 2x3，扩展为 3x3 齐次矩阵
-                M_rel_h = np.array([[M_rel[0,0], M_rel[0,1], M_rel[0,2]],
-                                    [M_rel[1,0], M_rel[1,1], M_rel[1,2]],
-                                    [0.0,        0.0,        1.0]], dtype=np.float64)
-                # 右乘：M_cum = M_rel @ M_cum，即 ref→prev 再 prev→curr
-                M_cum = M_rel_h @ M_cum
-            else:
-                failed_frames += 1
+                M_rel_h = np.array(
+                    [
+                        [M_rel[0, 0], M_rel[0, 1], M_rel[0, 2]],
+                        [M_rel[1, 0], M_rel[1, 1], M_rel[1, 2]],
+                        [0.0, 0.0, 1.0],
+                    ],
+                    dtype=np.float64,
+                )
+                M_abs = M_rel_h @ M_abs
 
-            # ===== 步骤3：从累积矩阵提取参数 =====
-            # M_cum = [[s*cosθ, -s*sinθ, tx],
-            #          [s*sinθ,  s*cosθ, ty],
-            #          [0,       0,      1]]
-            a00, a01, tx = M_cum[0]
-            a10, a11, ty = M_cum[1]
-            scale = math.sqrt(a00 * a00 + a10 * a10)
-            angle = math.atan2(a10, a00)
+            a00, _a01, tx = M_abs[0]
+            a10, _a11, ty = M_abs[1]
+            path_ang.append(math.atan2(a10, a00))
+            path_scale.append(math.hypot(a00, a10))
+            path_tx.append(tx / est_scale)
+            path_ty.append(ty / est_scale)
+            frame_idx += 1
 
-            # ===== 步骤4：硬限制（钳制）=====
-            angle = max(-max_angle_rad, min(max_angle_rad, angle))
-            tx = max(-max_dx, min(max_dx, tx))
-            ty = max(-max_dy, min(max_dy, ty))
-            scale = max(0.98, min(1.02, scale))
+            prev_u8 = cur_u8
+            prev_f32 = cur_u8.astype(np.float32) / 255.0
 
-            # ===== 步骤5：EMA 平滑，防止帧间跳变 =====
-            if frame_idx == 1:
-                # 第一帧处理（视频第二帧），初始化平滑值
-                sx, sy, sa, ss = tx, ty, angle, scale
-            elif M_rel is not None:
-                # 跟踪成功，正常做 EMA
-                sx = ema_alpha * tx + (1 - ema_alpha) * sx
-                sy = ema_alpha * ty + (1 - ema_alpha) * sy
-                sa = ema_alpha * angle + (1 - ema_alpha) * sa
-                ss = ema_alpha * scale + (1 - ema_alpha) * ss
-            # 跟踪失败时保持之前的平滑值，不更新（外推）
+            if frame_idx % 60 == 0:
+                tot = total_frames or frame_idx
+                self.progress.emit(min(frame_idx, tot), tot)
+                self.log_line.emit(f"  运动估计进度: {frame_idx}/{total_frames or '?'}")
 
-            # ===== 步骤6：用平滑+约束后的参数构造补偿矩阵 =====
-            # M_comp 是 ref→curr（和 M_cum 同方向），但用了平滑和约束后的值
-            cos_a = math.cos(sa) * ss
-            sin_a = math.sin(sa) * ss
-            M_comp = np.array([
-                [cos_a, -sin_a, sx],
-                [sin_a,  cos_a, sy]
-            ], dtype=np.float64)
+        cap.release()
+        n = len(path_tx)
+        if n == 0:
+            raise IOError("视频没有可处理的帧")
 
-            # ===== 重建 M_cum，防止长视频无限累积漂移 =====
-            # 当运动超出 clamp 范围时，M_cum 不会"记住"被截断的部分，
-            # 相机移回时能立即响应
-            M_cum = np.array([
-                [cos_a, -sin_a, sx],
-                [sin_a,  cos_a, sy],
-                [0.0,    0.0,    1.0]
-            ], dtype=np.float64)
+        # ===== 居中移动平均（零相位）：保留缓慢摇镜，抵消高频抖动 =====
+        def _smooth(vals):
+            k = min(smooth_win, n if n % 2 == 1 else n - 1)
+            if k < 3:
+                return list(vals)
+            half = k // 2
+            arr = np.asarray(vals, dtype=np.float64)
+            padded = np.pad(arr, (half, half), mode="edge")
+            kernel = np.ones(k, dtype=np.float64) / float(k)
+            return np.convolve(padded, kernel, mode="valid").tolist()
 
-            # ===== 步骤7：构造最终 warp 矩阵（居中裁剪偏移）=====
-            # 输出 (ox, oy) 映射到首帧 (ox+margin, oy+margin)
-            # 首帧坐标在 curr 中为 M_comp @ (ox+margin, oy+margin, 1)
-            # 展开得：curr_x = cos_a*ox - sin_a*oy + cos_a*margin - sin_a*margin + sx
-            #         curr_y = sin_a*ox + cos_a*oy + sin_a*margin + cos_a*margin + sy
+        sm_tx = _smooth(path_tx)
+        sm_ty = _smooth(path_ty)
+        sm_ang = _smooth(path_ang)
+        sm_scale = _smooth(path_scale)
+
+        if reg_failed:
+            self.log_line.emit(f"  ⚠ {reg_failed} 帧运动估计失败（跳过，不累积错误偏移）")
+
+        # ===== 第二遍：只补偿「真实路径 - 平滑路径」，限幅不写回轨迹 =====
+        self.log_line.emit("  第二遍：合成稳定画面...")
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            raise IOError(f"无法重新打开视频: {input_path}")
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
+        if not out.isOpened():
+            cap.release()
+            raise IOError(f"无法创建输出视频: {output_path}")
+
+        frame_idx = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret or frame_idx >= n:
+                break
+
+            ang_c = path_ang[frame_idx] - sm_ang[frame_idx]
+            scale_c = path_scale[frame_idx] / max(1e-6, sm_scale[frame_idx])
+            tx_c = path_tx[frame_idx] - sm_tx[frame_idx]
+            ty_c = path_ty[frame_idx] - sm_ty[frame_idx]
+
+            ang_c = max(-max_angle, min(max_angle, ang_c))
+            scale_c = max(0.97, min(1.03, scale_c))
+            tx_c = max(-max_shift, min(max_shift, tx_c))
+            ty_c = max(-max_shift, min(max_shift, ty_c))
+
+            cos_a = math.cos(ang_c) * scale_c
+            sin_a = math.sin(ang_c) * scale_c
+            # 输出 (0,0) 对应首帧坐标 (margin, margin)
             M_out = np.array([
-                [cos_a, -sin_a, cos_a * margin - sin_a * margin + sx],
-                [sin_a,  cos_a, sin_a * margin + cos_a * margin + sy]
+                [cos_a, -sin_a, cos_a * margin - sin_a * margin + tx_c],
+                [sin_a,  cos_a, sin_a * margin + cos_a * margin + ty_c]
             ], dtype=np.float64)
 
-            # ===== 步骤8：warpAffine 输出 =====
+            # M_out 是「输出坐标 → 源坐标」的采样矩阵，必须配 WARP_INVERSE_MAP，
+            # 否则 OpenCV 会再求逆一次，抖动被放大成两倍
             stabilized = cv2.warpAffine(
                 frame, M_out,
                 (out_w, out_h),
-                flags=cv2.INTER_LINEAR,
+                flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
                 borderMode=cv2.BORDER_CONSTANT,
                 borderValue=[0, 0, 0]
             )
             out.write(stabilized)
 
-            prev_gray = gray.copy()
             frame_idx += 1
-
-            if frame_idx % 30 == 0:
-                self.progress.emit(frame_idx, total_frames)
-                self.log_line.emit(
-                    f"  虚拟三脚架进度: {frame_idx}/{total_frames} "
-                    f"(dx={sx:+.1f}, dy={sy:+.1f}, θ={math.degrees(sa):+.2f}°, s={ss:.3f})"
-                )
+            if frame_idx % 60 == 0:
+                self.progress.emit(frame_idx, n)
+                self.log_line.emit(f"  合成进度: {frame_idx}/{n}")
 
         cap.release()
         out.release()
-
-        if failed_frames > 0:
-            self.log_line.emit(f"  ⚠ {failed_frames} 帧跟踪失败，使用累积变换外推")
         self.log_line.emit(f"  ✓ 输出无黑边稳定画面 {out_w}x{out_h}")
 
     def _run_gimbal_follow(
@@ -2310,10 +2428,10 @@ class VideoStabilizeWorker(QThread):
         height: int,
         fps: float,
     ) -> None:
-        """云台跟随模式：CSRT跟踪主体 + 画面跟随平移 + vidstab平滑去抖。
+        """云台跟随模式：主体跟踪（CSRT/MIL） + 画面跟随平移 + vidstab平滑去抖。
 
         处理流程：
-        1. 用 CSRT 跟踪器跟踪画面中心区域的主体（假设鸟在画面中央附近）
+        1. 用可用的跟踪器跟踪画面中心区域的主体（假设鸟在画面中央附近）
         2. 计算每一帧主体相对于画面中心的偏移
         3. 对偏移轨迹进行平滑（云台跟随效果）
         4. 将主体稳定在画面中心附近，叠加微小去抖
@@ -2332,8 +2450,11 @@ class VideoStabilizeWorker(QThread):
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
 
-        # ===== 初始化 CSRT 跟踪器 =====
-        tracker = cv2.TrackerCSRT_create()
+        # ===== 初始化跟踪器（CSRT 需 opencv-contrib，缺失时退回 MIL）=====
+        tracker, tracker_name = _create_video_tracker()
+        if tracker is None:
+            cap.release()
+            raise RuntimeError("当前 OpenCV 未提供可用的目标跟踪器（需 CSRT 或 MIL）")
 
         # 读取第一帧，自动选择中心区域作为初始跟踪目标
         ret, first_frame = cap.read()
@@ -2341,20 +2462,31 @@ class VideoStabilizeWorker(QThread):
             cap.release()
             raise IOError("无法读取第一帧")
 
-        # 初始跟踪框：画面中心 40% 区域
-        init_w = int(width * 0.4)
-        init_h = int(height * 0.4)
-        init_x = (width - init_w) // 2
-        init_y = (height - init_h) // 2
+        # 跟踪在缩小图上进行：4K 下全尺寸跟踪很慢，也避免跟踪器占用过多内存
+        trk_scale = min(1.0, 960.0 / float(max(1, width)))
+        trk_w = max(16, int(round(width * trk_scale)))
+        trk_h = max(16, int(round(height * trk_scale)))
+
+        # 初始跟踪框：画面中心 40% 区域（按跟踪分辨率）
+        init_w = int(trk_w * 0.4)
+        init_h = int(trk_h * 0.4)
+        init_x = (trk_w - init_w) // 2
+        init_y = (trk_h - init_h) // 2
         init_bbox = (init_x, init_y, init_w, init_h)
 
-        tracker.init(first_frame, init_bbox)
+        small_first = (
+            cv2.resize(first_frame, (trk_w, trk_h))
+            if (trk_w, trk_h) != (width, height)
+            else first_frame
+        )
+        tracker.init(small_first, init_bbox)
 
         # 存储主体中心轨迹（用于平滑）
         center_x_list = []
         center_y_list = []
 
         self.log_line.emit(f"  输出尺寸: {out_w}x{out_h} (裁剪余量: {crop_margin}px)")
+        self.log_line.emit(f"  跟踪器: {tracker_name}，跟踪分辨率 {trk_w}x{trk_h}")
         self.log_line.emit(f"  初始跟踪框: ({init_x},{init_y}) {init_w}x{init_h}")
         self.log_line.emit("  第一遍：跟踪主体位置...")
 
@@ -2367,10 +2499,15 @@ class VideoStabilizeWorker(QThread):
             if not ret:
                 break
 
-            ok, bbox = tracker.update(frame)
+            small = (
+                cv2.resize(frame, (trk_w, trk_h))
+                if (trk_w, trk_h) != (width, height)
+                else frame
+            )
+            ok, bbox = tracker.update(small)
 
             if ok:
-                x, y, w, h = [int(v) for v in bbox]
+                x, y, w, h = [float(v) / trk_scale for v in bbox]
                 cx = x + w / 2.0
                 cy = y + h / 2.0
             else:
@@ -2396,20 +2533,34 @@ class VideoStabilizeWorker(QThread):
         self.log_line.emit(f"  跟踪完成，共 {len(center_x_list)} 帧")
 
         # ===== 对轨迹进行平滑（云台跟随效果）=====
-        smoothing_window = max(5, min(60, self._options.smoothing_window))
+        # 按帧率放大：50fps 下默认 ≈1.2 秒窗口，压掉手持高频抖动，
+        # 同时保留跟随主体的缓慢移动。
+        smoothing_window = max(
+            15,
+            min(181, int(round(max(self._options.smoothing_window * 2.0, fps * 1.2)))),
+        )
         self.log_line.emit(f"  轨迹平滑窗口: {smoothing_window} 帧")
 
-        # 移动平均平滑
-        def smooth_trajectory(trajectory, window):
-            smoothed = []
-            n = len(trajectory)
-            for i in range(n):
-                start = max(0, i - window // 2)
-                end = min(n, i + window // 2 + 1)
-                avg = sum(trajectory[start:end]) / (end - start)
-                smoothed.append(avg)
-            return smoothed
+        # 先做 5 帧中值滤波去掉跟踪框跳点，再用高斯核平滑（比矩形窗更顺滑）
+        def median_filter(vals, k=5):
+            arr = np.asarray(vals, dtype=np.float64)
+            half = k // 2
+            padded = np.pad(arr, (half, half), mode="edge")
+            return [float(np.median(padded[i:i + k])) for i in range(len(arr))]
 
+        def smooth_trajectory(trajectory, window):
+            window = max(3, int(window) | 1)
+            half = window // 2
+            sigma = max(1.0, window / 6.0)
+            x = np.arange(-half, half + 1, dtype=np.float64)
+            kernel = np.exp(-(x ** 2) / (2.0 * sigma * sigma))
+            kernel /= kernel.sum()
+            arr = np.asarray(trajectory, dtype=np.float64)
+            padded = np.pad(arr, (half, half), mode="edge")
+            return np.convolve(padded, kernel, mode="valid").tolist()
+
+        center_x_list = median_filter(center_x_list)
+        center_y_list = median_filter(center_y_list)
         smooth_x = smooth_trajectory(center_x_list, smoothing_window)
         smooth_y = smooth_trajectory(center_y_list, smoothing_window)
 
@@ -2422,69 +2573,46 @@ class VideoStabilizeWorker(QThread):
 
         frame_idx = 0
 
-        # 额外的微小去抖：用特征点光流计算局部抖动
-        prev_gray = None
-        prev_offset_x = 0.0
-        prev_offset_y = 0.0
+        # 残余抖动补偿：主体跟随只保留低频路径，跟踪框的高频噪声仍会漏到画面里，
+        # 用短时间常数（≈0.35s）的全局平移高频分量做小幅补偿（±8px）。
+        import math
 
-        feature_params = dict(
-            maxCorners=100,
-            qualityLevel=0.02,
-            minDistance=15,
-            blockSize=5
-        )
-        lk_params = dict(
-            winSize=(21, 21),
-            maxLevel=3,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 20, 0.01)
-        )
+        small_w = 480
+        small_h = max(2, int(round(small_w * height / float(max(1, width)))))
+        prev_small = None
+        acc_gx = acc_gy = 0.0
+        sm_gx = sm_gy = 0.0
+        ema_a = 1.0 - math.exp(-1.0 / max(1.0, fps * 0.35))
+        micro_scale = width / float(small_w)
 
         while True:
             ret, frame = cap.read()
             if not ret or frame_idx >= len(smooth_x):
                 break
 
-            # 目标：将平滑后的主体中心移到输出画面中心
-            target_cx = out_w / 2.0
-            target_cy = out_h / 2.0
-
             # 计算裁剪左上角坐标（使主体位于输出中心）
-            crop_x = int(smooth_x[frame_idx] - out_w / 2.0)
-            crop_y = int(smooth_y[frame_idx] - out_h / 2.0)
+            crop_x = int(round(smooth_x[frame_idx] - out_w / 2.0))
+            crop_y = int(round(smooth_y[frame_idx] - out_h / 2.0))
+
+            # ===== 全局高频抖动补偿 =====
+            small = cv2.resize(frame, (small_w, small_h), interpolation=cv2.INTER_AREA)
+            small_g = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
+            if prev_small is not None:
+                (gx, gy), resp = cv2.phaseCorrelate(prev_small, small_g)
+                if resp > 0.1 and abs(gx) < 30 and abs(gy) < 30:
+                    acc_gx += gx
+                    acc_gy += gy
+            prev_small = small_g
+            sm_gx = ema_a * acc_gx + (1.0 - ema_a) * sm_gx
+            sm_gy = ema_a * acc_gy + (1.0 - ema_a) * sm_gy
+            comp_x = max(-8.0, min(8.0, (acc_gx - sm_gx) * micro_scale))
+            comp_y = max(-8.0, min(8.0, (acc_gy - sm_gy) * micro_scale))
+            crop_x = int(round(crop_x + comp_x))
+            crop_y = int(round(crop_y + comp_y))
 
             # 限制在合法范围内
             crop_x = max(0, min(crop_x, width - out_w))
             crop_y = max(0, min(crop_y, height - out_h))
-
-            # ===== 微小去抖：用局部特征点偏移微调 =====
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            if prev_gray is not None:
-                p0 = cv2.goodFeaturesToTrack(prev_gray, mask=None, **feature_params)
-                if p0 is not None and len(p0) >= 6:
-                    p1, st, _ = cv2.calcOpticalFlowPyrLK(
-                        prev_gray, gray, p0, None, **lk_params
-                    )
-                    if p1 is not None:
-                        good_old = p0[st == 1]
-                        good_new = p1[st == 1]
-                        if len(good_old) >= 4:
-                            # 计算平均平移偏移（仅微小抖动部分）
-                            dx = np.mean(good_new[:, 0] - good_old[:, 0])
-                            dy = np.mean(good_new[:, 1] - good_old[:, 1])
-                            # 限制微调范围（只抵消小于5像素的微小抖动）
-                            max_dither = 5.0
-                            dx = max(-max_dither, min(max_dither, dx))
-                            dy = max(-max_dither, min(max_dither, dy))
-                            # 应用微调（反向抵消）
-                            crop_x -= int(dx)
-                            crop_y -= int(dy)
-
-                            # 重新限制范围
-                            crop_x = max(0, min(crop_x, width - out_w))
-                            crop_y = max(0, min(crop_y, height - out_h))
-
-            prev_gray = gray.copy()
 
             # 裁剪
             cropped = frame[crop_y:crop_y + out_h, crop_x:crop_x + out_w]
@@ -3006,9 +3134,12 @@ class VideoStabilizeDialog(QDialog):
         param_layout = QFormLayout(param_group)
 
         self.smooth_window_spin = QSpinBox()
-        self.smooth_window_spin.setRange(5, 60)
-        self.smooth_window_spin.setValue(30)
-        self.smooth_window_spin.setToolTip("平滑窗口大小（帧）：值越大画面越稳定，但运动滞后感越强，建议15-40")
+        self.smooth_window_spin.setRange(5, 180)
+        self.smooth_window_spin.setValue(60)
+        self.smooth_window_spin.setToolTip(
+            "平滑窗口大小（帧）：值越大画面越稳定，但运动滞后感越强；"
+            "50fps 素材建议 60-120"
+        )
         param_layout.addRow("平滑窗口:", self.smooth_window_spin)
 
         self.border_type_combo = QComboBox()
@@ -3295,14 +3426,14 @@ class VideoStabilizeDialog(QDialog):
             ),
             "virtual_tripod": (
                 "📐 虚拟三脚架模式\n"
-                "• 画面钉死在同一坐标\n"
-                "• 仅抵消微小手抖平移/旋转\n"
-                "• 适合固定机位拍摄\n"
+                "• 全局运动估计 + 长窗口平滑\n"
+                "• 抵消手持抖动，缓慢摇镜仍保留\n"
+                "• 适合机位大致固定、偶有缓慢转向\n"
             ),
             "gimbal_follow": (
                 "🦅 云台跟随模式\n"
-                "• CSRT 跟踪 + 画面跟随主体\n"
-                "• 叠加 vidstab 平滑去抖\n"
+                "• 主体跟踪（CSRT/MIL）+ 高斯平滑跟随\n"
+                "• 叠加全局高频抖动补偿\n"
                 "• 适合拍摄飞鸟等运动主体\n"
             ),
         }
@@ -3324,6 +3455,12 @@ class VideoStabilizeDialog(QDialog):
         """设置输入视频文件（实时播放模式，打开即可播放）。"""
         self._video_path = path
         self.file_input.setText(path)
+
+        if not os.path.isfile(path):
+            self.duration_label.setStyleSheet("color: #f44336; font-size: 9pt;")
+            self.duration_label.setText("❌ 视频文件不存在")
+            QMessageBox.warning(self, "错误", f"视频文件不存在：\n{path}")
+            return
 
         # 先显示"正在加载"提示
         self.duration_label.setText("⏳ 正在加载视频...")
@@ -3638,6 +3775,19 @@ class VideoStabilizeDialog(QDialog):
         output_path = self.output_input.text().strip()
         if not output_path:
             QMessageBox.warning(self, "错误", "请指定输出路径")
+            return
+        if not os.path.isfile(self._video_path):
+            QMessageBox.warning(
+                self, "错误", f"视频文件不存在：\n{self._video_path}"
+            )
+            return
+        out_dir = os.path.dirname(os.path.abspath(output_path))
+        try:
+            os.makedirs(out_dir, exist_ok=True)
+        except OSError as ex:
+            QMessageBox.warning(
+                self, "错误", f"无法创建输出目录：\n{out_dir}\n{ex}"
+            )
             return
 
         # 收集参数

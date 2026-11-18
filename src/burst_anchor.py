@@ -63,14 +63,12 @@ class FrameLayout:
 
 @dataclass
 class CropGeom:
-    """由首图推出的常量：裁剪像素尺寸 + 标定点在裁剪区内的相对位置。"""
+    """由首图推出的常量：裁剪像素尺寸（后续帧沿用）+ 标定点在裁剪区内的相对位置。"""
 
     crop_w: int
     crop_h: int
     rel_x: float
     rel_y: float
-    ref_w: int
-    ref_h: int
 
 
 def clamp01(x: float) -> float:
@@ -94,14 +92,7 @@ def geom_from_first(lay: FrameLayout, w: int, h: int) -> CropGeom:
     span_y = max(1e-6, y1 - y0)
     rel_x = float(np.clip((float(lay.ax) - x0) / span_x, 0.0, 1.0))
     rel_y = float(np.clip((float(lay.ay) - y0) / span_y, 0.0, 1.0))
-    return CropGeom(
-        crop_w=cw,
-        crop_h=ch,
-        rel_x=rel_x,
-        rel_y=rel_y,
-        ref_w=int(w),
-        ref_h=int(h),
-    )
+    return CropGeom(crop_w=cw, crop_h=ch, rel_x=rel_x, rel_y=rel_y)
 
 
 def layout_from_anchor(
@@ -114,13 +105,15 @@ def layout_from_anchor(
     auto: bool = True,
     conf: float = 1.0,
 ) -> FrameLayout:
-    """由标定点 + 首图几何反推裁剪框（归一化；可越出 [0,1]，稍后裁剪时补边）。"""
+    """
+    由标定点 + 首图几何反推裁剪框（归一化；可越出 [0,1]，稍后裁剪时补边）。
+    裁剪框尺寸固定为首图的像素宽高，不随当前图像尺寸缩放——各帧分辨率不同
+    （例如预裁过的图）时，每一帧裁出的像素区域大小一致。
+    """
     ax = clamp01(ax)
     ay = clamp01(ay)
-    sx = float(w) / float(max(1, geom.ref_w))
-    sy = float(h) / float(max(1, geom.ref_h))
-    cw = max(1, int(round(geom.crop_w * sx)))
-    ch = max(1, int(round(geom.crop_h * sy)))
+    cw = max(1, int(geom.crop_w))
+    ch = max(1, int(geom.crop_h))
     px = ax * float(w) - geom.rel_x * float(cw)
     py = ay * float(h) - geom.rel_y * float(ch)
     return FrameLayout(
@@ -136,12 +129,10 @@ def layout_from_anchor(
 
 
 def crop_bgr_with_pad(bgr: np.ndarray, lay: FrameLayout, geom: CropGeom) -> np.ndarray:
-    """按布局裁剪；越界补边（常数填充），不平移框。"""
+    """按布局裁剪；越界补边（常数填充），不平移框。裁剪尺寸固定为首图像素尺寸。"""
     h, w = bgr.shape[:2]
-    sx = float(w) / float(max(1, geom.ref_w))
-    sy = float(h) / float(max(1, geom.ref_h))
-    cw = max(1, int(round(geom.crop_w * sx)))
-    ch = max(1, int(round(geom.crop_h * sy)))
+    cw = max(1, int(geom.crop_w))
+    ch = max(1, int(geom.crop_h))
     ax = clamp01(lay.ax) * float(w)
     ay = clamp01(lay.ay) * float(h)
     x0 = int(round(ax - geom.rel_x * float(cw)))
@@ -182,10 +173,8 @@ def meter_box_in_padded_crop(
     裁剪（含越界补边）后，原图有效相交区在裁剪图中的像素 xyxy，供自动曝光测光。
     不含黑边，避免补边把测光拉暗。
     """
-    sx = float(w) / float(max(1, geom.ref_w))
-    sy = float(h) / float(max(1, geom.ref_h))
-    cw = max(1, int(round(geom.crop_w * sx)))
-    ch = max(1, int(round(geom.crop_h * sy)))
+    cw = max(1, int(geom.crop_w))
+    ch = max(1, int(geom.crop_h))
     ax = clamp01(lay.ax) * float(w)
     ay = clamp01(lay.ay) * float(h)
     x0 = int(round(ax - geom.rel_x * float(cw)))
@@ -211,10 +200,8 @@ def in_bounds_crop_xyxy(
     lay: FrameLayout, geom: CropGeom, w: int, h: int
 ) -> Optional[List[int]]:
     """布局裁剪框与图像相交的像素 xyxy，供测光；无有效交集则 None。"""
-    sx = float(w) / float(max(1, geom.ref_w))
-    sy = float(h) / float(max(1, geom.ref_h))
-    cw = max(1, int(round(geom.crop_w * sx)))
-    ch = max(1, int(round(geom.crop_h * sy)))
+    cw = max(1, int(geom.crop_w))
+    ch = max(1, int(geom.crop_h))
     ax = clamp01(lay.ax) * float(w)
     ay = clamp01(lay.ay) * float(h)
     x0 = int(round(ax - geom.rel_x * float(cw)))

@@ -1,5 +1,177 @@
 # 🐦 鸟类检测Skill - 更新日志
 
+## v2.2.4a (2026-11-18)
+
+### 修复
+
+- **本机 DxO 批处理时终端窗口反复弹出**：查 PureRAW / Lightroom 是否在跑时，每次都启动 `tasklist` 或 PowerShell。本机默认终端是 Windows Terminal，每查一次就闪一个窗口；等待主窗口期间大约每秒一次，看起来像一张图一个窗口。另一台若仍是旧版控制台，闪一下就没了，所以那边看不到。现改为直接枚举进程和窗口，关闭 PureRAW 托盘实例时的 `taskkill` 也不再带出窗口。
+
+---
+
+## v2.2.3a (2026-11-18)
+
+### 修复
+
+- **虚拟三脚架越稳越抖、还脱离主画面**
+  - 根因一：`cv2.warpAffine` 默认把矩阵当作「源→目标」正向变换并在内部求逆；代码传入的却是「输出→源」采样矩阵，结果被二次求逆，抖动被**放大成两倍**。三处 warp 现使用 `WARP_INVERSE_MAP`。
+  - 根因二：旧实现把 clamp 后的变换写回累积轨迹，镜头摇出安全区后轨迹被截断，再摇回来时补偿错误，于是画面漂走。
+  - 重写为两遍处理：960 宽灰度图估计逐帧仿射（光流为主、相位相关兜底）→ 完整轨迹做居中（零相位）平滑 → 只补偿真实轨迹与平滑轨迹之差；限幅只作用于补偿量，不回写轨迹；轨迹与帧号严格对齐（差一帧也会叠加抖动）。
+  - 实测 C0146 10 秒段：`|dx|` 0.48→0.16、`|dy|` 1.04→0.46（像素/帧，480 宽测），无黑边；合成 ±40px 抖动视频 4.77→0.36。
+
+- **标准防抖压不住手持抖动**：vidstab 的窗口以帧计，30 帧在 50fps 下只有 0.6 秒。现在按帧率折算到约 1.8 秒（50fps→90 帧，上限 180），实测 `|dy|` 0.94→0.32。
+
+- **云台跟随仍有小抖动**：跟踪轨迹先做 5 帧中值滤波去掉跳点，再按帧率做高斯平滑（约 1.2 秒）；删掉原先用帧间光流做的 ±5px「微调」（它会把真实平移反向叠加，反而增加抖动）；新增全局高频抖动补偿（±8px）。
+
+---
+
+## v2.2.2a (2026-11-17)
+
+### 修复
+
+- **设置了开始时间后视频稳定必失败**：之前用 libx264 重编码截取片段，4K 10-bit 素材约 20 倍实时（实测 10 秒片段 192 秒），默认 300 秒超时后 ffmpeg 被中断，但「文件存在且非空」仍被判定为截取成功 → 后续 OpenCV 打不开残缺 MP4，报「无法打开视频进行处理」。
+  - 现在优先**流复制**截取（`-c:v copy`，XAVC-Intra 每帧都是关键帧，切割精确；C0146 从第 7 秒到结尾约 70 秒完成）；
+  - 流复制不可用时回退重编码，超时按片长放宽（最长 1 小时）；
+  - 任何失败都会删除残缺输出，并用「能否解出首帧」校验结果；
+  - 截取片段打不开时自动回退处理完整视频。
+- 失败提示补充源文件路径，便于定位。
+
+---
+
+## v2.2.1a (2026-11-17)
+
+### 修复
+
+- **视频稳定「追踪模式」始终失败**：`cv2.TrackerCSRT_create` 只在 opencv-contrib 中提供，本机 opencv-python 没有该函数，一进追踪模式就抛 `AttributeError`。现在按 CSRT → MIL 顺序自动选择可用跟踪器，并把跟踪放在 960 宽的小图上，4K 视频也能跑且有明显加速。
+- **两个稳定模式在最后一步失败**：输出目录（默认取自水印输出目录，可能尚未创建）不存在时，成品落盘会抛 `FileNotFoundError`。现在开始处理前自动创建输出目录并在弹窗阶段先校验。
+- **报错信息被掩盖**：函数内 `import traceback` 使 `traceback` 变成局部变量，异常较早时外层 `traceback.print_exc()` 反而抛 `UnboundLocalError`，看不到真实原因。已改为模块级导入。
+- **打开不存在的视频**：现在明确提示「视频文件不存在」，并在开始处理前再次校验。
+
+---
+
+## v2.2.0a (2026-11-17)
+
+### 新增
+
+- **动图预览可缩放/平移**：滚轮以光标位置为中心缩放（1–8 倍），中键或右键拖动平移，中键/右键双击恢复适应窗口；放大时左下角显示当前倍率。用于把标定点（红十字）和裁剪框（绿框）放到像素级准确的位置。
+
+### 变更
+
+- **裁剪框固定像素尺寸**：首图画好的裁剪框按像素宽高作为基准（`CropGeom.crop_w/crop_h`），后续各帧一律沿用同一像素尺寸，不再按各帧分辨率等比缩放。预裁过、尺寸不一的图片因此能裁出统一大小的画面；框超出当前帧时仍按原逻辑补黑边。
+
+---
+
+## v2.1.99a (2026-11-16)
+
+### 修复
+
+- **纠正 DxO 失败诊断（此前结论有误）**：2.1.98a 判定「6.8 不再支持第三方命令行批处理」是错的——实测 6.8 命令行能正常读到清单、加载预设并打印 `Start processing`。真实原因是这台机器上 PureRAW 6.8 启动后自行崩溃退出：GUI 闪屏后即消失，DxO 自己的崩溃上报 `CrashReports/__sentry-event` 记录 `level=fatal / platform=native`，主进程退出时把保存任务队列析构，已排队的图才全部 `Processing Cancelled` → `Cannot save image`。失败提示据此改写为「修复安装或回退 6.7」，不再误导为「不支持命令行」。
+
+### 其他
+
+- 顺带排查并清理：注册表 `selectedDeviceId` 存着旧的显卡标识（`GetAcceleratorDeviceById` 找不到设备，引擎 `RequireGPU=true`），已删除改为自动选择；`%TEMP%` 下 3 个残留 `qtsingleapp-DxOPur-*` 单实例锁已清除。
+
+---
+
+## v2.1.98a (2026-11-16)
+
+### 修复
+
+- **批处理清单被提前删除**：PureRAW 读完 `--batch-file` 会立刻删掉它，原来的重试逻辑复用同一路径，第二次启动只报 `Files list for processing is empty`。现在每次重试前重写清单。
+- **DxO 6.8 命令行批处理失效给出明确结论**：实测 6.8 版本下日志为 `Temporary collection names file doesn't exist: tmpCollectionFile` → `Task queue closing started` → 每个任务 `Processing Cancelled` → `Cannot save image to jpeg file`。该文件只由 Lightroom 插件在用户通过插件导出时生成，第三方直接启动命令行拿不到，DxO 于是认为待处理集合为空。现在界面会直接提示改用 Lightroom 的「增效工具额外功能 → DxO PureRAW 6」，或回退 6.6/6.7。
+
+---
+
+## v2.1.97a (2026-11-16)
+
+### 修复
+
+- **修 DxO 批处理每次都以 ExitCause=2 空退出**：`Lightroom/Modules/DxOPureRAWv6.lrplugin/PluginData.lua` 里 `dxoPluginAppFilePath` 仍是 `DXO_EXECUTABLE_PATH_PLACEHOLDER`。手动把 `LightroomPluginData` 复制进 Modules 时不会有人替换它，Lightroom 于是报 `PureRaw is absent at ...`，批处理读完预设就退出、不降噪。现改为每次运行都检查并写入真实 exe 路径（幂等），路径用正斜杠避免 Lua 的 `\P`、`\D` 无效转义；写入失败会在界面提示。
+
+---
+
+## v2.1.96a (2026-11-16)
+
+### 修复
+
+- **修 Lightroom 刚启动时 DxO 空退出**：只检测到 `Lightroom.exe` 进程就开批处理，另一台机器上约 15 秒后退出码 0、0 张输出，再等 15 秒重试仍然失败。现改为等到 Lightroom 主窗口出现后再等 20 秒；若仍无输出，把 PureRAW 日志中的 ExitCause / 版本不符写进 Birdy 日志，并最多再试两次。版本号只取 `主.次.修订`（如 15.5.1）。
+
+---
+
+## v2.1.95a (2026-11-16)
+
+### 修复
+
+- **修 DxO 把 Lightroom 拉起来后直接退出、一张都不出**：`--as-lightroom-last-settings-plugin` 只在 Lightroom Classic 已经运行时才会执行 `processImage`。Lightroom 没开时，PureRAW 记 ExitCause=2，调用 `openFilesInApplication` 启动 Lightroom，然后以退出码 0 结束。现于批处理前先启动 Lightroom 并等待进程出现；若这一次仍没有输出，再等 15 秒重试一次。用 `D:\photo\黄胸鹀` 验证：先关掉 Lightroom，再处理 `DSC01748.ARW`，24 秒写出 `DSC01748-DxO_DeepPRIME 3.jpg`。处理结束后 PureRAW 仍会通知 Lightroom 导入结果。
+
+---
+
+## v2.1.94a (2026-11-16)
+
+### 修复
+
+- **修 DxO 批处理启动后退出、一张都不出**：`--lr-version` 写死 `14.0`。本机 Lightroom Classic 是 15.5.1，PureRAW 日志为 `LrC with given version 14.0 is absent`，约 45 秒后以退出码 0 结束（ExitCause=2），队列没有开始。现读取 `lightroom.exe` 的文件版本再传入。进程若退出且仍无输出，不再空等 30 分钟。
+
+---
+
+## v2.1.93a (2026-11-16)
+
+### 修复
+
+- **修 Birdy 调用 DxO PureRAW 不开始处理**：PureRAW 若已以托盘单实例（`--run-in-tray`）常驻，Birdy 再启动的 `--as-lightroom-last-settings-plugin` 进程会把参数交出去后立即退出，托盘实例不接这条队列，ImageSaver 不会启动。现先关闭该托盘实例，再重新启动批处理。已通过 `py_compile` 与关闭逻辑的模拟调用（不结束本机正在运行的 PureRAW）。
+
+---
+
+## v2.1.92a (2026-11-16)
+
+### 修复
+
+- **修 MobileNetV4-S 裁切识别全部归为未知**：`_import_timm()` 要用 `sys.path` 插入项目内 timm，但 `detect_bird_and_eye.py` 没有 `import sys`。加载时抛 `NameError`，又被检测器初始化的 `except` 吃掉，物种分类器被置空，每张裁切都进「未知目/未知科/未知属/未知」。现补上 `import sys`。已通过 `py_compile`、mnv4s 加载并在西岩水库裁切上复认，以及 `test/test_version_meta.py`。
+
+---
+
+## v2.1.91a (2026-11-09)
+
+### 修复
+
+- **修 `detect_bird_and_eye.py` 无法启动**：上一轮改动留下多处缩进/重复定义（孤儿 `def` 头、重复的函数签名与 `class BirdSpeciesClassifier:` 头、argparse 缺右括号、丢循环头），模块一 import 就抛 `IndentationError/SyntaxError`，GUI 和 CLI 都起不来。现恢复为合法代码：`_version_tuple`/`_import_timm` 等 timm 助手回到模块级，地理索引映射走 `_map_legacy_species_index`（中国白名单按新名单映到 1375 种，与 2.1.88a 行为一致），`process_folder` 补回 `bird_info_path` 形参。已通过 `py_compile`、import 自检与 `test/test_version_meta.py`。
+
+---
+
+## v2.1.90a (2026-11-09)
+
+### 检测修复
+
+- **只保留 COCO bird 类**：`bird-seg.pt` 是 COCO 80 类通用检测器，原流程把 person/boat/car 等所有类都当鸟。现仅保留 class 14，避免非鸟目标被裁剪归档。
+- **宽高比过滤**：丢弃宽高比不在 `0.25–2.6` 的框。水面反光、岸线、枝叶常被误检成细长条鸟；下限取 0.25 是为竖直姿态的鸟留空间（蚁鴷贴树干可达 0.38，若用 0.5 会把 conf 0.9 的真鸟一起丢掉）。
+- 官浔溪「未知目」涉及 63 张原图实测：213 个框降至 131 个（-38.5%），其中非鸟类目 51 个、宽高比异常 31 个；5 张原图从「有框」变为「无鸟」。
+- 未调整 `bird_conf`，小目标召回不受影响。
+
+---
+
+## v2.1.89a (2026-11-09)
+
+### 识鸟修复
+
+- **修 MobileNetV4-S 全部判「未知」**：系统里 timm 为 0.6.x 时不认识 `mobilenetv4_conv_small.e2400_r224_in1k`，`create_model` 抛 `Unknown model`，分类器加载失败后又被上层静默降级，于是每张照片都输出未知。现 `_import_timm()` 会在首次导入前比较版本，优先使用项目根目录 `.tmp_timm`（timm 1.0.15）；`create_model` 失败时也会给出「需要 timm>=1.0」的明确提示，不再静默。
+
+---
+
+## v2.1.88a (2026-11-08)
+
+### 识鸟模型
+
+- **默认改为 MobileNetV4-S**：权重 `models/birdy_mnv4s_infer.pt`，物种名单 `data/birdy_mnv4s_info.json`。分类编号与旧模型不同，地理白名单按学名重映射到新名单。ResNet34 与 EfficientNet-B0 仍可在界面里选用，并继续使用 `models/bird_info.json`。
+
+---
+
+## v2.1.87a (2026-11-08)
+
+### 界面
+
+- **Python GUI 去模板感**：卡片标题去掉表情，进度条改为单一苔绿色，按钮悬停不再变蓝。主按钮仍是「开始处理」。
+
+---
+
 ## v2.1.86a (2026-11-06)
 
 ### 产品名

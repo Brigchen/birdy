@@ -19,8 +19,8 @@
 
 提供 **PyQt5 图形界面** 与 **命令行** 两种使用方式，既可交互式操作，也可用于脚本化批处理。
 
-> **当前发布版本**：**2.1.86a**（Python 版；Windows 安装版另行编号，之后各自升级）  
-> **版本发布日期**：**2026-11-06**（与根目录 `**version-info.json**` 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
+> **当前发布版本**：**2.2.4a**（Python 版；Windows 安装版另行编号，之后各自升级）  
+> **版本发布日期**：**2026-11-16**（与根目录 `**version-info.json**` 中的 `version`、`release_date` 保持一致；后续迭代以此文件为准。）  
 > **一页上手**：[`docs/Birdy-一页使用说明.html`](docs/Birdy-一页使用说明.html)（可浏览器打开或打印为 PDF）。  
 > **许可**：整体以仓库 **LICENSE** 为准；项目基于开源协议发布，**仅限爱好者、公益、科研等非盈利用途**，请勿用于商业用途。涉及第三方组件（如 Ultralytics YOLOv8 / PyQt5）时，也请同时遵守其各自许可证要求。请勿将含真实 API Key 的配置文件公开分发。  
 > **GUI**：界面依赖 **PyQt5**，请遵守 [PyQt5 / Riverbank 的许可条款](https://www.riverbankcomputing.com/software/pyqt/)（通常为 GPL v3，或商业授权）。
@@ -101,7 +101,7 @@
 | 模块            | 说明                                                                                                           |
 | ------------- | ------------------------------------------------------------------------------------------------------------ |
 | **鸟体检测**      | YOLOv8 分割，`imgsz=1280`。普通：仅全图。精细：长边 >5000 时中心复检。支持置信度与面积过滤、可选鸟眼辅助                                                                                  |
-| **物种识别**      | 本地 ResNet 或 **百度** / **火山方舟豆包** 视觉 API；豆包支持 `**doubao_api_config.json` 多模型轮换** 与按模型日 token 统计                |
+| **物种识别**      | 默认本地 **MobileNetV4-S**（`models/birdy_mnv4s_infer.pt` + `data/birdy_mnv4s_info.json`，分类编号与旧模型不同）。仍可选 ResNet34 / EfficientNet-B0（配 `models/bird_info.json`），或 **百度** / **火山方舟豆包** 视觉 API |
 | **物种名称规范与检索** | 基于 `bird_classification.json` 整理出的 `data/species/bird_species_list.csv`（中文名 / 英文名 / 学名对照），用于名称不一致时的统一规范与快速检索 |
 | **连拍筛选**      | 时间聚类 + 清晰度（可结合鸟 ROI）；`**burst_keep_ratio` + `burst_keep_min`**；非连拍单张可在开启鸟检时按策略丢弃                             |
 | **地理信息**      | EXIF GPS、**高德** / 其它地理编码（`src/amap_api_config.json` + `geocoding_config.py`）                                 |
