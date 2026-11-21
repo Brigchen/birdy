@@ -702,6 +702,7 @@ class BurstAnchorPropagateWorker(QThread):
         job_id: int,
         parent=None,
         get_detector: Optional[Callable[[], Optional[object]]] = None,
+        use_feature_lock: bool = False,
     ):
         super().__init__(parent)
         self._paths = list(paths)
@@ -710,6 +711,7 @@ class BurstAnchorPropagateWorker(QThread):
         self._enable_wb = bool(enable_wb)
         self._job_id = int(job_id)
         self._get_detector = get_detector
+        self._use_feature_lock = bool(use_feature_lock)
 
     def run(self) -> None:
         _burst_worker_configure_openmp()
@@ -730,45 +732,55 @@ class BurstAnchorPropagateWorker(QThread):
                 frames.append(x)
             detect_fn = None
             det = None
-            self.progress.emit(n + 1, n + 2, "传播：加载鸟体模型…")
-            if self._get_detector is not None:
-                try:
-                    det = self._get_detector()
-                except Exception as ex:
-                    _burst_gui_log(f"传播：主界面鸟体模型不可用：{ex}")
-                    det = None
-            if det is None:
-                try:
-                    from auto_exposure import _get_bird_detector
-
-                    det = _get_bird_detector()
-                except Exception as ex:
-                    _burst_gui_log(f"传播：鸟体模型加载失败，改用模板匹配：{ex}")
-                    det = None
-            if det is not None and hasattr(det, "detect_birds"):
-
-                def detect_fn(bgr, _det=det):
-                    try:
-                        return _det.detect_birds(bgr) or []
-                    except Exception:
-                        return []
-
-                _burst_gui_log("传播：已启用 YOLO 鸟体跟踪 + 卡尔曼。")
+            if self._use_feature_lock:
+                _burst_gui_log("传播：自动锁眼（局部特征跟踪），不加载鸟体模型。")
             else:
-                _burst_gui_log("传播：无鸟体模型，仅模板匹配。")
+                self.progress.emit(n + 1, n + 2, "传播：加载鸟体模型…")
+                if self._get_detector is not None:
+                    try:
+                        det = self._get_detector()
+                    except Exception as ex:
+                        _burst_gui_log(f"传播：主界面鸟体模型不可用：{ex}")
+                        det = None
+                if det is None:
+                    try:
+                        from auto_exposure import _get_bird_detector
+
+                        det = _get_bird_detector()
+                    except Exception as ex:
+                        _burst_gui_log(f"传播：鸟体模型加载失败，改用模板匹配：{ex}")
+                        det = None
+                if det is not None and hasattr(det, "detect_birds"):
+
+                    def detect_fn(bgr, _det=det):
+                        try:
+                            return _det.detect_birds(bgr) or []
+                        except Exception:
+                            return []
+
+                    _burst_gui_log("传播：已启用 YOLO 鸟体跟踪 + 卡尔曼。")
+                else:
+                    _burst_gui_log("传播：无鸟体模型，仅模板匹配。")
 
             def _prog(cur: int, tot: int, msg: str) -> None:
                 if self.isInterruptionRequested():
                     return
                 self.progress.emit(max(1, cur + 1), max(tot + 1, 1), msg)
 
-            self.progress.emit(n + 2, n + 2, "传播：鸟体追踪 / 模板匹配…")
+            self.progress.emit(
+                n + 2,
+                n + 2,
+                "传播：局部特征锁眼…"
+                if self._use_feature_lock
+                else "传播：鸟体追踪 / 模板匹配…",
+            )
             merged = merge_propagate(
                 frames,
                 self._layouts,
                 self._mode,
                 detect_birds_fn=detect_fn,
                 progress=_prog,
+                use_feature_lock=self._use_feature_lock,
             )
             self.done.emit(merged, jid)
         except Exception as e:
@@ -1007,6 +1019,18 @@ class BurstWebpDialog(QDialog):
         self._bg_mode.addButton(self.rb_mode_track)
         fl.addRow(self.rb_mode_fixed)
         fl.addRow(self.rb_mode_track)
+
+        self.cb_feature_lock = QCheckBox("自动锁眼（局部特征跟踪，不依赖鸟体模型）")
+        self.cb_feature_lock.setChecked(False)
+        self.cb_feature_lock.setToolTip(
+            "以首图（或手动锁定页）的裁剪框为种子框，逐帧用局部角点做 KLT 前后向跟踪，"
+            "再用 RANSAC 估计相似变换推动标定点。\n"
+            "与种子块相关性过低判为漂移，改用多尺度模板匹配兜底；"
+            "短缺口（≤3 帧）线性插值，长遮挡标记失锁。\n"
+            "勾选后不加载 YOLO 鸟体模型，适合离线或想避开模型依赖的场景。"
+        )
+        self.cb_feature_lock.toggled.connect(self._on_feature_lock_toggled)
+        fl.addRow(self.cb_feature_lock)
 
         self.spn_fps = QDoubleSpinBox()
         self.spn_fps.setRange(0.25, 30.0)
@@ -1268,6 +1292,13 @@ class BurstWebpDialog(QDialog):
         if layout_valid(self._layouts[0] if self._layouts else None):
             self._schedule_propagate()
 
+    def _on_feature_lock_toggled(self, checked: bool) -> None:
+        _burst_gui_log(
+            f"参数：自动锁眼（局部特征跟踪） → {'开启' if checked else '关闭'}"
+        )
+        if layout_valid(self._layouts[0] if self._layouts else None):
+            self._schedule_propagate()
+
     def _schedule_ref_refresh(self) -> None:
         if self._pv_worker is not None and self._pv_worker.isRunning():
             _burst_gui_log("首张参考刷新已推迟：预览线程占用中。")
@@ -1362,6 +1393,8 @@ class BurstWebpDialog(QDialog):
         if lay is not None:
             if i == 0:
                 tag = " · 首图"
+            elif lay.lost:
+                tag = " · 失锁（可手改标定点）"
             elif not lay.auto:
                 if i == self._frame_idx and self._later_anchor_dirty:
                     tag = " · 待锁定"
@@ -1370,6 +1403,13 @@ class BurstWebpDialog(QDialog):
             else:
                 tag = f" · 自动 {lay.conf:.2f}"
         self.lbl_frame_idx.setText(f"当前 {i + 1} / {n}{tag}")
+
+    def _layout_lost_count(self) -> int:
+        return sum(
+            1
+            for i, lay in enumerate(self._layouts)
+            if i > 0 and lay is not None and lay.lost
+        )
 
     def _clone_layouts(self) -> List[Optional[FrameLayout]]:
         out: List[Optional[FrameLayout]] = []
@@ -1392,9 +1432,11 @@ class BurstWebpDialog(QDialog):
     def _refresh_lock_status(self, prefix: str = "") -> None:
         self._update_frame_nav_label()
         n_auto, n_lock = self._layout_lock_counts()
+        n_lost = self._layout_lost_count()
         n_later = max(0, len(self._layouts) - 1)
         body = (
             f"自动 {n_auto} 张，锁定 {n_lock} 张"
+            + (f"，失锁 {n_lost} 张" if n_lost else "")
             + (f"（共 {n_later} 张后续帧）" if n_later else "")
             + "。可用上一张/下一张检查或改标定点。"
         )
@@ -1543,6 +1585,7 @@ class BurstWebpDialog(QDialog):
             "enable_wm",
             "wm_theme",
             "burst_mode",
+            "feature_lock",
             "fps",
             "max_long_edge",
             "webp_quality",
@@ -2157,7 +2200,12 @@ class BurstWebpDialog(QDialog):
             w.wait(1500)
         self._prop_job_id += 1
         jid = int(self._prop_job_id)
-        self.lbl_pv_status.setText("正在用鸟体检测跟踪后续标定点…")
+        use_feature_lock = self.cb_feature_lock.isChecked()
+        self.lbl_pv_status.setText(
+            "正在用局部特征自动锁眼跟踪后续标定点…"
+            if use_feature_lock
+            else "正在用鸟体检测跟踪后续标定点…"
+        )
         self._prop_worker = BurstAnchorPropagateWorker(
             paths,
             self._clone_layouts(),
@@ -2166,6 +2214,7 @@ class BurstWebpDialog(QDialog):
             jid,
             parent=self,
             get_detector=self._get_burst_detector,
+            use_feature_lock=use_feature_lock,
         )
         self._prop_worker.progress.connect(
             self._on_preview_progress, Qt.QueuedConnection
@@ -2173,7 +2222,10 @@ class BurstWebpDialog(QDialog):
         self._prop_worker.done.connect(self._on_propagate_done, Qt.QueuedConnection)
         self._prop_worker.failed.connect(self._on_propagate_fail, Qt.QueuedConnection)
         self._prop_worker.start()
-        _burst_gui_log(f"标定点传播已启动（job={jid}，模式={self._burst_mode()}）。")
+        _burst_gui_log(
+            f"标定点传播已启动（job={jid}，模式={self._burst_mode()}，"
+            f"自动锁眼={'开' if use_feature_lock else '关'}）。"
+        )
 
     @pyqtSlot(object, int)
     def _on_propagate_done(self, layouts, job_id: int) -> None:
@@ -2201,9 +2253,11 @@ class BurstWebpDialog(QDialog):
         self._layout_paths = self._collect_paths()
         self._flush_layouts_to_sticky()
         n_auto, n_lock = self._layout_lock_counts()
+        n_lost = self._layout_lost_count()
         self._refresh_lock_status("后续帧已更新：")
         _burst_gui_log(
-            f"标定点传播完成：自动={n_auto} 锁定={n_lock}（锁定页已跳过，未整段重跑）"
+            f"标定点传播完成：自动={n_auto} 锁定={n_lock} 失锁={n_lost}"
+            "（锁定页已跳过，未整段重跑）"
         )
         self._ae_corr_cache.clear()
         if not self._pv_canvas.is_playing_back():
@@ -2712,6 +2766,7 @@ class BurstWebpDialog(QDialog):
             self.ed_wm_theme,
             self.rb_mode_fixed,
             self.rb_mode_track,
+            self.cb_feature_lock,
             self.spn_fps,
             self.cmb_max,
             self.spn_q,
@@ -2742,6 +2797,7 @@ class BurstWebpDialog(QDialog):
             "enable_wm": self.cb_wm.isChecked(),
             "wm_theme": self.ed_wm_theme.text(),
             "burst_mode": self._burst_mode(),
+            "feature_lock": self.cb_feature_lock.isChecked(),
             "fps": float(self.spn_fps.value()),
             "max_long_edge": _int_safe_combo_data(self.cmb_max, 1600),
             "webp_quality": int(self.spn_q.value()),
@@ -2810,6 +2866,10 @@ class BurstWebpDialog(QDialog):
                 self.rb_mode_track.setChecked(True)
             else:
                 self.rb_mode_fixed.setChecked(True)
+        except Exception:
+            pass
+        try:
+            self.cb_feature_lock.setChecked(bool(raw.get("feature_lock", False)))
         except Exception:
             pass
         if "max_long_edge" in raw:

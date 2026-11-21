@@ -15,6 +15,9 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
+
+from video_motion import load_motion, plan_stabilization, smooth_series
+
 from PyQt5.QtWidgets import (
     QApplication,
     QButtonGroup,
@@ -1733,7 +1736,7 @@ class VideoStabilizeWorker(QThread):
             self.failed.emit(str(e))
 
     def _run_opencv_videostab(self) -> None:
-        """使用 vidstab 库进行稳定化（OpenCV contrib videostab 模块在多数发行版中不可用，直接走 vidstab 路径）。"""
+        """运行稳定化流程（内置 KLT+RANSAC 运动分析与固定裁切引擎）。"""
         self.log_line.emit("正在初始化视频稳定处理...")
 
         cap = cv2.VideoCapture(self._input_path)
@@ -1762,7 +1765,7 @@ class VideoStabilizeWorker(QThread):
 
         self.log_line.emit(f"处理范围: 帧 {start_frame} 到 {end_frame}")
 
-        # 直接使用 vidstab 库路径（OpenCV contrib videostab API 在多数构建中不可用）
+        # 使用内置运动分析引擎（OpenCV contrib videostab API 在多数构建中不可用）
         self._run_simple_stabilization(
             cap, fps, width, height,
             start_frame, end_frame, total_frames
@@ -1772,17 +1775,17 @@ class VideoStabilizeWorker(QThread):
         self, cap, fps, width, height,
         start_frame, end_frame, total_frames
     ) -> None:
-        """使用 vidstab 库进行专业级视频防抖 + 空间裁剪 + 音频保留。
+        """运动分析 + 固定裁切防抖 + 空间裁剪 + 音频保留。
 
         优化处理流程（正确顺序，高效处理）：
         1. ffmpeg 先截取指定时间片段（同时提取音频）
-        2. vidstab 只对该片段做防抖（节省时间）
+        2. 只对该片段做运动分析与防抖（运动数据带缓存）
         3. 空间裁剪 + 图像调整
         4. ffmpeg 将处理后的视频与原音频合并（保留所有声道）
         """
         self.log_line.emit("")
         self.log_line.emit("╔══════════════════════════════════════════════════╗")
-        self.log_line.emit("║  使用 vidstab 专业防抖引擎                      ║")
+        self.log_line.emit("║  使用运动分析 + 固定裁切引擎                    ║")
         self.log_line.emit("╠══════════════════════════════════════════════════╣")
         self.log_line.emit("║  处理顺序: 截取片段 → 防抖 → 裁剪调整 → 合音频║")
         self.log_line.emit("║  优化: 仅处理需要的时间段，保留原始音频声道     ║")
@@ -1798,20 +1801,6 @@ class VideoStabilizeWorker(QThread):
         try:
             if not os.path.isfile(self._input_path):
                 raise IOError(f"输入视频不存在: {self._input_path}")
-
-            # ===== 检查 vidstab 库 =====
-            try:
-                import vidstab as vidstab_module
-                from vidstab import VidStab
-                self.log_line.emit(f"✓ vidstab 库已加载 (版本: {vidstab_module.__version__})")
-            except ImportError:
-                self.log_line.emit("⚠ vidstab 未安装，使用内置简化算法...")
-                cap_temp = cv2.VideoCapture(self._input_path)
-                self._run_builtin_stabilization(
-                    cap_temp, fps, width, height, start_frame, end_frame, total_frames
-                )
-                cap_temp.release()
-                return
 
             # ===== 检查 ffmpeg =====
             has_ffmpeg = _find_ffmpeg() is not None
@@ -1922,51 +1911,12 @@ class VideoStabilizeWorker(QThread):
                 self.log_line.emit("✓ 云台跟随处理完成")
 
             else:
-                # ===== 标准 vidstab 防抖模式 =====
-                self.log_line.emit("Step 2/4: vidstab 标准防抖处理...")
-
-                stabilizer = VidStab()
-
-                # ===== 正确计算 vidstab 参数 =====
-                # vidstab 的窗口以「帧」计；50fps 下 30 帧只有 0.6 秒，压不住手持抖动。
-                # 按帧率折算到约 1.8 秒，同时尊重用户手动调大的值。
-                smoothing_window = max(
-                    5,
-                    min(
-                        180,
-                        int(round(max(self._options.smoothing_window, fps * 1.8))),
-                    ),
+                # ===== 标准防抖：与三脚架共用运动分析与固定裁切 =====
+                self.log_line.emit("Step 2/4: 标准防抖处理...")
+                self._run_standard_stabilization(
+                    source_path, stabilized_video_path, width, height, fps
                 )
-                border_type = self._options.border_type if self._options.border_type in ['black', 'reflect', 'replicate'] else 'black'
-
-                # 计算 border_size：负1表示根据 trim_ratio 自动计算
-                if self._options.border_size < 0:
-                    # 边缘大小：平滑窗口越大，需要的边缘越多
-                    border_size = max(0, int(smoothing_window * 0.5 + height * self._options.trim_ratio * 0.5))
-                else:
-                    border_size = max(0, self._options.border_size)
-
-                self.log_line.emit(f"  vidstab 参数: smoothing_window={smoothing_window}, border_type={border_type}, border_size={border_size}")
-                self.log_line.emit(f"  输入: {source_path}")
-
-                try:
-                    stabilizer.stabilize(
-                        input_path=source_path,
-                        output_path=stabilized_video_path,
-                        smoothing_window=smoothing_window,
-                        border_type=border_type,
-                        border_size=border_size,
-                        show_progress=False,
-                        output_fourcc='mp4v'
-                    )
-                    self.log_line.emit("✓ vidstab 防抖完成")
-                except Exception as e:
-                    self.log_line.emit(f"⚠ vidstab 处理失败: {e}")
-                    traceback.print_exc()
-                    # vidstab失败时，直接复制源文件
-                    self.log_line.emit("回退：直接使用源视频进行裁剪调整")
-                    import shutil
-                    shutil.copy2(source_path, stabilized_video_path)
+                self.log_line.emit("✓ 标准防抖完成")
 
             # ===== Step 3: 读取防抖后视频 + 空间裁剪 + 图像调整 =====
             self.log_line.emit("Step 3/4: 应用空间裁剪与图像调整...")
@@ -1981,7 +1931,7 @@ class VideoStabilizeWorker(QThread):
                         f"无法打开视频进行处理（防抖输出与源视频均无法读取）: {source_path}"
                     )
 
-            # 获取防抖后视频的实际尺寸（可能因为 border_size 有黑边）
+            # 获取防抖后视频的实际尺寸（防抖阶段会按晃动固定裁切）
             stab_width = int(stab_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             stab_height = int(stab_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             stab_fps = stab_cap.get(cv2.CAP_PROP_FPS)
@@ -2198,6 +2148,88 @@ class VideoStabilizeWorker(QThread):
             self.log_line.emit(f"⚠ 图像调整应用失败，使用原始帧: {e}")
             return frame
 
+    def _run_motion_stabilization(
+        self,
+        input_path: str,
+        output_path: str,
+        width: int,
+        height: int,
+        fps: float,
+        *,
+        smooth_seconds: float,
+        safety: float,
+        label: str,
+    ) -> None:
+        """运动分析（带缓存）+ 固定裁切渲染，全程不露黑边。"""
+        motion = load_motion(
+            input_path,
+            width,
+            height,
+            fps,
+            identity_path=self._input_path,
+            range_key=f"{self._options.start_time:.3f}-{self._options.end_time:.3f}",
+            log=lambda msg: self.log_line.emit(f"  {msg}"),
+            progress=lambda cur, total: self.progress.emit(cur, max(1, total)),
+            cancelled=lambda: False,
+        )
+
+        plan = plan_stabilization(
+            motion,
+            smooth_seconds=smooth_seconds,
+            strength=1.0,
+            max_zoom=1.8,
+            safety=safety,
+        )
+
+        self.log_line.emit(
+            f"  {label}：平滑 {smooth_seconds:.2f}s，"
+            f"校正幅度 {plan.motion_px[0]:.1f}x{plan.motion_px[1]:.1f}px"
+        )
+        self.log_line.emit(
+            f"  输出尺寸: {plan.out_w}x{plan.out_h}"
+            f"（线性裁切 {plan.zoom:.2f}x，实际强度 {plan.strength:.2f}）"
+        )
+
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            raise IOError(f"无法打开视频: {input_path}")
+        writer = cv2.VideoWriter(
+            output_path,
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            fps,
+            (plan.out_w, plan.out_h),
+        )
+        if not writer.isOpened():
+            cap.release()
+            raise IOError(f"无法创建输出视频: {output_path}")
+
+        total = min(
+            len(plan.matrices),
+            int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or len(plan.matrices),
+        )
+        index = 0
+        while index < total:
+            ret, frame = cap.read()
+            if not ret or frame is None:
+                break
+            stabilized = cv2.warpAffine(
+                frame,
+                plan.matrices[index],
+                (plan.out_w, plan.out_h),
+                flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=[0, 0, 0],
+            )
+            writer.write(stabilized)
+            index += 1
+            if index % 60 == 0:
+                self.progress.emit(index, max(1, total))
+                self.log_line.emit(f"  合成进度: {index}/{total}")
+
+        cap.release()
+        writer.release()
+        self.log_line.emit(f"  ✓ 已输出 {index} 帧稳定画面")
+
     def _run_virtual_tripod(
         self,
         input_path: str,
@@ -2206,219 +2238,43 @@ class VideoStabilizeWorker(QThread):
         height: int,
         fps: float,
     ) -> None:
-        """虚拟三脚架：估计全局运动路径 → 长窗口平滑 → 只补偿抖动分量。
-
-        与旧实现的区别：
-        - 运动估计在 960 宽灰度图上做（光流为主、相位相关兜底），4K 也不易跟丢；
-        - 先记录完整轨迹再用「居中移动平均」平滑（零相位），缓慢摇镜保留、抖动被抵消；
-        - 绝不把限幅结果写回轨迹，长时间摇镜后不会积累错误偏移、脱离主画面。
-        """
-        import math
-
-        margin_ratio = 0.12
-        margin = int(min(width, height) * margin_ratio)
-        out_w = width - 2 * margin
-        out_h = height - 2 * margin
-        max_shift = margin * 0.8
-        max_angle = math.radians(5.0)
-        smooth_win = max(31, min(181, int(round(fps * 1.5)) | 1))
-
-        # ===== 第一遍：估计每帧相对首帧的全局运动 =====
-        est_scale = min(1.0, 960.0 / float(max(1, width)))
-        ew = max(32, int(round(width * est_scale)))
-        eh = max(32, int(round(height * est_scale)))
-        hann = cv2.createHanningWindow((ew, eh), cv2.CV_32F)
-
-        feature_params = dict(
-            maxCorners=600, qualityLevel=0.01, minDistance=8, blockSize=7
-        )
-        lk_params = dict(
-            winSize=(21, 21),
-            maxLevel=3,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01),
+        """虚拟三脚架：长窗口平滑，抵消抖动、保留缓慢摇镜。"""
+        smooth_seconds = max(
+            float(self._options.smoothing_window), max(1.0, fps * 1.5)
+        ) / max(1.0, fps)
+        self._run_motion_stabilization(
+            input_path,
+            output_path,
+            width,
+            height,
+            fps,
+            smooth_seconds=smooth_seconds,
+            safety=0.0,
+            label="虚拟三脚架",
         )
 
-        def _read_small(cap_obj):
-            ok, fr = cap_obj.read()
-            if not ok:
-                return None, None
-            g = cv2.cvtColor(fr, cv2.COLOR_BGR2GRAY)
-            if g.shape[1] != ew or g.shape[0] != eh:
-                g = cv2.resize(g, (ew, eh), interpolation=cv2.INTER_AREA)
-            return fr, g
-
-        cap = cv2.VideoCapture(input_path)
-        if not cap.isOpened():
-            raise IOError(f"无法打开视频: {input_path}")
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
-
-        _, prev_u8 = _read_small(cap)
-        if prev_u8 is None:
-            cap.release()
-            raise IOError("无法读取第一帧")
-        prev_f32 = prev_u8.astype(np.float32) / 255.0
-
-        M_abs = np.eye(3, dtype=np.float64)
-        # 第 0 帧为基准：轨迹必须与帧号一一对应（否则会差一帧，反而叠加抖动）
-        path_tx, path_ty, path_ang, path_scale = [0.0], [0.0], [0.0], [1.0]
-        frame_idx = 0
-        reg_failed = 0
-
-        self.log_line.emit(f"  输出尺寸: {out_w}x{out_h} (各边裁 {margin}px, {margin_ratio*100:.0f}%)")
-        self.log_line.emit(f"  运动估计分辨率: {ew}x{eh}，平滑窗口: {smooth_win} 帧")
-        if total_frames:
-            self.log_line.emit(f"  总帧数: {total_frames}")
-        self.log_line.emit("  第一遍：估计全局运动轨迹...")
-
-        while True:
-            _fr, cur_u8 = _read_small(cap)
-            if cur_u8 is None:
-                break
-
-            M_rel = None
-            p0 = cv2.goodFeaturesToTrack(prev_u8, mask=None, **feature_params)
-            if p0 is not None and len(p0) >= 8:
-                p1, st, _err = cv2.calcOpticalFlowPyrLK(
-                    prev_u8, cur_u8, p0, None, **lk_params
-                )
-                if p1 is not None:
-                    good_old = p0[st.ravel() == 1]
-                    good_new = p1[st.ravel() == 1]
-                    if len(good_old) >= 8:
-                        M_rel_raw, _inliers = cv2.estimateAffinePartial2D(
-                            good_old, good_new,
-                            method=cv2.RANSAC,
-                            ransacReprojThreshold=1.5,
-                        )
-                        if M_rel_raw is not None:
-                            rel_ang = math.atan2(M_rel_raw[1, 0], M_rel_raw[0, 0])
-                            rel_scale = math.hypot(M_rel_raw[0, 0], M_rel_raw[1, 0])
-                            if (
-                                abs(M_rel_raw[0, 2]) < 60
-                                and abs(M_rel_raw[1, 2]) < 60
-                                and abs(rel_ang) < math.radians(4)
-                                and 0.96 < rel_scale < 1.04
-                            ):
-                                M_rel = M_rel_raw.astype(np.float64)
-
-            if M_rel is None:
-                # 光流失败：相位相关兜底（纯平移），避免整段轨迹停止更新
-                (pdx, pdy), resp = cv2.phaseCorrelate(
-                    prev_f32, cur_u8.astype(np.float32) / 255.0, hann
-                )
-                if resp > 0.05 and abs(pdx) < 120 and abs(pdy) < 120:
-                    M_rel = np.array(
-                        [[1.0, 0.0, pdx], [0.0, 1.0, pdy]], dtype=np.float64
-                    )
-                else:
-                    reg_failed += 1
-
-            if M_rel is not None:
-                M_rel_h = np.array(
-                    [
-                        [M_rel[0, 0], M_rel[0, 1], M_rel[0, 2]],
-                        [M_rel[1, 0], M_rel[1, 1], M_rel[1, 2]],
-                        [0.0, 0.0, 1.0],
-                    ],
-                    dtype=np.float64,
-                )
-                M_abs = M_rel_h @ M_abs
-
-            a00, _a01, tx = M_abs[0]
-            a10, _a11, ty = M_abs[1]
-            path_ang.append(math.atan2(a10, a00))
-            path_scale.append(math.hypot(a00, a10))
-            path_tx.append(tx / est_scale)
-            path_ty.append(ty / est_scale)
-            frame_idx += 1
-
-            prev_u8 = cur_u8
-            prev_f32 = cur_u8.astype(np.float32) / 255.0
-
-            if frame_idx % 60 == 0:
-                tot = total_frames or frame_idx
-                self.progress.emit(min(frame_idx, tot), tot)
-                self.log_line.emit(f"  运动估计进度: {frame_idx}/{total_frames or '?'}")
-
-        cap.release()
-        n = len(path_tx)
-        if n == 0:
-            raise IOError("视频没有可处理的帧")
-
-        # ===== 居中移动平均（零相位）：保留缓慢摇镜，抵消高频抖动 =====
-        def _smooth(vals):
-            k = min(smooth_win, n if n % 2 == 1 else n - 1)
-            if k < 3:
-                return list(vals)
-            half = k // 2
-            arr = np.asarray(vals, dtype=np.float64)
-            padded = np.pad(arr, (half, half), mode="edge")
-            kernel = np.ones(k, dtype=np.float64) / float(k)
-            return np.convolve(padded, kernel, mode="valid").tolist()
-
-        sm_tx = _smooth(path_tx)
-        sm_ty = _smooth(path_ty)
-        sm_ang = _smooth(path_ang)
-        sm_scale = _smooth(path_scale)
-
-        if reg_failed:
-            self.log_line.emit(f"  ⚠ {reg_failed} 帧运动估计失败（跳过，不累积错误偏移）")
-
-        # ===== 第二遍：只补偿「真实路径 - 平滑路径」，限幅不写回轨迹 =====
-        self.log_line.emit("  第二遍：合成稳定画面...")
-        cap = cv2.VideoCapture(input_path)
-        if not cap.isOpened():
-            raise IOError(f"无法重新打开视频: {input_path}")
-
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
-        if not out.isOpened():
-            cap.release()
-            raise IOError(f"无法创建输出视频: {output_path}")
-
-        frame_idx = 0
-        while True:
-            ret, frame = cap.read()
-            if not ret or frame_idx >= n:
-                break
-
-            ang_c = path_ang[frame_idx] - sm_ang[frame_idx]
-            scale_c = path_scale[frame_idx] / max(1e-6, sm_scale[frame_idx])
-            tx_c = path_tx[frame_idx] - sm_tx[frame_idx]
-            ty_c = path_ty[frame_idx] - sm_ty[frame_idx]
-
-            ang_c = max(-max_angle, min(max_angle, ang_c))
-            scale_c = max(0.97, min(1.03, scale_c))
-            tx_c = max(-max_shift, min(max_shift, tx_c))
-            ty_c = max(-max_shift, min(max_shift, ty_c))
-
-            cos_a = math.cos(ang_c) * scale_c
-            sin_a = math.sin(ang_c) * scale_c
-            # 输出 (0,0) 对应首帧坐标 (margin, margin)
-            M_out = np.array([
-                [cos_a, -sin_a, cos_a * margin - sin_a * margin + tx_c],
-                [sin_a,  cos_a, sin_a * margin + cos_a * margin + ty_c]
-            ], dtype=np.float64)
-
-            # M_out 是「输出坐标 → 源坐标」的采样矩阵，必须配 WARP_INVERSE_MAP，
-            # 否则 OpenCV 会再求逆一次，抖动被放大成两倍
-            stabilized = cv2.warpAffine(
-                frame, M_out,
-                (out_w, out_h),
-                flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=[0, 0, 0]
-            )
-            out.write(stabilized)
-
-            frame_idx += 1
-            if frame_idx % 60 == 0:
-                self.progress.emit(frame_idx, n)
-                self.log_line.emit(f"  合成进度: {frame_idx}/{n}")
-
-        cap.release()
-        out.release()
-        self.log_line.emit(f"  ✓ 输出无黑边稳定画面 {out_w}x{out_h}")
+    def _run_standard_stabilization(
+        self,
+        input_path: str,
+        output_path: str,
+        width: int,
+        height: int,
+        fps: float,
+    ) -> None:
+        """标准防抖：与三脚架同一套运动估计，窗口更长、裁切更保守。"""
+        smooth_seconds = max(
+            float(self._options.smoothing_window), max(1.0, fps * 1.8)
+        ) / max(1.0, fps)
+        self._run_motion_stabilization(
+            input_path,
+            output_path,
+            width,
+            height,
+            fps,
+            smooth_seconds=smooth_seconds,
+            safety=float(self._options.trim_ratio),
+            label="标准防抖",
+        )
 
     def _run_gimbal_follow(
         self,
@@ -2573,17 +2429,31 @@ class VideoStabilizeWorker(QThread):
 
         frame_idx = 0
 
-        # 残余抖动补偿：主体跟随只保留低频路径，跟踪框的高频噪声仍会漏到画面里，
-        # 用短时间常数（≈0.35s）的全局平移高频分量做小幅补偿（±8px）。
-        import math
-
-        small_w = 480
-        small_h = max(2, int(round(small_w * height / float(max(1, width)))))
-        prev_small = None
-        acc_gx = acc_gy = 0.0
-        sm_gx = sm_gy = 0.0
-        ema_a = 1.0 - math.exp(-1.0 / max(1.0, fps * 0.35))
-        micro_scale = width / float(small_w)
+        # 残余抖动补偿：主体跟随只保留低频路径，跟踪框的高频噪声仍会漏到画面里。
+        # 用缓存的相机运动轨迹取短时间常数（≈0.35s）的高频分量，小幅补偿（±8px）。
+        comp_x_series = comp_y_series = None
+        try:
+            motion = load_motion(
+                input_path,
+                width,
+                height,
+                fps,
+                identity_path=self._input_path,
+                range_key=f"{self._options.start_time:.3f}-{self._options.end_time:.3f}",
+                log=lambda msg: self.log_line.emit(f"  {msg}"),
+                cancelled=lambda: False,
+            )
+            path_x = np.cumsum(motion.steps[:, 0])
+            path_y = np.cumsum(motion.steps[:, 1])
+            sigma = max(2.0, fps * 0.35)
+            comp_x_series = np.clip(
+                path_x - smooth_series(path_x, sigma), -8.0, 8.0
+            )
+            comp_y_series = np.clip(
+                path_y - smooth_series(path_y, sigma), -8.0, 8.0
+            )
+        except Exception as exc:
+            self.log_line.emit(f"  ⚠ 背景抖动估计失败，跳过微补偿: {exc}")
 
         while True:
             ret, frame = cap.read()
@@ -2595,20 +2465,9 @@ class VideoStabilizeWorker(QThread):
             crop_y = int(round(smooth_y[frame_idx] - out_h / 2.0))
 
             # ===== 全局高频抖动补偿 =====
-            small = cv2.resize(frame, (small_w, small_h), interpolation=cv2.INTER_AREA)
-            small_g = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
-            if prev_small is not None:
-                (gx, gy), resp = cv2.phaseCorrelate(prev_small, small_g)
-                if resp > 0.1 and abs(gx) < 30 and abs(gy) < 30:
-                    acc_gx += gx
-                    acc_gy += gy
-            prev_small = small_g
-            sm_gx = ema_a * acc_gx + (1.0 - ema_a) * sm_gx
-            sm_gy = ema_a * acc_gy + (1.0 - ema_a) * sm_gy
-            comp_x = max(-8.0, min(8.0, (acc_gx - sm_gx) * micro_scale))
-            comp_y = max(-8.0, min(8.0, (acc_gy - sm_gy) * micro_scale))
-            crop_x = int(round(crop_x + comp_x))
-            crop_y = int(round(crop_y + comp_y))
+            if comp_x_series is not None and frame_idx < len(comp_x_series):
+                crop_x += int(round(float(comp_x_series[frame_idx])))
+                crop_y += int(round(float(comp_y_series[frame_idx])))
 
             # 限制在合法范围内
             crop_x = max(0, min(crop_x, width - out_w))
@@ -3130,15 +2989,15 @@ class VideoStabilizeDialog(QDialog):
         current_row += 1
 
         # ===== 第6行: 稳定参数 + 操作按钮 =====
-        param_group = QGroupBox("🎛️ vidstab 防抖参数")
+        param_group = QGroupBox("🎛️ 防抖参数")
         param_layout = QFormLayout(param_group)
 
         self.smooth_window_spin = QSpinBox()
         self.smooth_window_spin.setRange(5, 180)
         self.smooth_window_spin.setValue(60)
         self.smooth_window_spin.setToolTip(
-            "平滑窗口大小（帧）：值越大画面越稳定，但运动滞后感越强；"
-            "50fps 素材建议 60-120"
+            "平滑时间（帧）：值越大画面越稳定，但运动滞后感越强；"
+            "50fps 素材建议 60-120。运动分析会缓存，改这里不必重新测量"
         )
         param_layout.addRow("平滑窗口:", self.smooth_window_spin)
 
@@ -3146,7 +3005,7 @@ class VideoStabilizeDialog(QDialog):
         self.border_type_combo.addItem("黑边填充 (black)", "black")
         self.border_type_combo.addItem("边缘反射 (reflect)", "reflect")
         self.border_type_combo.addItem("边缘复制 (replicate)", "replicate")
-        self.border_type_combo.setToolTip("防抖变换时边缘区域的填充方式")
+        self.border_type_combo.setToolTip("新引擎按实际晃动固定裁切，不再填充边缘")
         param_layout.addRow("边缘填充:", self.border_type_combo)
 
         self.trim_ratio_spin = QDoubleSpinBox()
@@ -3154,7 +3013,9 @@ class VideoStabilizeDialog(QDialog):
         self.trim_ratio_spin.setSingleStep(0.01)
         self.trim_ratio_spin.setDecimals(2)
         self.trim_ratio_spin.setValue(0.05)
-        self.trim_ratio_spin.setToolTip("自动边缘裁剪比例：用于裁剪防抖产生的黑边，0表示不自动裁剪")
+        self.trim_ratio_spin.setToolTip(
+            "额外安全边距：在按晃动算出的裁切上再多裁一点，0 表示不留额外边距（三脚架模式不使用）"
+        )
         param_layout.addRow("裁剪比例:", self.trim_ratio_spin)
 
         self.keep_audio_check = QCheckBox("保留原始音频声道")
@@ -3385,11 +3246,11 @@ class VideoStabilizeDialog(QDialog):
         self._options.algorithm = algo
         self._update_algo_description()
 
-        # vidstab 参数在使用 opencv_videostab 时启用（该模式实际使用 vidstab 库）
+        # vidstab 参数在使用 opencv_videostab 时启用（该模式实际使用内置运动分析引擎）
         is_vidstab = (algo == "opencv_videostab")
         self.smooth_window_spin.setEnabled(is_vidstab)
         self.trim_ratio_spin.setEnabled(is_vidstab)
-        self.border_type_combo.setEnabled(is_vidstab)
+        self.border_type_combo.setEnabled(False)
         self.mode_combo.setEnabled(is_vidstab)
 
     def _on_mode_changed(self, index: int) -> None:
@@ -3397,22 +3258,16 @@ class VideoStabilizeDialog(QDialog):
         mode = self.mode_combo.currentData()
         self._update_algo_description()
 
-        # 根据模式启用/禁用相关参数
+        # 新模式统一使用「运动分析缓存 + 固定裁切」，边缘填充方式已不再适用
+        self.smooth_window_spin.setEnabled(True)
+        self.border_type_combo.setEnabled(False)
+
         if mode == "virtual_tripod":
-            # 三脚架模式：固定参数，禁用手动调节
-            self.smooth_window_spin.setEnabled(False)
+            # 三脚架模式：裁切由晃动自动决定，不需要手动裁剪比例
             self.trim_ratio_spin.setEnabled(False)
-            self.border_type_combo.setEnabled(False)
-        elif mode == "gimbal_follow":
-            # 云台跟随模式：需要手动选择跟踪目标，平滑参数可调
-            self.smooth_window_spin.setEnabled(True)
-            self.trim_ratio_spin.setEnabled(True)
-            self.border_type_combo.setEnabled(True)
         else:
-            # 标准模式：所有参数可调
-            self.smooth_window_spin.setEnabled(True)
+            # 标准/云台：裁剪比例作为额外安全边距
             self.trim_ratio_spin.setEnabled(True)
-            self.border_type_combo.setEnabled(True)
 
     def _update_algo_description(self) -> None:
         """更新算法说明文字。"""
@@ -3421,19 +3276,20 @@ class VideoStabilizeDialog(QDialog):
 
         mode_descriptions = {
             "standard": (
-                "• 标准 vidstab 防抖\n"
-                "• 平滑窗口可调，适合一般手持拍摄\n"
+                "• 标准防抖（KLT + RANSAC 运动估计）\n"
+                "• 运动分析带缓存，改参数不必重测\n"
+                "• 平滑窗口可调，固定裁切不露黑边\n"
             ),
             "virtual_tripod": (
                 "📐 虚拟三脚架模式\n"
                 "• 全局运动估计 + 长窗口平滑\n"
                 "• 抵消手持抖动，缓慢摇镜仍保留\n"
-                "• 适合机位大致固定、偶有缓慢转向\n"
+                "• 按实际晃动反推固定裁切，适合机位大致固定\n"
             ),
             "gimbal_follow": (
                 "🦅 云台跟随模式\n"
                 "• 主体跟踪（CSRT/MIL）+ 高斯平滑跟随\n"
-                "• 叠加全局高频抖动补偿\n"
+                "• 复用缓存的相机运动做高频抖动补偿\n"
                 "• 适合拍摄飞鸟等运动主体\n"
             ),
         }

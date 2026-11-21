@@ -24,6 +24,7 @@ class FrameLayout:
     y1: float = 0.85
     auto: bool = True
     conf: float = 1.0
+    lost: bool = False
 
     def crop_tuple(self) -> Tuple[float, float, float, float]:
         x0, x1 = sorted((float(self.x0), float(self.x1)))
@@ -45,6 +46,7 @@ class FrameLayout:
             "y1": float(self.y1),
             "auto": bool(self.auto),
             "conf": float(self.conf),
+            "lost": bool(self.lost),
         }
 
     @classmethod
@@ -58,6 +60,7 @@ class FrameLayout:
             y1=float(d.get("y1", 0.85)),
             auto=bool(d.get("auto", True)),
             conf=float(d.get("conf", 1.0)),
+            lost=bool(d.get("lost", False)),
         )
 
 
@@ -104,6 +107,7 @@ def layout_from_anchor(
     *,
     auto: bool = True,
     conf: float = 1.0,
+    lost: bool = False,
 ) -> FrameLayout:
     """
     由标定点 + 首图几何反推裁剪框（归一化；可越出 [0,1]，稍后裁剪时补边）。
@@ -125,6 +129,7 @@ def layout_from_anchor(
         y1=(py + ch) / float(h),
         auto=auto,
         conf=float(conf),
+        lost=bool(lost),
     )
 
 
@@ -352,6 +357,422 @@ DetectBirdsFn = Callable[[np.ndarray], Sequence]
 PropagateProgressFn = Callable[[int, int, str], None]
 
 
+@dataclass
+class FeatureLockConfig:
+    """局部特征锁眼参数（独立实现；仅参考公开的 KLT + RANSAC 思路）。"""
+
+    max_corners: int = 180
+    quality: float = 0.01
+    min_dist_ratio: float = 0.02
+    block_size: int = 7
+    lk_win: int = 21
+    lk_levels: int = 3
+    fb_max_err: float = 1.5
+    min_inliers: int = 8
+    min_inlier_ratio: float = 0.6
+    min_scale: float = 0.7
+    max_scale: float = 1.4
+    max_rot_rad: float = 0.7
+    seed_ncc_min: float = 0.30
+    tmpl_min_score: float = 0.68
+    tmpl_second_margin: float = 0.06
+    tmpl_scales: Tuple[float, ...] = (0.85, 1.0, 1.18)
+    max_gap_fill: int = 3
+
+
+def _patch_at(
+    gray: np.ndarray, cx: float, cy: float, half: int
+) -> Optional[np.ndarray]:
+    """取以 (cx,cy) 为中心、半宽 half 的方形块；越界返回 None。"""
+    h, w = gray.shape[:2]
+    half = max(2, int(half))
+    x0 = int(round(float(cx))) - half
+    y0 = int(round(float(cy))) - half
+    x1 = x0 + 2 * half
+    y1 = y0 + 2 * half
+    if x0 < 0 or y0 < 0 or x1 > w or y1 > h:
+        return None
+    return gray[y0:y1, x0:x1]
+
+
+def _ncc_patch(a: Optional[np.ndarray], b: Optional[np.ndarray]) -> float:
+    """零均值归一化相关；尺寸不同时把 b 缩放到 a。"""
+    if a is None or b is None or a.size == 0 or b.size == 0:
+        return 0.0
+    if a.shape != b.shape:
+        b = cv2.resize(b, (a.shape[1], a.shape[0]), interpolation=cv2.INTER_AREA)
+    af = a.astype(np.float32)
+    bf = b.astype(np.float32)
+    af -= float(af.mean())
+    bf -= float(bf.mean())
+    den = float(np.linalg.norm(af) * np.linalg.norm(bf))
+    if den < 1e-6:
+        return 0.0
+    return float(np.sum(af * bf) / den)
+
+
+def _detect_local_points(
+    gray: np.ndarray,
+    cx: float,
+    cy: float,
+    half_w: float,
+    half_h: float,
+    cfg: FeatureLockConfig,
+) -> Optional[np.ndarray]:
+    """在锚点邻域（种子框范围）取角点，返回 (N,1,2) float32。"""
+    h, w = gray.shape[:2]
+    hw = max(8.0, float(half_w))
+    hh = max(8.0, float(half_h))
+    x0 = max(0, int(round(float(cx) - hw)))
+    y0 = max(0, int(round(float(cy) - hh)))
+    x1 = min(w, int(round(float(cx) + hw)))
+    y1 = min(h, int(round(float(cy) + hh)))
+    if x1 - x0 < 12 or y1 - y0 < 12:
+        return None
+    roi = gray[y0:y1, x0:x1]
+    md = max(4.0, min(roi.shape[:2]) * float(cfg.min_dist_ratio))
+    pts = cv2.goodFeaturesToTrack(
+        roi,
+        maxCorners=int(cfg.max_corners),
+        qualityLevel=float(cfg.quality),
+        minDistance=md,
+        blockSize=int(cfg.block_size),
+    )
+    if pts is None:
+        return None
+    out = np.asarray(pts, dtype=np.float32).reshape(-1, 1, 2).copy()
+    out[:, 0, 0] += float(x0)
+    out[:, 0, 1] += float(y0)
+    return out
+
+
+def _lk_forward_backward(
+    g0: np.ndarray,
+    g1: np.ndarray,
+    pts0: np.ndarray,
+    cfg: FeatureLockConfig,
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """LK 前后向跟踪并剔除前后向误差过大的点。"""
+    p1, st1, _ = cv2.calcOpticalFlowPyrLK(
+        g0,
+        g1,
+        pts0,
+        None,
+        winSize=(int(cfg.lk_win), int(cfg.lk_win)),
+        maxLevel=int(cfg.lk_levels),
+        criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 20, 0.03),
+    )
+    if p1 is None or st1 is None:
+        return None, None
+    p0r, st2, _ = cv2.calcOpticalFlowPyrLK(
+        g1,
+        g0,
+        p1,
+        None,
+        winSize=(int(cfg.lk_win), int(cfg.lk_win)),
+        maxLevel=int(cfg.lk_levels),
+        criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 20, 0.03),
+    )
+    if p0r is None or st2 is None:
+        return None, None
+    err = np.linalg.norm(p0r.reshape(-1, 2) - pts0.reshape(-1, 2), axis=1)
+    keep = (
+        (st1.reshape(-1) == 1)
+        & (st2.reshape(-1) == 1)
+        & np.isfinite(err)
+        & (err <= float(cfg.fb_max_err))
+    )
+    if int(keep.sum()) < 4:
+        return None, None
+    return pts0.reshape(-1, 2)[keep], p1.reshape(-1, 2)[keep]
+
+
+def _estimate_similarity(
+    p0: np.ndarray, p1: np.ndarray, cfg: FeatureLockConfig
+) -> Optional[Tuple[np.ndarray, float]]:
+    """RANSAC 相似变换，返回 (2x3 矩阵, 内点率)；不满足门限返回 None。"""
+    if p0.shape[0] < max(6, int(cfg.min_inliers)):
+        return None
+    m, mask = cv2.estimateAffinePartial2D(
+        p0.reshape(-1, 1, 2),
+        p1.reshape(-1, 1, 2),
+        method=cv2.RANSAC,
+        ransacReprojThreshold=3.0,
+        maxIters=2000,
+        confidence=0.995,
+    )
+    if m is None or mask is None:
+        return None
+    inliers = int(mask.reshape(-1).sum())
+    ratio = float(inliers) / float(max(1, p0.shape[0]))
+    if inliers < int(cfg.min_inliers) or ratio < float(cfg.min_inlier_ratio):
+        return None
+    a, b = float(m[0, 0]), float(m[0, 1])
+    c, d = float(m[1, 0]), float(m[1, 1])
+    scale = 0.5 * (float(np.hypot(a, c)) + float(np.hypot(b, d)))
+    rot = float(np.arctan2(c, a))
+    if not np.isfinite(scale) or scale < cfg.min_scale or scale > cfg.max_scale:
+        return None
+    if abs(rot) > float(cfg.max_rot_rad):
+        return None
+    return m, ratio
+
+
+def _match_seed_patch(
+    gray: np.ndarray,
+    seed_patch: np.ndarray,
+    guess_cx: float,
+    guess_cy: float,
+    search_r: float,
+    cfg: FeatureLockConfig,
+) -> Optional[Tuple[float, float, float]]:
+    """多尺度模板匹配兜底；返回 (cx, cy, score)，score 不够或有歧义返回 None。"""
+    h, w = gray.shape[:2]
+    ph, pw = seed_patch.shape[:2]
+    if ph < 6 or pw < 6:
+        return None
+    r = max(float(ph), float(pw), float(search_r))
+    x0 = max(0, int(round(float(guess_cx) - r)))
+    y0 = max(0, int(round(float(guess_cy) - r)))
+    x1 = min(w, int(round(float(guess_cx) + r)))
+    y1 = min(h, int(round(float(guess_cy) + r)))
+    if x1 - x0 < 8 or y1 - y0 < 8:
+        return None
+    roi = gray[y0:y1, x0:x1]
+    best_score = -1.0
+    best_cx = best_cy = 0.0
+    best_second = -1.0
+    for s in cfg.tmpl_scales:
+        tw = max(6, int(round(pw * float(s))))
+        th = max(6, int(round(ph * float(s))))
+        if roi.shape[1] < tw or roi.shape[0] < th:
+            continue
+        tpl = cv2.resize(seed_patch, (tw, th), interpolation=cv2.INTER_AREA)
+        res = cv2.matchTemplate(roi, tpl, cv2.TM_CCOEFF_NORMED)
+        _mn, mx, _ml, loc = cv2.minMaxLoc(res)
+        if mx > best_score:
+            best_score = float(mx)
+            best_cx = float(x0 + loc[0] + tw * 0.5)
+            best_cy = float(y0 + loc[1] + th * 0.5)
+            # 同一响应图上，抑制峰值邻域后的次优值（用于排除歧义）
+            sup = res.copy()
+            ly = max(0, loc[1] - th // 2)
+            lx = max(0, loc[0] - tw // 2)
+            sup[ly : loc[1] + th // 2 + 1, lx : loc[0] + tw // 2 + 1] = -1.0
+            best_second = float(sup.max()) if sup.size else -1.0
+    if best_score < float(cfg.tmpl_min_score):
+        return None
+    if best_second >= 0.0 and (best_score - best_second) < float(cfg.tmpl_second_margin):
+        return None
+    return best_cx, best_cy, best_score
+
+
+def _seed_patch_for(
+    gray: np.ndarray,
+    ax: float,
+    ay: float,
+    geom: CropGeom,
+) -> Tuple[Optional[np.ndarray], int]:
+    """种子块的半宽与内容：取裁剪框短边的 1/4，限制在 12–64 px。"""
+    h, w = gray.shape[:2]
+    half = int(np.clip(round(0.25 * min(geom.crop_w, geom.crop_h)), 12, 64))
+    patch = _patch_at(gray, clamp01(ax) * w, clamp01(ay) * h, half)
+    return patch, half
+
+
+def track_layouts_features(
+    frames_bgr: Sequence[np.ndarray],
+    layouts: Sequence[Optional[FrameLayout]],
+    mode: str = "fixed",
+    *,
+    progress: Optional[PropagateProgressFn] = None,
+    config: Optional[FeatureLockConfig] = None,
+) -> List[FrameLayout]:
+    """
+    种子框自动锁眼：逐帧局部特征跟踪（KLT 前后向 + RANSAC 相似变换）。
+
+    - 以首图（或任何手动锁定页）的裁剪框为种子框，跟踪锚点；
+    - 与种子块相关性过低判漂移，交给多尺度模板匹配兜底；
+    - 连续丢失超过 3 帧停止尝试，短缺口（≤3 帧）线性插值；
+    - 输出 FrameLayout.lost 标记，供界面提示与手动修正。
+    不依赖任何鸟体模型。
+    """
+    if not frames_bgr:
+        return []
+    first = layouts[0] if layouts else None
+    if first is None or not layout_valid(first):
+        raise ValueError("请先在首图上设置标定点与裁剪区")
+    n = len(frames_bgr)
+    h0, w0 = frames_bgr[0].shape[:2]
+    geom = geom_from_first(first, w0, h0)
+    mode_l = (mode or "fixed").strip().lower()
+    if mode_l not in ("fixed", "track"):
+        mode_l = "fixed"
+    cfg = config or FeatureLockConfig()
+
+    out: List[FrameLayout] = [
+        FrameLayout(
+            ax=clamp01(first.ax),
+            ay=clamp01(first.ay),
+            x0=first.x0,
+            y0=first.y0,
+            x1=first.x1,
+            y1=first.y1,
+            auto=False,
+            conf=1.0,
+            lost=False,
+        )
+    ]
+    prev_gray = _gray(frames_bgr[0])
+    prev_ax, prev_ay = clamp01(first.ax), clamp01(first.ay)
+    vel_x = vel_y = 0.0
+    seed_patch, seed_half = _seed_patch_for(prev_gray, prev_ax, prev_ay, geom)
+    lost_streak = 0
+    stop_tracking = False
+
+    # 特征检测范围：固定模式可略大（鸟在框内移动），跟踪模式更贴近种子框。
+    box_scale = 0.15 if mode_l == "track" else 0.35
+    half_w = max(16.0, 0.5 * float(geom.crop_w) * (1.0 + box_scale))
+    half_h = max(16.0, 0.5 * float(geom.crop_h) * (1.0 + box_scale))
+    search_r = max(24.0, float(max(geom.crop_w, geom.crop_h)) * 0.35)
+
+    for i in range(1, n):
+        if progress is not None:
+            progress(i, n, f"锁眼：局部特征跟踪 {i}/{n - 1}")
+        bgr = frames_bgr[i]
+        hi, wi = bgr.shape[:2]
+        curr_gray = _gray(bgr)
+
+        prev_lay = layouts[i] if i < len(layouts) else None
+        if prev_lay is not None and not prev_lay.auto:
+            # 手动锁定页优先：原样保留，并把它当作新的种子关键帧。
+            kept = replace(prev_lay, auto=False, conf=1.0, lost=False)
+            out.append(kept)
+            prev_ax, prev_ay = clamp01(kept.ax), clamp01(kept.ay)
+            vel_x = vel_y = 0.0
+            lost_streak = 0
+            stop_tracking = False
+            prev_gray = curr_gray
+            seed_patch, seed_half = _seed_patch_for(
+                curr_gray, prev_ax, prev_ay, geom
+            )
+            continue
+
+        ax = ay = 0.0
+        conf = 0.0
+        ok = False
+
+        if not stop_tracking:
+            pts = _detect_local_points(
+                prev_gray, prev_ax * prev_gray.shape[1], prev_ay * prev_gray.shape[0],
+                half_w, half_h, cfg,
+            )
+            if pts is not None and pts.shape[0] >= max(6, int(cfg.min_inliers)):
+                p0, p1 = _lk_forward_backward(prev_gray, curr_gray, pts, cfg)
+                if p0 is not None and p1 is not None:
+                    est = _estimate_similarity(p0, p1, cfg)
+                    if est is not None:
+                        m, ratio = est
+                        px = prev_ax * float(prev_gray.shape[1])
+                        py = prev_ay * float(prev_gray.shape[0])
+                        tx = float(m[0, 0]) * px + float(m[0, 1]) * py + float(m[0, 2])
+                        ty = float(m[1, 0]) * px + float(m[1, 1]) * py + float(m[1, 2])
+                        cand_ax = clamp01(tx / float(max(1, wi)))
+                        cand_ay = clamp01(ty / float(max(1, hi)))
+                        ncc = _ncc_patch(
+                            seed_patch,
+                            _patch_at(
+                                curr_gray,
+                                cand_ax * float(wi),
+                                cand_ay * float(hi),
+                                seed_half,
+                            ),
+                        )
+                        if ncc >= float(cfg.seed_ncc_min):
+                            ax, ay = cand_ax, cand_ay
+                            conf = float(
+                                np.clip(0.55 * ratio + 0.45 * ncc, 0.15, 0.99)
+                            )
+                            ok = True
+
+        if not ok and not stop_tracking and seed_patch is not None:
+            guess_ax = clamp01(prev_ax + vel_x)
+            guess_ay = clamp01(prev_ay + vel_y)
+            hit = _match_seed_patch(
+                curr_gray,
+                seed_patch,
+                guess_ax * float(wi),
+                guess_ay * float(hi),
+                search_r,
+                cfg,
+            )
+            if hit is not None:
+                mx, my, score = hit
+                ax = clamp01(mx / float(max(1, wi)))
+                ay = clamp01(my / float(max(1, hi)))
+                conf = float(np.clip(score, 0.2, 0.95))
+                ok = True
+
+        if ok:
+            lost_streak = 0
+            lost = False
+            new_vel_x = ax - prev_ax
+            new_vel_y = ay - prev_ay
+        else:
+            lost_streak += 1
+            lost = True
+            conf = 0.10
+            if lost_streak > 3:
+                stop_tracking = True
+            ax = clamp01(prev_ax + vel_x)
+            ay = clamp01(prev_ay + vel_y)
+            new_vel_x, new_vel_y = vel_x, vel_y
+
+        out.append(
+            layout_from_anchor(
+                ax, ay, geom, wi, hi, auto=True, conf=conf, lost=lost
+            )
+        )
+        prev_ax, prev_ay = ax, ay
+        prev_gray = curr_gray
+        vel_x, vel_y = new_vel_x, new_vel_y
+
+    # 短缺口线性插值：两侧都有可靠帧、缺口不超过 max_gap_fill。
+    i = 1
+    while i < n:
+        if not out[i].lost:
+            i += 1
+            continue
+        j = i
+        while j < n and out[j].lost:
+            j += 1
+        gap = j - i
+        if (
+            gap <= int(cfg.max_gap_fill)
+            and i - 1 >= 0
+            and j < n
+            and not out[i - 1].lost
+            and not out[j].lost
+        ):
+            ax0, ay0 = out[i - 1].ax, out[i - 1].ay
+            ax1, ay1 = out[j].ax, out[j].ay
+            for k in range(i, j):
+                t = float(k - (i - 1)) / float(j - (i - 1))
+                hi, wi = frames_bgr[k].shape[:2]
+                out[k] = layout_from_anchor(
+                    ax0 + (ax1 - ax0) * t,
+                    ay0 + (ay1 - ay0) * t,
+                    geom,
+                    wi,
+                    hi,
+                    auto=True,
+                    conf=0.5,
+                    lost=False,
+                )
+        i = j
+    return out
+
+
 def _bird_bbox(item) -> Optional[Tuple[int, int, int, int]]:
     if item is None:
         return None
@@ -518,10 +939,12 @@ def propagate_layouts(
     min_score: float = 0.35,
     detect_birds_fn: Optional[DetectBirdsFn] = None,
     progress: Optional[PropagateProgressFn] = None,
+    use_feature_lock: bool = False,
 ) -> List[FrameLayout]:
     """
     以首图布局为基准，自动填写后续帧。
-    有 detect_birds_fn 时优先 YOLO 鸟框 + 卡尔曼；否则（或未命中）用模板匹配。
+    use_feature_lock=True 时改用局部特征锁眼（不依赖鸟体模型）；
+    否则有 detect_birds_fn 时优先 YOLO 鸟框 + 卡尔曼，失败再模板匹配。
     mode=fixed：模板始终取自首图；mode=track：模板随上一帧更新，LK 给初值。
     """
     if not frames_bgr:
@@ -535,6 +958,7 @@ def propagate_layouts(
         min_score=min_score,
         detect_birds_fn=detect_birds_fn,
         progress=progress,
+        use_feature_lock=use_feature_lock,
     )
 
 
@@ -546,6 +970,7 @@ def merge_propagate(
     min_score: float = 0.35,
     detect_birds_fn: Optional[DetectBirdsFn] = None,
     progress: Optional[PropagateProgressFn] = None,
+    use_feature_lock: bool = False,
 ) -> List[FrameLayout]:
     """
     首图必须有效。自动填写后续未锁定（auto=True 或空）的帧；
@@ -554,9 +979,18 @@ def merge_propagate(
 
     传播顺序：常速外推 + 卡尔曼 → YOLO 鸟框关联（保持首击在框内的相对位置）
     → 失败则模板匹配（定点全图/跟踪局部+光流）→ 再失败用外推位置。
+    use_feature_lock=True：改为种子框局部特征跟踪（KLT 前后向 + RANSAC 相似变换），
+    不加载/不依赖鸟体模型。
     """
     if not frames_bgr:
         return []
+    if use_feature_lock:
+        return track_layouts_features(
+            frames_bgr,
+            layouts,
+            mode,
+            progress=progress,
+        )
     first = layouts[0] if layouts else None
     if first is None or not layout_valid(first):
         raise ValueError("请先在首图上设置标定点与裁剪区")
@@ -611,7 +1045,7 @@ def merge_propagate(
         pred_ay = clamp01(0.35 * pred_ay + 0.65 * cv_ay)
         prev = layouts[i] if i < len(layouts) else None
         if prev is not None and not prev.auto:
-            kept = replace(prev, auto=False)
+            kept = replace(prev, auto=False, lost=False)
             out.append(kept)
             vel_x = clamp01(kept.ax) - prev_ax
             vel_y = clamp01(kept.ay) - prev_ay
