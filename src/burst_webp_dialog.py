@@ -703,6 +703,7 @@ class BurstAnchorPropagateWorker(QThread):
         parent=None,
         get_detector: Optional[Callable[[], Optional[object]]] = None,
         use_feature_lock: bool = False,
+        eye_calibrate: bool = False,
     ):
         super().__init__(parent)
         self._paths = list(paths)
@@ -712,6 +713,7 @@ class BurstAnchorPropagateWorker(QThread):
         self._job_id = int(job_id)
         self._get_detector = get_detector
         self._use_feature_lock = bool(use_feature_lock)
+        self._eye_calibrate = bool(eye_calibrate)
 
     def run(self) -> None:
         _burst_worker_configure_openmp()
@@ -732,8 +734,25 @@ class BurstAnchorPropagateWorker(QThread):
                 frames.append(x)
             detect_fn = None
             det = None
+            eye_fn = None
             if self._use_feature_lock:
                 _burst_gui_log("传播：自动锁眼（局部特征跟踪），不加载鸟体模型。")
+                if self._eye_calibrate:
+                    try:
+                        from bird_eye_calibration import BirdEyeCalibrator
+
+                        calib = BirdEyeCalibrator()
+                        if calib.available():
+                            eye_fn = calib.detect_anchor
+                            _burst_gui_log(
+                                "传播：已启用鸟眼关键帧校准（每 4 帧 / 失锁时）。"
+                            )
+                        else:
+                            _burst_gui_log(
+                                "传播：未找到 models/birdeye.pt，鸟眼校准已跳过。"
+                            )
+                    except Exception as ex:
+                        _burst_gui_log(f"传播：鸟眼校准初始化失败：{ex}")
             else:
                 self.progress.emit(n + 1, n + 2, "传播：加载鸟体模型…")
                 if self._get_detector is not None:
@@ -781,6 +800,7 @@ class BurstAnchorPropagateWorker(QThread):
                 detect_birds_fn=detect_fn,
                 progress=_prog,
                 use_feature_lock=self._use_feature_lock,
+                detect_eye_fn=eye_fn,
             )
             self.done.emit(merged, jid)
         except Exception as e:
@@ -1031,6 +1051,26 @@ class BurstWebpDialog(QDialog):
         )
         self.cb_feature_lock.toggled.connect(self._on_feature_lock_toggled)
         fl.addRow(self.cb_feature_lock)
+
+        self.cb_refine_lock = QCheckBox("导出前锁眼精修（让动图更稳、鸟眼锁定更准）")
+        self.cb_refine_lock.setChecked(True)
+        self.cb_refine_lock.setToolTip(
+            "动图写出前，用已经过白平衡的帧再跑一遍局部特征跟踪，"
+            "把已有的标定点轨迹平滑得更稳，避免裁剪框微微抖动。\n"
+            "全程不加载鸟体模型，精修失败会自动回退到手动/自动布局。"
+        )
+        fl.addRow(self.cb_refine_lock)
+
+        self.cb_eye_calib = QCheckBox("鸟眼关键帧校准（birdeye.pt，每 4 帧 / 失锁时）")
+        self.cb_eye_calib.setChecked(False)
+        self.cb_eye_calib.setToolTip(
+            "需要 models/birdeye.pt。传播阶段要同时开启「自动锁眼」才生效；"
+            "导出前的「锁眼精修」会独立使用。\n"
+            "每 4 帧以及跟踪失锁时，用鸟眼中心做一次校准："
+            "先学习「眼-锚偏移」，再反推锚点，所以标定点不点在眼上也能用。\n"
+            "眼模型漏检/跳眼会自动跳过该次校准，不影响特征跟踪。"
+        )
+        fl.addRow(self.cb_eye_calib)
 
         self.spn_fps = QDoubleSpinBox()
         self.spn_fps.setRange(0.25, 30.0)
@@ -1586,6 +1626,8 @@ class BurstWebpDialog(QDialog):
             "wm_theme",
             "burst_mode",
             "feature_lock",
+            "refine_lock",
+            "eye_calib",
             "fps",
             "max_long_edge",
             "webp_quality",
@@ -2201,8 +2243,15 @@ class BurstWebpDialog(QDialog):
         self._prop_job_id += 1
         jid = int(self._prop_job_id)
         use_feature_lock = self.cb_feature_lock.isChecked()
+        eye_calibrate = bool(
+            use_feature_lock and self.cb_eye_calib.isChecked()
+        )
         self.lbl_pv_status.setText(
-            "正在用局部特征自动锁眼跟踪后续标定点…"
+            (
+                "正在用局部特征自动锁眼 + 鸟眼关键帧校准跟踪后续标定点…"
+                if eye_calibrate
+                else "正在用局部特征自动锁眼跟踪后续标定点…"
+            )
             if use_feature_lock
             else "正在用鸟体检测跟踪后续标定点…"
         )
@@ -2215,6 +2264,7 @@ class BurstWebpDialog(QDialog):
             parent=self,
             get_detector=self._get_burst_detector,
             use_feature_lock=use_feature_lock,
+            eye_calibrate=eye_calibrate,
         )
         self._prop_worker.progress.connect(
             self._on_preview_progress, Qt.QueuedConnection
@@ -2224,7 +2274,8 @@ class BurstWebpDialog(QDialog):
         self._prop_worker.start()
         _burst_gui_log(
             f"标定点传播已启动（job={jid}，模式={self._burst_mode()}，"
-            f"自动锁眼={'开' if use_feature_lock else '关'}）。"
+            f"自动锁眼={'开' if use_feature_lock else '关'}，"
+            f"鸟眼校准={'开' if eye_calibrate else '关'}）。"
         )
 
     @pyqtSlot(object, int)
@@ -2312,6 +2363,10 @@ class BurstWebpDialog(QDialog):
             watermark_species_or_theme=(
                 self.ed_wm_theme.text().strip() if self.cb_wm.isChecked() else ""
             ),
+            enable_feature_lock_refine=self.cb_refine_lock.isChecked(),
+            feature_lock_mode=self._burst_mode(),
+            enable_eye_calibration=self.cb_eye_calib.isChecked(),
+            eye_calibration_every=4,
         )
 
     def _get_burst_detector(self):
@@ -2767,6 +2822,7 @@ class BurstWebpDialog(QDialog):
             self.rb_mode_fixed,
             self.rb_mode_track,
             self.cb_feature_lock,
+            self.cb_eye_calib,
             self.spn_fps,
             self.cmb_max,
             self.spn_q,
@@ -2798,6 +2854,8 @@ class BurstWebpDialog(QDialog):
             "wm_theme": self.ed_wm_theme.text(),
             "burst_mode": self._burst_mode(),
             "feature_lock": self.cb_feature_lock.isChecked(),
+            "refine_lock": self.cb_refine_lock.isChecked(),
+            "eye_calib": self.cb_eye_calib.isChecked(),
             "fps": float(self.spn_fps.value()),
             "max_long_edge": _int_safe_combo_data(self.cmb_max, 1600),
             "webp_quality": int(self.spn_q.value()),
@@ -2870,6 +2928,14 @@ class BurstWebpDialog(QDialog):
             pass
         try:
             self.cb_feature_lock.setChecked(bool(raw.get("feature_lock", False)))
+        except Exception:
+            pass
+        try:
+            self.cb_refine_lock.setChecked(bool(raw.get("refine_lock", True)))
+        except Exception:
+            pass
+        try:
+            self.cb_eye_calib.setChecked(bool(raw.get("eye_calib", False)))
         except Exception:
             pass
         if "max_long_edge" in raw:

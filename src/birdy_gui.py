@@ -6719,7 +6719,26 @@ class BirdDetectionGUI(QMainWindow):
             self.use_eye_detection_checkbox.setChecked(False)
 
     def start_processing(self):
-        """开始处理"""
+        """开始处理（异常兜底：槽函数里未捕获的异常会让 PyQt5 直接 abort，
+        表现为窗口闪退；多机同步的配置常带有本机不存在的路径，这里统一提示）"""
+        try:
+            self._start_processing_impl()
+        except Exception:
+            detail = traceback.format_exc()
+            last_line = detail.strip().splitlines()[-1] if detail.strip() else "未知错误"
+            try:
+                self.add_log(f"✗ 启动失败：{last_line}")
+            except Exception:
+                pass
+            QMessageBox.critical(
+                self,
+                "启动失败",
+                "启动处理时发生错误（常见原因：配置里的路径来自其他电脑）：\n\n"
+                f"{last_line}\n\n详细信息：\n{detail}",
+            )
+
+    def _start_processing_impl(self):
+        """开始处理的实际实现"""
         if (
             self._species_batch_thread is not None
             and self._species_batch_thread.isRunning()
@@ -6814,11 +6833,40 @@ class BirdDetectionGUI(QMainWindow):
                 pass
         
         # 创建输出文件夹
-        Path(self.config['output_folder']).mkdir(parents=True, exist_ok=True)
-        Path(self.config['crop_output_folder']).mkdir(parents=True, exist_ok=True)
-        Path(_reports_dir_from_config(self.config)).mkdir(parents=True, exist_ok=True)
-        if self.config['watermark_output_folder']:
-            Path(self.config['watermark_output_folder']).mkdir(parents=True, exist_ok=True)
+        # 多机同步时配置常带有本机不存在的路径：核心目录失败则提示后返回，
+        # 可选目录（水印）失败只记日志并跳过，避免异常冒泡导致窗口闪退。
+        core_dirs = (
+            ("输出文件夹（Screened）", self.config.get("output_folder")),
+            ("分类归档文件夹", self.config.get("crop_output_folder")),
+            ("报告文件夹", _reports_dir_from_config(self.config)),
+        )
+        bad_dirs = []
+        for label, path in core_dirs:
+            path = str(path or "").strip()
+            if not path:
+                continue
+            try:
+                Path(path).mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                bad_dirs.append(f"• {label}：{path}\n    {exc}")
+        if bad_dirs:
+            self._save_config()
+            QMessageBox.warning(
+                self,
+                "路径不可用",
+                "以下输出目录无法创建，通常是配置来自其他电脑：\n\n"
+                + "\n".join(bad_dirs)
+                + "\n\n请在界面上改成这台电脑上可用的路径后重试。",
+            )
+            return
+
+        wm_dir = str(self.config.get("watermark_output_folder") or "").strip()
+        if wm_dir and self.config.get("enable_watermark_generation"):
+            try:
+                Path(wm_dir).mkdir(parents=True, exist_ok=True)
+            except OSError as exc:
+                self.add_log(f"⚠ 水印输出目录不可用，本次跳过水印：{wm_dir}（{exc}）")
+                self.config["enable_watermark_generation"] = False
         
         # 保存配置
         self._save_config()

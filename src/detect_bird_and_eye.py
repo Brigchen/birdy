@@ -2534,11 +2534,22 @@ def _yolo_half_ok() -> bool:
         return False
 
 
+_YOLO_PREC_KWARG: Optional[str] = None  # "quantize"（新版）/ "half"（旧版），首次调用时探测
+
+
 def yolo_predict_with_imgsz(model, image, conf: float, imgsz: int = BIRD_YOLO_IMGSZ):
-    """CUDA 上 FP16；显存不够则按 1280→960→640 降级。"""
+    """CUDA 上 FP16；显存不够则按 1280→960→640 降级。
+
+    Ultralytics 新版把 ``half`` 改名为 ``quantize``（16=FP16，32=FP32），
+    旧版只认 ``half``；这里先按新版传参，遇到 TypeError 再回退并记住结果。
+    """
     import torch
 
-    half = _yolo_half_ok()
+    global _YOLO_PREC_KWARG
+
+    fp16 = _yolo_half_ok()
+    prec_name = _YOLO_PREC_KWARG or "quantize"
+    prec_value = (16 if fp16 else 32) if prec_name == "quantize" else fp16
     sizes: List[int] = []
     for sz in (int(imgsz),) + BIRD_YOLO_IMGSZ_FALLBACKS:
         if sz > 0 and sz not in sizes:
@@ -2546,13 +2557,29 @@ def yolo_predict_with_imgsz(model, image, conf: float, imgsz: int = BIRD_YOLO_IM
     last_err: Optional[BaseException] = None
     for sz in sizes:
         try:
-            return model.predict(
-                source=image,
-                conf=float(conf),
-                imgsz=int(sz),
-                verbose=False,
-                half=half,
-            )
+            try:
+                results = model.predict(
+                    source=image,
+                    conf=float(conf),
+                    imgsz=int(sz),
+                    verbose=False,
+                    **{prec_name: prec_value},
+                )
+            except TypeError as e:
+                if prec_name != "quantize" or "quantize" not in str(e):
+                    raise
+                # 旧版 Ultralytics 不认 quantize：回退到 half 并缓存
+                prec_name, prec_value = "half", fp16
+                _YOLO_PREC_KWARG = "half"
+                results = model.predict(
+                    source=image,
+                    conf=float(conf),
+                    imgsz=int(sz),
+                    verbose=False,
+                    **{prec_name: prec_value},
+                )
+            _YOLO_PREC_KWARG = prec_name
+            return results
         except RuntimeError as e:
             last_err = e
             msg = str(e).lower()

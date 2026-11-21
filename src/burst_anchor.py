@@ -355,6 +355,32 @@ def lk_predict(
 
 DetectBirdsFn = Callable[[np.ndarray], Sequence]
 PropagateProgressFn = Callable[[int, int, str], None]
+# (帧 BGR, 期望中心 cx, cy, 搜索半径 px) -> (眼中心 cx, cy, conf) 或 None
+DetectEyeFn = Callable[
+    [np.ndarray, float, float, float], Optional[Tuple[float, float, float]]
+]
+
+
+def _safe_eye_detect(
+    fn: Optional[DetectEyeFn],
+    bgr: np.ndarray,
+    cx: float,
+    cy: float,
+    radius: float,
+) -> Optional[Tuple[float, float, float]]:
+    """眼检测失败一律返回 None，不打断锁眼主流程。"""
+    if fn is None:
+        return None
+    try:
+        r = fn(bgr, float(cx), float(cy), float(radius))
+    except Exception:
+        return None
+    if not r:
+        return None
+    try:
+        return float(r[0]), float(r[1]), float(r[2])
+    except (TypeError, ValueError, IndexError):
+        return None
 
 
 @dataclass
@@ -587,6 +613,9 @@ def track_layouts_features(
     *,
     progress: Optional[PropagateProgressFn] = None,
     config: Optional[FeatureLockConfig] = None,
+    detect_eye_fn: Optional[DetectEyeFn] = None,
+    calibrate_every: int = 4,
+    calibrate_on_lost: bool = True,
 ) -> List[FrameLayout]:
     """
     种子框自动锁眼：逐帧局部特征跟踪（KLT 前后向 + RANSAC 相似变换）。
@@ -595,7 +624,10 @@ def track_layouts_features(
     - 与种子块相关性过低判漂移，交给多尺度模板匹配兜底；
     - 连续丢失超过 3 帧停止尝试，短缺口（≤3 帧）线性插值；
     - 输出 FrameLayout.lost 标记，供界面提示与手动修正。
-    不依赖任何鸟体模型。
+    - detect_eye_fn 非空时做关键帧鸟眼校准：每 calibrate_every 帧、
+      以及跟踪失败时，用"眼中心 - 眼锚偏移"把锚点拉回；偏移在首帧自动学习，
+      所以不会改变用户锚点的语义（锚点不是眼也能用）。
+    不依赖鸟体模型；眼校准模型缺失时自动跳过。
     """
     if not frames_bgr:
         return []
@@ -635,6 +667,23 @@ def track_layouts_features(
     half_w = max(16.0, 0.5 * float(geom.crop_w) * (1.0 + box_scale))
     half_h = max(16.0, 0.5 * float(geom.crop_h) * (1.0 + box_scale))
     search_r = max(24.0, float(max(geom.crop_w, geom.crop_h)) * 0.35)
+    eye_r = max(48.0, float(max(geom.crop_w, geom.crop_h)) * 0.95)
+    eye_cal_every = max(0, int(calibrate_every))
+    # 眼-锚偏移（像素）：首帧有机会就先学一次，后面用眼中心反推锚点。
+    eye_off: Optional[Tuple[float, float]] = None
+    if detect_eye_fn is not None and eye_cal_every > 0:
+        hit0 = _safe_eye_detect(
+            detect_eye_fn,
+            frames_bgr[0],
+            prev_ax * float(w0),
+            prev_ay * float(h0),
+            eye_r,
+        )
+        if hit0 is not None:
+            dx0 = hit0[0] - prev_ax * float(w0)
+            dy0 = hit0[1] - prev_ay * float(h0)
+            if abs(dx0) <= float(geom.crop_w) and abs(dy0) <= float(geom.crop_h):
+                eye_off = (dx0, dy0)
 
     for i in range(1, n):
         if progress is not None:
@@ -661,6 +710,7 @@ def track_layouts_features(
         ax = ay = 0.0
         conf = 0.0
         ok = False
+        eye_reacquired = False
 
         if not stop_tracking:
             pts = _detect_local_points(
@@ -713,11 +763,88 @@ def track_layouts_features(
                 conf = float(np.clip(score, 0.2, 0.95))
                 ok = True
 
+        # 关键帧鸟眼校准：每 N 帧一次；跟踪失败时（未停止）也尝试找回。
+        if (
+            detect_eye_fn is not None
+            and eye_cal_every > 0
+            and (
+                i % eye_cal_every == 0
+                or (not ok and calibrate_on_lost and not stop_tracking)
+            )
+        ):
+            gx = ax * float(wi) if ok else (prev_ax + vel_x) * float(wi)
+            gy = ay * float(hi) if ok else (prev_ay + vel_y) * float(hi)
+            hit_eye = _safe_eye_detect(detect_eye_fn, bgr, gx, gy, eye_r)
+            if hit_eye is not None:
+                ex, ey, ec = hit_eye
+                if eye_off is None:
+                    if ok:
+                        dx = ex - ax * float(wi)
+                        dy = ey - ay * float(hi)
+                        if (
+                            abs(dx) <= float(geom.crop_w)
+                            and abs(dy) <= float(geom.crop_h)
+                        ):
+                            eye_off = (dx, dy)
+                else:
+                    cand_ax = clamp01(
+                        (ex - eye_off[0]) / float(max(1, wi))
+                    )
+                    cand_ay = clamp01(
+                        (ey - eye_off[1]) / float(max(1, hi))
+                    )
+                    if ok:
+                        # 单次修正限幅，避免偶发跳眼把轨迹拉飞
+                        max_step = 0.35 * float(
+                            max(geom.crop_w, geom.crop_h)
+                        )
+                        ddx = (cand_ax - ax) * float(wi)
+                        ddy = (cand_ay - ay) * float(hi)
+                        dist = float(np.hypot(ddx, ddy))
+                        if dist > max_step:
+                            k = max_step / max(dist, 1e-6)
+                            ddx *= k
+                            ddy *= k
+                        ax = clamp01(ax + 0.65 * ddx / float(max(1, wi)))
+                        ay = clamp01(ay + 0.65 * ddy / float(max(1, hi)))
+                        conf = max(conf, float(np.clip(ec, 0.45, 0.95)))
+                    else:
+                        # 失锁后由眼重新捕获
+                        ax, ay = cand_ax, cand_ay
+                        conf = max(0.60, float(np.clip(ec, 0.50, 0.95)))
+                        ok = True
+                        eye_reacquired = True
+                        lost_streak = 0
+                        stop_tracking = False
+                    if ok:
+                        nx = ex - ax * float(wi)
+                        ny = ey - ay * float(hi)
+                        if (
+                            abs(nx) <= float(geom.crop_w)
+                            and abs(ny) <= float(geom.crop_h)
+                        ):
+                            if eye_off is None:
+                                eye_off = (nx, ny)
+                            else:
+                                eye_off = (
+                                    0.7 * eye_off[0] + 0.3 * nx,
+                                    0.7 * eye_off[1] + 0.3 * ny,
+                                )
+                        # 校准帧刷新种子块，抑制长序列慢漂移
+                        new_seed, new_half = _seed_patch_for(
+                            curr_gray, ax, ay, geom
+                        )
+                        if new_seed is not None:
+                            seed_patch, seed_half = new_seed, new_half
+
         if ok:
             lost_streak = 0
             lost = False
-            new_vel_x = ax - prev_ax
-            new_vel_y = ay - prev_ay
+            if eye_reacquired:
+                new_vel_x = new_vel_y = 0.0
+            else:
+                new_vel_x = ax - prev_ax
+                new_vel_y = ay - prev_ay
         else:
             lost_streak += 1
             lost = True
@@ -940,11 +1067,14 @@ def propagate_layouts(
     detect_birds_fn: Optional[DetectBirdsFn] = None,
     progress: Optional[PropagateProgressFn] = None,
     use_feature_lock: bool = False,
+    detect_eye_fn: Optional[DetectEyeFn] = None,
+    eye_calibrate_every: int = 4,
 ) -> List[FrameLayout]:
     """
     以首图布局为基准，自动填写后续帧。
     use_feature_lock=True 时改用局部特征锁眼（不依赖鸟体模型）；
     否则有 detect_birds_fn 时优先 YOLO 鸟框 + 卡尔曼，失败再模板匹配。
+    detect_eye_fn 仅在 use_feature_lock=True 时生效：关键帧鸟眼校准。
     mode=fixed：模板始终取自首图；mode=track：模板随上一帧更新，LK 给初值。
     """
     if not frames_bgr:
@@ -959,6 +1089,8 @@ def propagate_layouts(
         detect_birds_fn=detect_birds_fn,
         progress=progress,
         use_feature_lock=use_feature_lock,
+        detect_eye_fn=detect_eye_fn,
+        eye_calibrate_every=eye_calibrate_every,
     )
 
 
@@ -971,6 +1103,8 @@ def merge_propagate(
     detect_birds_fn: Optional[DetectBirdsFn] = None,
     progress: Optional[PropagateProgressFn] = None,
     use_feature_lock: bool = False,
+    detect_eye_fn: Optional[DetectEyeFn] = None,
+    eye_calibrate_every: int = 4,
 ) -> List[FrameLayout]:
     """
     首图必须有效。自动填写后续未锁定（auto=True 或空）的帧；
@@ -990,6 +1124,8 @@ def merge_propagate(
             layouts,
             mode,
             progress=progress,
+            detect_eye_fn=detect_eye_fn,
+            calibrate_every=eye_calibrate_every,
         )
     first = layouts[0] if layouts else None
     if first is None or not layout_valid(first):

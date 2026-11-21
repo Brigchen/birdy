@@ -1405,6 +1405,12 @@ class BurstWebpBuildOptions:
     prefer_folder_name_as_species: bool = True
     # 叠水印时物种/左侧主题文案；非空则优先于「从水印源文件夹路径推断文件夹名」。
     watermark_species_or_theme: str = ""
+    # 写出前对已白平衡的帧再跑一遍局部特征跟踪，平滑已有标定点。失败则沿用原布局。
+    enable_feature_lock_refine: bool = True
+    # 空字符串表示沿用 mode。
+    feature_lock_mode: str = ""
+    enable_eye_calibration: bool = False
+    eye_calibration_every: int = 4
 
 
 def _fps_and_frame_duration_ms(opts: BurstWebpBuildOptions) -> Tuple[float, float]:
@@ -1501,8 +1507,9 @@ def _burst_prepare_animation_pil_frames(
     lays = _coerce_frame_layouts(opts.frame_layouts, n)
     fps, frame_dur_ms = _fps_and_frame_duration_ms(opts)
     n_wb = 1 if opts.enable_white_balance else 0
-    # 加载 n + 白平衡(可选) + 裁剪/曝光 n + 缩放 1 + 水印 n + 写出 1
-    tot_pg = n + n_wb + n + 1 + n + 1
+    n_refine = 1 if opts.enable_feature_lock_refine else 0
+    # 加载 n + 白平衡(可选) + 锁眼精修(可选) + 裁剪/曝光 n + 缩放 1 + 水印 n + 写出 1
+    tot_pg = n + n_wb + n_refine + n + 1 + n + 1
     cur_pg = 0
 
     def pg(msg: str) -> None:
@@ -1533,6 +1540,27 @@ def _burst_prepare_animation_pil_frames(
         proc = _wb_burst_pipeline(raw_bgr, opts)
     else:
         proc = raw_bgr
+
+    if opts.enable_feature_lock_refine:
+        pg("导出前锁眼精修…")
+        try:
+            from burst_anchor import track_layouts_features
+
+            eye_fn = None
+            if opts.enable_eye_calibration:
+                from bird_eye_calibration import BirdEyeCalibrator
+
+                eye_fn = BirdEyeCalibrator().detect_anchor
+            lock_mode = (opts.feature_lock_mode or opts.mode or "fixed").strip()
+            lays = track_layouts_features(
+                proc,
+                lays,
+                lock_mode,
+                detect_eye_fn=eye_fn,
+                calibrate_every=int(opts.eye_calibration_every or 4),
+            )
+        except Exception as ex:
+            print(f"{log_tag} 锁眼精修失败，沿用原布局：{ex}", flush=True)
 
     h0, w0 = proc[0].shape[:2]
     geom = geom_from_first(lays[0], w0, h0)
